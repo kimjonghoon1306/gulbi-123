@@ -880,14 +880,595 @@ ${sections}
 // 모던 템플릿
 // ============================================================
 function renderModernLanding(d: LandingData, p: Preset): string {
-  const { colors: C, fonts: F } = p
+  const { colors: C } = p
   const img = d.mainImageUrl
-  const fontImports = `<style>
+  const css = `<style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;700;900&display=swap');
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
 [data-landing] [contenteditable="true"]:focus{outline:2px dashed ${C.primary};outline-offset:3px;background:${C.primary}14;border-radius:4px}
-[data-landing] *{box-sizing:border-box}
+[data-landing] *{box-sizing:border-box;-webkit-text-size-adjust:100%}
 </style>`
+  return `${css}
+<div data-landing data-template="modern" style="font-family:'Pretendard Variable',sans-serif;color:#111;background:#FAFAFA;line-height:1.6;-webkit-font-smoothing:antialiased;word-break:keep-all;">
+
+<section style="background:white;padding:52px 20px 40px;text-align:center;border-bottom:3px solid ${C.primary};">
+  <span style="display:inline-block;background:${C.primary};color:white;font-size:10px;font-weight:700;letter-spacing:0.15em;padding:4px 14px;border-radius:20px;margin-bottom:16px;">${esc(d.brandName)}</span>
+  <h1 ${ce('hero.catch')} style="font-size:clamp(24px,6.5vw,42px);font-weight:900;color:#111;line-height:1.15;margin:0 0 12px;letter-spacing:-0.02em;">${esc(d.catchphrase)}</h1>
+  <p ${ce('hero.sub')} style="font-size:clamp(13px,3.5vw,15px);color:#666;margin:0 auto 24px;line-height:1.7;max-width:400px;">${esc(d.subtitle)}</p>
+  ${img ? `<div style="border-radius:20px;overflow:hidden;margin:0 auto;max-width:min(360px,90vw);aspect-ratio:1/1;background:#F3F4F6;"><img src="${img}" alt="${esc(d.productName)}" style="width:100%;height:100%;object-fit:contain;" /></div>` : ''}
+  <p ${ce('intro.quote')} style="font-size:clamp(14px,3.8vw,17px);color:#444;margin:28px auto 8px;line-height:1.85;max-width:440px;font-style:italic;">"${esc(d.artisanQuote)}"</p>
+  <p style="font-size:12px;color:${C.primary};margin:0;">— ${esc(d.artisanName)}</p>
+</section>
+
+<section style="background:${C.cream};padding:48px 20px;text-align:center;">
+  <div style="display:inline-flex;align-items:center;gap:8px;margin-bottom:16px;">
+    <div style="width:3px;height:18px;background:${C.primary};border-radius:2px;"></div>
+    <h2 ${ce('origin.location')} style="font-size:clamp(18px,5vw,22px);font-weight:800;color:#111;margin:0;">${esc(d.originLocation)}</h2>
+    <div style="width:3px;height:18px;background:${C.primary};border-radius:2px;"></div>
+  </div>
+  <p ${ce('origin.story')} style="font-size:clamp(13px,3.5vw,14px);color:#555;line-height:1.85;max-width:480px;margin:0 auto 28px;">${esc(d.originStory)}</p>
+  <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:12px;">
+    ${d.originStats.filter(s=>s.value?.trim()).slice(0,4).map((s,i)=>`
+    <div style="background:white;border-radius:14px;padding:18px 20px;min-width:90px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <div style="font-size:clamp(22px,5.5vw,28px);font-weight:900;color:${C.deep};">${esc(s.value)}<span style="font-size:12px;color:${C.primary};">${esc(s.unit)}</span></div>
+      <div style="font-size:10px;color:#888;margin-top:4px;">${esc(s.label)}</div>
+      <div style="font-size:11px;color:#AAA;margin-top:3px;line-height:1.4;">${esc(s.desc)}</div>
+    </div>`).join('')}
+  </div>
+</section>
+
+<section style="background:white;padding:48px 20px;text-align:center;">
+  <h2 style="font-size:12px;letter-spacing:0.3em;color:${C.primary};margin:0 0 10px;font-weight:700;">STORY</h2>
+  <h3 ${ce('story.title')} style="font-size:clamp(20px,5vw,26px);font-weight:800;color:#111;margin:0 0 24px;">${esc(d.productName)}의 이야기</h3>
+  <div ${ce('story.body')} style="font-size:clamp(13px,3.5vw,14px);color:#555;line-height:1.95;max-width:520px;margin:0 auto;text-align:left;">${esc(d.story).split('\n').filter(Boolean).map(x=>`<p style="margin:0 0 14px;">${x}</p>`).join('')}</div>
+</section>
+
+<section style="background:#F9FAFB;padding:48px 20px;text-align:center;">
+  <h2 style="font-size:clamp(18px,5vw,22px);font-weight:800;color:#111;margin:0 0 24px;">왜 선택해야 할까요</h2>
+  <div style="display:grid;gap:12px;max-width:560px;margin:0 auto;">
+    ${d.features.slice(0,4).map((f,i)=>`
+    <div style="background:white;border-radius:14px;padding:18px 20px;display:flex;gap:14px;align-items:start;box-shadow:0 2px 6px rgba(0,0,0,0.05);text-align:left;">
+      <div style="width:34px;height:34px;background:${C.primary};border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:14px;flex-shrink:0;">${i+1}</div>
+      <div><h3 ${ce('features.'+i+'.title')} style="font-size:clamp(13px,3.5vw,15px);font-weight:700;color:#111;margin:0 0 4px;">${esc(f.title)}</h3>
+      <p ${ce('features.'+i+'.desc')} style="font-size:clamp(12px,3.2vw,13px);color:#666;margin:0;line-height:1.65;">${esc(f.desc)}</p></div>
+    </div>`).join('')}
+  </div>
+</section>
+
+<section style="background:${C.heroGrad};padding:56px 20px;text-align:center;">
+  <p ${ce('keynum.caption1')} style="font-size:11px;color:${C.cream};opacity:0.7;letter-spacing:0.2em;margin:0 0 8px;">${esc(d.keyNumber.label)}</p>
+  <div style="font-size:clamp(52px,13vw,90px);font-weight:900;color:${C.cream};line-height:1;margin:12px 0 8px;">${esc(d.keyNumber.value)}<span style="font-size:0.26em;opacity:0.9;margin-left:4px;">${esc(d.keyNumber.unit)}</span></div>
+  <p ${ce('keynum.caption')} style="font-size:clamp(13px,3.5vw,14px);color:${C.cream};opacity:0.75;margin:0;max-width:360px;margin-left:auto;margin-right:auto;">${esc(d.keyNumber.caption)}</p>
+</section>
+
+<section style="background:white;padding:48px 20px;text-align:center;">
+  <h2 style="font-size:clamp(18px,5vw,22px);font-weight:800;color:#111;margin:0 0 24px;">비교해 보세요</h2>
+  <div style="border:1px solid #E5E7EB;border-radius:14px;overflow:hidden;max-width:560px;margin:0 auto;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;background:#F9FAFB;">
+      <div style="padding:12px 6px;font-size:10px;font-weight:600;color:#999;text-align:center;">항목</div>
+      <div style="padding:12px 6px;font-size:10px;font-weight:600;color:#999;text-align:center;">일반 제품</div>
+      <div style="padding:12px 6px;font-size:10px;font-weight:700;color:${C.primary};text-align:center;">저희 제품</div>
+    </div>
+    ${d.differences.slice(0,5).map((diff,i)=>`
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid #E5E7EB;">
+      <div style="padding:12px 6px;font-size:clamp(11px,3vw,12px);color:#555;text-align:center;word-break:keep-all;">${esc(diff.label)}</div>
+      <div style="padding:12px 6px;font-size:clamp(11px,3vw,12px);color:#AAA;text-decoration:line-through;text-align:center;">${esc(diff.theirs)}</div>
+      <div style="padding:12px 6px;font-size:clamp(11px,3vw,12px);color:${C.primary};font-weight:700;text-align:center;background:${C.primary}08;">${esc(diff.ours)}</div>
+    </div>`).join('')}
+  </div>
+</section>
+
+${d.recipe ? `
+<section style="background:#F9FAFB;padding:48px 20px;text-align:center;">
+  <h2 style="font-size:clamp(18px,5vw,22px);font-weight:800;color:#111;margin:0 0 8px;">${esc(d.recipe.title)}</h2>
+  <p style="font-size:13px;color:#888;margin:0 0 28px;">${esc(d.recipe.intro)}</p>
+  <div style="max-width:480px;margin:0 auto;text-align:left;">
+    ${d.recipe.steps.map((s,i)=>`
+    <div style="display:flex;gap:14px;padding:16px 0;border-bottom:1px solid #E5E7EB;align-items:start;">
+      <div style="width:32px;height:32px;background:${C.primary};border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:14px;flex-shrink:0;">${i+1}</div>
+      <div><p style="font-weight:700;font-size:14px;color:#111;margin:0 0 4px;">${esc(s.name)}</p>
+      <p style="font-size:13px;color:#666;margin:0;line-height:1.6;">${esc(s.detail)}</p></div>
+    </div>`).join('')}
+    ${d.recipe.tip ? `<div style="margin-top:20px;padding:16px 18px;background:${C.primary}12;border-left:3px solid ${C.primary};border-radius:0 8px 8px 0;"><p style="font-size:10px;font-weight:700;color:${C.deep};margin:0 0 6px;letter-spacing:0.15em;">TIP</p><p style="font-size:13px;color:#333;margin:0;line-height:1.7;">${esc(d.recipe.tip)}</p></div>` : ''}
+  </div>
+</section>` : ''}
+
+${d.storage ? `
+<section style="background:white;padding:48px 20px;text-align:center;">
+  <h2 style="font-size:clamp(18px,5vw,22px);font-weight:800;color:#111;margin:0 0 28px;">${esc(d.storage.title)}</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid #E5E7EB;border-radius:12px;overflow:hidden;max-width:400px;margin:0 auto 24px;">
+    <div style="padding:20px 16px;border-right:1px solid #E5E7EB;text-align:center;">
+      <p style="font-size:10px;color:${C.primary};letter-spacing:0.2em;margin:0 0 8px;font-weight:700;">권장 보관</p>
+      <p style="font-size:16px;font-weight:700;color:#111;margin:0;">${esc(d.storage.recommended)}</p>
+    </div>
+    <div style="padding:20px 16px;text-align:center;">
+      <p style="font-size:10px;color:${C.primary};letter-spacing:0.2em;margin:0 0 8px;font-weight:700;">보관 기간</p>
+      <p style="font-size:16px;font-weight:700;color:#111;margin:0;">${esc(d.storage.duration)}</p>
+    </div>
+  </div>
+  <div style="max-width:480px;margin:0 auto;text-align:left;">
+    ${d.storage.tips.map((t,i)=>`<div style="display:flex;gap:10px;padding:12px 0;border-bottom:1px solid #F3F4F6;"><span style="color:${C.primary};font-weight:700;flex-shrink:0;">•</span><p style="font-size:13px;color:#555;margin:0;line-height:1.65;">${esc(t)}</p></div>`).join('')}
+  </div>
+</section>` : ''}
+
+<section style="background:#F9FAFB;padding:48px 20px;text-align:center;">
+  <h2 style="font-size:clamp(18px,5vw,22px);font-weight:800;color:#111;margin:0 0 8px;">고객 후기</h2>
+  <div style="font-size:clamp(28px,7vw,36px);font-weight:900;color:${C.deep};margin:4px 0;">4.9</div>
+  <div style="color:#F59E0B;letter-spacing:3px;font-size:14px;margin-bottom:24px;">★★★★★</div>
+  <div style="max-width:560px;margin:0 auto;display:grid;gap:12px;">
+    ${d.reviews.slice(0,3).map(r=>`
+    <div style="background:white;border-radius:14px;padding:18px 20px;box-shadow:0 2px 6px rgba(0,0,0,0.05);text-align:left;">
+      <div style="color:#F59E0B;font-size:12px;margin-bottom:8px;">★★★★★</div>
+      <p style="font-size:clamp(13px,3.5vw,14px);color:#333;line-height:1.7;margin:0 0 10px;">${esc(r.text)}</p>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:#AAA;"><span>${esc(r.author)}</span><span>${esc(r.date)}</span></div>
+    </div>`).join('')}
+  </div>
+</section>
+
+${d.faq && d.faq.length > 0 ? `
+<section style="background:white;padding:48px 20px;text-align:center;">
+  <h2 style="font-size:clamp(18px,5vw,22px);font-weight:800;color:#111;margin:0 0 24px;">자주 묻는 질문</h2>
+  <div style="max-width:560px;margin:0 auto;text-align:left;">
+    ${d.faq.slice(0,4).map((f,i)=>`
+    <div style="border-bottom:1px solid #F3F4F6;padding:18px 0;">
+      <div style="display:flex;gap:10px;margin-bottom:8px;">
+        <span style="color:${C.primary};font-weight:900;font-size:14px;flex-shrink:0;">Q.</span>
+        <p style="font-size:clamp(13px,3.5vw,14px);font-weight:700;color:#111;margin:0;line-height:1.5;">${esc(f.q)}</p>
+      </div>
+      <p style="font-size:clamp(12px,3.2vw,13px);color:#666;margin:0 0 0 24px;line-height:1.75;">${esc(f.a)}</p>
+    </div>`).join('')}
+  </div>
+</section>` : ''}
+
+<section style="background:${C.ink};color:${C.cream};padding:60px 20px;text-align:center;">
+  <p style="font-size:11px;opacity:0.5;letter-spacing:0.15em;margin:0 0 8px;">TODAY ONLY</p>
+  <div style="font-size:clamp(40px,10vw,68px);font-weight:900;line-height:1;margin:0 0 8px;color:${C.light};">${comma(d.price.retail)}<span style="font-size:0.26em;margin-left:4px;">원</span></div>
+  <p style="font-size:12px;opacity:0.5;margin:0 0 28px;">/ ${esc(d.price.unit)}</p>
+  <button style="display:block;width:100%;max-width:320px;margin:0 auto 16px;background:${C.light};color:${C.ink};padding:16px;border-radius:12px;font-size:15px;font-weight:900;border:none;cursor:pointer;letter-spacing:0.15em;">주 문 하 기</button>
+  <p style="font-size:11px;opacity:0.4;margin:0;">무료배송 · 당일출고 · 7일이내교환</p>
+</section>
+
+<section style="background:${C.deep};color:${C.cream};padding:28px 20px;text-align:center;">
+  <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:24px 40px;max-width:560px;margin:0 auto;">
+    ${d.delivery.slice(0,4).map(de=>`
+    <div style="min-width:80px;">
+      <p style="font-size:10px;opacity:0.5;letter-spacing:0.2em;margin:0 0 5px;">${esc(de.label)}</p>
+      <p style="font-size:clamp(12px,3.2vw,13px);font-weight:600;margin:0;">${esc(de.value)}</p>
+    </div>`).join('')}
+  </div>
+</section>
+
+</div>`
+}
+
+// ============================================================
+// 전통 템플릿
+// ============================================================
+function renderTraditionalLanding(d: LandingData, p: Preset): string {
+  const { colors: C } = p
+  const img = d.mainImageUrl
+  const css = `<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;700;900&family=Gowun+Batang:wght@400;700&display=swap');
+[data-landing] [contenteditable="true"]:focus{outline:2px dashed ${C.primary};outline-offset:3px;background:${C.primary}14;border-radius:4px}
+[data-landing] *{box-sizing:border-box;-webkit-text-size-adjust:100%}
+</style>`
+  const T = { paper:'#F9F0DC', dark:'#2C1A0E', red:'#8B1A1A', gold:'#9A6E2F', line:'#C4A86A', mid:'#E8D9A8' }
+  return `${css}
+<div data-landing data-template="traditional" style="font-family:'Gowun Batang',serif;color:${T.dark};background:${T.paper};line-height:1.7;-webkit-font-smoothing:antialiased;word-break:keep-all;">
+
+<section style="background:${T.dark};color:${T.paper};padding:56px 20px;text-align:center;position:relative;">
+  <div style="border:1px solid ${T.gold}55;max-width:min(360px,90vw);margin:0 auto;padding:28px 20px;">
+    <p style="font-size:10px;letter-spacing:0.4em;color:${T.gold};margin:0 0 14px;">${esc(d.brandName)}</p>
+    <h1 ${ce('hero.catch')} style="font-family:'Noto Serif KR',serif;font-size:clamp(22px,5.5vw,38px);font-weight:700;line-height:1.3;margin:0 0 18px;letter-spacing:-0.01em;">${esc(d.catchphrase)}</h1>
+    <div style="width:36px;height:1px;background:${T.gold};margin:0 auto 18px;"></div>
+    <p ${ce('hero.sub')} style="font-size:clamp(13px,3.5vw,14px);line-height:2;opacity:0.85;">${esc(d.subtitle)}</p>
+    ${img ? `<div style="margin:22px auto 0;max-width:240px;aspect-ratio:1/1;overflow:hidden;border:1px solid ${T.gold}44;"><img src="${img}" alt="${esc(d.productName)}" style="width:100%;height:100%;object-fit:cover;" /></div>` : ''}
+  </div>
+</section>
+
+<section style="padding:52px 20px;background:${T.paper};text-align:center;border-bottom:2px solid ${T.line};">
+  <p style="font-size:10px;letter-spacing:0.4em;color:${T.red};margin:0 0 10px;">인 사 말</p>
+  <p ${ce('intro.quote')} style="font-family:'Noto Serif KR',serif;font-size:clamp(14px,4vw,18px);line-height:2;color:${T.dark};margin:0 auto 16px;max-width:420px;font-style:italic;">"${esc(d.artisanQuote)}"</p>
+  <p style="font-size:12px;color:${T.gold};">— ${esc(d.artisanName)}</p>
+</section>
+
+<section style="padding:52px 20px;background:${T.paper};text-align:center;border-bottom:2px solid ${T.line};">
+  <p style="font-size:10px;letter-spacing:0.4em;color:${T.red};margin:0 0 10px;">산 지</p>
+  <h2 ${ce('origin.location')} style="font-family:'Noto Serif KR',serif;font-size:clamp(26px,6.5vw,34px);font-weight:700;color:${T.dark};margin:0 0 18px;">${esc(d.originLocation)}</h2>
+  <div style="width:50px;height:2px;background:${T.gold};margin:0 auto 22px;"></div>
+  <p ${ce('origin.story')} style="font-size:clamp(13px,3.5vw,14px);line-height:2;max-width:460px;margin:0 auto 32px;color:${T.dark};">${esc(d.originStory)}</p>
+  <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:0;">
+    ${d.originStats.filter(s=>s.value?.trim()).slice(0,4).map((s,i)=>`
+    <div style="padding:20px 22px;border:1px solid ${T.line}55;${i>0?'border-left:none':''}">
+      <div style="font-family:'Noto Serif KR',serif;font-size:clamp(24px,6vw,30px);font-weight:700;color:${T.red};">${esc(s.value)}<span style="font-size:13px;">${esc(s.unit)}</span></div>
+      <div style="font-size:10px;letter-spacing:0.2em;color:${T.gold};margin-top:5px;">${esc(s.label)}</div>
+      <div style="font-size:11px;color:${T.dark};opacity:0.6;margin-top:4px;line-height:1.4;">${esc(s.desc)}</div>
+    </div>`).join('')}
+  </div>
+</section>
+
+<section style="padding:52px 20px;background:#F2E8CC;text-align:center;">
+  <p style="font-size:10px;letter-spacing:0.4em;color:${T.red};margin:0 0 10px;">이 야 기</p>
+  <h2 ${ce('story.title')} style="font-family:'Noto Serif KR',serif;font-size:clamp(22px,5.5vw,28px);font-weight:700;color:${T.dark};margin:0 0 28px;">${esc(d.productName)}의 하루</h2>
+  <div ${ce('story.body')} style="font-size:clamp(13px,3.5vw,14px);line-height:2.1;max-width:480px;margin:0 auto;text-align:left;color:${T.dark};">${esc(d.story).split('\n').filter(Boolean).map(x=>`<p style="margin:0 0 16px;">${x}</p>`).join('')}</div>
+</section>
+
+<section style="padding:52px 20px;background:${T.paper};text-align:center;">
+  <p style="font-size:10px;letter-spacing:0.4em;color:${T.red};margin:0 0 10px;">특 징</p>
+  <h2 style="font-family:'Noto Serif KR',serif;font-size:clamp(22px,5.5vw,28px);font-weight:700;color:${T.dark};margin:0 0 32px;">무엇이 다른가</h2>
+  ${d.features.slice(0,4).map((f,i)=>`
+  <div style="max-width:480px;margin:0 auto 20px;padding:22px 24px;border:1px solid ${T.line}66;text-align:left;">
+    <div style="display:flex;gap:14px;align-items:start;">
+      <span style="font-family:'Noto Serif KR',serif;font-size:22px;font-weight:300;color:${T.red};line-height:1;flex-shrink:0;">${['一','二','三','四'][i]}</span>
+      <div>
+        <h3 ${ce('features.'+i+'.title')} style="font-size:clamp(14px,3.8vw,16px);font-weight:700;color:${T.dark};margin:0 0 6px;">${esc(f.title)}</h3>
+        <p ${ce('features.'+i+'.desc')} style="font-size:clamp(12px,3.2vw,13px);color:${T.dark};opacity:0.8;margin:0;line-height:1.8;">${esc(f.desc)}</p>
+      </div>
+    </div>
+  </div>`).join('')}
+</section>
+
+<section style="padding:52px 20px;background:#F2E8CC;text-align:center;">
+  <p style="font-size:10px;letter-spacing:0.4em;color:${T.red};margin:0 0 10px;">비 교</p>
+  <h2 style="font-family:'Noto Serif KR',serif;font-size:clamp(22px,5.5vw,28px);font-weight:700;color:${T.dark};margin:0 0 28px;">무엇이 다른가</h2>
+  <div style="border:1px solid ${T.line}88;overflow:hidden;max-width:480px;margin:0 auto;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;background:${T.line}33;">
+      <div style="padding:10px 6px;font-size:10px;color:${T.gold};text-align:center;letter-spacing:0.1em;">항목</div>
+      <div style="padding:10px 6px;font-size:10px;color:${T.gold};text-align:center;letter-spacing:0.1em;">일반</div>
+      <div style="padding:10px 6px;font-size:10px;color:${T.red};text-align:center;letter-spacing:0.1em;font-weight:700;">당사</div>
+    </div>
+    ${d.differences.slice(0,5).map((diff,i)=>`
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid ${T.line}55;">
+      <div style="padding:12px 6px;font-size:clamp(11px,3vw,12px);text-align:center;color:${T.dark};">${esc(diff.label)}</div>
+      <div style="padding:12px 6px;font-size:clamp(11px,3vw,12px);text-align:center;color:${T.dark};opacity:0.4;text-decoration:line-through;">${esc(diff.theirs)}</div>
+      <div style="padding:12px 6px;font-size:clamp(11px,3vw,12px);text-align:center;color:${T.red};font-weight:700;">${esc(diff.ours)}</div>
+    </div>`).join('')}
+  </div>
+</section>
+
+${d.recipe ? `
+<section style="padding:52px 20px;background:${T.paper};text-align:center;">
+  <p style="font-size:10px;letter-spacing:0.4em;color:${T.red};margin:0 0 10px;">조 리 법</p>
+  <h2 style="font-family:'Noto Serif KR',serif;font-size:clamp(20px,5vw,26px);font-weight:700;color:${T.dark};margin:0 0 24px;">${esc(d.recipe.title)}</h2>
+  <div style="max-width:480px;margin:0 auto;text-align:left;">
+    ${d.recipe.steps.map((s,i)=>`
+    <div style="padding:18px 0;border-bottom:1px solid ${T.line}44;">
+      <p style="font-family:'Noto Serif KR',serif;font-size:10px;color:${T.red};margin:0 0 6px;letter-spacing:0.2em;">${['一','二','三','四','五'][i] || i+1}</p>
+      <p style="font-weight:700;font-size:clamp(13px,3.5vw,15px);color:${T.dark};margin:0 0 6px;">${esc(s.name)}</p>
+      <p style="font-size:clamp(12px,3.2vw,13px);color:${T.dark};opacity:0.75;margin:0;line-height:1.75;">${esc(s.detail)}</p>
+    </div>`).join('')}
+    ${d.recipe.tip ? `<div style="margin-top:20px;padding:16px 18px;background:${T.line}22;border-left:3px solid ${T.gold};"><p style="font-size:10px;letter-spacing:0.2em;color:${T.gold};margin:0 0 6px;">TIP</p><p style="font-size:13px;color:${T.dark};margin:0;line-height:1.75;">${esc(d.recipe.tip)}</p></div>` : ''}
+  </div>
+</section>` : ''}
+
+<section style="padding:52px 20px;background:#F2E8CC;text-align:center;">
+  <p style="font-size:10px;letter-spacing:0.4em;color:${T.red};margin:0 0 10px;">후 기</p>
+  <h2 style="font-family:'Noto Serif KR',serif;font-size:clamp(22px,5.5vw,28px);font-weight:700;color:${T.dark};margin:0 0 28px;">써보신 분들의 말</h2>
+  ${d.reviews.slice(0,3).map(r=>`
+  <div style="max-width:480px;margin:0 auto 20px;padding:24px;border:1px solid ${T.line}66;text-align:left;">
+    <div style="color:${T.gold};letter-spacing:2px;font-size:13px;margin-bottom:12px;">★★★★★</div>
+    <p style="font-size:clamp(13px,3.5vw,14px);color:${T.dark};line-height:1.9;margin:0 0 12px;">"${esc(r.text)}"</p>
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:${T.gold};"><span>${esc(r.author)}</span><span>${esc(r.date)}</span></div>
+  </div>`).join('')}
+</section>
+
+${d.faq && d.faq.length > 0 ? `
+<section style="padding:52px 20px;background:${T.paper};text-align:center;">
+  <p style="font-size:10px;letter-spacing:0.4em;color:${T.red};margin:0 0 10px;">문 답</p>
+  <h2 style="font-family:'Noto Serif KR',serif;font-size:clamp(22px,5.5vw,28px);font-weight:700;color:${T.dark};margin:0 0 28px;">자주 묻는 질문</h2>
+  <div style="max-width:480px;margin:0 auto;text-align:left;">
+    ${d.faq.slice(0,4).map((f,i)=>`
+    <div style="padding:18px 0;border-bottom:1px solid ${T.line}44;">
+      <div style="display:flex;gap:10px;margin-bottom:8px;">
+        <span style="color:${T.red};font-weight:700;font-size:14px;flex-shrink:0;">問</span>
+        <p style="font-size:clamp(13px,3.5vw,14px);font-weight:700;color:${T.dark};margin:0;line-height:1.5;">${esc(f.q)}</p>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <span style="color:${T.gold};font-weight:700;font-size:14px;flex-shrink:0;">答</span>
+        <p style="font-size:clamp(12px,3.2vw,13px);color:${T.dark};opacity:0.75;margin:0;line-height:1.75;">${esc(f.a)}</p>
+      </div>
+    </div>`).join('')}
+  </div>
+</section>` : ''}
+
+<section style="background:${T.dark};color:${T.paper};padding:60px 20px;text-align:center;">
+  <p style="font-size:10px;letter-spacing:0.5em;color:${T.gold};margin:0 0 18px;">가 격</p>
+  <div style="font-family:'Noto Serif KR',serif;font-size:clamp(44px,11vw,72px);font-weight:300;line-height:1;margin:0 0 8px;color:${T.paper};">${comma(d.price.retail)}<span style="font-size:0.28em;color:${T.gold};margin-left:8px;">원</span></div>
+  <p style="font-size:12px;color:${T.gold};opacity:0.8;margin:0 0 32px;">/ ${esc(d.price.unit)}</p>
+  <div style="width:160px;height:1px;background:${T.gold}55;margin:0 auto 32px;"></div>
+  <button style="display:inline-block;background:transparent;color:${T.paper};border:1px solid ${T.gold};padding:15px 48px;font-family:'Noto Serif KR',serif;font-size:14px;letter-spacing:0.4em;cursor:pointer;">주 문 하 기</button>
+  <p style="font-size:11px;color:${T.gold};opacity:0.6;margin:18px 0 0;">무료 배송 · 당일 출고 · 7일 이내 교환</p>
+</section>
+
+<section style="background:${T.mid};padding:36px 20px;text-align:center;">
+  <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:28px 44px;max-width:480px;margin:0 auto;">
+    ${d.delivery.slice(0,4).map(de=>`
+    <div>
+      <p style="font-size:10px;letter-spacing:0.3em;color:${T.red};margin:0 0 6px;">${esc(de.label)}</p>
+      <p style="font-size:clamp(13px,3.5vw,14px);font-weight:700;color:${T.dark};margin:0;">${esc(de.value)}</p>
+    </div>`).join('')}
+  </div>
+</section>
+
+</div>`
+}
+
+// ============================================================
+// 비즈니스 템플릿
+// ============================================================
+function renderBusinessLanding(d: LandingData, p: Preset): string {
+  const { colors: C } = p
+  const img = d.mainImageUrl
+  const css = `<style>
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
+[data-landing] [contenteditable="true"]:focus{outline:2px dashed ${C.primary};outline-offset:3px;}
+[data-landing] *{box-sizing:border-box;-webkit-text-size-adjust:100%}
+</style>`
+  return `${css}
+<div data-landing data-template="business" style="font-family:'Pretendard Variable',sans-serif;color:#1A202C;background:#F7F8FA;line-height:1.6;-webkit-font-smoothing:antialiased;word-break:keep-all;">
+
+<section style="background:white;padding:0;border-bottom:3px solid ${C.primary};">
+  <div style="background:${C.primary};padding:10px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+    <span style="font-size:12px;font-weight:700;color:white;letter-spacing:0.15em;">${esc(d.brandName)}</span>
+    <span style="width:1px;height:12px;background:rgba(255,255,255,0.4);flex-shrink:0;"></span>
+    <span style="font-size:11px;color:rgba(255,255,255,0.8);">공식 제품 안내서</span>
+  </div>
+  <div style="padding:32px 20px;display:flex;flex-wrap:wrap;gap:24px;align-items:center;justify-content:center;">
+    ${img ? `<div style="width:min(200px,80vw);height:min(200px,80vw);border-radius:8px;overflow:hidden;border:1px solid #E2E8F0;flex-shrink:0;"><img src="${img}" alt="${esc(d.productName)}" style="width:100%;height:100%;object-fit:contain;" /></div>` : ''}
+    <div style="flex:1;min-width:180px;">
+      <p style="font-size:11px;font-weight:700;color:${C.primary};letter-spacing:0.15em;margin:0 0 6px;">PRODUCT</p>
+      <h1 ${ce('hero.catch')} style="font-size:clamp(20px,5vw,30px);font-weight:900;color:#1A202C;margin:0 0 8px;line-height:1.2;">${esc(d.productName)}</h1>
+      <p ${ce('hero.sub')} style="font-size:clamp(12px,3.2vw,13px);color:#718096;margin:0 0 16px;line-height:1.6;">${esc(d.subtitle)}</p>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        ${d.features.slice(0,3).map(f=>`<span style="background:${C.primary}15;color:${C.primary};padding:3px 10px;border-radius:20px;font-size:10px;font-weight:600;">${esc(f.title)}</span>`).join('')}
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="background:white;padding:28px 20px;margin-top:12px;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;">
+  <h2 style="font-size:13px;font-weight:700;color:${C.primary};letter-spacing:0.1em;margin:0 0 14px;">📍 원산지 정보</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:14px;">
+    <div style="padding:14px;background:#F7F8FA;border-radius:8px;border-left:3px solid ${C.primary};">
+      <p style="font-size:10px;color:#718096;margin:0 0 4px;">원산지</p>
+      <p ${ce('origin.location')} style="font-size:clamp(14px,3.8vw,16px);font-weight:700;color:#1A202C;margin:0;">${esc(d.originLocation)}</p>
+    </div>
+    ${d.originStats.filter(s=>s.value?.trim()).slice(0,3).map(s=>`
+    <div style="padding:14px;background:#F7F8FA;border-radius:8px;border-left:3px solid ${C.primary};">
+      <p style="font-size:10px;color:#718096;margin:0 0 4px;">${esc(s.label)}</p>
+      <p style="font-size:clamp(14px,3.8vw,16px);font-weight:700;color:#1A202C;margin:0;">${esc(s.value)}${esc(s.unit)}</p>
+    </div>`).join('')}
+  </div>
+  <p ${ce('origin.story')} style="font-size:clamp(12px,3.2vw,13px);color:#4A5568;line-height:1.8;margin:0;">${esc(d.originStory)}</p>
+</section>
+
+<section style="background:white;padding:28px 20px;border-bottom:1px solid #E2E8F0;">
+  <h2 style="font-size:13px;font-weight:700;color:${C.primary};letter-spacing:0.1em;margin:0 0 14px;">📖 상품 스토리</h2>
+  <div style="font-size:clamp(12px,3.2vw,13px);color:#4A5568;line-height:1.85;">${esc(d.story).split('\n').filter(Boolean).map(x=>`<p style="margin:0 0 12px;">${x}</p>`).join('')}</div>
+</section>
+
+<section style="background:white;padding:28px 20px;border-bottom:1px solid #E2E8F0;">
+  <h2 style="font-size:13px;font-weight:700;color:${C.primary};letter-spacing:0.1em;margin:0 0 14px;">✅ 주요 특징</h2>
+  ${d.features.slice(0,5).map((f,i)=>`
+  <div style="display:flex;align-items:start;gap:12px;padding:11px 0;border-bottom:1px solid #EDF2F7;">
+    <div style="width:20px;height:20px;background:${C.primary};border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">
+      <span style="color:white;font-size:10px;font-weight:700;">✓</span>
+    </div>
+    <div>
+      <p ${ce('features.'+i+'.title')} style="font-size:clamp(13px,3.5vw,14px);font-weight:700;color:#1A202C;margin:0 0 2px;">${esc(f.title)}</p>
+      <p ${ce('features.'+i+'.desc')} style="font-size:clamp(11px,3vw,12px);color:#718096;margin:0;line-height:1.6;">${esc(f.desc)}</p>
+    </div>
+  </div>`).join('')}
+</section>
+
+<section style="background:white;padding:28px 20px;border-bottom:1px solid #E2E8F0;">
+  <h2 style="font-size:13px;font-weight:700;color:${C.primary};letter-spacing:0.1em;margin:0 0 14px;">📊 비교 분석</h2>
+  <div style="border:1px solid #E2E8F0;border-radius:8px;overflow:hidden;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;background:#F7F8FA;">
+      <th style="padding:10px 6px;text-align:left;font-size:11px;font-weight:600;color:#718096;border-bottom:1px solid #E2E8F0;display:block;">항목</th>
+      <th style="padding:10px 6px;text-align:center;font-size:11px;font-weight:600;color:#718096;border-bottom:1px solid #E2E8F0;display:block;">일반 제품</th>
+      <th style="padding:10px 6px;text-align:center;font-size:11px;font-weight:700;color:${C.primary};border-bottom:1px solid #E2E8F0;display:block;">당사 제품</th>
+    </div>
+    ${d.differences.slice(0,5).map((diff,i)=>`
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid #EDF2F7;">
+      <div style="padding:11px 6px;font-size:clamp(11px,3vw,12px);color:#4A5568;">${esc(diff.label)}</div>
+      <div style="padding:11px 6px;font-size:clamp(11px,3vw,12px);color:#A0AEC0;text-align:center;text-decoration:line-through;">${esc(diff.theirs)}</div>
+      <div style="padding:11px 6px;font-size:clamp(11px,3vw,12px);color:${C.primary};font-weight:600;text-align:center;background:${C.primary}08;">${esc(diff.ours)}</div>
+    </div>`).join('')}
+  </div>
+</section>
+
+${d.specs ? `
+<section style="background:white;padding:28px 20px;border-bottom:1px solid #E2E8F0;">
+  <h2 style="font-size:13px;font-weight:700;color:${C.primary};letter-spacing:0.1em;margin:0 0 14px;">📋 제품 사양</h2>
+  <table style="width:100%;border-collapse:collapse;border-top:2px solid #1A202C;">
+    ${d.specs.items.map((it,i)=>`
+    <tr style="border-bottom:1px solid #EDF2F7;">
+      <td style="padding:12px 6px;font-size:clamp(11px,3vw,12px);color:#718096;width:110px;vertical-align:top;">${esc(it.key)}</td>
+      <td style="padding:12px 0 12px 8px;font-size:clamp(11px,3vw,13px);color:#1A202C;font-weight:500;line-height:1.6;">${esc(it.value)}</td>
+    </tr>`).join('')}
+  </table>
+</section>` : ''}
+
+<section style="background:white;padding:28px 20px;border-bottom:1px solid #E2E8F0;">
+  <h2 style="font-size:13px;font-weight:700;color:${C.primary};letter-spacing:0.1em;margin:0 0 14px;">💬 구매 후기</h2>
+  ${d.reviews.slice(0,3).map(r=>`
+  <div style="padding:14px;background:#F7F8FA;border-radius:8px;margin-bottom:10px;border-left:3px solid ${C.primary};">
+    <div style="color:#F59E0B;font-size:11px;margin-bottom:5px;">★★★★★</div>
+    <p style="font-size:clamp(12px,3.2vw,13px);color:#4A5568;line-height:1.7;margin:0 0 6px;">"${esc(r.text)}"</p>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:#A0AEC0;">
+      <span>${esc(r.author)}</span><span>${esc(r.date)}</span>
+    </div>
+  </div>`).join('')}
+</section>
+
+${d.faq && d.faq.length > 0 ? `
+<section style="background:white;padding:28px 20px;border-bottom:1px solid #E2E8F0;">
+  <h2 style="font-size:13px;font-weight:700;color:${C.primary};letter-spacing:0.1em;margin:0 0 14px;">❓ 자주 묻는 질문</h2>
+  ${d.faq.slice(0,4).map((f,i)=>`
+  <div style="padding:14px;background:#F7F8FA;border-radius:8px;margin-bottom:8px;">
+    <p style="font-size:clamp(12px,3.2vw,13px);font-weight:700;color:#1A202C;margin:0 0 6px;">Q. ${esc(f.q)}</p>
+    <p style="font-size:clamp(11px,3vw,12px);color:#718096;margin:0;line-height:1.65;">A. ${esc(f.a)}</p>
+  </div>`).join('')}
+</section>` : ''}
+
+<section style="background:${C.ink};color:${C.cream};padding:36px 20px;">
+  <div style="max-width:480px;margin:0 auto;">
+    <h2 style="font-size:13px;font-weight:700;letter-spacing:0.1em;color:${C.light};margin:0 0 18px;opacity:0.8;">💰 가격 안내</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
+      <div style="padding:14px;background:rgba(255,255,255,0.06);border-radius:8px;border:1px solid rgba(255,255,255,0.1);">
+        <p style="font-size:10px;opacity:0.6;margin:0 0 5px;letter-spacing:0.1em;">소매가</p>
+        <p style="font-size:clamp(18px,4.5vw,22px);font-weight:900;color:${C.light};margin:0;">${comma(d.price.retail)}<span style="font-size:11px;">원</span></p>
+      </div>
+      <div style="padding:14px;background:rgba(255,255,255,0.06);border-radius:8px;border:1px solid rgba(255,255,255,0.1);">
+        <p style="font-size:10px;opacity:0.6;margin:0 0 5px;letter-spacing:0.1em;">단위</p>
+        <p style="font-size:clamp(18px,4.5vw,22px);font-weight:900;color:${C.light};margin:0;">${esc(d.price.unit)}</p>
+      </div>
+    </div>
+    <button style="display:block;width:100%;background:${C.primary};color:white;padding:15px;border-radius:8px;font-size:14px;font-weight:700;border:none;cursor:pointer;letter-spacing:0.1em;">구매 문의하기</button>
+  </div>
+</section>
+
+<section style="background:#1A202C;color:#718096;padding:22px 20px;">
+  <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:18px 36px;">
+    ${d.delivery.slice(0,4).map(de=>`
+    <div style="text-align:center;">
+      <p style="font-size:10px;letter-spacing:0.1em;margin:0 0 3px;opacity:0.7;">${esc(de.label)}</p>
+      <p style="font-size:clamp(12px,3.2vw,13px);font-weight:600;color:#CBD5E0;margin:0;">${esc(de.value)}</p>
+    </div>`).join('')}
+  </div>
+</section>
+
+</div>`
+}
+
+// ============================================================
+// 감성 템플릿
+// ============================================================
+function renderEmotionalLanding(d: LandingData, p: Preset): string {
+  const { colors: C } = p
+  const img = d.mainImageUrl
+  const css = `<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;700;900&family=Gowun+Batang:wght@400;700&display=swap');
+[data-landing] [contenteditable="true"]:focus{outline:2px dashed ${C.primary};outline-offset:3px;background:${C.primary}14;border-radius:4px}
+[data-landing] *{box-sizing:border-box;-webkit-text-size-adjust:100%}
+</style>`
+  return `${css}
+<div data-landing data-template="emotional" style="font-family:'Gowun Batang',serif;color:white;background:#0D0D0D;line-height:1.7;-webkit-font-smoothing:antialiased;word-break:keep-all;">
+
+<section style="position:relative;min-height:80vh;display:flex;align-items:flex-end;background:#0D0D0D;overflow:hidden;">
+  ${img ? `<div style="position:absolute;inset:0;background-size:cover;background-position:center;background-image:url('${img}');opacity:0.5;"></div>` : ''}
+  <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(0,0,0,0.8) 40%, transparent 100%);"></div>
+  <div style="position:relative;z-index:2;padding:40px 20px;width:100%;">
+    <p style="font-family:'Noto Serif KR',serif;font-size:11px;letter-spacing:0.5em;color:${C.light};margin:0 0 18px;opacity:0.8;">${esc(d.brandName)}</p>
+    <h1 ${ce('hero.catch')} style="font-family:'Noto Serif KR',serif;font-size:clamp(28px,7vw,52px);font-weight:300;color:white;line-height:1.2;margin:0 0 20px;letter-spacing:-0.01em;">${esc(d.catchphrase)}</h1>
+    <div style="width:44px;height:1px;background:${C.light};margin:0 0 18px;"></div>
+    <p ${ce('hero.sub')} style="font-size:clamp(13px,3.5vw,15px);color:rgba(255,255,255,0.7);line-height:1.9;max-width:360px;">${esc(d.subtitle)}</p>
+  </div>
+</section>
+
+<section style="background:#111;padding:60px 20px;text-align:center;">
+  <p ${ce('intro.quote')} style="font-family:'Gowun Batang',serif;font-size:clamp(15px,4vw,21px);line-height:2;color:rgba(255,255,255,0.85);max-width:420px;margin:0 auto 20px;font-style:italic;">"${esc(d.artisanQuote)}"</p>
+  <p style="font-size:12px;color:${C.light};opacity:0.7;letter-spacing:0.1em;">— ${esc(d.artisanName)}</p>
+</section>
+
+<section style="background:#0A0A0A;padding:60px 20px;">
+  ${img ? `<div style="width:100%;aspect-ratio:16/9;overflow:hidden;margin-bottom:44px;"><img src="${img}" alt="${esc(d.productName)}" style="width:100%;height:100%;object-fit:cover;" /></div>` : ''}
+  <p style="font-size:11px;letter-spacing:0.4em;color:${C.light};margin:0 0 10px;opacity:0.7;">ORIGIN</p>
+  <h2 ${ce('origin.location')} style="font-family:'Noto Serif KR',serif;font-size:clamp(26px,6.5vw,42px);font-weight:300;color:white;margin:0 0 20px;line-height:1.2;">${esc(d.originLocation)}</h2>
+  <p ${ce('origin.story')} style="font-size:clamp(13px,3.5vw,15px);color:rgba(255,255,255,0.65);line-height:2;max-width:480px;">${esc(d.originStory)}</p>
+  <div style="display:flex;flex-wrap:wrap;gap:20px;margin-top:36px;">
+    ${d.originStats.filter(s=>s.value?.trim()).slice(0,4).map((s,i)=>`
+    <div style="flex:1;min-width:80px;padding:20px;border:1px solid rgba(255,255,255,0.08);">
+      <div style="font-family:'Noto Serif KR',serif;font-size:clamp(24px,6vw,32px);font-weight:300;color:${C.light};line-height:1;">${esc(s.value)}<span style="font-size:14px;">${esc(s.unit)}</span></div>
+      <div style="font-size:10px;opacity:0.5;letter-spacing:0.2em;margin-top:6px;">${esc(s.label)}</div>
+    </div>`).join('')}
+  </div>
+</section>
+
+<section style="background:#111;padding:60px 20px;">
+  <p style="font-size:11px;letter-spacing:0.4em;color:${C.light};margin:0 0 36px;opacity:0.7;">STORY</p>
+  <div ${ce('story.body')} style="font-size:clamp(15px,4vw,19px);color:rgba(255,255,255,0.8);line-height:2.1;font-weight:300;">${esc(d.story).split('\n').filter(Boolean).map(x=>`<p style="margin:0 0 22px;">${x}</p>`).join('')}</div>
+</section>
+
+<section style="background:#0A0A0A;padding:60px 20px;">
+  <p style="font-size:11px;letter-spacing:0.4em;color:${C.light};margin:0 0 44px;opacity:0.7;">WHY</p>
+  ${d.features.slice(0,4).map((f,i)=>`
+  <div style="padding:24px 0;border-bottom:1px solid rgba(255,255,255,0.07);">
+    <p style="font-family:'Noto Serif KR',serif;font-size:10px;letter-spacing:0.3em;color:${C.light};margin:0 0 8px;opacity:0.6;">0${i+1}</p>
+    <h3 ${ce('features.'+i+'.title')} style="font-family:'Noto Serif KR',serif;font-size:clamp(17px,4.5vw,20px);font-weight:400;color:white;margin:0 0 8px;">${esc(f.title)}</h3>
+    <p ${ce('features.'+i+'.desc')} style="font-size:clamp(13px,3.5vw,14px);color:rgba(255,255,255,0.55);line-height:1.9;margin:0;">${esc(f.desc)}</p>
+  </div>`).join('')}
+</section>
+
+<section style="background:#111;padding:60px 20px;">
+  <p style="font-size:11px;letter-spacing:0.4em;color:${C.light};margin:0 0 24px;opacity:0.7;">COMPARE</p>
+  ${d.differences.slice(0,5).map((diff,i)=>`
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;border-bottom:1px solid rgba(255,255,255,0.06);padding:14px 0;">
+    <div style="font-size:clamp(11px,3vw,12px);color:rgba(255,255,255,0.4);">${esc(diff.label)}</div>
+    <div style="font-size:clamp(11px,3vw,12px);color:rgba(255,255,255,0.25);text-decoration:line-through;text-align:center;">${esc(diff.theirs)}</div>
+    <div style="font-size:clamp(11px,3vw,12px);color:${C.light};font-weight:600;text-align:right;">${esc(diff.ours)}</div>
+  </div>`).join('')}
+</section>
+
+${d.recipe ? `
+<section style="background:#0A0A0A;padding:60px 20px;">
+  <p style="font-size:11px;letter-spacing:0.4em;color:${C.light};margin:0 0 20px;opacity:0.7;">RECIPE</p>
+  <h2 style="font-family:'Noto Serif KR',serif;font-size:clamp(22px,5.5vw,30px);font-weight:300;color:white;margin:0 0 36px;">${esc(d.recipe.title)}</h2>
+  ${d.recipe.steps.map((s,i)=>`
+  <div style="display:flex;gap:16px;padding:18px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+    <div style="width:28px;height:28px;border:1px solid ${C.light}55;border-radius:50%;display:flex;align-items:center;justify-content:center;color:${C.light};font-size:12px;flex-shrink:0;">${i+1}</div>
+    <div>
+      <p style="font-size:clamp(13px,3.5vw,15px);font-weight:600;color:white;margin:0 0 4px;">${esc(s.name)}</p>
+      <p style="font-size:clamp(12px,3.2vw,13px);color:rgba(255,255,255,0.5);margin:0;line-height:1.7;">${esc(s.detail)}</p>
+    </div>
+  </div>`).join('')}
+</section>` : ''}
+
+<section style="background:#111;padding:60px 20px;">
+  <p style="font-size:11px;letter-spacing:0.4em;color:${C.light};margin:0 0 32px;opacity:0.7;">REVIEWS</p>
+  ${d.reviews.slice(0,3).map(r=>`
+  <div style="padding:28px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+    <div style="color:${C.light};letter-spacing:3px;font-size:13px;margin-bottom:14px;opacity:0.8;">★★★★★</div>
+    <p style="font-size:clamp(14px,3.8vw,16px);color:rgba(255,255,255,0.8);line-height:2;margin:0 0 14px;font-style:italic;">"${esc(r.text)}"</p>
+    <p style="font-size:11px;color:rgba(255,255,255,0.3);letter-spacing:0.1em;">${esc(r.author)} · ${esc(r.date)}</p>
+  </div>`).join('')}
+</section>
+
+${d.faq && d.faq.length > 0 ? `
+<section style="background:#0A0A0A;padding:60px 20px;">
+  <p style="font-size:11px;letter-spacing:0.4em;color:${C.light};margin:0 0 32px;opacity:0.7;">FAQ</p>
+  ${d.faq.slice(0,4).map((f,i)=>`
+  <div style="padding:20px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+    <p style="font-size:clamp(13px,3.5vw,14px);font-weight:600;color:rgba(255,255,255,0.7);margin:0 0 8px;">${esc(f.q)}</p>
+    <p style="font-size:clamp(12px,3.2vw,13px);color:rgba(255,255,255,0.4);margin:0;line-height:1.8;">${esc(f.a)}</p>
+  </div>`).join('')}
+</section>` : ''}
+
+<section style="background:${C.heroGrad};padding:68px 20px;text-align:center;position:relative;overflow:hidden;">
+  <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 30%, ${C.light}20, transparent 70%);"></div>
+  <div style="position:relative;z-index:2;">
+    <p style="font-size:11px;letter-spacing:0.4em;color:${C.cream};opacity:0.7;margin:0 0 20px;">TODAY</p>
+    <div style="font-family:'Noto Serif KR',serif;font-size:clamp(48px,12vw,80px);font-weight:300;color:${C.cream};line-height:1;margin:0 0 8px;">${comma(d.price.retail)}<span style="font-size:0.24em;margin-left:8px;color:${C.light};">원</span></div>
+    <p style="font-size:12px;color:${C.cream};opacity:0.6;margin:0 0 36px;">/ ${esc(d.price.unit)}</p>
+    <button style="display:inline-block;background:transparent;color:${C.cream};border:1px solid ${C.cream}70;padding:16px 52px;font-family:'Noto Serif KR',serif;font-size:14px;letter-spacing:0.4em;cursor:pointer;">주 문 하 기</button>
+    <p style="font-size:11px;opacity:0.4;margin:16px 0 0;">무료 배송 · 당일 출고 · 7일 이내 교환</p>
+  </div>
+</section>
+
+<section style="background:#080808;color:rgba(255,255,255,0.4);padding:28px 20px;text-align:center;">
+  <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:24px 44px;">
+    ${d.delivery.slice(0,4).map(de=>`
+    <div>
+      <p style="font-size:10px;letter-spacing:0.2em;margin:0 0 5px;opacity:0.6;">${esc(de.label)}</p>
+      <p style="font-size:clamp(12px,3.2vw,13px);color:rgba(255,255,255,0.65);font-weight:500;margin:0;">${esc(de.value)}</p>
+    </div>`).join('')}
+  </div>
+  <p style="font-size:11px;margin:24px 0 0;font-family:'Noto Serif KR',serif;letter-spacing:0.2em;opacity:0.3;">${esc(d.brandName)}</p>
+</section>
+
+</div>`
+}
   return `${fontImports}
 <div data-landing data-template="modern" style="font-family:'Pretendard Variable',sans-serif;color:#111;background:#FAFAFA;line-height:1.6;-webkit-font-smoothing:antialiased;">
 
