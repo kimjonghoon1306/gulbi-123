@@ -179,9 +179,9 @@ export default function ProductDetailPage() {
 
           {/* 이미지 */}
           <div style={{position:'relative'}}>
-            <div style={{borderRadius:'24px',overflow:'hidden',background:D.imgBg,aspectRatio:'1',position:'relative',boxShadow:'0 4px 24px rgba(0,0,0,0.08)'}}>
+            <div style={{borderRadius:'24px',overflow:'hidden',background:D.imgBg,position:'relative',boxShadow:'0 4px 24px rgba(0,0,0,0.08)',minHeight:'260px',display:'flex',alignItems:'center',justifyContent:'center'}}>
               {product.image_url ? (
-                <img src={product.image_url} alt={product.name} style={{width:'100%',height:'100%',objectFit:'contain'}} />
+                <img src={product.image_url} alt={product.name} style={{width:'100%',height:'auto',maxHeight:'520px',objectFit:'contain',display:'block'}} />
               ) : (
                 <div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'80px'}}>🐟</div>
               )}
