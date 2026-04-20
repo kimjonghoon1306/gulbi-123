@@ -54,15 +54,25 @@ export default function MyPage() {
   const [itemsLoading, setItemsLoading]   = useState<string | null>(null)
 
   const fetchData = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.push('/shop/login'); return }
-    const { data: m } = await supabase.from('shop_members').select('*').eq('id', user.id).single()
-    if (!m) { router.push('/shop/login'); return }
-    setMember(m)
-    const table = m.member_type === '도매업' ? 'wholesale_orders' : 'retail_orders'
-    const { data: o } = await supabase.from(table).select('*').eq('contact', m.contact).order('created_at', { ascending: false })
-    setOrders(o || [])
-    setLoading(false)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.push('/shop/login'); return }
+      const { data: m, error } = await supabase.from('shop_members').select('*').eq('id', user.id).single()
+      if (error || !m) {
+        // shop_members에 없으면 기본 일반회원으로 표시 (로그인 상태는 유지)
+        setMember({ id: user.id, email: user.email || '', name: user.email?.split('@')[0] || '회원', contact: '', member_type: '일반', business_name: '', business_number: '', status: '승인', created_at: user.created_at || '' })
+        setOrders([])
+        setLoading(false)
+        return
+      }
+      setMember(m)
+      const table = m.member_type === '도매업' ? 'wholesale_orders' : 'retail_orders'
+      const { data: o } = await supabase.from(table).select('*').eq('contact', m.contact).order('created_at', { ascending: false })
+      setOrders(o || [])
+      setLoading(false)
+    } catch {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
