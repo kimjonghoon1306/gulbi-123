@@ -80,9 +80,9 @@ export default function ShopPage() {
   const startPopupCycle = () => {
     if (popupTimer.current) clearTimeout(popupTimer.current)
     const show = () => {
-      setProducts(currentProducts => {
-        if (currentProducts.length === 0) return currentProducts
-        const randomProduct = currentProducts[Math.floor(Math.random() * currentProducts.length)]
+      setProducts(cur => {
+        if (cur.length === 0) return cur
+        const randomProduct = cur[Math.floor(Math.random() * cur.length)]
         const name = POPUP_NAMES[Math.floor(Math.random() * POPUP_NAMES.length)]
         const action = POPUP_ACTIONS[Math.floor(Math.random() * POPUP_ACTIONS.length)]
         setPopup({ show: true, name, action, product: randomProduct.name })
@@ -90,7 +90,7 @@ export default function ShopPage() {
           setPopup(p => ({ ...p, show: false }))
           popupTimer.current = setTimeout(show, 15000)
         }, 4000)
-        return currentProducts
+        return cur
       })
     }
     popupTimer.current = setTimeout(show, 5000)
@@ -805,21 +805,21 @@ export default function ShopPage() {
         position: 'fixed', bottom: 0, left: 0, right: 0,
         background: headerBg, backdropFilter: 'blur(24px)',
         borderTop: `1px solid ${border}`,
-        padding: '10px 8px 24px',
-        display: 'flex', justifyContent: 'space-between',
+        padding: '10px 16px 24px',
+        display: 'flex', justifyContent: 'space-around',
         zIndex: 40, boxShadow: '0 -8px 32px rgba(0,0,0,0.08)'
       }} className="mobile-nav">
 
         {/* 홈 */}
-        <Link href="/shop" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', textDecoration: 'none', color: '#0f766e', flex: 1 }}>
+        <Link href="/shop" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', textDecoration: 'none', color: '#0f766e' }}>
           <span style={{ fontSize: '22px' }}>🏠</span>
-          <span style={{ fontSize: '9px', fontWeight: 800 }}>홈</span>
+          <span style={{ fontSize: '10px', fontWeight: 800 }}>홈</span>
         </Link>
 
         {/* 회원등급 */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', flex: 1 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
           <div style={{
-            padding: '3px 6px', borderRadius: '20px', fontSize: '10px', fontWeight: 800,
+            padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 800,
             background: memberType === '도매업'
               ? 'linear-gradient(135deg,#7c3aed,#6366f1)'
               : memberType === '소매업'
@@ -828,18 +828,18 @@ export default function ShopPage() {
             color: memberType !== '일반' ? 'white' : sub,
             boxShadow: memberType !== '일반' ? '0 3px 10px rgba(0,0,0,0.2)' : 'none'
           }}>
-            {memberType === '도매업' ? '🏭' : memberType === '소매업' ? '🏪' : '👤'}
+            {memberType === '도매업' ? '🏭' : memberType === '소매업' ? '🏪' : '👤'} {memberType}
           </div>
-          <span style={{ fontSize: '9px', fontWeight: 700, color: sub }}>등급</span>
+          <span style={{ fontSize: '10px', fontWeight: 700, color: sub }}>등급</span>
         </div>
 
         {/* 테마 */}
-        <button onClick={() => setDark(!dark)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', background: 'none', border: 'none', cursor: 'pointer', color: sub, flex: 1 }}>
+        <button onClick={() => setDark(!dark)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', background: 'none', border: 'none', cursor: 'pointer', color: sub }}>
           <span style={{ fontSize: '22px' }}>{dark ? '🌙' : '☀️'}</span>
-          <span style={{ fontSize: '9px', fontWeight: 700 }}>테마</span>
+          <span style={{ fontSize: '10px', fontWeight: 700 }}>테마</span>
         </button>
 
-        {/* 마이페이지 */}
+        {/* 내정보/로그인 */}
         {user ? (
           <Link href="/shop/mypage" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', textDecoration: 'none', color: '#0f766e', flex: 1 }}>
             <span style={{ fontSize: '22px' }}>👤</span>
@@ -851,15 +851,12 @@ export default function ShopPage() {
             <span style={{ fontSize: '9px', fontWeight: 700 }}>로그인</span>
           </Link>
         )}
-
-        {/* 로그아웃 */}
         {user && (
           <button onClick={handleLogout} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', background: 'none', border: 'none', cursor: 'pointer', color: sub, flex: 1 }}>
             <span style={{ fontSize: '22px' }}>🚪</span>
             <span style={{ fontSize: '9px', fontWeight: 700 }}>로그아웃</span>
           </button>
         )}
-      </div>
       </div>
 
       <style>{`
@@ -872,7 +869,6 @@ export default function ShopPage() {
           .hero-scene { display: none !important; }
           .mobile-animals { display: flex !important; }
           .header-user-btns { display: none !important; }
-          .product-grid-wrap { grid-template-columns: repeat(2,1fr) !important; gap: 12px !important; }
         }
         .product-card:hover {
           transform: translateY(-10px) scale(1.02) !important;
