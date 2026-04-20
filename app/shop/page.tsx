@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase'
 import Link from 'next/link'
+import type { User } from '@supabase/supabase-js'
 
 type Product = {
   id: string; name: string; description: string; image_url: string
@@ -47,7 +48,7 @@ export default function ShopPage() {
   const [selectedCat, setSelectedCat] = useState('전체')
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [memberType, setMemberType] = useState('일반')
   const [dark, setDark] = useState(false)
   const [scrolled, setScrolled] = useState(false)
@@ -77,22 +78,26 @@ export default function ShopPage() {
   useEffect(() => {
     if (products.length > 0) startPopupCycle()
     return () => { if (popupTimer.current) clearTimeout(popupTimer.current) }
-  }, [products])
+  }, [products, startPopupCycle])
 
-  const startPopupCycle = () => {
+  const startPopupCycle = useCallback(() => {
+    if (popupTimer.current) clearTimeout(popupTimer.current)
     const show = () => {
-      if (products.length === 0) return
-      const randomProduct = products[Math.floor(Math.random() * products.length)]
-      const name = POPUP_NAMES[Math.floor(Math.random() * POPUP_NAMES.length)]
-      const action = POPUP_ACTIONS[Math.floor(Math.random() * POPUP_ACTIONS.length)]
-      setPopup({ show: true, name, action, product: randomProduct.name })
-      popupTimer.current = setTimeout(() => {
-        setPopup(p => ({ ...p, show: false }))
-        popupTimer.current = setTimeout(show, 15000)
-      }, 4000)
+      setProducts(currentProducts => {
+        if (currentProducts.length === 0) return currentProducts
+        const randomProduct = currentProducts[Math.floor(Math.random() * currentProducts.length)]
+        const name = POPUP_NAMES[Math.floor(Math.random() * POPUP_NAMES.length)]
+        const action = POPUP_ACTIONS[Math.floor(Math.random() * POPUP_ACTIONS.length)]
+        setPopup({ show: true, name, action, product: randomProduct.name })
+        popupTimer.current = setTimeout(() => {
+          setPopup(p => ({ ...p, show: false }))
+          popupTimer.current = setTimeout(show, 15000)
+        }, 4000)
+        return currentProducts
+      })
     }
     popupTimer.current = setTimeout(show, 5000)
-  }
+  }, [])
 
   const checkUser = async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -250,6 +255,12 @@ export default function ShopPage() {
                       background: memberType === '도매업' ? 'rgba(124,58,237,0.12)' : memberType === '소매업' ? 'rgba(15,118,110,0.12)' : 'rgba(0,0,0,0.06)',
                       color: memberType === '도매업' ? '#7c3aed' : memberType === '소매업' ? '#0f766e' : sub
                     }}>{memberType}</span>
+                    <Link href="/shop/mypage" style={{
+                      fontSize: '13px', fontWeight: 700, padding: '9px 16px',
+                      borderRadius: '12px', background: 'transparent',
+                      border: `1.5px solid ${border}`, color: text,
+                      textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '5px'
+                    }}>👤 마이페이지</Link>
                     <button onClick={handleLogout} style={{
                       fontSize: '13px', fontWeight: 600, padding: '9px 16px',
                       borderRadius: '12px', background: 'transparent',
@@ -828,10 +839,17 @@ export default function ShopPage() {
         </button>
 
         {/* 내정보/로그인 */}
-        <Link href={user ? '#' : '/shop/login'} onClick={user ? handleLogout : undefined} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', textDecoration: 'none', color: sub }}>
-          <span style={{ fontSize: '22px' }}>👤</span>
-          <span style={{ fontSize: '10px', fontWeight: 700 }}>{user ? '로그아웃' : '로그인'}</span>
-        </Link>
+        {user ? (
+          <button onClick={handleLogout} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', background: 'none', border: 'none', cursor: 'pointer', color: sub }}>
+            <span style={{ fontSize: '22px' }}>👤</span>
+            <span style={{ fontSize: '10px', fontWeight: 700 }}>로그아웃</span>
+          </button>
+        ) : (
+          <Link href="/shop/login" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', textDecoration: 'none', color: sub }}>
+            <span style={{ fontSize: '22px' }}>👤</span>
+            <span style={{ fontSize: '10px', fontWeight: 700 }}>로그인</span>
+          </Link>
+        )}
       </div>
 
       <style>{`
