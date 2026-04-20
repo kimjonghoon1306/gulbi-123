@@ -78,7 +78,7 @@ export default function ProductDetailPage() {
   const getPrice = () => {
     if (!product) return 0
     if (memberType === '도매업') return product.wholesale_price
-    if (memberType === '소매업') return product.retail_price  // 소매유통가 = retail_price
+    if (memberType === '소매업') return product.member_price  // 소매유통가 = member_price
     return product.retail_price // 일반소매가
   }
 
@@ -238,7 +238,7 @@ export default function ProductDetailPage() {
               <p style={{fontSize:'12px',color:D.sub}}>/{product.unit}</p>
               {memberType === '일반' && (
                 <div style={{marginTop:'10px',padding:'8px 12px',background:dark?'rgba(255,255,255,0.04)':'#f8fafc',borderRadius:'10px',display:'flex',flexDirection:'column',gap:'4px'}}>
-                  <p style={{fontSize:'11px',color:'#0f766e',fontWeight:600,margin:0}}>🏪 소매 유통가 {product.retail_price.toLocaleString()}원 — 소매회원 전용</p>
+                  <p style={{fontSize:'11px',color:'#0f766e',fontWeight:600,margin:0}}>🏪 소매 유통가 {product.member_price.toLocaleString()}원 — 소매회원 전용</p>
                   <p style={{fontSize:'11px',color:'#ec4899',fontWeight:600,margin:0}}>🏭 도매 유통가 {product.wholesale_price.toLocaleString()}원 — 도매회원 전용</p>
                 </div>
               )}
