@@ -466,12 +466,12 @@ export default function ProductsPage() {
               <div style={{display:'flex',gap:'4px',background:aiDark?'rgba(255,255,255,0.06)':'#fafafa',borderRadius:'8px',padding:'3px'}}>
                 <button onClick={() => setAiTab('ai')}
                   style={{padding:'4px 12px',borderRadius:'6px',border:'none',fontSize:'11px',fontWeight:700,cursor:'pointer',
-                    background:aiTab==='ai'?'#c8a96e':'transparent',color:aiTab==='ai'?'#111':'rgba(255,255,255,0.5)'}}>
+                    background:aiTab==='ai'?'#c8a96e':'transparent',color:aiTab==='ai'?'#111':(aiDark?'rgba(255,255,255,0.5)':'rgba(0,0,0,0.4)')}}>
                   ✨ AI 생성
                 </button>
                 <button onClick={() => setAiTab('manual')}
                   style={{padding:'4px 12px',borderRadius:'6px',border:'none',fontSize:'11px',fontWeight:700,cursor:'pointer',
-                    background:aiTab==='manual'?'#c8a96e':'transparent',color:aiTab==='manual'?'#111':'rgba(255,255,255,0.5)'}}>
+                    background:aiTab==='manual'?'#c8a96e':'transparent',color:aiTab==='manual'?'#111':(aiDark?'rgba(255,255,255,0.5)':'rgba(0,0,0,0.4)')}}>
                   ✏️ 직접 만들기
                 </button>
               </div>
@@ -480,10 +480,10 @@ export default function ProductsPage() {
               {([1,2,3] as const).map((s,i) => (
                 <div key={s} style={{display:'flex',alignItems:'center',gap:'4px'}}>
                   <div style={{width:'26px',height:'26px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'11px',fontWeight:900,
-                    background:aiStep>=s?'#c8a96e':'rgba(255,255,255,0.1)',color:aiStep>=s?'#111':'rgba(255,255,255,0.4)'}}>
+                    background:aiStep>=s?'#c8a96e':(aiDark?'rgba(255,255,255,0.1)':'rgba(0,0,0,0.08)'),color:aiStep>=s?'#111':(aiDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)')}}>
                     {aiStep>s?'✓':s}
                   </div>
-                  {i<2&&<div style={{width:'16px',height:'1px',background:aiStep>s?'#c8a96e':'rgba(255,255,255,0.15)'}}/>}
+                  {i<2&&<div style={{width:'16px',height:'1px',background:aiStep>s?'#c8a96e':(aiDark?'rgba(255,255,255,0.15)':'rgba(0,0,0,0.15)')}}/>}
                 </div>
               ))}
             </div>
