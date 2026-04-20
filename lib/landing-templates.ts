@@ -1031,6 +1031,8 @@ ${d.faq && d.faq.length > 0 ? `
 <section style="background:${C.deep};color:${C.cream};padding:28px 20px;text-align:center;">
   <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:24px 40px;max-width:560px;margin:0 auto;">
     ${d.delivery.slice(0,4).map((de,i)=>`
+    <div style="min-width:80px;">
+      <p ${ce('delivery.'+i+'.label')} style="font-size:10px;opacity:0.5;letter-spacing:0.2em;margin:0 0 5px;">${esc(de.label)}</p>
       <p ${ce('delivery.'+i+'.value')} style="font-size:clamp(12px,3.2vw,13px);font-weight:600;margin:0;">${esc(de.value)}</p>
     </div>`).join('')}
   </div>
