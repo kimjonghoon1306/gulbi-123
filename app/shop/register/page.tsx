@@ -46,7 +46,16 @@ export default function ShopRegisterPage() {
         email: form.email,
         password: form.password,
       })
-      if (signUpError) return setError(`오류: ${signUpError.message}`)
+      if (signUpError) {
+        const msg = signUpError.message
+        if (msg.includes('already registered') || msg.includes('already been registered'))
+          return setError('이미 가입된 이메일이에요. 로그인 페이지에서 로그인해주세요.')
+        if (msg.includes('invalid email') || msg.includes('Invalid email'))
+          return setError('이메일 형식이 올바르지 않아요.')
+        if (msg.includes('password') && msg.includes('short'))
+          return setError('비밀번호는 6자 이상이어야 해요.')
+        return setError(`오류가 발생했어요: ${msg}`)
+      }
       if (data.user) {
         const status = memberType === '일반' ? '승인' : '대기중'
         const { error: insertError } = await supabase.from('shop_members').insert({
@@ -59,11 +68,11 @@ export default function ShopRegisterPage() {
           business_number: form.businessNumber || null,
           status,
         })
-        if (insertError) return setError(`오류: ${insertError.message}`)
+        if (insertError) return setError(`정보 저장 중 오류가 발생했어요: ${insertError.message}`)
         setStep(3)
       }
     } catch (e: any) {
-      setError(`오류: ${e.message}`)
+      setError(`오류가 발생했어요: ${e.message}`)
     } finally {
       setLoading(false)
     }
