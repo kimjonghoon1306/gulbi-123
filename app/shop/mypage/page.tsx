@@ -53,12 +53,6 @@ export default function MyPage() {
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null)
   const [itemsLoading, setItemsLoading]   = useState<string | null>(null)
 
-  useEffect(() => {
-    const saved = localStorage.getItem('shop-theme')
-    if (saved === 'dark') setDark(true)
-    fetchData()
-  }, [fetchData])
-
   const fetchData = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/shop/login'); return }
@@ -71,6 +65,12 @@ export default function MyPage() {
     setLoading(false)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    const saved = localStorage.getItem('shop-theme')
+    if (saved === 'dark') setDark(true)
+    fetchData()
+  }, [fetchData])
 
   const toggleOrder = async (orderId: string) => {
     if (expandedOrder === orderId) { setExpandedOrder(null); return }
