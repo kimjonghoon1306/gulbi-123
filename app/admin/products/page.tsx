@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase'
-import { renderLanding, type PresetKey, type LandingData } from '@/lib/landing-templates'
+import { renderLanding, type PresetKey, type TemplateKey, type LandingData, TEMPLATES } from '@/lib/landing-templates'
 
 type Category = { id: string; name: string; sort_order: number }
 type Product = {
@@ -50,6 +50,7 @@ export default function ProductsPage() {
   const [aiDark, setAiDark] = useState(true)
   const [showBuyerPreview, setShowBuyerPreview] = useState<'mobile'|'desktop'|false>(false)
   const [aiPresetKey, setAiPresetKey] = useState<PresetKey>('gold' as PresetKey)
+  const [aiTemplateKey, setAiTemplateKey] = useState<TemplateKey>('premium')
   const [aiLandingData, setAiLandingData] = useState<LandingData | null>(null)
   const supabase = createClient()
 
@@ -233,6 +234,7 @@ export default function ProductsPage() {
       setAiLandingData(data.data || null)
       setAiLandingHtml(data.html)
       setAiPresetKey('gold' as PresetKey)
+      setAiTemplateKey('premium')
       setAiStep(3)
     } catch(e:any) { setAiError('[v3] 오류: ' + e.message) }
     finally { setAiLoading(false) }
@@ -241,10 +243,18 @@ export default function ProductsPage() {
   // 프리셋 변경 — 클라이언트에서 즉시 재렌더 (API 호출 없음)
   const handleChangePreset = (key: PresetKey) => {
     if (!aiLandingData) return
-    const newHtml = renderLanding(aiLandingData, key)
+    const newHtml = renderLanding(aiLandingData, key, aiTemplateKey)
     setAiLandingHtml(newHtml)
     setAiPresetKey(key)
-    // 미리보기 div에 직접 주입
+    const preview = document.getElementById('landing-preview')
+    if (preview) preview.innerHTML = newHtml
+  }
+
+  const handleChangeTemplate = (key: TemplateKey) => {
+    if (!aiLandingData) return
+    const newHtml = renderLanding(aiLandingData, aiPresetKey, key)
+    setAiLandingHtml(newHtml)
+    setAiTemplateKey(key)
     const preview = document.getElementById('landing-preview')
     if (preview) preview.innerHTML = newHtml
   }
@@ -707,9 +717,29 @@ export default function ProductsPage() {
             <div style={{flex:1,display:'flex',flexDirection:'column',minHeight:0,overflow:'hidden'}}>
               <div style={{background:'#111',borderBottom:'1px solid rgba(255,255,255,0.1)',padding:'8px 12px',flexShrink:0}}>
 
+                {/* 5가지 템플릿 선택 */}
+                <div style={{marginBottom:'10px'}}>
+                  <p style={{color:'rgba(255,255,255,0.4)',fontSize:'10px',margin:'0 0 6px',letterSpacing:'0.5px'}}>🖼️ 템플릿 스타일 선택</p>
+                  <div style={{display:'flex',gap:'6px',flexWrap:'wrap'}}>
+                    {TEMPLATES.map(t => (
+                      <button key={t.key} onClick={() => handleChangeTemplate(t.key as TemplateKey)}
+                        style={{
+                          padding:'6px 10px',borderRadius:'8px',border:'1.5px solid',
+                          borderColor: aiTemplateKey===t.key ? '#c8a96e' : 'rgba(255,255,255,0.15)',
+                          background: aiTemplateKey===t.key ? 'rgba(200,169,110,0.2)' : 'transparent',
+                          color: aiTemplateKey===t.key ? '#e8c878' : 'rgba(255,255,255,0.5)',
+                          fontSize:'11px', fontWeight: aiTemplateKey===t.key ? 700 : 500,
+                          cursor:'pointer', transition:'all 0.15s',
+                        }}>
+                        {t.emoji} {t.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* 6가지 프리셋 선택 — 메인 기능 */}
                 <div style={{marginBottom:'8px'}}>
-                  <p style={{color:'rgba(255,255,255,0.4)',fontSize:'10px',margin:'0 0 6px',letterSpacing:'0.5px'}}>🎨 레이아웃 색상 선택</p>
+                  <p style={{color:'rgba(255,255,255,0.4)',fontSize:'10px',margin:'0 0 6px',letterSpacing:'0.5px'}}>🎨 색상 선택</p>
                   <div style={{display:'flex',gap:'6px',flexWrap:'wrap'}}>
                     {([
                       {k:'gold' as PresetKey,  label:'골드',  bg:'#C8842D', border:'#E8B87A'},
