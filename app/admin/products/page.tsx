@@ -778,7 +778,6 @@ export default function ProductsPage() {
                     {aiLoading?'등록 중...':'🛍️ 등록'}
                   </button>
                 </div>
-                </div>
               </div>
               {aiError&&<p style={{color:'#f87171',fontSize:'12px',padding:'6px 12px',background:'rgba(239,68,68,0.1)',margin:0,flexShrink:0}}>{aiError}</p>}
 
