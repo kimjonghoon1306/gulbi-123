@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -53,7 +53,7 @@ export default function MyPage() {
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null)
   const [itemsLoading, setItemsLoading]   = useState<string | null>(null)
 
-  const fetchData = useCallback(async () => {
+  const fetchData = async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/shop/login'); return }
     const { data: m } = await supabase.from('shop_members').select('*').eq('id', user.id).single()
@@ -63,14 +63,14 @@ export default function MyPage() {
     const { data: o } = await supabase.from(table).select('*').eq('contact', m.contact).order('created_at', { ascending: false })
     setOrders(o || [])
     setLoading(false)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }
 
   useEffect(() => {
     const saved = localStorage.getItem('shop-theme')
     if (saved === 'dark') setDark(true)
     fetchData()
-  }, [fetchData])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const toggleOrder = async (orderId: string) => {
     if (expandedOrder === orderId) { setExpandedOrder(null); return }
