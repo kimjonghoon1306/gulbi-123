@@ -42,6 +42,8 @@ export default function ProductsPage() {
   const [aiBgRemovedBase64, setAiBgRemovedBase64] = useState('')
   const [aiSelectedBg, setAiSelectedBg] = useState('dark')
   const [aiLoading, setAiLoading] = useState(false)
+  const [aiLoadingMsg, setAiLoadingMsg] = useState('')
+  const aiLoadingTimer = useRef<any>(null)
   const [aiBgLoading, setAiBgLoading] = useState(false)
   const [aiError, setAiError] = useState('')
   const [aiLandingHtml, setAiLandingHtml] = useState('')
@@ -183,6 +185,21 @@ export default function ProductsPage() {
   const handleGenerateLanding = async () => {
     if (!aiImage && !selectedProduct?.image_url) return setAiError('[v3] 이미지를 먼저 올려주세요.')
     setAiLoading(true); setAiError('')
+
+    // 단계별 로딩 메시지
+    const loadingSteps = [
+      '🔍 이미지 분석 중...',
+      '✍️ 상품 스토리 작성 중...',
+      '📋 특징 · 비교표 정리 중...',
+      '⭐ 후기 · FAQ 작성 중...',
+      '🎨 상세페이지 완성 중...',
+    ]
+    let stepIdx = 0
+    setAiLoadingMsg(loadingSteps[0])
+    aiLoadingTimer.current = setInterval(() => {
+      stepIdx = Math.min(stepIdx + 1, loadingSteps.length - 1)
+      setAiLoadingMsg(loadingSteps[stepIdx])
+    }, 5000)
     try {
       let base64 = ''
       let mimeType = 'image/jpeg'
@@ -237,7 +254,7 @@ export default function ProductsPage() {
       setAiTemplateKey('premium')
       setAiStep(3)
     } catch(e:any) { setAiError('[v3] 오류: ' + e.message) }
-    finally { setAiLoading(false) }
+    finally { setAiLoading(false); clearInterval(aiLoadingTimer.current); setAiLoadingMsg('') }
   }
 
   // 프리셋 변경 — 클라이언트에서 즉시 재렌더 (API 호출 없음)
@@ -319,6 +336,8 @@ export default function ProductsPage() {
   }
 
   const resetAiForm = () => {
+    clearInterval(aiLoadingTimer.current)
+    setAiLoading(false); setAiLoadingMsg('')
     setShowAiForm(false); setAiStep(1); setAiTab('ai')
     setAiImage(null); setAiImagePreview(''); setAiBgRemovedPreview(''); setAiBgRemovedBase64('')
     setAiLandingHtml(''); setAiError(''); setAiSelectedBg('dark')
@@ -616,7 +635,36 @@ export default function ProductsPage() {
           )}
 
           {aiTab==='ai' && aiStep===2 && (
-            <div style={{flex:1,overflowY:'auto',display:'flex',alignItems:'center',justifyContent:'center',padding:'24px 20px',background:aiDark?'transparent':'#f8f8f8'}}>
+            <div style={{flex:1,overflowY:'auto',display:'flex',alignItems:'center',justifyContent:'center',padding:'24px 20px',background:aiDark?'transparent':'#f8f8f8',position:'relative'}}>
+
+              {/* 생성 중 오버레이 */}
+              {aiLoading && (
+                <div style={{position:'absolute',inset:0,zIndex:100,background:aiDark?'rgba(0,0,0,0.85)':'rgba(240,240,240,0.92)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:'24px'}}>
+                  <div style={{width:'56px',height:'56px',borderRadius:'50%',border:'3px solid rgba(200,169,110,0.2)',borderTop:'3px solid #c8a96e',animation:'spin 0.9s linear infinite'}} />
+                  <div style={{textAlign:'center'}}>
+                    <p style={{color:'#c8a96e',fontSize:'16px',fontWeight:700,margin:'0 0 8px'}}>{aiLoadingMsg || '준비 중...'}</p>
+                    <p style={{color:aiDark?'rgba(255,255,255,0.35)':'rgba(0,0,0,0.35)',fontSize:'12px',margin:0}}>이미지 분석 → 카피 작성 → 레이아웃 구성</p>
+                  </div>
+                  <div style={{display:'flex',gap:'6px'}}>
+                    {[
+                      {label:'이미지 분석', keyword:'이미지'},
+                      {label:'스토리 작성', keyword:'스토리'},
+                      {label:'특징·비교',   keyword:'특징'},
+                      {label:'후기·FAQ',    keyword:'후기'},
+                      {label:'완성',        keyword:'완성'},
+                    ].map(({label, keyword}, i) => {
+                      const active = (aiLoadingMsg||'').includes(keyword)
+                      return (
+                        <div key={i} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:'4px'}}>
+                          <div style={{width:'8px',height:'8px',borderRadius:'50%',background:active?'#c8a96e':'rgba(200,169,110,0.25)',transition:'all 0.4s'}} />
+                          <p style={{fontSize:'9px',color:active?'#c8a96e':'rgba(200,169,110,0.4)',margin:0,whiteSpace:'nowrap'}}>{label}</p>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
               <div style={{width:'100%',maxWidth:'520px',display:'flex',flexDirection:'column',gap:'22px'}}>
 
                 <div>
@@ -705,7 +753,7 @@ export default function ProductsPage() {
                       color:aiLoading||!aiMeta.name.trim()?'rgba(255,255,255,0.3)':'#111',
                       fontSize:'15px',fontWeight:900,border:'none',cursor:aiLoading||!aiMeta.name.trim()?'not-allowed':'pointer',
                       boxShadow:aiLoading||!aiMeta.name.trim()?'none':'0 8px 24px rgba(200,169,110,0.3)',transition:'all 0.2s'}}>
-                    {aiLoading?'⏳ AI가 상세페이지 만드는 중...':'✨ 상세페이지 자동 생성'}
+                    {aiLoading ? aiLoadingMsg || '⏳ 준비 중...' : '✨ 상세페이지 자동 생성'}
                   </button>
                 </div>
                 {!aiMeta.name.trim()&&<p style={{color:aiDark?'rgba(255,255,255,0.3)':'#888',fontSize:'12px',textAlign:'center',margin:'-10px 0 0'}}>상품명을 입력해야 생성할 수 있어요</p>}
@@ -1035,6 +1083,7 @@ export default function ProductsPage() {
 
       <style>{`
         [contenteditable]:focus { outline: 2px solid #c8a96e !important; border-radius: 2px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
 
       {showForm && (
