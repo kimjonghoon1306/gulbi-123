@@ -256,6 +256,12 @@ export default function ShopPage() {
                       background: memberType === '도매업' ? 'rgba(124,58,237,0.12)' : memberType === '소매업' ? 'rgba(15,118,110,0.12)' : 'rgba(0,0,0,0.06)',
                       color: memberType === '도매업' ? '#7c3aed' : memberType === '소매업' ? '#0f766e' : sub
                     }}>{memberType}</span>
+                    <Link href="/shop/mypage" style={{
+                      fontSize: '13px', fontWeight: 700, padding: '9px 16px',
+                      borderRadius: '12px', background: 'transparent',
+                      border: `1.5px solid ${border}`, color: text,
+                      textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '5px'
+                    }}>👤 마이페이지</Link>
                     <button onClick={handleLogout} style={{
                       fontSize: '13px', fontWeight: 600, padding: '9px 16px',
                       borderRadius: '12px', background: 'transparent',
