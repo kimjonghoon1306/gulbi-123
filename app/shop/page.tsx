@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import Link from 'next/link'
-import type { User } from '@supabase/supabase-js'
 
 type Product = {
   id: string; name: string; description: string; image_url: string
@@ -48,7 +47,7 @@ export default function ShopPage() {
   const [selectedCat, setSelectedCat] = useState('전체')
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<any>(null)
   const [memberType, setMemberType] = useState('일반')
   const [dark, setDark] = useState(false)
   const [scrolled, setScrolled] = useState(false)
@@ -58,29 +57,27 @@ export default function ShopPage() {
   const popupTimer = useRef<any>(null)
   const supabase = createClient()
 
-  useEffect(() => {
-    fetchData()
-    checkUser()
-    const saved = localStorage.getItem('shop-theme')
-    if (saved === 'dark') setDark(true)
-    const handleScroll = () => setScrolled(window.scrollY > 10)
-    window.addEventListener('scroll', handleScroll)
-    setTimeout(() => setHeroVisible(true), 100)
-    setVisitorCount(Math.floor(Math.random() * 80) + 40)
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-      if (popupTimer.current) clearTimeout(popupTimer.current)
+  const fetchData = async () => {
+    setLoading(true)
+    const [{ data: p }, { data: c }] = await Promise.all([
+      supabase.from('products').select('*').eq('is_active', true).order('created_at', { ascending: false }),
+      supabase.from('categories').select('*').order('sort_order')
+    ])
+    setProducts(p || [])
+    setCategories(c || [])
+    setLoading(false)
+  }
+
+  const checkUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      setUser(user)
+      const { data: member } = await supabase.from('shop_members').select('member_type').eq('id', user.id).single()
+      if (member) setMemberType(member.member_type)
     }
-  }, [])
+  }
 
-  useEffect(() => { localStorage.setItem('shop-theme', dark ? 'dark' : 'light') }, [dark])
-
-  useEffect(() => {
-    if (products.length > 0) startPopupCycle()
-    return () => { if (popupTimer.current) clearTimeout(popupTimer.current) }
-  }, [products, startPopupCycle])
-
-  const startPopupCycle = useCallback(() => {
+  const startPopupCycle = () => {
     if (popupTimer.current) clearTimeout(popupTimer.current)
     const show = () => {
       setProducts(currentProducts => {
@@ -97,27 +94,31 @@ export default function ShopPage() {
       })
     }
     popupTimer.current = setTimeout(show, 5000)
+  }
+
+  useEffect(() => {
+    fetchData()
+    checkUser()
+    const saved = localStorage.getItem('shop-theme')
+    if (saved === 'dark') setDark(true)
+    const handleScroll = () => setScrolled(window.scrollY > 10)
+    window.addEventListener('scroll', handleScroll)
+    setTimeout(() => setHeroVisible(true), 100)
+    setVisitorCount(Math.floor(Math.random() * 80) + 40)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (popupTimer.current) clearTimeout(popupTimer.current)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const checkUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      setUser(user)
-      const { data: member } = await supabase.from('shop_members').select('member_type').eq('id', user.id).single()
-      if (member) setMemberType(member.member_type)
-    }
-  }
+  useEffect(() => { localStorage.setItem('shop-theme', dark ? 'dark' : 'light') }, [dark])
 
-  const fetchData = async () => {
-    setLoading(true)
-    const [{ data: p }, { data: c }] = await Promise.all([
-      supabase.from('products').select('*').eq('is_active', true).order('created_at', { ascending: false }),
-      supabase.from('categories').select('*').order('sort_order')
-    ])
-    setProducts(p || [])
-    setCategories(c || [])
-    setLoading(false)
-  }
+  useEffect(() => {
+    if (products.length > 0) startPopupCycle()
+    return () => { if (popupTimer.current) clearTimeout(popupTimer.current) }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [products])
 
   const getPrice = (product: Product) => {
     if (memberType === '도매업') return product.wholesale_price
@@ -255,12 +256,6 @@ export default function ShopPage() {
                       background: memberType === '도매업' ? 'rgba(124,58,237,0.12)' : memberType === '소매업' ? 'rgba(15,118,110,0.12)' : 'rgba(0,0,0,0.06)',
                       color: memberType === '도매업' ? '#7c3aed' : memberType === '소매업' ? '#0f766e' : sub
                     }}>{memberType}</span>
-                    <Link href="/shop/mypage" style={{
-                      fontSize: '13px', fontWeight: 700, padding: '9px 16px',
-                      borderRadius: '12px', background: 'transparent',
-                      border: `1.5px solid ${border}`, color: text,
-                      textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '5px'
-                    }}>👤 마이페이지</Link>
                     <button onClick={handleLogout} style={{
                       fontSize: '13px', fontWeight: 600, padding: '9px 16px',
                       borderRadius: '12px', background: 'transparent',
