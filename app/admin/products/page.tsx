@@ -593,36 +593,52 @@ export default function ProductsPage() {
                   <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
                     <input value={aiMeta.name} onChange={e=>setAiMeta(p=>({...p,name:e.target.value}))}
                       placeholder="상품명 (예: 영광 법성포 보리굴비)"
-                      style={{padding:'15px 16px',borderRadius:'12px',border:'2px solid rgba(255,255,255,0.12)',background:'rgba(255,255,255,0.07)',color:'white',fontSize:'15px',fontWeight:600,outline:'none'}}
-                      onFocus={e=>{e.target.style.borderColor='#c8a96e'}} onBlur={e=>{e.target.style.borderColor='rgba(255,255,255,0.12)'}} />
+                      style={{padding:'15px 16px',borderRadius:'12px',
+                        border:'2px solid '+(aiDark?'rgba(255,255,255,0.12)':'rgba(0,0,0,0.15)'),
+                        background:aiDark?'rgba(255,255,255,0.07)':'white',
+                        color:aiDark?'white':'#111',fontSize:'15px',fontWeight:600,outline:'none'}}
+                      onFocus={e=>{e.target.style.borderColor='#c8a96e'}}
+                      onBlur={e=>{e.target.style.borderColor=aiDark?'rgba(255,255,255,0.12)':'rgba(0,0,0,0.15)'}} />
                     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'10px'}}>
                       <div>
-                        <p style={{color:'rgba(255,255,255,0.5)',fontSize:'10px',fontWeight:700,margin:'0 0 5px',letterSpacing:'0.5px'}}>🛒 일반 소매가</p>
+                        <p style={{color:aiDark?'rgba(255,255,255,0.5)':'#666',fontSize:'10px',fontWeight:700,margin:'0 0 5px',letterSpacing:'0.5px'}}>🛒 일반 소매가</p>
                         <input type="number" value={aiMeta.retail_price} onChange={e=>setAiMeta(p=>({...p,retail_price:e.target.value}))}
                           placeholder="원"
-                          style={{width:'100%',padding:'12px 10px',borderRadius:'10px',border:'2px solid rgba(99,102,241,0.3)',background:'rgba(99,102,241,0.06)',color:'white',fontSize:'14px',outline:'none',boxSizing:'border-box'}}
-                          onFocus={e=>{e.target.style.borderColor='#6366f1'}} onBlur={e=>{e.target.style.borderColor='rgba(99,102,241,0.3)'}} />
+                          style={{width:'100%',padding:'12px 10px',borderRadius:'10px',
+                            border:'2px solid rgba(99,102,241,0.3)',
+                            background:aiDark?'rgba(99,102,241,0.06)':'white',
+                            color:aiDark?'white':'#111',fontSize:'14px',outline:'none',boxSizing:'border-box'}}
+                          onFocus={e=>{e.target.style.borderColor='#6366f1'}}
+                          onBlur={e=>{e.target.style.borderColor='rgba(99,102,241,0.3)'}} />
                       </div>
                       <div>
-                        <p style={{color:'rgba(255,255,255,0.5)',fontSize:'10px',fontWeight:700,margin:'0 0 5px',letterSpacing:'0.5px'}}>🏪 소매 유통가</p>
+                        <p style={{color:aiDark?'rgba(255,255,255,0.5)':'#666',fontSize:'10px',fontWeight:700,margin:'0 0 5px',letterSpacing:'0.5px'}}>🏪 소매 유통가</p>
                         <input type="number" value={aiMeta.member_price} onChange={e=>setAiMeta(p=>({...p,member_price:e.target.value}))}
                           placeholder="원"
-                          style={{width:'100%',padding:'12px 10px',borderRadius:'10px',border:'2px solid rgba(15,118,110,0.3)',background:'rgba(15,118,110,0.06)',color:'white',fontSize:'14px',outline:'none',boxSizing:'border-box'}}
-                          onFocus={e=>{e.target.style.borderColor='#0f766e'}} onBlur={e=>{e.target.style.borderColor='rgba(15,118,110,0.3)'}} />
+                          style={{width:'100%',padding:'12px 10px',borderRadius:'10px',
+                            border:'2px solid rgba(15,118,110,0.3)',
+                            background:aiDark?'rgba(15,118,110,0.06)':'white',
+                            color:aiDark?'white':'#111',fontSize:'14px',outline:'none',boxSizing:'border-box'}}
+                          onFocus={e=>{e.target.style.borderColor='#0f766e'}}
+                          onBlur={e=>{e.target.style.borderColor='rgba(15,118,110,0.3)'}} />
                       </div>
                       <div>
-                        <p style={{color:'rgba(255,255,255,0.5)',fontSize:'10px',fontWeight:700,margin:'0 0 5px',letterSpacing:'0.5px'}}>🏭 도매 유통가</p>
+                        <p style={{color:aiDark?'rgba(255,255,255,0.5)':'#666',fontSize:'10px',fontWeight:700,margin:'0 0 5px',letterSpacing:'0.5px'}}>🏭 도매 유통가</p>
                         <input type="number" value={aiMeta.wholesale_price} onChange={e=>setAiMeta(p=>({...p,wholesale_price:e.target.value}))}
                           placeholder="원"
-                          style={{width:'100%',padding:'12px 10px',borderRadius:'10px',border:'2px solid rgba(236,72,153,0.3)',background:'rgba(236,72,153,0.06)',color:'white',fontSize:'14px',outline:'none',boxSizing:'border-box'}}
-                          onFocus={e=>{e.target.style.borderColor='#ec4899'}} onBlur={e=>{e.target.style.borderColor='rgba(236,72,153,0.3)'}} />
+                          style={{width:'100%',padding:'12px 10px',borderRadius:'10px',
+                            border:'2px solid rgba(236,72,153,0.3)',
+                            background:aiDark?'rgba(236,72,153,0.06)':'white',
+                            color:aiDark?'white':'#111',fontSize:'14px',outline:'none',boxSizing:'border-box'}}
+                          onFocus={e=>{e.target.style.borderColor='#ec4899'}}
+                          onBlur={e=>{e.target.style.borderColor='rgba(236,72,153,0.3)'}} />
                       </div>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h3 style={{color:'white',fontSize:'18px',fontWeight:900,margin:'0 0 12px'}}>🎭 어떤 말투로 쓸까요?</h3>
+                  <h3 style={{color:aiDark?'white':'#111',fontSize:'18px',fontWeight:900,margin:'0 0 12px'}}>🎭 어떤 말투로 쓸까요?</h3>
                   <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px'}}>
                     {([
                       {key:'shohost',emoji:'🎤',title:'쇼호스트',desc:'지금 바로! 놀라운 퀄리티!',color:'#f97316'},
@@ -632,12 +648,12 @@ export default function ProductsPage() {
                     ] as const).map(p => (
                       <button key={p.key} onClick={() => setAiPersona(p.key)}
                         style={{padding:'16px 12px',borderRadius:'14px',textAlign:'left',cursor:'pointer',
-                          border:'2px solid '+(aiPersona===p.key?p.color:'rgba(255,255,255,0.08)'),
-                          background:aiPersona===p.key?p.color+'18':'rgba(255,255,255,0.03)',
+                          border:'2px solid '+(aiPersona===p.key?p.color:aiDark?'rgba(255,255,255,0.08)':'rgba(0,0,0,0.1)'),
+                          background:aiPersona===p.key?p.color+'18':aiDark?'rgba(255,255,255,0.03)':'white',
                           boxShadow:aiPersona===p.key?'0 0 20px '+p.color+'33':'none',transition:'all 0.2s'}}>
                         <div style={{fontSize:'28px',marginBottom:'6px'}}>{p.emoji}</div>
-                        <p style={{color:'white',fontSize:'14px',fontWeight:800,margin:'0 0 3px'}}>{p.title}</p>
-                        <p style={{color:'rgba(255,255,255,0.4)',fontSize:'11px',margin:0}}>{p.desc}</p>
+                        <p style={{color:aiDark?'white':'#111',fontSize:'14px',fontWeight:800,margin:'0 0 3px'}}>{p.title}</p>
+                        <p style={{color:aiDark?'rgba(255,255,255,0.4)':'#888',fontSize:'11px',margin:0}}>{p.desc}</p>
                       </button>
                     ))}
                   </div>
@@ -647,7 +663,9 @@ export default function ProductsPage() {
 
                 <div style={{display:'flex',gap:'10px'}}>
                   <button onClick={() => setAiStep(1)}
-                    style={{flex:1,padding:'15px',borderRadius:'12px',border:'1.5px solid rgba(255,255,255,0.12)',background:'transparent',color:'rgba(255,255,255,0.5)',fontSize:'14px',fontWeight:600,cursor:'pointer'}}>
+                    style={{flex:1,padding:'15px',borderRadius:'12px',
+                      border:'1.5px solid '+(aiDark?'rgba(255,255,255,0.12)':'rgba(0,0,0,0.15)'),
+                      background:'transparent',color:aiDark?'rgba(255,255,255,0.5)':'#555',fontSize:'14px',fontWeight:600,cursor:'pointer'}}>
                     ← 이전
                   </button>
                   <button onClick={handleGenerateLanding} disabled={aiLoading||!aiMeta.name.trim()}
@@ -659,7 +677,7 @@ export default function ProductsPage() {
                     {aiLoading?'⏳ AI가 상세페이지 만드는 중...':'✨ 상세페이지 자동 생성'}
                   </button>
                 </div>
-                {!aiMeta.name.trim()&&<p style={{color:'rgba(255,255,255,0.3)',fontSize:'12px',textAlign:'center',margin:'-10px 0 0'}}>상품명을 입력해야 생성할 수 있어요</p>}
+                {!aiMeta.name.trim()&&<p style={{color:aiDark?'rgba(255,255,255,0.3)':'#888',fontSize:'12px',textAlign:'center',margin:'-10px 0 0'}}>상품명을 입력해야 생성할 수 있어요</p>}
               </div>
             </div>
           )}
