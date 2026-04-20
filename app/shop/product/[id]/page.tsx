@@ -209,7 +209,7 @@ export default function ProductDetailPage() {
             </p>
             <h1 style={{fontSize:'26px',fontWeight:900,letterSpacing:'-0.8px',lineHeight:1.25,marginBottom:'14px',color:D.text}}>{product.name}</h1>
 
-            {/* 회원 유형별 가격 탭 - 표시 전용 */}
+            {/* 회원 유형별 가격 탭 */}
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'6px',marginBottom:'14px'}}>
               {([
                 {type:'일반',   label:'일반 소매가', emoji:'🛒', color:'#6366f1'},
@@ -220,7 +220,8 @@ export default function ProductDetailPage() {
                   style={{padding:'10px 6px',borderRadius:'12px',
                     border:`2px solid ${memberType===t.type ? t.color : (dark?'rgba(255,255,255,0.1)':'#e2e8f0')}`,
                     background:memberType===t.type ? t.color+'15' : D.card,
-                    textAlign:'center',userSelect:'none'}}>
+                    textAlign:'center',
+                    opacity: memberType===t.type ? 1 : 0.45}}>
                   <p style={{fontSize:'16px',margin:'0 0 3px'}}>{t.emoji}</p>
                   <p style={{fontSize:'10px',color:memberType===t.type ? t.color : D.sub,fontWeight:700,margin:0,lineHeight:1.3}}>{t.label}</p>
                 </div>
@@ -298,7 +299,7 @@ export default function ProductDetailPage() {
                 <div style={{width:'32px',height:'32px',background:'linear-gradient(135deg,#ec4899,#f43f5e)',borderRadius:'10px',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'16px'}}>✦</div>
                 <h2 style={{fontSize:'16px',fontWeight:900,letterSpacing:'-0.3px'}}>상품 상세</h2>
               </div>
-              <div dangerouslySetInnerHTML={{__html: product.description}} style={{lineHeight:1.8}} contentEditable={false} suppressContentEditableWarning />
+              <div dangerouslySetInnerHTML={{__html: product.description}} style={{lineHeight:1.8, pointerEvents:'none', userSelect:'none'}} />
             </div>
           </div>
         )}
