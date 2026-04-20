@@ -718,7 +718,7 @@ export default function ProductsPage() {
                 </div>
 
                 <div style={{display:'flex',gap:'6px',alignItems:'center',flexWrap:'wrap'}}>
-                  <p style={{color:'rgba(255,255,255,0.3)',fontSize:'10px',margin:0,flex:1}}>💡 텍스트 클릭하면 바로 수정 · Ctrl+Z 되돌리기</p>
+                  <p style={{color:'rgba(255,255,255,0.3)',fontSize:'10px',margin:0,flex:1}}>💡 텍스트 클릭하면 바로 수정 · 실수하면 ↶ 되돌리기 버튼</p>
                   <button onClick={() => setAiStep(2)}
                     style={{padding:'6px 10px',borderRadius:'8px',border:'1px solid rgba(255,255,255,0.1)',background:'transparent',color:'rgba(255,255,255,0.5)',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
                     ← 설정
@@ -1168,9 +1168,24 @@ function FloatingToolbar({ previewId }: { previewId: string }) {
         background: '#111', border: '1px solid rgba(200,169,110,0.4)',
         borderRadius: '10px', padding: '5px 6px',
         boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
-        flexWrap: 'wrap', maxWidth: '320px',
+        flexWrap: 'wrap', maxWidth: '380px',
       }}
     >
+      {/* 되돌리기 / 다시하기 — 맨 앞에 크게 배치 (어르신 접근성) */}
+      <button onClick={() => exec('undo')} title="되돌리기"
+        style={{ height:'28px', padding:'0 10px', borderRadius:'6px', border:'none', background:'rgba(200,169,110,0.2)', color:'#c8a96e', cursor:'pointer', display:'flex', alignItems:'center', gap:'4px', fontSize:'12px', fontWeight:700 }}>
+        <span style={{fontSize:'16px',lineHeight:1}}>↶</span>
+        <span>되돌리기</span>
+      </button>
+      <button onClick={() => exec('redo')} title="다시하기"
+        style={{ height:'28px', padding:'0 10px', borderRadius:'6px', border:'none', background:'rgba(200,169,110,0.2)', color:'#c8a96e', cursor:'pointer', display:'flex', alignItems:'center', gap:'4px', fontSize:'12px', fontWeight:700 }}>
+        <span style={{fontSize:'16px',lineHeight:1}}>↷</span>
+        <span>다시</span>
+      </button>
+
+      {/* 구분선 */}
+      <div style={{ width:'1px', height:'20px', background:'rgba(255,255,255,0.2)', margin:'0 2px' }} />
+
       {/* 기본 스타일 */}
       {[
         { cmd: 'bold',      label: <strong style={{fontSize:'13px'}}>B</strong> },
