@@ -383,7 +383,7 @@ function renderHero(d: LandingData, p: Preset): string {
     <h1 ${ce('hero.catch')} style="font-family:${F.serif};color:${C.cream};font-weight:300;font-size:clamp(32px,8vw,52px);line-height:1.05;letter-spacing:-0.02em;margin:0 0 28px;">${esc(d.catchphrase)}</h1>
     <div style="width:40px;height:1px;background:${C.light};margin:0 auto 28px;opacity:0.6;"></div>
     <p ${ce('hero.sub')} style="font-family:${F.deco};color:${C.cream};font-size:15px;line-height:2;opacity:0.9;max-width:300px;margin:0 auto 40px;">${esc(d.subtitle)}</p>
-    ${img ? `<div class="gulbi-section-img" data-section-img="hero" style="margin:32px auto 0;max-width:320px;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.3);border-radius:8px;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,0.5);position:relative;">${imgTag(img, d.productName, 'width:90%;height:90%;object-fit:contain;')}</div>` : ''}
+    ${img ? `<div class="gulbi-section-img" data-section-img="hero" style="margin:32px auto 0;max-width:min(440px,90vw);aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.3);border-radius:8px;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,0.5);position:relative;">${imgTag(img, d.productName, 'width:90%;height:90%;object-fit:contain;')}</div>` : ''}
   </div>
 </section>`
 }
@@ -895,9 +895,9 @@ function renderModernLanding(d: LandingData, p: Preset): string {
   <span style="display:inline-block;background:${C.primary};color:white;font-size:10px;font-weight:700;letter-spacing:0.15em;padding:4px 14px;border-radius:20px;margin-bottom:16px;">${esc(d.brandName)}</span>
   <h1 ${ce('hero.catch')} style="font-size:clamp(24px,6.5vw,42px);font-weight:900;color:#111;line-height:1.15;margin:0 0 12px;letter-spacing:-0.02em;">${esc(d.catchphrase)}</h1>
   <p ${ce('hero.sub')} style="font-size:clamp(13px,3.5vw,15px);color:#666;margin:0 auto 24px;line-height:1.7;max-width:400px;">${esc(d.subtitle)}</p>
-  ${img ? `<div style="border-radius:20px;overflow:hidden;margin:0 auto;max-width:min(360px,90vw);aspect-ratio:1/1;background:#F3F4F6;"><img src="${img}" alt="${esc(d.productName)}" style="width:100%;height:100%;object-fit:contain;" /></div>` : ''}
+  ${img ? `<div style="border-radius:20px;overflow:hidden;margin:0 auto;max-width:min(480px,92vw);aspect-ratio:1/1;background:#F3F4F6;"><img src="${img}" alt="${esc(d.productName)}" style="width:100%;height:100%;object-fit:contain;" /></div>` : ''}
   <p ${ce('intro.quote')} style="font-size:clamp(14px,3.8vw,17px);color:#444;margin:28px auto 8px;line-height:1.85;max-width:440px;font-style:italic;">"${esc(d.artisanQuote)}"</p>
-  <p style="font-size:12px;color:${C.primary};margin:0;">— ${esc(d.artisanName)}</p>
+  <p ${ce('intro.sig')} style="font-size:12px;color:${C.primary};margin:0;">— ${esc(d.artisanName)}</p>
 </section>
 
 <section style="background:${C.cream};padding:48px 20px;text-align:center;">
@@ -937,7 +937,7 @@ function renderModernLanding(d: LandingData, p: Preset): string {
 
 <section style="background:${C.heroGrad};padding:56px 20px;text-align:center;">
   <p ${ce('keynum.caption1')} style="font-size:11px;color:${C.cream};opacity:0.7;letter-spacing:0.2em;margin:0 0 8px;">${esc(d.keyNumber.label)}</p>
-  <div style="font-size:clamp(52px,13vw,90px);font-weight:900;color:${C.cream};line-height:1;margin:12px 0 8px;">${esc(d.keyNumber.value)}<span style="font-size:0.26em;opacity:0.9;margin-left:4px;">${esc(d.keyNumber.unit)}</span></div>
+  <div style="font-size:clamp(52px,13vw,90px);font-weight:900;color:${C.cream};line-height:1;margin:12px 0 8px;"><span ${ce('keynum.value')}>${esc(d.keyNumber.value)}</span><span ${ce('keynum.unit')} style="font-size:0.26em;opacity:0.9;margin-left:4px;">${esc(d.keyNumber.unit)}</span></div>
   <p ${ce('keynum.caption')} style="font-size:clamp(13px,3.5vw,14px);color:${C.cream};opacity:0.75;margin:0;max-width:360px;margin-left:auto;margin-right:auto;">${esc(d.keyNumber.caption)}</p>
 </section>
 
@@ -1032,8 +1032,8 @@ ${d.faq && d.faq.length > 0 ? `
   <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:24px 40px;max-width:560px;margin:0 auto;">
     ${d.delivery.slice(0,4).map(de=>`
     <div style="min-width:80px;">
-      <p style="font-size:10px;opacity:0.5;letter-spacing:0.2em;margin:0 0 5px;">${esc(de.label)}</p>
-      <p style="font-size:clamp(12px,3.2vw,13px);font-weight:600;margin:0;">${esc(de.value)}</p>
+      <p ${ce('delivery.'+i+'.label')} style="font-size:10px;opacity:0.5;letter-spacing:0.2em;margin:0 0 5px;">${esc(de.label)}</p>
+      <p ${ce('delivery.'+i+'.value')} style="font-size:clamp(12px,3.2vw,13px);font-weight:600;margin:0;">${esc(de.value)}</p>
     </div>`).join('')}
   </div>
 </section>
@@ -1062,7 +1062,7 @@ function renderTraditionalLanding(d: LandingData, p: Preset): string {
     <h1 ${ce('hero.catch')} style="font-family:'Noto Serif KR',serif;font-size:clamp(22px,5.5vw,38px);font-weight:700;line-height:1.3;margin:0 0 18px;letter-spacing:-0.01em;">${esc(d.catchphrase)}</h1>
     <div style="width:36px;height:1px;background:${T.gold};margin:0 auto 18px;"></div>
     <p ${ce('hero.sub')} style="font-size:clamp(13px,3.5vw,14px);line-height:2;opacity:0.85;">${esc(d.subtitle)}</p>
-    ${img ? `<div style="margin:22px auto 0;max-width:240px;aspect-ratio:1/1;overflow:hidden;border:1px solid ${T.gold}44;"><img src="${img}" alt="${esc(d.productName)}" style="width:100%;height:100%;object-fit:cover;" /></div>` : ''}
+    ${img ? `<div style="margin:22px auto 0;max-width:min(300px,80vw);aspect-ratio:1/1;overflow:hidden;border:1px solid ${T.gold}44;"><img src="${img}" alt="${esc(d.productName)}" style="width:100%;height:100%;object-fit:cover;" /></div>` : ''}
   </div>
 </section>
 
@@ -1358,113 +1358,121 @@ function renderEmotionalLanding(d: LandingData, p: Preset): string {
 
 <section style="position:relative;min-height:80vh;display:flex;align-items:flex-end;background:#0D0D0D;overflow:hidden;">
   ${img ? `<div style="position:absolute;inset:0;background-size:cover;background-position:center;background-image:url('${img}');opacity:0.5;"></div>` : ''}
-  <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(0,0,0,0.8) 40%, transparent 100%);"></div>
+  <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(0,0,0,0.85) 40%, transparent 100%);"></div>
   <div style="position:relative;z-index:2;padding:40px 20px;width:100%;">
-    <p style="font-family:'Noto Serif KR',serif;font-size:11px;letter-spacing:0.5em;color:${C.light};margin:0 0 18px;opacity:0.8;">${esc(d.brandName)}</p>
+    <p ${ce('hero.brand')} style="font-family:'Noto Serif KR',serif;font-size:11px;letter-spacing:0.5em;color:${C.primary};margin:0 0 18px;">${esc(d.brandName)}</p>
     <h1 ${ce('hero.catch')} style="font-family:'Noto Serif KR',serif;font-size:clamp(28px,7vw,52px);font-weight:300;color:white;line-height:1.2;margin:0 0 20px;letter-spacing:-0.01em;">${esc(d.catchphrase)}</h1>
-    <div style="width:44px;height:1px;background:${C.light};margin:0 0 18px;"></div>
-    <p ${ce('hero.sub')} style="font-size:clamp(13px,3.5vw,15px);color:rgba(255,255,255,0.7);line-height:1.9;max-width:360px;">${esc(d.subtitle)}</p>
+    <div style="width:44px;height:1px;background:${C.primary};margin:0 0 18px;"></div>
+    <p ${ce('hero.sub')} style="font-size:clamp(13px,3.5vw,15px);color:rgba(255,255,255,0.8);line-height:1.9;max-width:360px;">${esc(d.subtitle)}</p>
   </div>
 </section>
 
 <section style="background:#111;padding:60px 20px;text-align:center;">
-  <p ${ce('intro.quote')} style="font-family:'Gowun Batang',serif;font-size:clamp(15px,4vw,21px);line-height:2;color:rgba(255,255,255,0.85);max-width:420px;margin:0 auto 20px;font-style:italic;">"${esc(d.artisanQuote)}"</p>
-  <p style="font-size:12px;color:${C.light};opacity:0.7;letter-spacing:0.1em;">— ${esc(d.artisanName)}</p>
+  <p ${ce('intro.quote')} style="font-family:'Gowun Batang',serif;font-size:clamp(15px,4vw,21px);line-height:2;color:rgba(255,255,255,0.9);max-width:420px;margin:0 auto 20px;font-style:italic;">"${esc(d.artisanQuote)}"</p>
+  <p ${ce('intro.sig')} style="font-size:12px;color:${C.primary};letter-spacing:0.1em;">— ${esc(d.artisanName)}</p>
 </section>
 
 <section style="background:#0A0A0A;padding:60px 20px;">
   ${img ? `<div style="width:100%;aspect-ratio:16/9;overflow:hidden;margin-bottom:44px;"><img src="${img}" alt="${esc(d.productName)}" style="width:100%;height:100%;object-fit:cover;" /></div>` : ''}
-  <p style="font-size:11px;letter-spacing:0.4em;color:${C.light};margin:0 0 10px;opacity:0.7;">ORIGIN</p>
+  <p style="font-size:11px;letter-spacing:0.4em;color:${C.primary};margin:0 0 10px;">ORIGIN</p>
   <h2 ${ce('origin.location')} style="font-family:'Noto Serif KR',serif;font-size:clamp(26px,6.5vw,42px);font-weight:300;color:white;margin:0 0 20px;line-height:1.2;">${esc(d.originLocation)}</h2>
-  <p ${ce('origin.story')} style="font-size:clamp(13px,3.5vw,15px);color:rgba(255,255,255,0.65);line-height:2;max-width:480px;">${esc(d.originStory)}</p>
-  <div style="display:flex;flex-wrap:wrap;gap:20px;margin-top:36px;">
+  <p ${ce('origin.story')} style="font-size:clamp(13px,3.5vw,15px);color:rgba(255,255,255,0.75);line-height:2;max-width:480px;">${esc(d.originStory)}</p>
+  <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:36px;">
     ${d.originStats.filter(s=>s.value?.trim()).slice(0,4).map((s,i)=>`
-    <div style="flex:1;min-width:80px;padding:20px;border:1px solid rgba(255,255,255,0.08);">
-      <div style="font-family:'Noto Serif KR',serif;font-size:clamp(24px,6vw,32px);font-weight:300;color:${C.light};line-height:1;">${esc(s.value)}<span style="font-size:14px;">${esc(s.unit)}</span></div>
-      <div style="font-size:10px;opacity:0.5;letter-spacing:0.2em;margin-top:6px;">${esc(s.label)}</div>
+    <div style="flex:1;min-width:80px;padding:20px;border:1px solid rgba(255,255,255,0.12);">
+      <div ${ce('origin.stat.'+i+'.value')} style="font-family:'Noto Serif KR',serif;font-size:clamp(22px,5.5vw,30px);font-weight:300;color:white;line-height:1;">${esc(s.value)}<span ${ce('origin.stat.'+i+'.unit')} style="font-size:13px;color:${C.primary};">${esc(s.unit)}</span></div>
+      <div ${ce('origin.stat.'+i+'.label')} style="font-size:10px;color:rgba(255,255,255,0.6);letter-spacing:0.2em;margin-top:6px;">${esc(s.label)}</div>
     </div>`).join('')}
   </div>
 </section>
 
 <section style="background:#111;padding:60px 20px;">
-  <p style="font-size:11px;letter-spacing:0.4em;color:${C.light};margin:0 0 36px;opacity:0.7;">STORY</p>
-  <div ${ce('story.body')} style="font-size:clamp(15px,4vw,19px);color:rgba(255,255,255,0.8);line-height:2.1;font-weight:300;">${esc(d.story).split('\n').filter(Boolean).map(x=>`<p style="margin:0 0 22px;">${x}</p>`).join('')}</div>
+  <p style="font-size:11px;letter-spacing:0.4em;color:${C.primary};margin:0 0 36px;">STORY</p>
+  <div ${ce('story.body')} style="font-size:clamp(15px,4vw,19px);color:rgba(255,255,255,0.85);line-height:2.1;font-weight:300;">${esc(d.story).split('\n').filter(Boolean).map(x=>`<p style="margin:0 0 22px;">${x}</p>`).join('')}</div>
 </section>
 
 <section style="background:#0A0A0A;padding:60px 20px;">
-  <p style="font-size:11px;letter-spacing:0.4em;color:${C.light};margin:0 0 44px;opacity:0.7;">WHY</p>
+  <p style="font-size:11px;letter-spacing:0.4em;color:${C.primary};margin:0 0 44px;">WHY</p>
   ${d.features.slice(0,4).map((f,i)=>`
-  <div style="padding:24px 0;border-bottom:1px solid rgba(255,255,255,0.07);">
-    <p style="font-family:'Noto Serif KR',serif;font-size:10px;letter-spacing:0.3em;color:${C.light};margin:0 0 8px;opacity:0.6;">0${i+1}</p>
+  <div style="padding:24px 0;border-bottom:1px solid rgba(255,255,255,0.08);">
+    <p style="font-family:'Noto Serif KR',serif;font-size:10px;letter-spacing:0.3em;color:${C.primary};margin:0 0 8px;">0${i+1}</p>
     <h3 ${ce('features.'+i+'.title')} style="font-family:'Noto Serif KR',serif;font-size:clamp(17px,4.5vw,20px);font-weight:400;color:white;margin:0 0 8px;">${esc(f.title)}</h3>
-    <p ${ce('features.'+i+'.desc')} style="font-size:clamp(13px,3.5vw,14px);color:rgba(255,255,255,0.55);line-height:1.9;margin:0;">${esc(f.desc)}</p>
+    <p ${ce('features.'+i+'.desc')} style="font-size:clamp(13px,3.5vw,14px);color:rgba(255,255,255,0.65);line-height:1.9;margin:0;">${esc(f.desc)}</p>
   </div>`).join('')}
 </section>
 
 <section style="background:#111;padding:60px 20px;">
-  <p style="font-size:11px;letter-spacing:0.4em;color:${C.light};margin:0 0 24px;opacity:0.7;">COMPARE</p>
+  <p style="font-size:11px;letter-spacing:0.4em;color:${C.primary};margin:0 0 24px;">COMPARE</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.15);margin-bottom:4px;">
+    <div style="font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:0.1em;">항목</div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:0.1em;text-align:center;">일반</div>
+    <div style="font-size:10px;color:${C.primary};letter-spacing:0.1em;text-align:right;font-weight:700;">당사</div>
+  </div>
   ${d.differences.slice(0,5).map((diff,i)=>`
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;border-bottom:1px solid rgba(255,255,255,0.06);padding:14px 0;">
-    <div style="font-size:clamp(11px,3vw,12px);color:rgba(255,255,255,0.4);">${esc(diff.label)}</div>
-    <div style="font-size:clamp(11px,3vw,12px);color:rgba(255,255,255,0.25);text-decoration:line-through;text-align:center;">${esc(diff.theirs)}</div>
-    <div style="font-size:clamp(11px,3vw,12px);color:${C.light};font-weight:600;text-align:right;">${esc(diff.ours)}</div>
+    <div ${ce('diff.'+i+'.label')} style="font-size:clamp(11px,3vw,13px);color:rgba(255,255,255,0.75);">${esc(diff.label)}</div>
+    <div ${ce('diff.'+i+'.theirs')} style="font-size:clamp(11px,3vw,13px);color:rgba(255,255,255,0.3);text-decoration:line-through;text-align:center;">${esc(diff.theirs)}</div>
+    <div ${ce('diff.'+i+'.ours')} style="font-size:clamp(11px,3vw,13px);color:${C.primary};font-weight:700;text-align:right;">${esc(diff.ours)}</div>
   </div>`).join('')}
 </section>
 
 ${d.recipe ? `
 <section style="background:#0A0A0A;padding:60px 20px;">
-  <p style="font-size:11px;letter-spacing:0.4em;color:${C.light};margin:0 0 20px;opacity:0.7;">RECIPE</p>
-  <h2 style="font-family:'Noto Serif KR',serif;font-size:clamp(22px,5.5vw,30px);font-weight:300;color:white;margin:0 0 36px;">${esc(d.recipe.title)}</h2>
+  <p style="font-size:11px;letter-spacing:0.4em;color:${C.primary};margin:0 0 20px;">RECIPE</p>
+  <h2 ${ce('recipe.title')} style="font-family:'Noto Serif KR',serif;font-size:clamp(22px,5.5vw,30px);font-weight:300;color:white;margin:0 0 36px;">${esc(d.recipe.title)}</h2>
   ${d.recipe.steps.map((s,i)=>`
-  <div style="display:flex;gap:16px;padding:18px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
-    <div style="width:28px;height:28px;border:1px solid ${C.light}55;border-radius:50%;display:flex;align-items:center;justify-content:center;color:${C.light};font-size:12px;flex-shrink:0;">${i+1}</div>
+  <div style="display:flex;gap:16px;padding:18px 0;border-bottom:1px solid rgba(255,255,255,0.07);">
+    <div style="width:28px;height:28px;border:1px solid ${C.primary}88;border-radius:50%;display:flex;align-items:center;justify-content:center;color:${C.primary};font-size:12px;flex-shrink:0;">${i+1}</div>
     <div>
-      <p style="font-size:clamp(13px,3.5vw,15px);font-weight:600;color:white;margin:0 0 4px;">${esc(s.name)}</p>
-      <p style="font-size:clamp(12px,3.2vw,13px);color:rgba(255,255,255,0.5);margin:0;line-height:1.7;">${esc(s.detail)}</p>
+      <p ${ce('recipe.step.'+i+'.name')} style="font-size:clamp(13px,3.5vw,15px);font-weight:600;color:white;margin:0 0 4px;">${esc(s.name)}</p>
+      <p ${ce('recipe.step.'+i+'.detail')} style="font-size:clamp(12px,3.2vw,13px);color:rgba(255,255,255,0.6);margin:0;line-height:1.7;">${esc(s.detail)}</p>
     </div>
   </div>`).join('')}
 </section>` : ''}
 
 <section style="background:#111;padding:60px 20px;">
-  <p style="font-size:11px;letter-spacing:0.4em;color:${C.light};margin:0 0 32px;opacity:0.7;">REVIEWS</p>
-  ${d.reviews.slice(0,3).map(r=>`
-  <div style="padding:28px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
-    <div style="color:${C.light};letter-spacing:3px;font-size:13px;margin-bottom:14px;opacity:0.8;">★★★★★</div>
-    <p style="font-size:clamp(14px,3.8vw,16px);color:rgba(255,255,255,0.8);line-height:2;margin:0 0 14px;font-style:italic;">"${esc(r.text)}"</p>
-    <p style="font-size:11px;color:rgba(255,255,255,0.3);letter-spacing:0.1em;">${esc(r.author)} · ${esc(r.date)}</p>
+  <p style="font-size:11px;letter-spacing:0.4em;color:${C.primary};margin:0 0 32px;">REVIEWS</p>
+  ${d.reviews.slice(0,3).map((r,i)=>`
+  <div style="padding:28px 0;border-bottom:1px solid rgba(255,255,255,0.07);">
+    <div style="color:${C.primary};letter-spacing:3px;font-size:13px;margin-bottom:14px;">★★★★★</div>
+    <p ${ce('review.'+i+'.text')} style="font-size:clamp(14px,3.8vw,16px);color:rgba(255,255,255,0.85);line-height:2;margin:0 0 14px;font-style:italic;">"${esc(r.text)}"</p>
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.4);">
+      <span ${ce('review.'+i+'.author')}>${esc(r.author)}</span>
+      <span ${ce('review.'+i+'.date')}>${esc(r.date)}</span>
+    </div>
   </div>`).join('')}
 </section>
 
 ${d.faq && d.faq.length > 0 ? `
 <section style="background:#0A0A0A;padding:60px 20px;">
-  <p style="font-size:11px;letter-spacing:0.4em;color:${C.light};margin:0 0 32px;opacity:0.7;">FAQ</p>
+  <p style="font-size:11px;letter-spacing:0.4em;color:${C.primary};margin:0 0 32px;">FAQ</p>
   ${d.faq.slice(0,4).map((f,i)=>`
-  <div style="padding:20px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
-    <p style="font-size:clamp(13px,3.5vw,14px);font-weight:600;color:rgba(255,255,255,0.7);margin:0 0 8px;">${esc(f.q)}</p>
-    <p style="font-size:clamp(12px,3.2vw,13px);color:rgba(255,255,255,0.4);margin:0;line-height:1.8;">${esc(f.a)}</p>
+  <div style="padding:20px 0;border-bottom:1px solid rgba(255,255,255,0.07);">
+    <p ${ce('faq.'+i+'.q')} style="font-size:clamp(13px,3.5vw,14px);font-weight:600;color:rgba(255,255,255,0.85);margin:0 0 8px;">${esc(f.q)}</p>
+    <p ${ce('faq.'+i+'.a')} style="font-size:clamp(12px,3.2vw,13px);color:rgba(255,255,255,0.55);margin:0;line-height:1.8;">${esc(f.a)}</p>
   </div>`).join('')}
 </section>` : ''}
 
 <section style="background:${C.heroGrad};padding:68px 20px;text-align:center;position:relative;overflow:hidden;">
-  <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 30%, ${C.light}20, transparent 70%);"></div>
+  <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 30%, rgba(255,255,255,0.08), transparent 70%);"></div>
   <div style="position:relative;z-index:2;">
-    <p style="font-size:11px;letter-spacing:0.4em;color:${C.cream};opacity:0.7;margin:0 0 20px;">TODAY</p>
-    <div style="font-family:'Noto Serif KR',serif;font-size:clamp(48px,12vw,80px);font-weight:300;color:${C.cream};line-height:1;margin:0 0 8px;">${comma(d.price.retail)}<span style="font-size:0.24em;margin-left:8px;color:${C.light};">원</span></div>
-    <p style="font-size:12px;color:${C.cream};opacity:0.6;margin:0 0 36px;">/ ${esc(d.price.unit)}</p>
-    <button style="display:inline-block;background:transparent;color:${C.cream};border:1px solid ${C.cream}70;padding:16px 52px;font-family:'Noto Serif KR',serif;font-size:14px;letter-spacing:0.4em;cursor:pointer;">주 문 하 기</button>
-    <p style="font-size:11px;opacity:0.4;margin:16px 0 0;">무료 배송 · 당일 출고 · 7일 이내 교환</p>
+    <p style="font-size:11px;letter-spacing:0.4em;color:rgba(255,255,255,0.6);margin:0 0 20px;">TODAY</p>
+    <div ${ce('cta.price')} style="font-family:'Noto Serif KR',serif;font-size:clamp(48px,12vw,80px);font-weight:300;color:white;line-height:1;margin:0 0 8px;">${comma(d.price.retail)}<span style="font-size:0.24em;margin-left:8px;color:${C.primary};">원</span></div>
+    <p ${ce('cta.unit')} style="font-size:12px;color:rgba(255,255,255,0.6);margin:0 0 36px;">/ ${esc(d.price.unit)}</p>
+    <button style="display:inline-block;background:transparent;color:white;border:1px solid rgba(255,255,255,0.5);padding:16px 52px;font-family:'Noto Serif KR',serif;font-size:14px;letter-spacing:0.4em;cursor:pointer;">주 문 하 기</button>
+    <p style="font-size:11px;color:rgba(255,255,255,0.4);margin:16px 0 0;">무료 배송 · 당일 출고 · 7일 이내 교환</p>
   </div>
 </section>
 
-<section style="background:#080808;color:rgba(255,255,255,0.4);padding:28px 20px;text-align:center;">
+<section style="background:#080808;padding:32px 20px;text-align:center;">
   <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:24px 44px;">
-    ${d.delivery.slice(0,4).map(de=>`
+    ${d.delivery.slice(0,4).map((de,i)=>`
     <div>
-      <p style="font-size:10px;letter-spacing:0.2em;margin:0 0 5px;opacity:0.6;">${esc(de.label)}</p>
-      <p style="font-size:clamp(12px,3.2vw,13px);color:rgba(255,255,255,0.65);font-weight:500;margin:0;">${esc(de.value)}</p>
+      <p ${ce('delivery.'+i+'.label')} style="font-size:10px;letter-spacing:0.2em;color:rgba(255,255,255,0.5);margin:0 0 6px;">${esc(de.label)}</p>
+      <p ${ce('delivery.'+i+'.value')} style="font-size:clamp(12px,3.2vw,14px);color:rgba(255,255,255,0.85);font-weight:600;margin:0;">${esc(de.value)}</p>
     </div>`).join('')}
   </div>
-  <p style="font-size:11px;margin:24px 0 0;font-family:'Noto Serif KR',serif;letter-spacing:0.2em;opacity:0.3;">${esc(d.brandName)}</p>
+  <p ${ce('seal.brand')} style="font-size:11px;margin:24px 0 0;font-family:'Noto Serif KR',serif;letter-spacing:0.2em;color:rgba(255,255,255,0.35);">${esc(d.brandName)}</p>
 </section>
 
 </div>`
