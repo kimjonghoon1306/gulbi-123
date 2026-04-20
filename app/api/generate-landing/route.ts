@@ -150,7 +150,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (imageList.length === 0) {
-      return NextResponse.json({ error: '이미지를 먼저 올려주세요.' }, { status: 400 })
+      return NextResponse.json({ error: '[v2] 이미지를 먼저 올려주세요. (업로드하신 이미지가 서버에 전달되지 않았습니다)' }, { status: 400 })
     }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
