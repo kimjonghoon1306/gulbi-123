@@ -256,13 +256,13 @@ export default function ShopPage() {
                       background: memberType === '도매업' ? 'rgba(124,58,237,0.12)' : memberType === '소매업' ? 'rgba(15,118,110,0.12)' : 'rgba(0,0,0,0.06)',
                       color: memberType === '도매업' ? '#7c3aed' : memberType === '소매업' ? '#0f766e' : sub
                     }}>{memberType}</span>
-                    <Link href="/shop/mypage" style={{
+                    <Link href="/shop/mypage" className="header-btn header-mypage-btn" style={{
                       fontSize: '13px', fontWeight: 700, padding: '9px 16px',
                       borderRadius: '12px', background: 'transparent',
                       border: `1.5px solid ${border}`, color: text,
                       textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '5px'
                     }}>👤 마이페이지</Link>
-                    <button onClick={handleLogout} style={{
+                    <button onClick={handleLogout} className="header-btn header-logout-btn" style={{
                       fontSize: '13px', fontWeight: 600, padding: '9px 16px',
                       borderRadius: '12px', background: 'transparent',
                       border: `1.5px solid ${border}`, color: sub, cursor: 'pointer'
@@ -270,13 +270,13 @@ export default function ShopPage() {
                   </>
                 ) : (
                   <>
-                    <Link href="/shop/login" style={{
+                    <Link href="/shop/login" className="header-btn" style={{
                       fontSize: '13px', fontWeight: 600, padding: '9px 16px',
                       borderRadius: '12px', background: 'transparent',
                       border: `1.5px solid ${border}`, color: text,
                       textDecoration: 'none'
                     }}>로그인</Link>
-                    <Link href="/shop/register" style={{
+                    <Link href="/shop/register" className="header-btn" style={{
                       fontSize: '13px', fontWeight: 800, padding: '10px 20px',
                       borderRadius: '12px', background: 'linear-gradient(135deg,#0f766e,#0891b2)',
                       color: 'white', textDecoration: 'none',
@@ -805,57 +805,62 @@ export default function ShopPage() {
         position: 'fixed', bottom: 0, left: 0, right: 0,
         background: headerBg, backdropFilter: 'blur(24px)',
         borderTop: `1px solid ${border}`,
-        padding: '10px 16px 24px',
-        display: 'flex', justifyContent: 'space-around',
+        padding: '10px 0 24px',
+        display: 'flex', justifyContent: 'space-around', alignItems: 'center',
         zIndex: 40, boxShadow: '0 -8px 32px rgba(0,0,0,0.08)'
       }} className="mobile-nav">
 
         {/* 홈 */}
-        <Link href="/shop" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', textDecoration: 'none', color: '#0f766e' }}>
-          <span style={{ fontSize: '22px' }}>🏠</span>
+        <Link href="/shop" className="nav-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', textDecoration: 'none', color: '#0f766e', flex: 1 }}>
+          <span style={{ fontSize: '24px' }}>🏠</span>
           <span style={{ fontSize: '10px', fontWeight: 800 }}>홈</span>
         </Link>
 
         {/* 회원등급 */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
+        <div className="nav-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', flex: 1 }}>
           <div style={{
-            padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 800,
+            padding: '3px 8px', borderRadius: '20px', fontSize: '10px', fontWeight: 800,
             background: memberType === '도매업'
               ? 'linear-gradient(135deg,#7c3aed,#6366f1)'
               : memberType === '소매업'
               ? 'linear-gradient(135deg,#0f766e,#0891b2)'
               : 'rgba(0,0,0,0.08)',
             color: memberType !== '일반' ? 'white' : sub,
-            boxShadow: memberType !== '일반' ? '0 3px 10px rgba(0,0,0,0.2)' : 'none'
+            boxShadow: memberType !== '일반' ? '0 3px 10px rgba(0,0,0,0.2)' : 'none',
+            whiteSpace: 'nowrap'
           }}>
             {memberType === '도매업' ? '🏭' : memberType === '소매업' ? '🏪' : '👤'} {memberType}
           </div>
-          <span style={{ fontSize: '10px', fontWeight: 700, color: sub }}>등급</span>
+          <span style={{ fontSize: '9px', fontWeight: 700, color: sub }}>등급</span>
         </div>
 
         {/* 테마 */}
-        <button onClick={() => setDark(!dark)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', background: 'none', border: 'none', cursor: 'pointer', color: sub }}>
-          <span style={{ fontSize: '22px' }}>{dark ? '🌙' : '☀️'}</span>
+        <button onClick={() => setDark(!dark)} className="nav-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', background: 'none', border: 'none', cursor: 'pointer', color: sub, flex: 1 }}>
+          <span style={{ fontSize: '24px' }}>{dark ? '🌙' : '☀️'}</span>
           <span style={{ fontSize: '10px', fontWeight: 700 }}>테마</span>
         </button>
 
-        {/* 내정보/로그인 */}
+        {/* 마이페이지 / 로그인 */}
         {user ? (
-          <Link href="/shop/mypage" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', textDecoration: 'none', color: '#0f766e', flex: 1 }}>
-            <span style={{ fontSize: '22px' }}>👤</span>
-            <span style={{ fontSize: '9px', fontWeight: 800 }}>마이</span>
+          <Link href="/shop/mypage" className="nav-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', textDecoration: 'none', color: '#0f766e', flex: 1 }}>
+            <span style={{ fontSize: '24px' }}>👤</span>
+            <span style={{ fontSize: '10px', fontWeight: 800 }}>마이</span>
           </Link>
         ) : (
-          <Link href="/shop/login" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', textDecoration: 'none', color: sub, flex: 1 }}>
-            <span style={{ fontSize: '22px' }}>👤</span>
-            <span style={{ fontSize: '9px', fontWeight: 700 }}>로그인</span>
+          <Link href="/shop/login" className="nav-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', textDecoration: 'none', color: sub, flex: 1 }}>
+            <span style={{ fontSize: '24px' }}>👤</span>
+            <span style={{ fontSize: '10px', fontWeight: 700 }}>로그인</span>
           </Link>
         )}
-        {user && (
-          <button onClick={handleLogout} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', background: 'none', border: 'none', cursor: 'pointer', color: sub, flex: 1 }}>
-            <span style={{ fontSize: '22px' }}>🚪</span>
-            <span style={{ fontSize: '9px', fontWeight: 700 }}>로그아웃</span>
+
+        {/* 로그아웃 (로그인 시에만) */}
+        {user ? (
+          <button onClick={handleLogout} className="nav-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', background: 'none', border: 'none', cursor: 'pointer', color: sub, flex: 1 }}>
+            <span style={{ fontSize: '24px' }}>🚪</span>
+            <span style={{ fontSize: '10px', fontWeight: 700 }}>로그아웃</span>
           </button>
+        ) : (
+          <div style={{ flex: 1 }} />
         )}
       </div>
 
@@ -865,20 +870,70 @@ export default function ShopPage() {
           .header-user-btns { display: flex !important; align-items: center !important; gap: 8px !important; }
           .mobile-animals { display: none !important; }
         }
+        .header-btn {
+          transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1) !important;
+        }
+        .header-btn:hover {
+          transform: translateY(-2px) !important;
+          box-shadow: 0 6px 20px rgba(15,118,110,0.25) !important;
+          border-color: #0f766e !important;
+          color: #0f766e !important;
+        }
+        .header-mypage-btn:hover {
+          background: rgba(15,118,110,0.08) !important;
+        }
+        .header-logout-btn:hover {
+          border-color: #ef4444 !important;
+          color: #ef4444 !important;
+          box-shadow: 0 6px 20px rgba(239,68,68,0.2) !important;
+        }
         @media (max-width: 639px) {
           .hero-scene { display: none !important; }
           .mobile-animals { display: flex !important; }
           .header-user-btns { display: none !important; }
+        }
+
+        /* 네비 버튼 터치 반응 */
+        .nav-btn {
+          transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s ease;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .nav-btn:active {
+          transform: scale(0.82) translateY(2px) !important;
+          opacity: 0.7;
+        }
+
+        /* 상품 카드 호버/터치 */
+        .product-card {
+          transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
         }
         .product-card:hover {
           transform: translateY(-10px) scale(1.02) !important;
           box-shadow: 0 30px 60px rgba(0,0,0,0.15) !important;
           border-color: rgba(15,118,110,0.3) !important;
         }
+        .product-card:active {
+          transform: scale(0.97) !important;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+        }
         .product-card:hover .product-img { transform: scale(1.08); }
+
+        /* 카테고리 버튼 클릭 반응 */
+        .cat-btn-active {
+          -webkit-tap-highlight-color: transparent;
+        }
+        button, a {
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 페이지 진입 애니메이션 */
         @keyframes fadeInUp {
           from { opacity: 0; transform: translateY(30px) scale(0.95); }
           to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes fadeInDown {
+          from { opacity: 0; transform: translateY(-16px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
         @keyframes floatFish {
           0%,100% { transform: translateY(0) rotate(-3deg); }
@@ -912,6 +967,11 @@ export default function ShopPage() {
         @keyframes wave {
           0%,100% { transform: scaleX(1) translateX(0); }
           50%      { transform: scaleX(1.05) translateX(5px); }
+        }
+        @keyframes popIn {
+          0%   { transform: scale(0.8); opacity: 0; }
+          70%  { transform: scale(1.05); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
         }
       `}</style>
     </div>
