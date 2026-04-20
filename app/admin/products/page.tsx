@@ -182,21 +182,47 @@ export default function ProductsPage() {
   }
 
   const handleGenerateLanding = async () => {
-    if (!aiImage && !selectedProduct?.image_url) return setAiError('이미지를 먼저 올려주세요.')
+    if (!aiImage && !selectedProduct?.image_url) return setAiError('[v3] 이미지를 먼저 올려주세요.')
     setAiLoading(true); setAiError('')
     try {
       let base64 = ''
       let mimeType = 'image/jpeg'
-      if (aiImage) {
+
+      // 우선순위: 배경제거된 이미지 > 새로 업로드한 이미지 > 기존 상품 이미지 URL
+      if (aiBgRemovedBase64) {
+        base64 = aiBgRemovedBase64
+        mimeType = 'image/png'
+      } else if (aiImage) {
         const resized = await resizeImg(aiImage)
         base64 = resized.base64
         mimeType = resized.mimeType
+      } else if (selectedProduct?.image_url) {
+        // 기존 상품 이미지 URL을 fetch해서 base64로 변환
+        try {
+          const imgRes = await fetch(selectedProduct.image_url)
+          if (!imgRes.ok) throw new Error('이미지 로드 실패')
+          const blob = await imgRes.blob()
+          mimeType = blob.type || 'image/jpeg'
+          const file = new File([blob], 'product.jpg', { type: mimeType })
+          const resized = await resizeImg(file)
+          base64 = resized.base64
+          mimeType = resized.mimeType
+        } catch (fetchErr: any) {
+          setAiLoading(false)
+          return setAiError('[v3] 상품 이미지를 불러올 수 없어요. 이미지를 새로 업로드해주세요.')
+        }
       }
+
+      if (!base64) {
+        setAiLoading(false)
+        return setAiError('[v3] 이미지가 준비되지 않았어요. 이미지를 업로드해주세요.')
+      }
+
       const res = await fetch('/api/generate-landing', {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
-          base64: aiBgRemovedBase64 || base64,
-          mimeType: aiBgRemovedBase64 ? 'image/png' : mimeType,
+          base64,
+          mimeType,
           persona: aiPersona, theme: 'premium',
           productName: aiMeta.name,
           retailPrice: aiMeta.retail_price,
@@ -208,7 +234,7 @@ export default function ProductsPage() {
       if (data.error) return setAiError(data.error)
       setAiLandingHtml(data.html)
       setAiStep(3)
-    } catch(e:any) { setAiError('오류: ' + e.message) }
+    } catch(e:any) { setAiError('[v3] 오류: ' + e.message) }
     finally { setAiLoading(false) }
   }
 
@@ -461,7 +487,7 @@ export default function ProductsPage() {
           <div style={{height:'52px',background:aiDark?'linear-gradient(135deg,#1a1a1a,#2d2d2d)':'linear-gradient(135deg,#f5f5f5,#e8e8e8)',borderBottom:'1px solid rgba(200,169,110,0.25)',display:'flex',alignItems:'center',padding:'0 16px',gap:'10px',flexShrink:0}}>
             <div style={{flex:1,display:'flex',alignItems:'center',gap:'10px'}}>
               <p style={{color:'#c8a96e',fontWeight:900,fontSize:'14px',margin:0,flexShrink:0}}>✨ 상세페이지 제작</p>
-              <div style={{display:'flex',gap:'4px',background:'rgba(255,255,255,0.06)',borderRadius:'8px',padding:'3px'}}>
+              <div style={{display:'flex',gap:'4px',background:aiDark?'rgba(255,255,255,0.06)':'#fafafa',borderRadius:'8px',padding:'3px'}}>
                 <button onClick={() => setAiTab('ai')}
                   style={{padding:'4px 12px',borderRadius:'6px',border:'none',fontSize:'11px',fontWeight:700,cursor:'pointer',
                     background:aiTab==='ai'?'#c8a96e':'transparent',color:aiTab==='ai'?'#111':'rgba(255,255,255,0.5)'}}>
@@ -489,14 +515,14 @@ export default function ProductsPage() {
               style={{background:aiDark?'rgba(255,255,255,0.08)':'rgba(0,0,0,0.12)',border:'none',borderRadius:'8px',width:'34px',height:'34px',fontSize:'18px',cursor:'pointer',transition:'all 0.2s'}}>
               {aiDark ? '🌙' : '☀️'}
             </button>
-            <button onClick={resetAiForm} style={{background:'rgba(255,255,255,0.08)',border:'none',borderRadius:'8px',width:'34px',height:'34px',color:'rgba(255,255,255,0.6)',fontSize:'18px',cursor:'pointer'}}>✕</button>
+            <button onClick={resetAiForm} style={{background:aiDark?'rgba(255,255,255,0.08)':'#f0f0f0',border:'none',borderRadius:'8px',width:'34px',height:'34px',color:aiDark?'rgba(255,255,255,0.6)':'#444',fontSize:'18px',cursor:'pointer'}}>✕</button>
           </div>
 
           {aiTab==='ai' && aiStep===1 && (
             <div style={{flex:1,overflowY:'auto',padding:'20px',display:'flex',gap:'20px',minHeight:0}}>
 
               <div style={{width:'260px',flexShrink:0,display:'flex',flexDirection:'column',gap:'8px'}}>
-                <p style={{color:'rgba(255,255,255,0.5)',fontSize:'11px',fontWeight:700,margin:'0 0 4px',letterSpacing:'1px'}}>📦 상품 선택</p>
+                <p style={{color:aiDark?'rgba(255,255,255,0.5)':'#555',fontSize:'11px',fontWeight:700,margin:'0 0 4px',letterSpacing:'1px'}}>📦 상품 선택</p>
                 <div style={{flex:1,overflowY:'auto',display:'flex',flexDirection:'column',gap:'6px'}}>
                   {products.filter(p=>p.is_active).map(p => (
                     <button key={p.id} onClick={() => selectProductForAI(p)}
@@ -510,14 +536,14 @@ export default function ProductsPage() {
                           : <div style={{width:'36px',height:'36px',borderRadius:'6px',background:'rgba(255,255,255,0.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'16px',flexShrink:0}}>🐟</div>
                         }
                         <div style={{minWidth:0}}>
-                          <p style={{color:'white',fontSize:'12px',fontWeight:700,margin:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.name}</p>
-                          <p style={{color:'rgba(255,255,255,0.4)',fontSize:'10px',margin:'2px 0 0'}}>{p.retail_price?.toLocaleString()}원</p>
+                          <p style={{color:aiDark?'white':'#111',fontSize:'12px',fontWeight:700,margin:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.name}</p>
+                          <p style={{color:aiDark?'rgba(255,255,255,0.4)':'#666',fontSize:'10px',margin:'2px 0 0'}}>{p.retail_price?.toLocaleString()}원</p>
                         </div>
                       </div>
                     </button>
                   ))}
                   {products.length === 0 && (
-                    <div style={{textAlign:'center',padding:'24px',color:'rgba(255,255,255,0.3)',fontSize:'12px'}}>
+                    <div style={{textAlign:'center',padding:'24px',color:aiDark?'rgba(255,255,255,0.3)':'#888',fontSize:'12px'}}>
                       <p>등록된 상품이 없어요</p>
                       <p>먼저 상품을 등록해주세요</p>
                     </div>
@@ -526,7 +552,7 @@ export default function ProductsPage() {
               </div>
 
               <div style={{flex:1,display:'flex',flexDirection:'column',gap:'14px'}}>
-                <p style={{color:'rgba(255,255,255,0.5)',fontSize:'11px',fontWeight:700,margin:'0 0 4px',letterSpacing:'1px'}}>
+                <p style={{color:aiDark?'rgba(255,255,255,0.5)':'#555',fontSize:'11px',fontWeight:700,margin:'0 0 4px',letterSpacing:'1px'}}>
                   📸 {selectedProduct ? '대표 이미지 (선택한 상품 이미지 사용 또는 교체)' : '대표 이미지'}
                 </p>
 
@@ -540,7 +566,7 @@ export default function ProductsPage() {
                     onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(200,169,110,0.4)'}}>
                     <div style={{fontSize:'40px',marginBottom:'10px'}}>📸</div>
                     <p style={{color:'#c8a96e',fontSize:'15px',fontWeight:700,marginBottom:'4px'}}>클릭해서 이미지 올리기</p>
-                    <p style={{color:'rgba(255,255,255,0.3)',fontSize:'12px'}}>JPG · PNG · WEBP</p>
+                    <p style={{color:aiDark?'rgba(255,255,255,0.3)':'#888',fontSize:'12px'}}>JPG · PNG · WEBP</p>
                   </div>
                 ) : (
                   <div style={{flex:1,display:'flex',flexDirection:'column',gap:'10px'}}>
@@ -559,11 +585,11 @@ export default function ProductsPage() {
                     </div>
                     <div style={{flex:1,borderRadius:'12px',overflow:'hidden',border:'1px solid rgba(200,169,110,0.2)',minHeight:'160px',display:'flex',alignItems:'center',justifyContent:'center',
                       background:aiSelectedBg==='warm'?'linear-gradient(160deg,#1a0e08,#3d2010)':aiSelectedBg==='white'?'#f5f5f5':'#0d0d0d'}}>
-                      {aiBgLoading ? <p style={{color:'rgba(255,255,255,0.4)',fontSize:'12px'}}>⏳ 배경 제거 중...</p>
+                      {aiBgLoading ? <p style={{color:aiDark?'rgba(255,255,255,0.4)':'#666',fontSize:'12px'}}>⏳ 배경 제거 중...</p>
                         : <img src={aiBgRemovedPreview||aiImagePreview} alt="" style={{maxHeight:'180px',maxWidth:'100%',objectFit:'contain'}} />}
                     </div>
                     <button onClick={() => { setAiImagePreview(''); setAiBgRemovedPreview(''); setAiBgRemovedBase64(''); setAiError('') }}
-                      style={{padding:'8px',borderRadius:'8px',border:'1px solid rgba(255,255,255,0.1)',background:'transparent',color:'rgba(255,255,255,0.5)',fontSize:'12px',cursor:'pointer'}}>
+                      style={{padding:'8px',borderRadius:'8px',border:'1px solid '+(aiDark?'rgba(255,255,255,0.1)':'rgba(0,0,0,0.1)'),background:'transparent',color:aiDark?'rgba(255,255,255,0.5)':'#555',fontSize:'12px',cursor:'pointer'}}>
                       🔄 이미지 다시 올리기
                     </button>
                   </div>
@@ -686,7 +712,7 @@ export default function ProductsPage() {
             <div style={{flex:1,display:'flex',flexDirection:'column',minHeight:0,overflow:'hidden'}}>
               <div style={{background:'#111',borderBottom:'1px solid rgba(255,255,255,0.1)',padding:'8px 12px',flexShrink:0}}>
                 <div style={{display:'flex',alignItems:'center',gap:'6px',marginBottom:'7px'}}>
-                  <p style={{color:'rgba(255,255,255,0.4)',fontSize:'10px',margin:0,flex:1}}>📌 배경 선택</p>
+                  <p style={{color:aiDark?'rgba(255,255,255,0.4)':'#666',fontSize:'10px',margin:0,flex:1}}>📌 배경 선택</p>
                   {[
                     {k:'dark', label:'블랙', bg:'#111',    color:'#fff'},
                     {k:'warm', label:'골드', bg:'linear-gradient(135deg,#2c1810,#5c3a1e)', color:'#c8a96e'},
@@ -702,13 +728,13 @@ export default function ProductsPage() {
                   ))}
                 </div>
                 <div style={{display:'flex',gap:'6px',alignItems:'center',flexWrap:'wrap'}}>
-                  <p style={{color:'rgba(255,255,255,0.3)',fontSize:'10px',margin:0,flex:1}}>💡 텍스트 클릭하면 바로 수정</p>
+                  <p style={{color:aiDark?'rgba(255,255,255,0.3)':'#888',fontSize:'10px',margin:0,flex:1}}>💡 텍스트 클릭하면 바로 수정</p>
                   <button onClick={() => setShowUnsplash(v=>!v)}
                     style={{padding:'6px 10px',borderRadius:'8px',border:'1px solid rgba(147,197,253,0.4)',background:'rgba(147,197,253,0.08)',color:'#93c5fd',fontSize:'11px',fontWeight:700,cursor:'pointer'}}>
                     🖼️ 이미지 검색
                   </button>
                   <button onClick={() => setAiStep(2)}
-                    style={{padding:'6px 10px',borderRadius:'8px',border:'1px solid rgba(255,255,255,0.1)',background:'transparent',color:'rgba(255,255,255,0.5)',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
+                    style={{padding:'6px 10px',borderRadius:'8px',border:'1px solid '+(aiDark?'rgba(255,255,255,0.1)':'rgba(0,0,0,0.1)'),background:'transparent',color:aiDark?'rgba(255,255,255,0.5)':'#555',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
                     ← 설정
                   </button>
                   <button onClick={handleGenerateLanding} disabled={aiLoading}
@@ -735,19 +761,19 @@ export default function ProductsPage() {
                 <div style={{background:'#1a1a2e',borderBottom:'2px solid rgba(147,197,253,0.3)',padding:'14px',flexShrink:0,maxHeight:'45%',overflowY:'auto'}}>
                   <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'10px'}}>
                     <p style={{color:'#93c5fd',fontSize:'13px',fontWeight:700,margin:0,flex:1}}>🖼️ 무료 이미지 검색 (Unsplash)</p>
-                    <button onClick={() => setShowUnsplash(false)} style={{background:'none',border:'none',color:'rgba(255,255,255,0.5)',fontSize:'16px',cursor:'pointer'}}>✕</button>
+                    <button onClick={() => setShowUnsplash(false)} style={{background:'none',border:'none',color:aiDark?'rgba(255,255,255,0.5)':'#555',fontSize:'16px',cursor:'pointer'}}>✕</button>
                   </div>
                   <div style={{display:'flex',gap:'8px',marginBottom:'10px'}}>
                     <input value={unsplashQuery} onChange={e=>setUnsplashQuery(e.target.value)}
                       onKeyDown={e=>{if(e.key==='Enter') searchUnsplash()}}
                       placeholder="예: seafood, dried fish, korean food..."
-                      style={{flex:1,padding:'9px 12px',borderRadius:'8px',border:'1.5px solid rgba(147,197,253,0.3)',background:'rgba(255,255,255,0.07)',color:'white',fontSize:'13px',outline:'none'}} />
+                      style={{flex:1,padding:'9px 12px',borderRadius:'8px',border:'1.5px solid rgba(147,197,253,0.3)',background:aiDark?'rgba(255,255,255,0.07)':'white',color:aiDark?'white':'#111',fontSize:'13px',outline:'none'}} />
                     <button onClick={() => { setUnsplashResults([]); searchUnsplash() }}
-                      style={{padding:'9px 14px',borderRadius:'8px',background:'#3b82f6',color:'white',border:'none',fontSize:'13px',fontWeight:700,cursor:'pointer',flexShrink:0}}>
+                      style={{padding:'9px 14px',borderRadius:'8px',background:'#3b82f6',color:aiDark?'white':'#111',border:'none',fontSize:'13px',fontWeight:700,cursor:'pointer',flexShrink:0}}>
                       {unsplashLoading?'⏳':'검색'}
                     </button>
                   </div>
-                  <p style={{color:'rgba(255,255,255,0.35)',fontSize:'11px',margin:'0 0 8px'}}>💡 이미지 클릭하면 상세페이지 하단에 삽입돼요</p>
+                  <p style={{color:aiDark?'rgba(255,255,255,0.35)':'#777',fontSize:'11px',margin:'0 0 8px'}}>💡 이미지 클릭하면 상세페이지 하단에 삽입돼요</p>
                   {unsplashResults.length > 0 && (
                     <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(100px,1fr))',gap:'6px'}}>
                       {unsplashResults.map((img:any) => (
@@ -786,9 +812,9 @@ export default function ProductsPage() {
           <div style={{height:'52px',background:aiDark?'linear-gradient(135deg,#1a1a1a,#2d2d2d)':'linear-gradient(135deg,#f5f5f5,#e8e8e8)',borderBottom:'1px solid rgba(200,169,110,0.25)',display:'flex',alignItems:'center',padding:'0 16px',gap:'10px',flexShrink:0}}>
             <div style={{flex:1,display:'flex',alignItems:'center',gap:'10px'}}>
               <p style={{color:'#c8a96e',fontWeight:900,fontSize:'14px',margin:0,flexShrink:0}}>✏️ 직접 만들기</p>
-              <div style={{display:'flex',gap:'4px',background:'rgba(255,255,255,0.06)',borderRadius:'8px',padding:'3px'}}>
+              <div style={{display:'flex',gap:'4px',background:aiDark?'rgba(255,255,255,0.06)':'#fafafa',borderRadius:'8px',padding:'3px'}}>
                 <button onClick={() => setAiTab('ai')}
-                  style={{padding:'4px 12px',borderRadius:'6px',border:'none',fontSize:'11px',fontWeight:700,cursor:'pointer',background:'transparent',color:'rgba(255,255,255,0.5)'}}>
+                  style={{padding:'4px 12px',borderRadius:'6px',border:'none',fontSize:'11px',fontWeight:700,cursor:'pointer',background:'transparent',color:aiDark?'rgba(255,255,255,0.5)':'#555'}}>
                   ✨ AI 생성
                 </button>
                 <button onClick={() => setAiTab('manual')}
@@ -797,8 +823,8 @@ export default function ProductsPage() {
                 </button>
               </div>
             </div>
-            <button onClick={() => setAiDark(v=>!v)} style={{background:'rgba(255,255,255,0.08)',border:'none',borderRadius:'8px',width:'34px',height:'34px',fontSize:'18px',cursor:'pointer'}}>{aiDark?'🌙':'☀️'}</button>
-            <button onClick={resetAiForm} style={{background:'rgba(255,255,255,0.08)',border:'none',borderRadius:'8px',width:'34px',height:'34px',color:'rgba(255,255,255,0.6)',fontSize:'18px',cursor:'pointer'}}>✕</button>
+            <button onClick={() => setAiDark(v=>!v)} style={{background:aiDark?'rgba(255,255,255,0.08)':'#f0f0f0',border:'none',borderRadius:'8px',width:'34px',height:'34px',fontSize:'18px',cursor:'pointer'}}>{aiDark?'🌙':'☀️'}</button>
+            <button onClick={resetAiForm} style={{background:aiDark?'rgba(255,255,255,0.08)':'#f0f0f0',border:'none',borderRadius:'8px',width:'34px',height:'34px',color:aiDark?'rgba(255,255,255,0.6)':'#444',fontSize:'18px',cursor:'pointer'}}>✕</button>
           </div>
 
           <div style={{flex:1,display:'flex',overflow:'hidden',minHeight:0}}>
@@ -806,20 +832,20 @@ export default function ProductsPage() {
             <div style={{width:'360px',flexShrink:0,background:aiDark?'#111':'#f8f8f8',borderRight:'1px solid rgba(200,169,110,0.15)',display:'flex',flexDirection:'column',overflowY:'auto',padding:'20px',gap:'14px'}}>
 
               <div>
-                <p style={{color:'rgba(255,255,255,0.5)',fontSize:'11px',fontWeight:700,margin:'0 0 8px',letterSpacing:'1px'}}>📦 상품 선택</p>
+                <p style={{color:aiDark?'rgba(255,255,255,0.5)':'#555',fontSize:'11px',fontWeight:700,margin:'0 0 8px',letterSpacing:'1px'}}>📦 상품 선택</p>
                 <select onChange={e => {
                     const p = products.find(p=>p.id===e.target.value)
                     if(p) setSelectedProduct(p)
                   }}
                   value={selectedProduct?.id||''}
-                  style={{width:'100%',padding:'10px 12px',borderRadius:'10px',border:'1.5px solid rgba(200,169,110,0.3)',background:'rgba(255,255,255,0.07)',color:'white',fontSize:'13px',outline:'none'}}>
+                  style={{width:'100%',padding:'10px 12px',borderRadius:'10px',border:'1.5px solid rgba(200,169,110,0.3)',background:aiDark?'rgba(255,255,255,0.07)':'white',color:aiDark?'white':'#111',fontSize:'13px',outline:'none'}}>
                   <option value="">-- 상품 선택 --</option>
                   {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
               </div>
 
               <div>
-                <p style={{color:'rgba(255,255,255,0.5)',fontSize:'11px',fontWeight:700,margin:'0 0 8px',letterSpacing:'1px'}}>➕ 섹션 추가</p>
+                <p style={{color:aiDark?'rgba(255,255,255,0.5)':'#555',fontSize:'11px',fontWeight:700,margin:'0 0 8px',letterSpacing:'1px'}}>➕ 섹션 추가</p>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'6px'}}>
                   {[
                     {type:'image' as const, label:'🖼️ 이미지'},
@@ -836,7 +862,7 @@ export default function ProductsPage() {
 
               <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
                 {manualBlocks.map((block, idx) => (
-                  <div key={block.id} style={{background:'rgba(255,255,255,0.05)',borderRadius:'10px',padding:'10px',border:'1px solid rgba(255,255,255,0.08)'}}>
+                  <div key={block.id} style={{background:aiDark?'rgba(255,255,255,0.05)':'#fafafa',borderRadius:'10px',padding:'10px',border:'1px solid rgba(255,255,255,0.08)'}}>
                     <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'6px'}}>
                       <p style={{color:'#c8a96e',fontSize:'11px',fontWeight:700,margin:0}}>
                         {block.type==='image'?'🖼️ 이미지':block.type==='video'?'🎬 영상':'✏️ 텍스트'} #{idx+1}
@@ -867,7 +893,7 @@ export default function ProductsPage() {
                         </label>
                         <input value={block.content.startsWith('http')?block.content:''} onChange={e => updateManualBlock(block.id, e.target.value)}
                           placeholder="또는 URL 직접 입력"
-                          style={{width:'100%',marginTop:'4px',padding:'6px 8px',borderRadius:'6px',border:'1px solid rgba(255,255,255,0.1)',background:'rgba(255,255,255,0.05)',color:'white',fontSize:'11px',outline:'none',boxSizing:'border-box'}} />
+                          style={{width:'100%',marginTop:'4px',padding:'6px 8px',borderRadius:'6px',border:'1px solid '+(aiDark?'rgba(255,255,255,0.1)':'rgba(0,0,0,0.1)'),background:aiDark?'rgba(255,255,255,0.05)':'#fafafa',color:aiDark?'white':'#111',fontSize:'11px',outline:'none',boxSizing:'border-box'}} />
                       </div>
                     )}
 
@@ -876,7 +902,7 @@ export default function ProductsPage() {
                         <textarea value={block.content} onChange={e => updateManualBlock(block.id, e.target.value)}
                           placeholder="내용을 입력하세요... (줄바꿈 가능)"
                           rows={4}
-                          style={{width:'100%',padding:'10px',borderRadius:'8px',border:'1px solid rgba(255,255,255,0.12)',background:'rgba(255,255,255,0.07)',color:'white',fontSize:'13px',outline:'none',resize:'vertical',boxSizing:'border-box',lineHeight:1.6}} />
+                          style={{width:'100%',padding:'10px',borderRadius:'8px',border:'1px solid '+(aiDark?'rgba(255,255,255,0.12)':'rgba(0,0,0,0.15)'),background:aiDark?'rgba(255,255,255,0.07)':'white',color:aiDark?'white':'#111',fontSize:'13px',outline:'none',resize:'vertical',boxSizing:'border-box',lineHeight:1.6}} />
                         <div style={{display:'flex',gap:'4px',marginTop:'4px'}}>
                           {['굵게','제목','소제목'].map((s,i) => (
                             <button key={s} onClick={() => {
@@ -957,8 +983,8 @@ export default function ProductsPage() {
               <div style={{width:'10px',height:'10px',borderRadius:'50%',background:'#ffbd2e'}}/>
               <div style={{width:'10px',height:'10px',borderRadius:'50%',background:'#28c840'}}/>
             </div>
-            <div style={{flex:1,background:'rgba(255,255,255,0.07)',borderRadius:'6px',padding:'4px 12px',textAlign:'center'}}>
-              <p style={{color:'rgba(255,255,255,0.35)',fontSize:'11px',margin:0}}>
+            <div style={{flex:1,background:aiDark?'rgba(255,255,255,0.07)':'white',borderRadius:'6px',padding:'4px 12px',textAlign:'center'}}>
+              <p style={{color:aiDark?'rgba(255,255,255,0.35)':'#777',fontSize:'11px',margin:0}}>
                 {showBuyerPreview==='mobile' ? '📱 모바일 미리보기 (390px)' : '🖥️ PC 미리보기 (1200px)'}
               </p>
             </div>
@@ -973,7 +999,7 @@ export default function ProductsPage() {
               </button>
             </div>
             <button onClick={() => setShowBuyerPreview(false)}
-              style={{background:'rgba(255,255,255,0.1)',border:'none',borderRadius:'8px',padding:'7px 14px',color:'white',fontSize:'12px',fontWeight:700,cursor:'pointer'}}>
+              style={{background:'rgba(255,255,255,0.1)',border:'none',borderRadius:'8px',padding:'7px 14px',color:aiDark?'white':'#111',fontSize:'12px',fontWeight:700,cursor:'pointer'}}>
               ← 수정으로 돌아가기
             </button>
           </div>
