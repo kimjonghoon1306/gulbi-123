@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase'
-import EditorToolbar from './components/EditorToolbar'
+import { renderLanding, type PresetKey, type LandingData } from '@/lib/landing-templates'
 
 type Category = { id: string; name: string; sort_order: number }
 type Product = {
@@ -49,10 +49,8 @@ export default function ProductsPage() {
   const [aiMeta, setAiMeta] = useState({name:'',category_id:'',unit:'kg',wholesale_price:'',member_price:'',retail_price:'',stock:''})
   const [aiDark, setAiDark] = useState(true)
   const [showBuyerPreview, setShowBuyerPreview] = useState<'mobile'|'desktop'|false>(false)
-  const [unsplashQuery, setUnsplashQuery] = useState('')
-  const [unsplashResults, setUnsplashResults] = useState<any[]>([])
-  const [unsplashLoading, setUnsplashLoading] = useState(false)
-  const [showUnsplash, setShowUnsplash] = useState(false)
+  const [aiPresetKey, setAiPresetKey] = useState<PresetKey>('gold')
+  const [aiLandingData, setAiLandingData] = useState<LandingData | null>(null)
   const supabase = createClient()
 
   useEffect(() => { fetchAll() }, [])
@@ -232,45 +230,23 @@ export default function ProductsPage() {
       })
       const data = await res.json()
       if (data.error) return setAiError(data.error)
+      setAiLandingData(data.data || null)
       setAiLandingHtml(data.html)
+      setAiPresetKey('gold')
       setAiStep(3)
     } catch(e:any) { setAiError('[v3] 오류: ' + e.message) }
     finally { setAiLoading(false) }
   }
 
-  const translateToEnglish = async (query: string): Promise<string> => {
-    const dict: Record<string,string> = {
-      '조리법':'cooking recipe','조리':'cooking','요리':'food cooking','보관':'food storage',
-      '굴비':'dried yellow corvina fish','수산물':'seafood','생선':'fish','해산물':'seafood',
-      '김치':'kimchi','나물':'korean vegetables','된장':'doenjang soybean paste',
-      '포장':'packaging gift box','배송':'delivery shipping','냉동':'frozen food',
-      '신선':'fresh food','건어물':'dried fish','소금':'salt','전통':'traditional korean',
-    }
-    for (const [ko, en] of Object.entries(dict)) {
-      if (query.includes(ko)) return en
-    }
-    if (/[가-힣]/.test(query)) return 'korean food ' + query
-    return query
-  }
-
-  const searchUnsplash = async () => {
-    if (!unsplashQuery.trim()) return
-    setUnsplashLoading(true)
-    try {
-      const translated = await translateToEnglish(unsplashQuery)
-      const res = await fetch('/api/unsplash-search?q=' + encodeURIComponent(translated))
-      const data = await res.json()
-      setUnsplashResults(data.results || [])
-    } catch(e) { console.error(e) }
-    finally { setUnsplashLoading(false) }
-  }
-
-  const insertUnsplashImage = (imgUrl: string) => {
+  // 프리셋 변경 — 클라이언트에서 즉시 재렌더 (API 호출 없음)
+  const handleChangePreset = (key: PresetKey) => {
+    if (!aiLandingData) return
+    const newHtml = renderLanding(aiLandingData, key)
+    setAiLandingHtml(newHtml)
+    setAiPresetKey(key)
+    // 미리보기 div에 직접 주입
     const preview = document.getElementById('landing-preview')
-    if (!preview) return
-    const imgHtml = '<div style="width:100%;margin:16px 0;border-radius:12px;overflow:hidden;"><img src="' + imgUrl + '" style="width:100%;display:block;object-fit:cover;" /></div>'
-    preview.insertAdjacentHTML('beforeend', imgHtml)
-    setShowUnsplash(false); setUnsplashResults([]); setUnsplashQuery('')
+    if (preview) preview.innerHTML = newHtml
   }
 
   const handleAiRegister = async () => {
@@ -307,7 +283,7 @@ export default function ProductsPage() {
       setShowAiForm(false); setAiStep(1)
       setAiImage(null); setAiImagePreview(''); setAiBgRemovedPreview(''); setAiBgRemovedBase64('')
       setAiLandingHtml(''); setAiError(''); setAiSelectedBg('dark')
-      setShowBuyerPreview(false); setUnsplashResults([]); setShowUnsplash(false)
+      setShowBuyerPreview(false)
       fetchAll()
     } catch(e:any) { setAiError('등록 오류: ' + e.message) }
     finally { setAiLoading(false) }
@@ -317,7 +293,7 @@ export default function ProductsPage() {
     setShowAiForm(false); setAiStep(1); setAiTab('ai')
     setAiImage(null); setAiImagePreview(''); setAiBgRemovedPreview(''); setAiBgRemovedBase64('')
     setAiLandingHtml(''); setAiError(''); setAiSelectedBg('dark')
-    setShowBuyerPreview(false); setUnsplashResults([]); setShowUnsplash(false)
+    setShowBuyerPreview(false)
     setSelectedProduct(null); setManualBlocks([])
   }
 
@@ -388,7 +364,7 @@ export default function ProductsPage() {
         </div>
         <div className="flex gap-2">
           <button
-            onClick={() => { setAiStep(1); setAiImage(null); setAiImagePreview(''); setAiBgRemovedPreview(''); setAiBgRemovedBase64(''); setAiLandingHtml(''); setAiError(''); setAiSelectedBg('dark'); setShowUnsplash(false); setShowBuyerPreview(false); setShowAiForm(true) }}
+            onClick={() => { setAiStep(1); setAiImage(null); setAiImagePreview(''); setAiBgRemovedPreview(''); setAiBgRemovedBase64(''); setAiLandingHtml(''); setAiError(''); setAiSelectedBg('dark'); setShowBuyerPreview(false); setShowAiForm(true) }}
             className="text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95 hover:-translate-y-0.5"
             style={{background:'linear-gradient(135deg,#ec4899,#f43f5e)',boxShadow:'0 4px 15px rgba(236,72,153,0.35)'}}
           >
@@ -711,30 +687,40 @@ export default function ProductsPage() {
           {aiTab==='ai' && aiStep===3 && (
             <div style={{flex:1,display:'flex',flexDirection:'column',minHeight:0,overflow:'hidden'}}>
               <div style={{background:'#111',borderBottom:'1px solid rgba(255,255,255,0.1)',padding:'8px 12px',flexShrink:0}}>
-                <div style={{display:'flex',alignItems:'center',gap:'6px',marginBottom:'7px'}}>
-                  <p style={{color:aiDark?'rgba(255,255,255,0.4)':'#666',fontSize:'10px',margin:0,flex:1}}>📌 배경 선택</p>
-                  {[
-                    {k:'dark', label:'블랙', bg:'#111',    color:'#fff'},
-                    {k:'warm', label:'골드', bg:'linear-gradient(135deg,#2c1810,#5c3a1e)', color:'#c8a96e'},
-                    {k:'white',label:'화이트',bg:'#eee',   color:'#333'},
-                  ].map(t => (
-                    <button key={t.k} onClick={() => setAiSelectedBg(t.k)}
-                      style={{padding:'5px 14px',borderRadius:'8px',
-                        border:'2px solid '+(aiSelectedBg===t.k?'#c8a96e':'rgba(255,255,255,0.12)'),
-                        background:t.bg,color:t.color,fontSize:'11px',fontWeight:700,cursor:'pointer',
-                        boxShadow:aiSelectedBg===t.k?'0 0 10px rgba(200,169,110,0.4)':'none',transition:'all 0.15s'}}>
-                      {t.label}
-                    </button>
-                  ))}
+
+                {/* 6가지 프리셋 선택 — 메인 기능 */}
+                <div style={{marginBottom:'8px'}}>
+                  <p style={{color:'rgba(255,255,255,0.4)',fontSize:'10px',margin:'0 0 6px',letterSpacing:'0.5px'}}>🎨 레이아웃 색상 선택</p>
+                  <div style={{display:'flex',gap:'6px',flexWrap:'wrap'}}>
+                    {([
+                      {k:'gold' as PresetKey,  label:'골드',  bg:'#C8842D', border:'#E8B87A'},
+                      {k:'dark' as PresetKey,  label:'검정',  bg:'#0D0D0D', border:'#555'},
+                      {k:'blue' as PresetKey,  label:'파랑',  bg:'#1D4ED8', border:'#60A5FA'},
+                      {k:'red'  as PresetKey,  label:'빨강',  bg:'#DC2626', border:'#F87171'},
+                      {k:'pink' as PresetKey,  label:'핑크',  bg:'#DB2777', border:'#F9A8D4'},
+                      {k:'white' as PresetKey, label:'하양',  bg:'#F5F5F5', border:'#374151'},
+                    ]).map(t => (
+                      <button key={t.k} onClick={() => handleChangePreset(t.k)}
+                        style={{
+                          padding:'6px 12px', borderRadius:'20px', cursor:'pointer',
+                          border:'2px solid '+(aiPresetKey===t.k ? t.border : 'transparent'),
+                          background: t.bg,
+                          color: t.k==='white' ? '#111' : '#fff',
+                          fontSize:'11px', fontWeight:700,
+                          boxShadow: aiPresetKey===t.k ? `0 0 12px ${t.bg}88` : 'none',
+                          transform: aiPresetKey===t.k ? 'scale(1.1)' : 'scale(1)',
+                          transition:'all 0.15s',
+                        }}>
+                        {t.label} {aiPresetKey===t.k ? '✓' : ''}
+                      </button>
+                    ))}
+                  </div>
                 </div>
+
                 <div style={{display:'flex',gap:'6px',alignItems:'center',flexWrap:'wrap'}}>
-                  <p style={{color:aiDark?'rgba(255,255,255,0.3)':'#888',fontSize:'10px',margin:0,flex:1}}>💡 텍스트 클릭하면 바로 수정</p>
-                  <button onClick={() => setShowUnsplash(v=>!v)}
-                    style={{padding:'6px 10px',borderRadius:'8px',border:'1px solid rgba(147,197,253,0.4)',background:'rgba(147,197,253,0.08)',color:'#93c5fd',fontSize:'11px',fontWeight:700,cursor:'pointer'}}>
-                    🖼️ 이미지 검색
-                  </button>
+                  <p style={{color:'rgba(255,255,255,0.3)',fontSize:'10px',margin:0,flex:1}}>💡 텍스트 클릭하면 바로 수정 · Ctrl+Z 되돌리기</p>
                   <button onClick={() => setAiStep(2)}
-                    style={{padding:'6px 10px',borderRadius:'8px',border:'1px solid '+(aiDark?'rgba(255,255,255,0.1)':'rgba(0,0,0,0.1)'),background:'transparent',color:aiDark?'rgba(255,255,255,0.5)':'#555',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
+                    style={{padding:'6px 10px',borderRadius:'8px',border:'1px solid rgba(255,255,255,0.1)',background:'transparent',color:'rgba(255,255,255,0.5)',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
                     ← 설정
                   </button>
                   <button onClick={handleGenerateLanding} disabled={aiLoading}
@@ -757,37 +743,6 @@ export default function ProductsPage() {
               </div>
               {aiError&&<p style={{color:'#f87171',fontSize:'12px',padding:'6px 12px',background:'rgba(239,68,68,0.1)',margin:0,flexShrink:0}}>{aiError}</p>}
 
-              {showUnsplash && (
-                <div style={{background:'#1a1a2e',borderBottom:'2px solid rgba(147,197,253,0.3)',padding:'14px',flexShrink:0,maxHeight:'45%',overflowY:'auto'}}>
-                  <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'10px'}}>
-                    <p style={{color:'#93c5fd',fontSize:'13px',fontWeight:700,margin:0,flex:1}}>🖼️ 무료 이미지 검색 (Unsplash)</p>
-                    <button onClick={() => setShowUnsplash(false)} style={{background:'none',border:'none',color:aiDark?'rgba(255,255,255,0.5)':'#555',fontSize:'16px',cursor:'pointer'}}>✕</button>
-                  </div>
-                  <div style={{display:'flex',gap:'8px',marginBottom:'10px'}}>
-                    <input value={unsplashQuery} onChange={e=>setUnsplashQuery(e.target.value)}
-                      onKeyDown={e=>{if(e.key==='Enter') searchUnsplash()}}
-                      placeholder="예: seafood, dried fish, korean food..."
-                      style={{flex:1,padding:'9px 12px',borderRadius:'8px',border:'1.5px solid rgba(147,197,253,0.3)',background:aiDark?'rgba(255,255,255,0.07)':'white',color:aiDark?'white':'#111',fontSize:'13px',outline:'none'}} />
-                    <button onClick={() => { setUnsplashResults([]); searchUnsplash() }}
-                      style={{padding:'9px 14px',borderRadius:'8px',background:'#3b82f6',color:aiDark?'white':'#111',border:'none',fontSize:'13px',fontWeight:700,cursor:'pointer',flexShrink:0}}>
-                      {unsplashLoading?'⏳':'검색'}
-                    </button>
-                  </div>
-                  <p style={{color:aiDark?'rgba(255,255,255,0.35)':'#777',fontSize:'11px',margin:'0 0 8px'}}>💡 이미지 클릭하면 상세페이지 하단에 삽입돼요</p>
-                  {unsplashResults.length > 0 && (
-                    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(100px,1fr))',gap:'6px'}}>
-                      {unsplashResults.map((img:any) => (
-                        <div key={img.id} onClick={() => insertUnsplashImage(img.urls.regular)}
-                          style={{borderRadius:'6px',overflow:'hidden',cursor:'pointer',aspectRatio:'1',border:'2px solid transparent',transition:'border 0.15s'}}
-                          onMouseEnter={e=>{e.currentTarget.style.borderColor='#93c5fd'}}
-                          onMouseLeave={e=>{e.currentTarget.style.borderColor='transparent'}}>
-                          <img src={img.urls.thumb} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}} />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
 
               <div style={{flex:1,overflowY:'scroll',WebkitOverflowScrolling:'touch',background:'#d0d0d0',display:'flex',justifyContent:'center',alignItems:'flex-start',padding:'16px'}}>
                 <div style={{width:'100%',maxWidth:'390px',background:'white',boxShadow:'0 24px 60px rgba(0,0,0,0.4)',borderRadius:'16px',overflow:'hidden',marginBottom:'40px'}}>
@@ -800,7 +755,9 @@ export default function ProductsPage() {
                   <div id="landing-preview" dangerouslySetInnerHTML={{__html:aiLandingHtml}} />
                 </div>
               </div>
-              <EditorToolbar />
+
+              {/* 플로팅 텍스트 스타일 툴바 — 텍스트 드래그하면 자동으로 나타남 */}
+              <FloatingToolbar previewId="landing-preview" />
             </div>
           )}
         </div>
@@ -1148,6 +1105,134 @@ export default function ProductsPage() {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+// ============================================================
+// 플로팅 텍스트 스타일 툴바
+// 텍스트를 드래그 선택하면 자동으로 나타남
+// B / I / U / 색상 6가지 / 크기 / 정렬
+// ============================================================
+function FloatingToolbar({ previewId }: { previewId: string }) {
+  const [pos, setPos] = useState<{x:number;y:number} | null>(null)
+  const savedRange = useRef<Range | null>(null)
+
+  useEffect(() => {
+    const container = document.getElementById(previewId)
+    if (!container) return
+
+    const onSelect = () => {
+      const sel = window.getSelection()
+      if (!sel || sel.rangeCount === 0 || sel.isCollapsed) { setPos(null); return }
+      const range = sel.getRangeAt(0)
+      if (!container.contains(range.commonAncestorContainer)) { setPos(null); return }
+      savedRange.current = range.cloneRange()
+      const rect = range.getBoundingClientRect()
+      setPos({ x: rect.left + rect.width / 2, y: rect.top - 6 })
+    }
+
+    document.addEventListener('selectionchange', onSelect)
+    return () => document.removeEventListener('selectionchange', onSelect)
+  }, [previewId])
+
+  const restore = () => {
+    if (!savedRange.current) return
+    const sel = window.getSelection()
+    if (!sel) return
+    sel.removeAllRanges()
+    sel.addRange(savedRange.current)
+  }
+
+  const exec = (cmd: string, val?: string) => {
+    restore()
+    document.execCommand(cmd, false, val)
+  }
+
+  const applyColor = (color: string) => {
+    restore()
+    document.execCommand('foreColor', false, color)
+  }
+
+  if (!pos) return null
+
+  return (
+    <div
+      onMouseDown={e => e.preventDefault()}
+      style={{
+        position: 'fixed',
+        left: pos.x, top: pos.y,
+        transform: 'translate(-50%, -100%)',
+        zIndex: 200000,
+        display: 'flex', alignItems: 'center', gap: '2px',
+        background: '#111', border: '1px solid rgba(200,169,110,0.4)',
+        borderRadius: '10px', padding: '5px 6px',
+        boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+        flexWrap: 'wrap', maxWidth: '320px',
+      }}
+    >
+      {/* 기본 스타일 */}
+      {[
+        { cmd: 'bold',      label: <strong style={{fontSize:'13px'}}>B</strong> },
+        { cmd: 'italic',    label: <em style={{fontSize:'13px'}}>I</em> },
+        { cmd: 'underline', label: <u style={{fontSize:'12px'}}>U</u> },
+      ].map(({ cmd, label }) => (
+        <button key={cmd} onClick={() => exec(cmd)}
+          style={{ width:'28px', height:'28px', borderRadius:'6px', border:'none', background:'transparent', color:'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
+          {label}
+        </button>
+      ))}
+
+      {/* 구분선 */}
+      <div style={{ width:'1px', height:'20px', background:'rgba(255,255,255,0.2)', margin:'0 2px' }} />
+
+      {/* 글자 색상 6가지 */}
+      {[
+        { color: '#1C1610', label: '먹' },
+        { color: '#C8842D', label: '골드' },
+        { color: '#DC2626', label: '빨강' },
+        { color: '#1D4ED8', label: '파랑' },
+        { color: '#FFFFFF', label: '흰색', border: true },
+        { color: '#DB2777', label: '핑크' },
+      ].map(({ color, label, border }) => (
+        <button key={color} onClick={() => applyColor(color)} title={label}
+          style={{
+            width: '20px', height: '20px', borderRadius: '50%',
+            background: color, cursor: 'pointer', border: 'none',
+            outline: border ? '1.5px solid rgba(255,255,255,0.5)' : 'none',
+            outlineOffset: '1px',
+          }} />
+      ))}
+
+      {/* 구분선 */}
+      <div style={{ width:'1px', height:'20px', background:'rgba(255,255,255,0.2)', margin:'0 2px' }} />
+
+      {/* 크기 */}
+      {[
+        { size: '3', label: '작게' },
+        { size: '5', label: '크게' },
+        { size: '7', label: '매우크게' },
+      ].map(({ size, label }) => (
+        <button key={size} onClick={() => exec('fontSize', size)} title={label}
+          style={{ padding:'0 5px', height:'26px', borderRadius:'5px', border:'none', background:'rgba(255,255,255,0.1)', color:'white', fontSize:`${9 + Number(size) * 1.5}px`, cursor:'pointer', fontWeight:700 }}>
+          가
+        </button>
+      ))}
+
+      {/* 구분선 */}
+      <div style={{ width:'1px', height:'20px', background:'rgba(255,255,255,0.2)', margin:'0 2px' }} />
+
+      {/* 정렬 */}
+      {[
+        { cmd: 'justifyLeft',   label: '≡' },
+        { cmd: 'justifyCenter', label: '☰' },
+        { cmd: 'justifyRight',  label: '≣' },
+      ].map(({ cmd, label }) => (
+        <button key={cmd} onClick={() => exec(cmd)}
+          style={{ width:'26px', height:'26px', borderRadius:'5px', border:'none', background:'transparent', color:'rgba(255,255,255,0.8)', fontSize:'14px', cursor:'pointer' }}>
+          {label}
+        </button>
+      ))}
     </div>
   )
 }
