@@ -442,7 +442,7 @@ function renderKeynum(d: LandingData, p: Preset): string {
 <section data-section="keynum" style="padding:100px 28px;background:${C.paper};text-align:center;border-top:1px solid ${C.line};border-bottom:1px solid ${C.line};">
   <p ${ce('keynum.label')} style="font-family:${F.serif};font-size:11px;letter-spacing:0.4em;color:${C.deep};margin:0 0 16px;">V.&nbsp;&nbsp;${esc(L.proof)}</p>
   <p ${ce('keynum.caption1')} style="font-family:${F.serif};font-size:14px;letter-spacing:0.15em;color:${C.inkSoft};margin:0 0 16px;">${esc(d.keyNumber.label)}</p>
-  <div style="font-family:${F.serif};font-size:130px;line-height:0.9;font-weight:700;color:${C.deep};letter-spacing:-0.05em;margin:32px 0 24px;">
+  <div style="font-family:${F.serif};font-size:clamp(56px,17vw,120px);line-height:0.9;font-weight:700;color:${C.deep};letter-spacing:-0.05em;margin:32px 0 24px;white-space:nowrap;overflow:hidden;">
     <span ${ce('keynum.value')}>${esc(d.keyNumber.value)}</span><sup ${ce('keynum.unit')} style="font-size:0.25em;vertical-align:top;font-weight:400;color:${C.primary};margin-left:8px;position:relative;top:1.4em;">${esc(d.keyNumber.unit)}</sup>
   </div>
   <p ${ce('keynum.caption')} style="font-family:${F.deco};font-size:14px;line-height:1.85;max-width:360px;margin:0 auto;color:${C.inkSoft};">${esc(d.keyNumber.caption)}</p>
@@ -784,9 +784,9 @@ function renderShip(d: LandingData, p: Preset): string {
   const { colors: C, fonts: F } = p
   return `
 <section data-section="ship" style="padding:56px 28px;background:${C.ink};color:${C.cream};text-align:center;">
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;">
+  <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:32px 56px;">
     ${d.delivery.slice(0,4).map((de,i) => `
-    <div>
+    <div style="min-width:100px;">
       <p ${ce('delivery.' + i + '.label')} style="font-family:${F.serif};font-size:10px;letter-spacing:0.3em;color:${C.light};margin:0 0 8px;">${esc(de.label)}</p>
       <p ${ce('delivery.' + i + '.value')} style="font-family:${F.deco};font-size:13px;line-height:1.7;opacity:0.85;margin:0;white-space:pre-line;">${esc(de.value)}</p>
     </div>`).join('')}
