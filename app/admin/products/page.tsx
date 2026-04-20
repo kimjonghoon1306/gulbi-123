@@ -362,6 +362,22 @@ export default function ProductsPage() {
     setShowForm(false)
   }
 
+  const openEditDetail = (p: Product) => {
+    selectProductForAI(p)
+    setAiImage(null); setAiBgRemovedBase64(''); setAiError('')
+    setAiSelectedBg('dark'); setShowBuyerPreview(false)
+    if (p.description) {
+      setAiLandingHtml(p.description)
+      setAiLandingData(null)
+      setAiStep(3)
+    } else {
+      setAiLandingHtml('')
+      setAiStep(1)
+    }
+    setAiTab('ai')
+    setShowAiForm(true)
+  }
+
   const openEdit = (p: Product) => {
     setEditProduct(p)
     setForm({ name: p.name, description: p.description || '', category_id: p.category_id || '', wholesale_price: String(p.wholesale_price), member_price: String(p.member_price||0), retail_price: String(p.retail_price), stock: String(p.stock), unit: p.unit || 'kg', image_url: p.image_url || '', is_active: p.is_active })
@@ -473,6 +489,9 @@ export default function ProductsPage() {
                       <div className="flex gap-2">
                         <button onClick={() => openEdit(p)} className="text-xs text-sky-500 hover:text-sky-600 font-medium">수정</button>
                         <button onClick={() => deleteProduct(p.id)} className="text-xs text-red-400 hover:text-red-500 font-medium">삭제</button>
+                        <button onClick={() => openEditDetail(p)} className="text-xs font-medium" style={{color: p.description ? '#c8a96e' : '#94a3b8'}}>
+                          {p.description ? '✨ 상세편집' : '+ 상세등록'}
+                        </button>
                       </div>
                     </td>
                   </tr>
