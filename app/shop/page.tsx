@@ -210,7 +210,7 @@ export default function ShopPage() {
             </Link>
 
             {/* 검색 */}
-            <div style={{ flex: 1, maxWidth: '520px', margin: '0 auto' }}>
+            <div className="header-search" style={{ flex: 1, maxWidth: '520px', margin: '0 auto' }}>
               <div style={{ position: 'relative' }}>
                 <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', fontSize: '16px' }}>🔍</span>
                 <input
@@ -234,7 +234,7 @@ export default function ShopPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
               {/* 방문자 */}
               {visitorCount > 0 && (
-                <div style={{
+                <div className="visitor-badge" style={{
                   display: 'flex', alignItems: 'center', gap: '5px',
                   background: 'rgba(15,118,110,0.1)', borderRadius: '20px',
                   padding: '5px 12px', border: '1px solid rgba(15,118,110,0.2)'
@@ -632,19 +632,19 @@ export default function ShopPage() {
         </div>
       </section>
 
-      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '40px 20px 120px' }}>
+      <div className="product-section" style={{ maxWidth: '1280px', margin: '0 auto', padding: '40px 20px 120px' }}>
 
         {/* ── 카테고리 ── */}
-        <div style={{ marginBottom: '40px' }}>
+        <div className="cat-section" style={{ marginBottom: '40px' }}>
           <h2 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '16px', letterSpacing: '-0.5px' }}>
             🏷️ 카테고리
           </h2>
-          <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '8px' }}>
+          <div className="cat-scroll" style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '8px' }}>
             {['전체', ...categories.map(c => c.name)].map((cat, idx) => {
               const active = selectedCat === cat
               const color = CAT_COLORS[cat] || getDefaultCatColor(idx)
               return (
-                <button key={cat} onClick={() => setSelectedCat(cat)} style={{
+                <button key={cat} onClick={() => setSelectedCat(cat)} className="cat-btn" style={{
                   display: 'flex', alignItems: 'center', gap: '8px',
                   padding: '12px 22px', borderRadius: '16px', flexShrink: 0,
                   border: active ? 'none' : `2px solid ${border}`,
@@ -681,8 +681,7 @@ export default function ShopPage() {
 
         {/* ── 상품 그리드 ── */}
         {loading ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: '20px' }}>
-            {[...Array(8)].map((_, i) => (
+          <div className="skeleton-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: '20px' }}>
               <div key={i} style={{
                 background: card, borderRadius: '24px', height: '340px',
                 animation: 'shimmer 1.5s ease-in-out infinite',
@@ -697,8 +696,7 @@ export default function ShopPage() {
             <p style={{ color: sub, fontSize: '14px' }}>곧 신선한 수산물이 올라올 예정이에요!</p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: '20px' }}>
-            {filtered.map((p, i) => (
+          <div className="product-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: '20px' }}>
               <Link key={p.id} href={`/shop/product/${p.id}`} style={{ textDecoration: 'none' }}>
                 <div className="product-card" style={{
                   background: card,
@@ -854,11 +852,26 @@ export default function ShopPage() {
       </div>
 
       <style>{`
-        @media (min-width: 640px) { .mobile-nav { display: none !important; } }
+        @media (min-width: 640px) { 
+          .mobile-nav { display: none !important; }
+          .header-user-btns { display: flex !important; align-items: center !important; gap: 8px !important; }
+        }
         @media (max-width: 639px) {
           .hero-scene { display: none !important; }
           .mobile-animals { display: flex !important; }
           .header-user-btns { display: none !important; }
+          .header-search { max-width: 100% !important; }
+          .hero-section { padding: 32px 16px 56px !important; }
+          .hero-stats { gap: 8px !important; }
+          .hero-stat-item { padding: 12px 14px !important; }
+          .cat-section { margin-bottom: 24px !important; }
+          .cat-scroll { gap: 8px !important; }
+          .cat-btn { padding: 8px 14px !important; font-size: 13px !important; }
+          .cat-btn span:first-child { font-size: 16px !important; }
+          .product-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+          .product-section { padding: 20px 16px 100px !important; }
+          .skeleton-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+          .visitor-badge { display: none !important; }
         }
         @media (min-width: 640px) {
           .mobile-animals { display: none !important; }
