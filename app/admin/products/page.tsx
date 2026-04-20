@@ -49,7 +49,7 @@ export default function ProductsPage() {
   const [aiMeta, setAiMeta] = useState({name:'',category_id:'',unit:'kg',wholesale_price:'',member_price:'',retail_price:'',stock:''})
   const [aiDark, setAiDark] = useState(true)
   const [showBuyerPreview, setShowBuyerPreview] = useState<'mobile'|'desktop'|false>(false)
-  const [aiPresetKey, setAiPresetKey] = useState<PresetKey>('gold')
+  const [aiPresetKey, setAiPresetKey] = useState<PresetKey>('gold' as PresetKey)
   const [aiLandingData, setAiLandingData] = useState<LandingData | null>(null)
   const supabase = createClient()
 
@@ -232,7 +232,7 @@ export default function ProductsPage() {
       if (data.error) return setAiError(data.error)
       setAiLandingData(data.data || null)
       setAiLandingHtml(data.html)
-      setAiPresetKey('gold')
+      setAiPresetKey('gold' as PresetKey)
       setAiStep(3)
     } catch(e:any) { setAiError('[v3] 오류: ' + e.message) }
     finally { setAiLoading(false) }
