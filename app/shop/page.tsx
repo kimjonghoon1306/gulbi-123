@@ -652,9 +652,8 @@ export default function ShopPage() {
                   color: active ? 'white' : sub,
                   fontSize: '14px', fontWeight: active ? 800 : 600,
                   cursor: 'pointer',
-                  transition: 'all 0.3s cubic-bezier(0.34,1.56,0.64,1)',
-                  boxShadow: active ? `0 10px 28px ${color.shadow}` : '0 2px 8px rgba(0,0,0,0.06)',
-                  transform: active ? 'translateY(-4px) scale(1.05)' : 'translateY(0) scale(1)',
+                  transition: 'all 0.2s ease',
+                  boxShadow: active ? `0 6px 16px ${color.shadow}` : '0 2px 8px rgba(0,0,0,0.06)',
                 }}>
                   <span style={{ fontSize: '20px' }}>{CAT_ICONS[cat] || '🐟'}</span>
                   <span>{cat}</span>
