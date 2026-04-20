@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background-color: #f8fafc;
+  color: #1e293b;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* 상세페이지 편집 — 모바일 최적화 */
+.gulbi-preview [contenteditable="true"] {
+  font-size: inherit;
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-tap-highlight-color: rgba(236, 72, 153, 0.15);
+  touch-action: manipulation;
+  min-height: 1em;
+}
+
+.gulbi-preview .gulbi-section-img {
+  position: relative;
+  transition: box-shadow 0.15s;
+}
+
+.gulbi-preview .gulbi-section-img:hover {
+  box-shadow: inset 0 0 0 2px rgba(239, 68, 68, 0.4);
+}
+
+.gulbi-preview .gulbi-img-remove {
+  opacity: 0.85;
+  transition: opacity 0.15s, background 0.15s, transform 0.1s;
+}
+
+.gulbi-preview .gulbi-img-remove:active {
+  transform: scale(0.88);
+}
+
+.gulbi-preview ::selection {
+  background: rgba(236, 72, 153, 0.3);
+}
