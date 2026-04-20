@@ -6,7 +6,7 @@
 // 타입 정의
 // ============================================================
 
-export type PresetKey = 'food' | 'health' | 'goods' | 'craft' | 'misc'
+export type PresetKey = 'gold' | 'dark' | 'blue' | 'red' | 'pink' | 'white'
 
 export type Preset = {
   name: string
@@ -112,15 +112,17 @@ export type LandingData = {
 // ============================================================
 
 export const PRESETS: Record<PresetKey, Preset> = {
-  food: {
-    name: '식품 · 정갈한',
-    description: '수산물/가공식품/농산물 · 앰버 에디토리얼',
+
+  // ① 골드 — 앰버·골드 프리미엄 (기본, 수산물/식품에 최적)
+  gold: {
+    name: '골드',
+    description: '앰버 골드 · 프리미엄 식품에 최적',
     colors: {
       primary: '#C8842D', deep: '#8B4513', light: '#E8B87A',
       cream: '#F7F0E1', ink: '#1C1610', inkSoft: '#3D342A',
       paper: '#FBF7EE', line: 'rgba(28,22,16,0.12)',
       heroGrad: 'linear-gradient(180deg, #2a1810 0%, #3d2817 40%, #6b4423 100%)',
-      originGrad: 'linear-gradient(135deg, #4a7c4e 0%, #2d5a3d 40%, #1a3d2e 100%)',
+      originGrad: 'linear-gradient(135deg, #4a3820 0%, #3d2e15 100%)',
       imgBg: 'linear-gradient(135deg, #3d2817, #6b4423)',
     },
     fonts: {
@@ -136,16 +138,17 @@ export const PRESETS: Record<PresetKey, Preset> = {
     sections: ['intro','hero','origin','story','features','keynum','compare','recipe','storage','reviews','info','faq','cta','ship','seal'],
   },
 
-  health: {
-    name: '건강식품 · 자연의',
-    description: '홍삼/꿀/한약재 · 딥그린 자연주의',
+  // ② 검정 — 다크·럭셔리 블랙
+  dark: {
+    name: '검정',
+    description: '럭셔리 블랙 · 고급 프리미엄',
     colors: {
-      primary: '#4A7C4E', deep: '#2D5A3D', light: '#A8C9A8',
-      cream: '#F2F5EC', ink: '#1A2317', inkSoft: '#38432E',
-      paper: '#FAFBF5', line: 'rgba(26,35,23,0.12)',
-      heroGrad: 'linear-gradient(180deg, #1a2d1e 0%, #2d5a3d 50%, #4a7c4e 100%)',
-      originGrad: 'linear-gradient(135deg, #4a7c4e 0%, #3d6a4e 50%, #2d5a3d 100%)',
-      imgBg: 'linear-gradient(135deg, #2d5a3d, #4a7c4e)',
+      primary: '#E8E8E8', deep: '#FFFFFF', light: '#B0B0B0',
+      cream: '#1A1A1A', ink: '#F5F5F5', inkSoft: '#C0C0C0',
+      paper: '#0D0D0D', line: 'rgba(255,255,255,0.12)',
+      heroGrad: 'linear-gradient(180deg, #000000 0%, #0D0D0D 50%, #1A1A1A 100%)',
+      originGrad: 'linear-gradient(135deg, #1A1A1A 0%, #0D0D0D 100%)',
+      imgBg: 'linear-gradient(135deg, #1a1a1a, #0d0d0d)',
     },
     fonts: {
       serif: `'Noto Serif KR', 'Nanum Myeongjo', serif`,
@@ -153,83 +156,111 @@ export const PRESETS: Record<PresetKey, Preset> = {
       deco: `'Gowun Batang', 'Noto Serif KR', serif`,
     },
     labels: {
-      origin: 'ORIGIN · 원산지', recipe: 'DOSAGE · 복용법', storage: 'STORAGE · 보관법',
-      difference: 'DIFFERENCE · 차이', features: 'EFFICACY · 효능',
-      story: 'STORY · 제품 이야기', proof: 'PROOF · 검증', voices: 'VOICES · 후기', spec: 'SPEC · 성분',
+      origin: 'ORIGIN · 원산지', recipe: 'RECIPE · 조리법', storage: 'STORAGE · 보관법',
+      difference: 'DIFFERENCE · 차이', features: 'FEATURES · 특징',
+      story: 'STORY · 이야기', proof: 'PROOF', voices: 'VOICES', spec: 'SPEC',
     },
-    sections: ['intro','hero','origin','story','features','ingredients','keynum','compare','dosage','storage','reviews','info','faq','cta','ship','seal'],
+    sections: ['intro','hero','origin','story','features','keynum','compare','recipe','storage','reviews','info','faq','cta','ship','seal'],
   },
 
-  goods: {
-    name: '공산품 · 모던한',
-    description: '주방용품/생활용품 · 모노크롬 미니멀',
+  // ③ 파랑 — 로열 블루
+  blue: {
+    name: '파랑',
+    description: '로열 블루 · 신뢰·신선',
     colors: {
-      primary: '#2C2C2C', deep: '#0A0A0A', light: '#8A8A8A',
-      cream: '#F5F5F5', ink: '#0A0A0A', inkSoft: '#4A4A4A',
-      paper: '#FFFFFF', line: 'rgba(10,10,10,0.12)',
-      heroGrad: 'linear-gradient(180deg, #000 0%, #1a1a1a 50%, #2c2c2c 100%)',
-      originGrad: 'linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%)',
-      imgBg: 'linear-gradient(135deg, #2a2a2a, #1a1a1a)',
+      primary: '#1D4ED8', deep: '#1E3A8A', light: '#60A5FA',
+      cream: '#EFF6FF', ink: '#1E3A8A', inkSoft: '#1E40AF',
+      paper: '#F0F7FF', line: 'rgba(30,58,138,0.15)',
+      heroGrad: 'linear-gradient(180deg, #1e3a8a 0%, #1d4ed8 50%, #2563eb 100%)',
+      originGrad: 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%)',
+      imgBg: 'linear-gradient(135deg, #1e3a8a, #2563eb)',
     },
     fonts: {
-      serif: `'Pretendard Variable', 'Pretendard', sans-serif`,
+      serif: `'Noto Serif KR', 'Nanum Myeongjo', serif`,
+      sans: `'Pretendard Variable', 'Pretendard', -apple-system, sans-serif`,
+      deco: `'Gowun Batang', 'Noto Serif KR', serif`,
+    },
+    labels: {
+      origin: 'ORIGIN · 원산지', recipe: 'RECIPE · 조리법', storage: 'STORAGE · 보관법',
+      difference: 'DIFFERENCE · 차이', features: 'FEATURES · 특징',
+      story: 'STORY · 이야기', proof: 'PROOF', voices: 'VOICES', spec: 'SPEC',
+    },
+    sections: ['intro','hero','origin','story','features','keynum','compare','recipe','storage','reviews','info','faq','cta','ship','seal'],
+  },
+
+  // ④ 빨강 — 볼드 레드
+  red: {
+    name: '빨강',
+    description: '볼드 레드 · 강렬한 임팩트',
+    colors: {
+      primary: '#DC2626', deep: '#991B1B', light: '#F87171',
+      cream: '#FFF5F5', ink: '#450A0A', inkSoft: '#7F1D1D',
+      paper: '#FFF8F8', line: 'rgba(69,10,10,0.12)',
+      heroGrad: 'linear-gradient(180deg, #450a0a 0%, #7f1d1d 40%, #991b1b 100%)',
+      originGrad: 'linear-gradient(135deg, #7f1d1d 0%, #450a0a 100%)',
+      imgBg: 'linear-gradient(135deg, #7f1d1d, #991b1b)',
+    },
+    fonts: {
+      serif: `'Noto Serif KR', 'Nanum Myeongjo', serif`,
+      sans: `'Pretendard Variable', 'Pretendard', -apple-system, sans-serif`,
+      deco: `'Gowun Batang', 'Noto Serif KR', serif`,
+    },
+    labels: {
+      origin: 'ORIGIN · 원산지', recipe: 'RECIPE · 조리법', storage: 'STORAGE · 보관법',
+      difference: 'DIFFERENCE · 차이', features: 'FEATURES · 특징',
+      story: 'STORY · 이야기', proof: 'PROOF', voices: 'VOICES', spec: 'SPEC',
+    },
+    sections: ['intro','hero','origin','story','features','keynum','compare','recipe','storage','reviews','info','faq','cta','ship','seal'],
+  },
+
+  // ⑤ 핑크 — 로즈 핑크
+  pink: {
+    name: '핑크',
+    description: '로즈 핑크 · 우아한 감성',
+    colors: {
+      primary: '#DB2777', deep: '#9D174D', light: '#F9A8D4',
+      cream: '#FDF2F8', ink: '#500724', inkSoft: '#831843',
+      paper: '#FFF0F7', line: 'rgba(80,7,36,0.12)',
+      heroGrad: 'linear-gradient(180deg, #500724 0%, #831843 40%, #9d174d 100%)',
+      originGrad: 'linear-gradient(135deg, #9d174d 0%, #500724 100%)',
+      imgBg: 'linear-gradient(135deg, #831843, #9d174d)',
+    },
+    fonts: {
+      serif: `'Noto Serif KR', 'Nanum Myeongjo', serif`,
+      sans: `'Pretendard Variable', 'Pretendard', -apple-system, sans-serif`,
+      deco: `'Gowun Batang', 'Noto Serif KR', serif`,
+    },
+    labels: {
+      origin: 'ORIGIN · 원산지', recipe: 'RECIPE · 조리법', storage: 'STORAGE · 보관법',
+      difference: 'DIFFERENCE · 차이', features: 'FEATURES · 특징',
+      story: 'STORY · 이야기', proof: 'PROOF', voices: 'VOICES', spec: 'SPEC',
+    },
+    sections: ['intro','hero','origin','story','features','keynum','compare','recipe','storage','reviews','info','faq','cta','ship','seal'],
+  },
+
+  // ⑥ 하양 — 울트라 클린 화이트
+  white: {
+    name: '하양',
+    description: '울트라 화이트 · 미니멀 클린',
+    colors: {
+      primary: '#374151', deep: '#111827', light: '#9CA3AF',
+      cream: '#F9FAFB', ink: '#111827', inkSoft: '#374151',
+      paper: '#FFFFFF', line: 'rgba(17,24,39,0.10)',
+      heroGrad: 'linear-gradient(180deg, #111827 0%, #1f2937 50%, #374151 100%)',
+      originGrad: 'linear-gradient(135deg, #374151 0%, #111827 100%)',
+      imgBg: 'linear-gradient(135deg, #1f2937, #374151)',
+    },
+    fonts: {
+      serif: `'Pretendard Variable', 'Pretendard', -apple-system, sans-serif`,
       sans: `'Pretendard Variable', 'Pretendard', -apple-system, sans-serif`,
       deco: `'Pretendard Variable', 'Pretendard', sans-serif`,
     },
     labels: {
-      origin: 'MADE IN', recipe: 'USAGE · 사용법', storage: 'CARE · 관리법',
-      difference: 'DIFFERENCE · 차이', features: 'FEATURES',
-      story: 'STORY', proof: 'PROOF', voices: 'REVIEWS', spec: 'SPEC',
-    },
-    sections: ['intro','hero','story','features','keynum','compare','usage','specs','warranty','reviews','info','faq','cta','ship','seal'],
-  },
-
-  craft: {
-    name: '공예품 · 전통의',
-    description: '공예품/선물세트/장류 · 먹 + 붉은 인장',
-    colors: {
-      primary: '#8B1A1A', deep: '#1a1a1a', light: '#C45050',
-      cream: '#F4EEE0', ink: '#0a0a0a', inkSoft: '#2a2a2a',
-      paper: '#FAF6EC', line: 'rgba(10,10,10,0.15)',
-      heroGrad: 'linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 50%, #2a1a1a 100%)',
-      originGrad: 'linear-gradient(135deg, #1a1a1a 0%, #2a1a1a 100%)',
-      imgBg: 'linear-gradient(135deg, #1a1a1a, #2a1a1a)',
-    },
-    fonts: {
-      serif: `'Noto Serif KR', 'Nanum Myeongjo', serif`,
-      sans: `'Noto Serif KR', 'Nanum Myeongjo', serif`,
-      deco: `'Gowun Batang', 'Noto Serif KR', serif`,
-    },
-    labels: {
-      origin: 'ORIGIN · 유래', recipe: 'CARE · 관리', storage: 'STORAGE · 보관',
-      difference: 'DIFFERENCE · 차이', features: 'FEATURES · 특장점',
-      story: 'STORY · 이야기', proof: 'HERITAGE', voices: 'VOICES', spec: 'SPEC',
-    },
-    sections: ['intro','hero','artist','origin','story','features','materials','keynum','compare','care','reviews','info','faq','cta','ship','seal'],
-  },
-
-  misc: {
-    name: '잡화 · 깔끔한',
-    description: '일반 상품/선물 · 네이비 클린',
-    colors: {
-      primary: '#1E3A5F', deep: '#0A1F3F', light: '#4A6C8F',
-      cream: '#EEF2F7', ink: '#0A1F3F', inkSoft: '#2E4158',
-      paper: '#F9FBFD', line: 'rgba(10,31,63,0.12)',
-      heroGrad: 'linear-gradient(180deg, #0a1f3f 0%, #1e3a5f 50%, #2a4d7a 100%)',
-      originGrad: 'linear-gradient(135deg, #1e3a5f 0%, #0a1f3f 100%)',
-      imgBg: 'linear-gradient(135deg, #1e3a5f, #2a4d7a)',
-    },
-    fonts: {
-      serif: `'Pretendard Variable', 'Pretendard', sans-serif`,
-      sans: `'Pretendard Variable', 'Pretendard', sans-serif`,
-      deco: `'Gowun Batang', 'Noto Serif KR', serif`,
-    },
-    labels: {
-      origin: 'ORIGIN', recipe: 'USAGE · 사용법', storage: 'CARE · 관리법',
+      origin: 'ORIGIN · 원산지', recipe: 'RECIPE · 조리법', storage: 'STORAGE · 보관법',
       difference: 'DIFFERENCE · 차이', features: 'FEATURES · 특징',
-      story: 'STORY · 소개', proof: 'PROOF', voices: 'REVIEWS', spec: 'SPEC',
+      story: 'STORY · 이야기', proof: 'PROOF', voices: 'VOICES', spec: 'SPEC',
     },
-    sections: ['intro','hero','story','features','keynum','compare','usage','reviews','info','faq','cta','ship','seal'],
+    sections: ['intro','hero','origin','story','features','keynum','compare','recipe','storage','reviews','info','faq','cta','ship','seal'],
   },
 }
 
@@ -358,14 +389,14 @@ function renderOrigin(d: LandingData, p: Preset): string {
   <h2 ${ce('origin.location')} style="font-family:${F.serif};font-weight:700;font-size:40px;line-height:1.1;letter-spacing:-0.02em;margin:0 0 24px;color:${C.light};">${esc(d.originLocation)}</h2>
   <p ${ce('origin.story')} style="font-family:${F.deco};font-size:15px;line-height:1.95;opacity:0.85;margin:0 0 40px;">${esc(d.originStory)}</p>
   ${img ? `<div class="gulbi-section-img" data-section-img="origin" style="margin:0 -28px 0;aspect-ratio:16/9;background:#000;overflow:hidden;position:relative;"><img src="${img}" alt="${esc(d.productName)}" style="width:100%;height:100%;object-fit:cover;display:block;" /></div>` : ''}
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:${C.light}33;margin:0 -28px;border-top:1px solid ${C.light}33;">
-    ${d.originStats.slice(0,4).map((s,i) => `
-    <div style="background:${C.ink};padding:32px 24px;">
-      <div style="font-family:${F.serif};font-size:40px;font-weight:300;color:${C.light};line-height:1;margin-bottom:10px;letter-spacing:-0.02em;">
-        <span ${ce('origin.stat.' + i + '.value')}>${esc(s.value)}</span><span ${ce('origin.stat.' + i + '.unit')} style="font-size:15px;margin-left:4px;">${esc(s.unit)}</span>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:${C.light}33;margin:0 -28px;border-top:1px solid ${C.light}33;">
+    ${d.originStats.filter(s => s.value && s.value.trim()).slice(0,4).map((s,i) => `
+    <div style="background:${C.ink};padding:28px 20px;">
+      <div style="font-family:${F.serif};font-size:36px;font-weight:300;color:${C.light};line-height:1;margin-bottom:8px;letter-spacing:-0.02em;">
+        <span ${ce('origin.stat.' + i + '.value')}>${esc(s.value)}</span><span ${ce('origin.stat.' + i + '.unit')} style="font-size:14px;margin-left:4px;">${esc(s.unit)}</span>
       </div>
-      <div ${ce('origin.stat.' + i + '.label')} style="font-size:10px;letter-spacing:0.25em;opacity:0.6;text-transform:uppercase;">${esc(s.label)}</div>
-      <div ${ce('origin.stat.' + i + '.desc')} style="font-family:${F.deco};font-size:12px;line-height:1.7;margin-top:12px;opacity:0.8;">${esc(s.desc)}</div>
+      <div ${ce('origin.stat.' + i + '.label')} style="font-size:10px;letter-spacing:0.25em;opacity:0.6;text-transform:uppercase;color:${C.cream};">${esc(s.label)}</div>
+      <div ${ce('origin.stat.' + i + '.desc')} style="font-family:${F.deco};font-size:12px;line-height:1.7;margin-top:10px;opacity:0.85;color:${C.cream};">${esc(s.desc)}</div>
     </div>`).join('')}
   </div>
 </section>`
@@ -806,8 +837,8 @@ const SECTION_RENDERERS: Record<string, (d: LandingData, p: Preset) => string> =
 // 메인 렌더 함수
 // ============================================================
 
-export function renderLanding(data: LandingData, presetKey: PresetKey = 'food'): string {
-  const preset = PRESETS[presetKey] || PRESETS.food
+export function renderLanding(data: LandingData, presetKey: PresetKey = 'gold'): string {
+  const preset = PRESETS[presetKey] || PRESETS.gold
   const { colors: C, fonts: F } = preset
 
   const fontImports = `
