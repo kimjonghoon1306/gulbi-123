@@ -268,18 +268,37 @@ export default function ProductsPage() {
       }
       const previewEl = document.getElementById('landing-preview')
       const finalHtml = previewEl ? previewEl.innerHTML : aiLandingHtml
-      await supabase.from('products').insert({
-        name: aiMeta.name || '상품',
-        description: finalHtml,
-        category_id: aiMeta.category_id || null,
-        wholesale_price: Number(aiMeta.wholesale_price)||0,
-        retail_price: Number(aiMeta.retail_price)||0,
-        stock: Number(aiMeta.stock)||0,
-        unit: aiMeta.unit||'개',
-        member_price: Number(aiMeta.member_price)||0,
-        image_url: mainImgUrl,
-        is_active: true,
-      })
+
+      if (selectedProduct) {
+        // 기존 상품에 상세페이지 연결 (복제품 생성 방지)
+        const updateData: any = {
+          name: aiMeta.name || selectedProduct.name,
+          description: finalHtml,
+          category_id: aiMeta.category_id || null,
+          wholesale_price: Number(aiMeta.wholesale_price)||0,
+          retail_price: Number(aiMeta.retail_price)||0,
+          stock: Number(aiMeta.stock)||0,
+          unit: aiMeta.unit||'개',
+          member_price: Number(aiMeta.member_price)||0,
+        }
+        // 새 이미지를 올렸을 때만 image_url 교체, 안 올렸으면 기존 이미지 유지
+        if (mainImgUrl) updateData.image_url = mainImgUrl
+        await supabase.from('products').update(updateData).eq('id', selectedProduct.id)
+      } else {
+        // 상품을 선택 안 한 경우에만 새로 등록 (드문 경우)
+        await supabase.from('products').insert({
+          name: aiMeta.name || '상품',
+          description: finalHtml,
+          category_id: aiMeta.category_id || null,
+          wholesale_price: Number(aiMeta.wholesale_price)||0,
+          retail_price: Number(aiMeta.retail_price)||0,
+          stock: Number(aiMeta.stock)||0,
+          unit: aiMeta.unit||'개',
+          member_price: Number(aiMeta.member_price)||0,
+          image_url: mainImgUrl,
+          is_active: true,
+        })
+      }
       setShowAiForm(false); setAiStep(1)
       setAiImage(null); setAiImagePreview(''); setAiBgRemovedPreview(''); setAiBgRemovedBase64('')
       setAiLandingHtml(''); setAiError(''); setAiSelectedBg('dark')
@@ -466,12 +485,12 @@ export default function ProductsPage() {
               <div style={{display:'flex',gap:'4px',background:aiDark?'rgba(255,255,255,0.06)':'#fafafa',borderRadius:'8px',padding:'3px'}}>
                 <button onClick={() => setAiTab('ai')}
                   style={{padding:'4px 12px',borderRadius:'6px',border:'none',fontSize:'11px',fontWeight:700,cursor:'pointer',
-                    background:aiTab==='ai'?'#c8a96e':'transparent',color:aiTab==='ai'?'#111':(aiDark?'rgba(255,255,255,0.5)':'rgba(0,0,0,0.4)')}}>
+                    background:aiTab==='ai'?'#c8a96e':'transparent',color:aiTab==='ai'?'#111':'rgba(255,255,255,0.5)'}}>
                   ✨ AI 생성
                 </button>
                 <button onClick={() => setAiTab('manual')}
                   style={{padding:'4px 12px',borderRadius:'6px',border:'none',fontSize:'11px',fontWeight:700,cursor:'pointer',
-                    background:aiTab==='manual'?'#c8a96e':'transparent',color:aiTab==='manual'?'#111':(aiDark?'rgba(255,255,255,0.5)':'rgba(0,0,0,0.4)')}}>
+                    background:aiTab==='manual'?'#c8a96e':'transparent',color:aiTab==='manual'?'#111':'rgba(255,255,255,0.5)'}}>
                   ✏️ 직접 만들기
                 </button>
               </div>
@@ -480,10 +499,10 @@ export default function ProductsPage() {
               {([1,2,3] as const).map((s,i) => (
                 <div key={s} style={{display:'flex',alignItems:'center',gap:'4px'}}>
                   <div style={{width:'26px',height:'26px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'11px',fontWeight:900,
-                    background:aiStep>=s?'#c8a96e':(aiDark?'rgba(255,255,255,0.1)':'rgba(0,0,0,0.08)'),color:aiStep>=s?'#111':(aiDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)')}}>
+                    background:aiStep>=s?'#c8a96e':'rgba(255,255,255,0.1)',color:aiStep>=s?'#111':'rgba(255,255,255,0.4)'}}>
                     {aiStep>s?'✓':s}
                   </div>
-                  {i<2&&<div style={{width:'16px',height:'1px',background:aiStep>s?'#c8a96e':(aiDark?'rgba(255,255,255,0.15)':'rgba(0,0,0,0.15)')}}/>}
+                  {i<2&&<div style={{width:'16px',height:'1px',background:aiStep>s?'#c8a96e':'rgba(255,255,255,0.15)'}}/>}
                 </div>
               ))}
             </div>
@@ -718,23 +737,7 @@ export default function ProductsPage() {
                 </div>
 
                 <div style={{display:'flex',gap:'6px',alignItems:'center',flexWrap:'wrap'}}>
-                  <p style={{color:'rgba(255,255,255,0.3)',fontSize:'10px',margin:0,flex:1}}>💡 텍스트 클릭하면 바로 수정 · 실수하면 ↶ 되돌리기 버튼</p>
-                  <button
-                    onMouseDown={e => e.preventDefault()}
-                    onClick={() => document.execCommand('undo')}
-                    title="글자 되돌리기"
-                    style={{padding:'8px 14px',borderRadius:'8px',border:'1px solid rgba(200,169,110,0.6)',background:'rgba(200,169,110,0.18)',color:'#e8c878',fontSize:'13px',fontWeight:800,cursor:'pointer',display:'flex',alignItems:'center',gap:'5px'}}>
-                    <span style={{fontSize:'16px',lineHeight:1}}>↶</span>
-                    되돌리기
-                  </button>
-                  <button
-                    onMouseDown={e => e.preventDefault()}
-                    onClick={() => document.execCommand('redo')}
-                    title="다시 실행"
-                    style={{padding:'8px 12px',borderRadius:'8px',border:'1px solid rgba(200,169,110,0.4)',background:'rgba(200,169,110,0.08)',color:'#c8a96e',fontSize:'13px',fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',gap:'5px'}}>
-                    <span style={{fontSize:'16px',lineHeight:1}}>↷</span>
-                    다시
-                  </button>
+                  <p style={{color:'rgba(255,255,255,0.3)',fontSize:'10px',margin:0,flex:1}}>💡 텍스트 클릭하면 바로 수정 · Ctrl+Z 되돌리기</p>
                   <button onClick={() => setAiStep(2)}
                     style={{padding:'6px 10px',borderRadius:'8px',border:'1px solid rgba(255,255,255,0.1)',background:'transparent',color:'rgba(255,255,255,0.5)',fontSize:'11px',fontWeight:600,cursor:'pointer'}}>
                     ← 설정
