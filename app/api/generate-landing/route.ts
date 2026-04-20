@@ -136,12 +136,21 @@ function mergeData(
 
 export async function POST(req: NextRequest) {
   try {
-    const { images, persona, productName, retailPrice, wholesalePrice, unit, theme } = await req.json()
-    // images: [{ base64, mimeType }]  최대 10장
+    const body = await req.json()
+    const { persona, productName, retailPrice, wholesalePrice, unit, theme } = body
 
-    const imageList: { base64: string; mimeType: string }[] = Array.isArray(images) ? images.slice(0, 10) : []
+    // 두 가지 형식 모두 지원:
+    // 신형: images: [{ base64, mimeType }, ...]
+    // 구형: base64: string, mimeType: string (단일 이미지)
+    let imageList: { base64: string; mimeType: string }[] = []
+    if (Array.isArray(body.images) && body.images.length > 0) {
+      imageList = body.images.slice(0, 10)
+    } else if (body.base64) {
+      imageList = [{ base64: body.base64, mimeType: body.mimeType || 'image/jpeg' }]
+    }
+
     if (imageList.length === 0) {
-      return NextResponse.json({ error: '이미지가 없습니다. 최소 1장 이상 업로드해주세요.' }, { status: 400 })
+      return NextResponse.json({ error: '이미지를 먼저 올려주세요.' }, { status: 400 })
     }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
