@@ -384,7 +384,7 @@ function renderOrigin(d: LandingData, p: Preset): string {
   const { colors: C, fonts: F, labels: L } = p
   const img = d.sectionImages?.origin
   return `
-<section data-section="origin" style="background:${C.ink};color:${C.cream};padding:80px 28px 0;">
+<section data-section="origin" style="background:${C.ink};color:${C.cream};padding:80px 28px 0;text-align:center;">
   <p ${ce('origin.num')} style="font-family:${F.serif};font-size:11px;letter-spacing:0.4em;color:${C.light};margin:0 0 16px;">II.&nbsp;&nbsp;${esc(L.origin)}</p>
   <h2 ${ce('origin.location')} style="font-family:${F.serif};font-weight:700;font-size:40px;line-height:1.1;letter-spacing:-0.02em;margin:0 0 24px;color:${C.light};">${esc(d.originLocation)}</h2>
   <p ${ce('origin.story')} style="font-family:${F.deco};font-size:15px;line-height:1.95;opacity:0.85;margin:0 0 40px;">${esc(d.originStory)}</p>
@@ -407,7 +407,7 @@ function renderStory(d: LandingData, p: Preset): string {
   const img = d.sectionImages?.story
   const paragraphs = esc(d.story).split('\n').filter(Boolean).map(x => `<p style="margin:0 0 18px;">${x}</p>`).join('')
   return `
-<section data-section="story" style="padding:80px 28px;background:${C.cream};">
+<section data-section="story" style="padding:80px 28px;background:${C.cream};text-align:center;">
   <p ${ce('story.num')} style="font-family:${F.serif};font-size:11px;letter-spacing:0.4em;color:${C.deep};margin:0 0 16px;">III.&nbsp;&nbsp;${esc(L.story)}</p>
   <h2 ${ce('story.title')} style="font-family:${F.serif};font-weight:300;font-size:34px;line-height:1.15;letter-spacing:-0.02em;margin:0 0 36px;color:${C.ink};"><em style="font-style:normal;font-weight:700;color:${C.deep};">${esc(d.productName)}</em>의 하루.</h2>
   ${img ? imgSection(img, d.productName, 'story', '16/10') : ''}
@@ -615,9 +615,9 @@ function renderSpecs(d: LandingData, p: Preset): string {
   if (!d.specs) return ''
   const { colors: C, fonts: F } = p
   return `
-<section data-section="specs" style="padding:80px 28px;background:${C.paper};">
-  <p ${ce('specs.num')} style="font-family:${F.serif};font-size:11px;letter-spacing:0.4em;color:${C.deep};margin:0 0 16px;">SPECIFICATIONS · 사양</p>
-  <h2 ${ce('specs.title')} style="font-family:${F.serif};font-weight:300;font-size:30px;line-height:1.2;margin:0 0 32px;color:${C.ink};">${esc(d.specs.title)}</h2>
+<section data-section="specs" style="padding:80px 28px;background:${C.paper};text-align:center;">
+  <p ${ce('specs.num')} style="font-family:${F.serif};font-size:11px;letter-spacing:0.4em;color:${C.deep};margin:0 0 16px;text-align:center;">SPECIFICATIONS · 사양</p>
+  <h2 ${ce('specs.title')} style="font-family:${F.serif};font-weight:300;font-size:30px;line-height:1.2;margin:0 0 32px;color:${C.ink};text-align:center;">${esc(d.specs.title)}</h2>
   <table style="width:100%;border-top:2px solid ${C.ink};border-collapse:collapse;">
     ${d.specs.items.map((it,i) => `
     <tr style="border-bottom:1px solid ${C.line};">
@@ -676,7 +676,7 @@ function renderMaterials(d: LandingData, p: Preset): string {
   if (!d.materials) return ''
   const { colors: C, fonts: F } = p
   return `
-<section data-section="materials" style="padding:80px 28px;background:${C.cream};">
+<section data-section="materials" style="padding:80px 28px;background:${C.cream};text-align:center;">
   <p ${ce('materials.num')} style="font-family:${F.serif};font-size:11px;letter-spacing:0.4em;color:${C.deep};margin:0 0 16px;">MATERIALS · 소재</p>
   <h2 ${ce('materials.title')} style="font-family:${F.serif};font-weight:300;font-size:30px;line-height:1.2;margin:0 0 20px;color:${C.ink};">${esc(d.materials.title)}</h2>
   <p ${ce('materials.intro')} style="font-family:${F.deco};font-size:14px;line-height:1.9;color:${C.inkSoft};margin:0 0 40px;">${esc(d.materials.intro)}</p>
@@ -734,7 +734,7 @@ function renderReviews(d: LandingData, p: Preset): string {
 function renderInfo(d: LandingData, p: Preset): string {
   const { colors: C, fonts: F, labels: L } = p
   return `
-<section data-section="info" style="padding:80px 28px 60px;background:${C.paper};">
+<section data-section="info" style="padding:80px 28px 60px;background:${C.paper};text-align:center;">
   <p ${ce('info.num')} style="font-family:${F.serif};font-size:11px;letter-spacing:0.4em;color:${C.deep};margin:0 0 16px;">X.&nbsp;&nbsp;${esc(L.spec)}</p>
   <h2 ${ce('info.title')} style="font-family:${F.serif};font-weight:300;font-size:28px;line-height:1.2;letter-spacing:-0.02em;margin:0 0 32px;color:${C.ink};">상품 정보</h2>
   <table style="width:100%;border-top:2px solid ${C.ink};border-collapse:collapse;">
@@ -750,11 +750,11 @@ function renderInfo(d: LandingData, p: Preset): string {
 function renderFaq(d: LandingData, p: Preset): string {
   const { colors: C, fonts: F } = p
   return `
-<section data-section="faq" style="padding:60px 28px;background:${C.cream};">
+<section data-section="faq" style="padding:60px 28px;background:${C.cream};text-align:center;">
   <p ${ce('faq.num')} style="font-family:${F.serif};font-size:11px;letter-spacing:0.4em;color:${C.deep};margin:0 0 16px;">XI.&nbsp;&nbsp;FAQ</p>
   <h2 ${ce('faq.title')} style="font-family:${F.serif};font-weight:300;font-size:28px;line-height:1.2;letter-spacing:-0.02em;margin:0 0 32px;color:${C.ink};">자주 묻는 질문</h2>
   ${d.faq.slice(0,4).map((f,i) => `
-  <div style="border-bottom:1px solid ${C.line};padding:20px 0;">
+  <div style="border-bottom:1px solid ${C.line};padding:20px 0;max-width:560px;margin:0 auto;text-align:left;">
     <div style="display:flex;gap:12px;align-items:start;margin-bottom:8px;">
       <span style="font-family:${F.serif};font-weight:900;color:${C.deep};font-size:15px;flex-shrink:0;">Q.</span>
       <h4 ${ce('faq.' + i + '.q')} style="font-family:${F.serif};font-weight:700;font-size:15px;margin:0;line-height:1.5;color:${C.ink};">${esc(f.q)}</h4>
@@ -783,7 +783,7 @@ function renderCta(d: LandingData, p: Preset): string {
 function renderShip(d: LandingData, p: Preset): string {
   const { colors: C, fonts: F } = p
   return `
-<section data-section="ship" style="padding:56px 28px;background:${C.ink};color:${C.cream};">
+<section data-section="ship" style="padding:56px 28px;background:${C.ink};color:${C.cream};text-align:center;">
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;">
     ${d.delivery.slice(0,4).map((de,i) => `
     <div>
