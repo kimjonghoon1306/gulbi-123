@@ -495,12 +495,12 @@ export default function ProductsPage() {
               <div style={{display:'flex',gap:'4px',background:aiDark?'rgba(255,255,255,0.06)':'#fafafa',borderRadius:'8px',padding:'3px'}}>
                 <button onClick={() => setAiTab('ai')}
                   style={{padding:'4px 12px',borderRadius:'6px',border:'none',fontSize:'11px',fontWeight:700,cursor:'pointer',
-                    background:aiTab==='ai'?'#c8a96e':'transparent',color:aiTab==='ai'?'#111':'rgba(255,255,255,0.5)'}}>
+                    background:aiTab==='ai'?'#c8a96e':'transparent',color:aiTab==='ai'?'#111':(aiDark?'rgba(255,255,255,0.5)':'rgba(0,0,0,0.4)')}}>
                   ✨ AI 생성
                 </button>
                 <button onClick={() => setAiTab('manual')}
                   style={{padding:'4px 12px',borderRadius:'6px',border:'none',fontSize:'11px',fontWeight:700,cursor:'pointer',
-                    background:aiTab==='manual'?'#c8a96e':'transparent',color:aiTab==='manual'?'#111':'rgba(255,255,255,0.5)'}}>
+                    background:aiTab==='manual'?'#c8a96e':'transparent',color:aiTab==='manual'?'#111':(aiDark?'rgba(255,255,255,0.5)':'rgba(0,0,0,0.4)')}}>
                   ✏️ 직접 만들기
                 </button>
               </div>
@@ -509,10 +509,10 @@ export default function ProductsPage() {
               {([1,2,3] as const).map((s,i) => (
                 <div key={s} style={{display:'flex',alignItems:'center',gap:'4px'}}>
                   <div style={{width:'26px',height:'26px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'11px',fontWeight:900,
-                    background:aiStep>=s?'#c8a96e':'rgba(255,255,255,0.1)',color:aiStep>=s?'#111':'rgba(255,255,255,0.4)'}}>
+                    background:aiStep>=s?'#c8a96e':(aiDark?'rgba(255,255,255,0.1)':'rgba(0,0,0,0.08)'),color:aiStep>=s?'#111':(aiDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)')}}>
                     {aiStep>s?'✓':s}
                   </div>
-                  {i<2&&<div style={{width:'16px',height:'1px',background:aiStep>s?'#c8a96e':'rgba(255,255,255,0.15)'}}/>}
+                  {i<2&&<div style={{width:'16px',height:'1px',background:aiStep>s?'#c8a96e':(aiDark?'rgba(255,255,255,0.15)':'rgba(0,0,0,0.15)')}}/>}
                 </div>
               ))}
             </div>
@@ -715,69 +715,66 @@ export default function ProductsPage() {
 
           {aiTab==='ai' && aiStep===3 && (
             <div style={{flex:1,display:'flex',flexDirection:'column',minHeight:0,overflow:'hidden'}}>
-              <div style={{background:'#111',borderBottom:'1px solid rgba(255,255,255,0.1)',padding:'6px 10px',flexShrink:0}}>
+              <div style={{background:'#111',borderBottom:'1px solid rgba(255,255,255,0.1)',padding:'6px 10px',flexShrink:0,display:'flex',alignItems:'center',gap:'6px',flexWrap:'wrap'}}>
 
-                {/* 1줄: 템플릿 + 색상 + 액션버튼 한줄로 */}
-                <div style={{display:'flex',gap:'6px',alignItems:'center',flexWrap:'wrap'}}>
-                  {/* 템플릿 */}
-                  <span style={{color:'rgba(255,255,255,0.3)',fontSize:'9px',flexShrink:0}}>🖼️</span>
-                  {TEMPLATES.map(t => (
-                    <button key={t.key} onClick={() => handleChangeTemplate(t.key as TemplateKey)}
-                      style={{
-                        padding:'4px 8px',borderRadius:'6px',border:'1.5px solid',
-                        borderColor: aiTemplateKey===t.key ? '#c8a96e' : 'rgba(255,255,255,0.12)',
-                        background: aiTemplateKey===t.key ? 'rgba(200,169,110,0.2)' : 'transparent',
-                        color: aiTemplateKey===t.key ? '#e8c878' : 'rgba(255,255,255,0.45)',
-                        fontSize:'10px', fontWeight: aiTemplateKey===t.key ? 700 : 500,
-                        cursor:'pointer', transition:'all 0.15s', whiteSpace:'nowrap',
-                      }}>
-                      {t.emoji} {t.name}
-                    </button>
-                  ))}
-                  <div style={{width:'1px',height:'16px',background:'rgba(255,255,255,0.1)',flexShrink:0}}/>
-                  {/* 색상 */}
-                  <span style={{color:'rgba(255,255,255,0.3)',fontSize:'9px',flexShrink:0}}>🎨</span>
-                  {([
-                    {k:'gold' as PresetKey, label:'골드', bg:'#C8842D', border:'#E8B87A'},
-                    {k:'dark' as PresetKey, label:'검정', bg:'#0D0D0D', border:'#555'},
-                    {k:'blue' as PresetKey, label:'파랑', bg:'#1D4ED8', border:'#60A5FA'},
-                    {k:'red'  as PresetKey, label:'빨강', bg:'#DC2626', border:'#F87171'},
-                    {k:'pink' as PresetKey, label:'핑크', bg:'#DB2777', border:'#F9A8D4'},
-                    {k:'white' as PresetKey,label:'하양', bg:'#F5F5F5', border:'#374151'},
-                  ]).map(t => (
-                    <button key={t.k} onClick={() => handleChangePreset(t.k)}
-                      style={{
-                        width:'22px',height:'22px',borderRadius:'50%',cursor:'pointer',flexShrink:0,
-                        border:'2px solid '+(aiPresetKey===t.k ? t.border : 'transparent'),
-                        background:t.bg,
-                        boxShadow: aiPresetKey===t.k ? `0 0 8px ${t.bg}99` : 'none',
-                        transform: aiPresetKey===t.k ? 'scale(1.2)' : 'scale(1)',
-                        transition:'all 0.15s',
-                      }} title={t.label}/>
-                  ))}
-                  <div style={{width:'1px',height:'16px',background:'rgba(255,255,255,0.1)',flexShrink:0}}/>
-                  {/* 액션 버튼 */}
-                  <button onClick={() => setAiStep(2)}
-                    style={{padding:'4px 8px',borderRadius:'6px',border:'1px solid rgba(255,255,255,0.1)',background:'transparent',color:'rgba(255,255,255,0.45)',fontSize:'10px',fontWeight:600,cursor:'pointer',whiteSpace:'nowrap'}}>
-                    ← 설정
+                {/* 왼쪽: 템플릿 + 색상 */}
+                <span style={{color:'rgba(255,255,255,0.3)',fontSize:'9px',flexShrink:0}}>🖼️</span>
+                {TEMPLATES.map(t => (
+                  <button key={t.key} onClick={() => handleChangeTemplate(t.key as TemplateKey)}
+                    style={{
+                      padding:'4px 8px',borderRadius:'6px',border:'1.5px solid',
+                      borderColor: aiTemplateKey===t.key ? '#c8a96e' : 'rgba(255,255,255,0.12)',
+                      background: aiTemplateKey===t.key ? 'rgba(200,169,110,0.2)' : 'transparent',
+                      color: aiTemplateKey===t.key ? '#e8c878' : 'rgba(255,255,255,0.45)',
+                      fontSize:'10px', fontWeight: aiTemplateKey===t.key ? 700 : 500,
+                      cursor:'pointer', transition:'all 0.15s', whiteSpace:'nowrap',
+                    }}>
+                    {t.emoji} {t.name}
                   </button>
-                  <button onClick={handleGenerateLanding} disabled={aiLoading}
-                    style={{padding:'4px 8px',borderRadius:'6px',border:'1px solid rgba(200,169,110,0.5)',background:'transparent',color:'#c8a96e',fontSize:'10px',fontWeight:700,cursor:'pointer',whiteSpace:'nowrap'}}>
-                    🔄 재생성
-                  </button>
-                  <button onClick={() => setShowBuyerPreview('mobile')}
-                    style={{padding:'4px 8px',borderRadius:'6px',border:'1px solid rgba(100,200,100,0.4)',background:'rgba(100,200,100,0.07)',color:'#6ee7b7',fontSize:'10px',fontWeight:700,cursor:'pointer',whiteSpace:'nowrap'}}>
-                    📱 모바일
-                  </button>
-                  <button onClick={() => setShowBuyerPreview('desktop')}
-                    style={{padding:'4px 8px',borderRadius:'6px',border:'1px solid rgba(147,197,253,0.4)',background:'rgba(147,197,253,0.07)',color:'#93c5fd',fontSize:'10px',fontWeight:700,cursor:'pointer',whiteSpace:'nowrap'}}>
-                    🖥️ PC
-                  </button>
-                  <button onClick={handleAiRegister} disabled={aiLoading}
-                    style={{padding:'5px 14px',borderRadius:'6px',background:'linear-gradient(135deg,#c8a96e,#e8c878)',color:'#111',fontSize:'11px',fontWeight:900,border:'none',cursor:aiLoading?'not-allowed':'pointer',opacity:aiLoading?0.6:1,whiteSpace:'nowrap'}}>
-                    {aiLoading?'등록 중...':'🛍️ 등록'}
-                  </button>
-                </div>
+                ))}
+                <div style={{width:'1px',height:'16px',background:'rgba(255,255,255,0.1)',flexShrink:0}}/>
+                <span style={{color:'rgba(255,255,255,0.3)',fontSize:'9px',flexShrink:0}}>🎨</span>
+                {([
+                  {k:'gold' as PresetKey, label:'골드', bg:'#C8842D', border:'#E8B87A'},
+                  {k:'dark' as PresetKey, label:'검정', bg:'#0D0D0D', border:'#555'},
+                  {k:'blue' as PresetKey, label:'파랑', bg:'#1D4ED8', border:'#60A5FA'},
+                  {k:'red'  as PresetKey, label:'빨강', bg:'#DC2626', border:'#F87171'},
+                  {k:'pink' as PresetKey, label:'핑크', bg:'#DB2777', border:'#F9A8D4'},
+                  {k:'white' as PresetKey,label:'하양', bg:'#F5F5F5', border:'#374151'},
+                ]).map(t => (
+                  <button key={t.k} onClick={() => handleChangePreset(t.k)}
+                    style={{
+                      width:'22px',height:'22px',borderRadius:'50%',cursor:'pointer',flexShrink:0,
+                      border:'2px solid '+(aiPresetKey===t.k ? t.border : 'transparent'),
+                      background:t.bg,
+                      boxShadow: aiPresetKey===t.k ? `0 0 8px ${t.bg}99` : 'none',
+                      transform: aiPresetKey===t.k ? 'scale(1.2)' : 'scale(1)',
+                      transition:'all 0.15s',
+                    }} title={t.label}/>
+                ))}
+
+                {/* 오른쪽: 액션 버튼 (flex:1로 나머지 공간 채워서 오른쪽 정렬) */}
+                <div style={{flex:1}}/>
+                <button onClick={() => setAiStep(2)}
+                  style={{padding:'4px 8px',borderRadius:'6px',border:'1px solid rgba(255,255,255,0.1)',background:'transparent',color:'rgba(255,255,255,0.45)',fontSize:'10px',fontWeight:600,cursor:'pointer',whiteSpace:'nowrap'}}>
+                  ← 설정
+                </button>
+                <button onClick={handleGenerateLanding} disabled={aiLoading}
+                  style={{padding:'4px 8px',borderRadius:'6px',border:'1px solid rgba(200,169,110,0.5)',background:'transparent',color:'#c8a96e',fontSize:'10px',fontWeight:700,cursor:'pointer',whiteSpace:'nowrap'}}>
+                  🔄 재생성
+                </button>
+                <button onClick={() => setShowBuyerPreview('mobile')}
+                  style={{padding:'4px 8px',borderRadius:'6px',border:'1px solid rgba(100,200,100,0.4)',background:'rgba(100,200,100,0.07)',color:'#6ee7b7',fontSize:'10px',fontWeight:700,cursor:'pointer',whiteSpace:'nowrap'}}>
+                  📱 모바일
+                </button>
+                <button onClick={() => setShowBuyerPreview('desktop')}
+                  style={{padding:'4px 8px',borderRadius:'6px',border:'1px solid rgba(147,197,253,0.4)',background:'rgba(147,197,253,0.07)',color:'#93c5fd',fontSize:'10px',fontWeight:700,cursor:'pointer',whiteSpace:'nowrap'}}>
+                  🖥️ PC
+                </button>
+                <button onClick={handleAiRegister} disabled={aiLoading}
+                  style={{padding:'5px 14px',borderRadius:'6px',background:'linear-gradient(135deg,#c8a96e,#e8c878)',color:'#111',fontSize:'11px',fontWeight:900,border:'none',cursor:aiLoading?'not-allowed':'pointer',opacity:aiLoading?0.6:1,whiteSpace:'nowrap'}}>
+                  {aiLoading?'등록 중...':'🛍️ 등록'}
+                </button>
               </div>
               {aiError&&<p style={{color:'#f87171',fontSize:'12px',padding:'6px 12px',background:'rgba(239,68,68,0.1)',margin:0,flexShrink:0}}>{aiError}</p>}
 
