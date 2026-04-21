@@ -98,8 +98,7 @@ export default function GeneralOrdersPage() {
   const totalAmount = items.reduce((s, i) => s + (i.total_price || 0), 0)
 
 
-  const downloadExcel = async () => {
-    const XLSX = await import('https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs')
+  const downloadExcel = () => {
     const headers = ['주문번호', '고객명', '연락처', '배송지', '결제방법', '상태', '금액', '주문일시']
     const rows = filtered.map(o => [
       o.order_number || '',
@@ -111,13 +110,31 @@ export default function GeneralOrdersPage() {
       o.total_amount || 0,
       new Date(o.created_at).toLocaleString('ko-KR'),
     ])
-    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows])
-    ws['!cols'] = [
-      {wch:15},{wch:12},{wch:15},{wch:30},{wch:10},{wch:8},{wch:12},{wch:20}
-    ]
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, '일반주문')
-    XLSX.writeFile(wb, `일반주문_${new Date().toLocaleDateString('ko-KR').replace(/\./g, '').replace(/ /g, '')}.xlsx`)
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+ <Styles>
+  <Style ss:ID="header"><Font ss:Bold="1"/><Interior ss:Color="#F0F4FF" ss:Pattern="Solid"/></Style>
+ </Styles>
+ <Worksheet ss:Name="일반주문">
+  <Table>
+   <Column ss:Width="120"/><Column ss:Width="90"/><Column ss:Width="120"/>
+   <Column ss:Width="200"/><Column ss:Width="80"/><Column ss:Width="60"/>
+   <Column ss:Width="100"/><Column ss:Width="150"/>
+   <Row ss:StyleID="header">${headers.map(h => `<Cell><Data ss:Type="String">${h}</Data></Cell>`).join('')}</Row>
+   ${rows.map(row => '<Row>' + row.map(cell => `<Cell><Data ss:Type="${typeof cell === 'number' ? 'Number' : 'String'}">${String(cell).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</Data></Cell>`).join('') + '</Row>').join('')}
+  </Table>
+ </Worksheet>
+</Workbook>`
+    const BOM = '\uFEFF'
+    const blob = new Blob([BOM + xml], { type: 'application/vnd.ms-excel;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `일반주문_${new Date().toLocaleDateString('ko-KR').replace(/\./g, '').replace(/ /g, '')}.xls`
+    a.click()
+    URL.revokeObjectURL(url)
   }
   const saveOrder = async () => {
     if (!form.customer_name) return alert('고객명을 입력해주세요.')
