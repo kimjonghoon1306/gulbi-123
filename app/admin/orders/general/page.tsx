@@ -15,25 +15,31 @@ type OrderItem = {
 type Product = { id: string; name: string; retail_price: number; unit: string }
 
 const STATUS_LIST = ['접수', '준비중', '출고', '완료']
-const STATUS_COLOR: Record<string, string> = {
-  '접수':  'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
-  '준비중': 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
-  '출고':  'bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400',
-  '완료':  'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400',
+const STATUS_CONFIG: Record<string, { color: string; bg: string; icon: string }> = {
+  '접수':  { color: 'text-sky-600 dark:text-sky-400',     bg: 'bg-sky-50 dark:bg-sky-900/20 border-sky-100 dark:border-sky-800',     icon: '📋' },
+  '준비중':{ color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800', icon: '📦' },
+  '출고':  { color: 'text-violet-600 dark:text-violet-400',bg: 'bg-violet-50 dark:bg-violet-900/20 border-violet-100 dark:border-violet-800',icon: '🚚' },
+  '완료':  { color: 'text-emerald-600 dark:text-emerald-400',bg: 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-800',icon: '✅' },
 }
 const PAYMENT_LIST = ['계좌이체', '현금', '카드', '외상']
 
-export default function GeneralOrderPage() {
-  const [orders, setOrders]           = useState<Order[]>([])
-  const [products, setProducts]       = useState<Product[]>([])
-  const [loading, setLoading]         = useState(true)
-  const [showForm, setShowForm]       = useState(false)
-  const [editOrder, setEditOrder]     = useState<Order | null>(null)
-  const [viewOrder, setViewOrder]     = useState<Order | null>(null)
-  const [viewItems, setViewItems]     = useState<OrderItem[]>([])
+export default function GeneralOrdersPage() {
+  const [orders, setOrders] = useState<Order[]>([])
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
+  const [editOrder, setEditOrder] = useState<Order | null>(null)
+  const [viewOrder, setViewOrder] = useState<Order | null>(null)
+  const [viewItems, setViewItems] = useState<OrderItem[]>([])
   const [filterStatus, setFilterStatus] = useState('전체')
-  const [form, setForm] = useState({ customer_name: '', contact: '', address: '', note: '', payment_method: '계좌이체', status: '접수' })
-  const [items, setItems] = useState<OrderItem[]>([{ product_id: '', product_name: '', quantity: 1, unit: 'kg', unit_price: 0, total_price: 0 }])
+  const [search, setSearch] = useState('')
+  const [form, setForm] = useState({
+    customer_name: '', contact: '', address: '', note: '',
+    payment_method: '계좌이체', status: '접수'
+  })
+  const [items, setItems] = useState<OrderItem[]>([
+    { product_id: '', product_name: '', quantity: 1, unit: 'kg', unit_price: 0, total_price: 0 }
+  ])
   const supabase = createClient()
 
   useEffect(() => { fetchAll() }, [])
@@ -42,7 +48,7 @@ export default function GeneralOrderPage() {
     setLoading(true)
     const [{ data: o }, { data: p }] = await Promise.all([
       supabase.from('general_orders').select('*').order('created_at', { ascending: false }),
-      supabase.from('products').select('id, name, retail_price, unit').eq('is_active', true),
+      supabase.from('products').select('id, name, retail_price, unit').eq('is_active', true)
     ])
     setOrders(o || [])
     setProducts(p || [])
@@ -70,18 +76,21 @@ export default function GeneralOrderPage() {
     setViewItems(data || [])
   }
 
-  const addItem    = () => setItems([...items, { product_id: '', product_name: '', quantity: 1, unit: 'kg', unit_price: 0, total_price: 0 }])
+  const addItem = () => setItems([...items, { product_id: '', product_name: '', quantity: 1, unit: 'kg', unit_price: 0, total_price: 0 }])
   const removeItem = (i: number) => setItems(items.filter((_, idx) => idx !== i))
 
   const updateItem = (i: number, field: string, value: any) => {
     const updated = [...items]
     if (field === 'product_id') {
       const p = products.find(p => p.id === value)
-      if (p) updated[i] = { ...updated[i], product_id: p.id, product_name: p.name, unit_price: p.retail_price, unit: p.unit, total_price: p.retail_price * updated[i].quantity }
+      if (p) {
+        updated[i] = { ...updated[i], product_id: p.id, product_name: p.name, unit_price: p.retail_price, unit: p.unit, total_price: p.retail_price * updated[i].quantity }
+      }
     } else {
       updated[i] = { ...updated[i], [field]: value }
-      if (field === 'quantity' || field === 'unit_price')
+      if (field === 'quantity' || field === 'unit_price') {
         updated[i].total_price = Number(updated[i].quantity) * Number(updated[i].unit_price)
+      }
     }
     setItems(updated)
   }
@@ -111,127 +120,242 @@ export default function GeneralOrderPage() {
   const deleteOrder = async (id: string) => {
     if (!confirm('주문을 삭제하시겠습니까?')) return
     await supabase.from('general_orders').delete().eq('id', id)
+    if (viewOrder?.id === id) setViewOrder(null)
     fetchAll()
   }
 
-  const filtered = filterStatus === '전체' ? orders : orders.filter(o => o.status === filterStatus)
+  const filtered = orders.filter(o => {
+    const matchStatus = filterStatus === '전체' || o.status === filterStatus
+    const matchSearch = !search || o.customer_name?.includes(search) || o.contact?.includes(search) || o.order_number?.includes(search)
+    return matchStatus && matchSearch
+  })
+
+  // 통계
+  const stats = {
+    total: orders.length,
+    today: orders.filter(o => o.created_at?.startsWith(new Date().toISOString().split('T')[0])).length,
+    pending: orders.filter(o => o.status === '접수').length,
+    revenue: orders.filter(o => o.status === '완료').reduce((s, o) => s + (o.total_amount || 0), 0),
+  }
 
   return (
     <div className="animate-fadeIn">
+
+      {/* 헤더 */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-white">일반구매 관리</h1>
-          <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">일반 구매자 주문 접수 및 관리</p>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-white">일반주문 관리</h1>
+          <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">일반 소비자 주문 접수 및 관리</p>
         </div>
         <button onClick={() => { resetForm(); setShowForm(true) }}
-          className="bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95 shadow-md shadow-sky-500/20">
+          className="text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95 shadow-lg"
+          style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', boxShadow: '0 4px 15px rgba(99,102,241,0.35)' }}>
           + 주문 등록
         </button>
       </div>
 
-      {/* 상태 필터 */}
-      <div className="flex gap-2 mb-6 flex-wrap">
-        {['전체', ...STATUS_LIST].map(s => (
-          <button key={s} onClick={() => setFilterStatus(s)}
-            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200
-              ${filterStatus === s ? 'bg-sky-500 text-white shadow-md' : 'bg-white dark:bg-gray-800 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-gray-700'}`}>
-            {s} {s !== '전체' && <span className="ml-1 opacity-70">{orders.filter(o => o.status === s).length}</span>}
-          </button>
+      {/* 통계 카드 */}
+      <div className="grid grid-cols-4 gap-4 mb-6">
+        {[
+          { label: '전체 주문', value: stats.total + '건', icon: '📋', color: 'from-slate-500 to-slate-600' },
+          { label: '오늘 접수', value: stats.today + '건', icon: '🌅', color: 'from-sky-500 to-blue-600' },
+          { label: '처리 대기', value: stats.pending + '건', icon: '⏳', color: 'from-amber-500 to-orange-500' },
+          { label: '완료 매출', value: (stats.revenue / 10000).toFixed(0) + '만원', icon: '💰', color: 'from-emerald-500 to-teal-500' },
+        ].map((s, i) => (
+          <div key={i} className={`bg-gradient-to-br ${s.color} rounded-2xl p-4 text-white`}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-2xl">{s.icon}</span>
+              <span className="text-xs font-medium opacity-75 bg-white/20 px-2 py-0.5 rounded-full">{s.label}</span>
+            </div>
+            <p className="text-2xl font-bold">{s.value}</p>
+          </div>
         ))}
+      </div>
+
+      {/* 필터 + 검색 */}
+      <div className="flex items-center gap-3 mb-5 flex-wrap">
+        <div className="flex gap-2">
+          {['전체', ...STATUS_LIST].map(s => (
+            <button key={s} onClick={() => setFilterStatus(s)}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-1.5
+                ${filterStatus === s
+                  ? 'text-white shadow-md'
+                  : 'bg-white dark:bg-gray-800 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-gray-700'}`}
+              style={filterStatus === s ? { background: 'linear-gradient(135deg,#6366f1,#8b5cf6)' } : {}}>
+              {s !== '전체' && STATUS_CONFIG[s]?.icon} {s}
+              {s !== '전체' && (
+                <span className={`text-xs px-1.5 py-0.5 rounded-full ${filterStatus === s ? 'bg-white/20' : 'bg-slate-100 dark:bg-gray-700'}`}>
+                  {orders.filter(o => o.status === s).length}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+        <input type="text" value={search} onChange={e => setSearch(e.target.value)}
+          placeholder="🔍 고객명 / 연락처 / 주문번호"
+          className="flex-1 min-w-48 border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-2 text-sm bg-white dark:bg-gray-800 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400" />
       </div>
 
       {/* 주문 목록 */}
       <div className="space-y-3">
         {loading ? (
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-12 text-center text-slate-400">불러오는 중...</div>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-12 text-center">
+            <div className="w-8 h-8 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-slate-400 text-sm">불러오는 중...</p>
+          </div>
         ) : filtered.length === 0 ? (
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-12 text-center border border-slate-100 dark:border-gray-700">
-            <p className="text-4xl mb-3">🧑‍💼</p>
-            <p className="text-sm text-slate-400 dark:text-slate-500">일반구매 주문이 없습니다</p>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-16 text-center border border-slate-100 dark:border-gray-700">
+            <p className="text-5xl mb-4">🛒</p>
+            <p className="font-bold text-slate-600 dark:text-slate-300 mb-1">주문이 없어요</p>
+            <p className="text-sm text-slate-400 dark:text-slate-500">새 주문이 들어오면 여기서 확인할 수 있어요</p>
           </div>
-        ) : filtered.map(o => (
-          <div key={o.id} onClick={() => openView(o)}
-            className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-100 dark:border-gray-700 p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <span className={`text-xs font-semibold px-3 py-1.5 rounded-full ${STATUS_COLOR[o.status]}`}>{o.status}</span>
-                <div>
-                  <p className="font-semibold text-slate-800 dark:text-white">{o.customer_name}</p>
-                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{o.order_number} · {o.contact}</p>
+        ) : filtered.map(o => {
+          const sc = STATUS_CONFIG[o.status] || STATUS_CONFIG['접수']
+          return (
+            <div key={o.id} onClick={() => openView(o)}
+              className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-100 dark:border-gray-700 p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  {/* 상태 뱃지 */}
+                  <div className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border ${sc.bg} ${sc.color}`}>
+                    <span>{sc.icon}</span> {o.status}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className="font-bold text-slate-800 dark:text-white">{o.customer_name}</p>
+                      <span className="text-xs text-slate-300 dark:text-slate-600">{o.order_number}</span>
+                    </div>
+                    <div className="flex items-center gap-3 mt-0.5">
+                      {o.contact && <p className="text-xs text-slate-400 dark:text-slate-500">📞 {o.contact}</p>}
+                      {o.address && <p className="text-xs text-slate-400 dark:text-slate-500 truncate max-w-xs">📍 {o.address}</p>}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <p className="font-bold text-lg text-indigo-600 dark:text-indigo-400">{o.total_amount.toLocaleString()}원</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500">{o.payment_method} · {new Date(o.created_at).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}</p>
+                  </div>
+                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
+                    <button onClick={() => openEdit(o)}
+                      className="text-xs text-indigo-500 hover:text-indigo-600 font-medium px-3 py-1.5 rounded-lg border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors">
+                      수정
+                    </button>
+                    <button onClick={() => deleteOrder(o.id)}
+                      className="text-xs text-red-400 hover:text-red-500 font-medium px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                      삭제
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="text-right">
-                  <p className="font-bold text-slate-800 dark:text-white">{o.total_amount.toLocaleString()}원</p>
-                  <p className="text-xs text-slate-400 dark:text-slate-500">{o.payment_method}</p>
-                </div>
-                <div className="flex gap-2" onClick={e => e.stopPropagation()}>
-                  <button onClick={() => openEdit(o)} className="text-xs text-sky-500 hover:text-sky-600 font-medium px-3 py-1.5 rounded-lg border border-sky-200 dark:border-sky-800 hover:bg-sky-50 dark:hover:bg-sky-900/20 transition-colors">수정</button>
-                  <button onClick={() => deleteOrder(o.id)} className="text-xs text-red-400 hover:text-red-500 font-medium px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">삭제</button>
-                </div>
+
+              {/* 상태 변경 바 */}
+              <div className="flex gap-2 mt-4 pt-4 border-t border-slate-50 dark:border-gray-700" onClick={e => e.stopPropagation()}>
+                {STATUS_LIST.map(s => (
+                  <button key={s} onClick={() => updateStatus(o.id, s)}
+                    className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all duration-150
+                      ${o.status === s
+                        ? 'text-white shadow-md'
+                        : 'bg-slate-50 dark:bg-gray-700 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-gray-600'}`}
+                    style={o.status === s ? { background: 'linear-gradient(135deg,#6366f1,#8b5cf6)' } : {}}>
+                    {STATUS_CONFIG[s].icon} {s}
+                  </button>
+                ))}
               </div>
             </div>
-            <div className="flex gap-2 mt-4 pt-4 border-t border-slate-50 dark:border-gray-700" onClick={e => e.stopPropagation()}>
-              {STATUS_LIST.map(s => (
-                <button key={s} onClick={() => updateStatus(o.id, s)}
-                  className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all duration-150
-                    ${o.status === s ? 'bg-sky-500 text-white' : 'bg-slate-50 dark:bg-gray-700 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-gray-600'}`}>
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
-      {/* 상세 모달 */}
+      {/* 상세 보기 모달 */}
       {viewOrder && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-fadeIn">
-            <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-gray-700">
-              <div>
-                <h2 className="text-lg font-bold text-slate-800 dark:text-white">{viewOrder.customer_name}</h2>
-                <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{viewOrder.order_number}</p>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setViewOrder(null)}>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-fadeIn" onClick={e => e.stopPropagation()}>
+
+            {/* 모달 헤더 */}
+            <div className="p-6 border-b border-slate-100 dark:border-gray-700" style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)' }}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-white/70 text-xs mb-1">{viewOrder.order_number}</p>
+                  <h2 className="text-xl font-bold text-white">{viewOrder.customer_name}</h2>
+                </div>
+                <button onClick={() => setViewOrder(null)} className="text-white/70 hover:text-white text-xl w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors">✕</button>
               </div>
-              <button onClick={() => setViewOrder(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xl">✕</button>
+              <div className="flex items-center gap-2 mt-3">
+                <span className="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">
+                  {STATUS_CONFIG[viewOrder.status]?.icon} {viewOrder.status}
+                </span>
+                <span className="bg-white/20 text-white text-xs px-3 py-1 rounded-full">{viewOrder.payment_method}</span>
+              </div>
             </div>
+
             <div className="p-6 space-y-4">
+              {/* 정보 그리드 */}
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { label: '상태',     value: <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${STATUS_COLOR[viewOrder.status]}`}>{viewOrder.status}</span> },
-                  { label: '결제방법', value: viewOrder.payment_method },
-                  { label: '연락처',   value: viewOrder.contact || '-' },
-                  { label: '배송지',   value: viewOrder.address || '-' },
+                  { label: '📞 연락처', value: viewOrder.contact || '-' },
+                  { label: '📅 주문일시', value: new Date(viewOrder.created_at).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) },
+                  { label: '📍 배송지', value: viewOrder.address || '-', full: true },
                 ].map(item => (
-                  <div key={item.label} className="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-3">
+                  <div key={item.label} className={`bg-slate-50 dark:bg-gray-700/50 rounded-xl p-3 ${item.full ? 'col-span-2' : ''}`}>
                     <p className="text-xs text-slate-400 dark:text-slate-500 mb-1">{item.label}</p>
                     <p className="text-sm font-medium text-slate-800 dark:text-white">{item.value}</p>
                   </div>
                 ))}
               </div>
+
               {viewOrder.note && (
                 <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-3 border border-amber-100 dark:border-amber-800">
-                  <p className="text-xs text-amber-600 dark:text-amber-400 font-medium mb-1">요청사항</p>
+                  <p className="text-xs text-amber-600 dark:text-amber-400 font-bold mb-1">💬 요청사항</p>
                   <p className="text-sm text-slate-700 dark:text-slate-300">{viewOrder.note}</p>
                 </div>
               )}
+
+              {/* 주문 상품 */}
               <div>
-                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-3">주문 상품</p>
+                <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-3 uppercase tracking-wider">주문 상품</p>
                 <div className="space-y-2">
                   {viewItems.map((item, i) => (
                     <div key={i} className="flex justify-between items-center bg-slate-50 dark:bg-gray-700/50 rounded-xl px-4 py-3">
                       <div>
-                        <p className="text-sm font-medium text-slate-800 dark:text-white">{item.product_name}</p>
+                        <p className="text-sm font-semibold text-slate-800 dark:text-white">{item.product_name}</p>
                         <p className="text-xs text-slate-400 dark:text-slate-500">{item.quantity}{item.unit} × {item.unit_price.toLocaleString()}원</p>
                       </div>
-                      <p className="text-sm font-bold text-sky-500">{item.total_price.toLocaleString()}원</p>
+                      <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400">{item.total_price.toLocaleString()}원</p>
                     </div>
                   ))}
                 </div>
+                <div className="flex justify-between items-center mt-4 px-4 py-3 rounded-xl" style={{ background: 'linear-gradient(135deg,rgba(99,102,241,0.08),rgba(139,92,246,0.08))' }}>
+                  <span className="font-bold text-slate-800 dark:text-white">합계</span>
+                  <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">{viewOrder.total_amount.toLocaleString()}원</span>
+                </div>
               </div>
-              <div className="flex justify-between items-center pt-3 border-t border-slate-100 dark:border-gray-700">
-                <span className="font-bold text-slate-800 dark:text-white">합계</span>
-                <span className="text-xl font-bold text-sky-500">{viewOrder.total_amount.toLocaleString()}원</span>
+
+              {/* 상태 변경 */}
+              <div>
+                <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">상태 변경</p>
+                <div className="flex gap-2">
+                  {STATUS_LIST.map(s => (
+                    <button key={s} onClick={() => updateStatus(viewOrder.id, s)}
+                      className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all
+                        ${viewOrder.status === s ? 'text-white shadow-md' : 'bg-slate-50 dark:bg-gray-700 text-slate-400 hover:bg-slate-100 dark:hover:bg-gray-600'}`}
+                      style={viewOrder.status === s ? { background: 'linear-gradient(135deg,#6366f1,#8b5cf6)' } : {}}>
+                      {STATUS_CONFIG[s].icon}<br />{s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 수정/삭제 */}
+              <div className="flex gap-2 pt-2">
+                <button onClick={() => { setViewOrder(null); openEdit(viewOrder) }}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-bold border-2 border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors">
+                  ✏️ 수정
+                </button>
+                <button onClick={() => deleteOrder(viewOrder.id)}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-bold border-2 border-red-200 dark:border-red-900 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                  🗑️ 삭제
+                </button>
               </div>
             </div>
           </div>
@@ -240,115 +364,136 @@ export default function GeneralOrderPage() {
 
       {/* 등록/수정 모달 */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-fadeIn">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={resetForm}>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-fadeIn" onClick={e => e.stopPropagation()}>
+
             <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-gray-700">
-              <h2 className="text-lg font-bold text-slate-800 dark:text-white">{editOrder ? '주문 수정' : '일반구매 주문 등록'}</h2>
-              <button onClick={resetForm} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xl">✕</button>
+              <div>
+                <h2 className="text-lg font-bold text-slate-800 dark:text-white">
+                  {editOrder ? '주문 수정' : '✨ 일반 주문 등록'}
+                </h2>
+                <p className="text-xs text-slate-400 mt-0.5">일반 소비자 주문</p>
+              </div>
+              <button onClick={resetForm} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-gray-700 transition-colors text-xl">✕</button>
             </div>
+
             <div className="p-6 space-y-5">
-              <div className="grid grid-cols-2 gap-4">
-                {(
-                  [
-                    { label: '고객명 *', key: 'customer_name', placeholder: '예) 홍길동',        col2: false },
-                    { label: '연락처',   key: 'contact',       placeholder: '010-0000-0000',    col2: false },
-                    { label: '배송지 *', key: 'address',       placeholder: '배송 주소 (필수)', col2: true  },
-                  ] as { label: string; key: string; placeholder: string; col2: boolean }[]
-                ).map(f => (
-                  <div key={f.key} className={f.col2 ? 'col-span-2' : ''}>
-                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">{f.label}</label>
-                    <input type="text" placeholder={f.placeholder} value={(form as any)[f.key]}
-                      onChange={e => setForm({ ...form, [f.key]: e.target.value })}
-                      className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500" />
+              {/* 고객 정보 */}
+              <div>
+                <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">👤 고객 정보</p>
+                <div className="grid grid-cols-2 gap-4">
+                  {[
+                    { label: '고객명 *', key: 'customer_name', placeholder: '예) 홍길동', col: 1 },
+                    { label: '연락처', key: 'contact', placeholder: '010-0000-0000', col: 1 },
+                    { label: '배송지 *', key: 'address', placeholder: '배송 주소를 입력해주세요', col: 2 },
+                  ].map(f => (
+                    <div key={f.key} className={f.col === 2 ? 'col-span-2' : ''}>
+                      <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">{f.label}</label>
+                      <input type="text" placeholder={f.placeholder} value={(form as any)[f.key]}
+                        onChange={e => setForm({ ...form, [f.key]: e.target.value })}
+                        className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+                    </div>
+                  ))}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">결제방법</label>
+                    <select value={form.payment_method} onChange={e => setForm({ ...form, payment_method: e.target.value })}
+                      className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                      {PAYMENT_LIST.map(p => <option key={p}>{p}</option>)}
+                    </select>
                   </div>
-                ))}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">결제방법</label>
-                  <select value={form.payment_method} onChange={e => setForm({ ...form, payment_method: e.target.value })}
-                    className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
-                    {PAYMENT_LIST.map(p => <option key={p}>{p}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">상태</label>
-                  <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}
-                    className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
-                    {STATUS_LIST.map(s => <option key={s}>{s}</option>)}
-                  </select>
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">요청사항</label>
-                  <textarea value={form.note} onChange={e => setForm({ ...form, note: e.target.value })} rows={2} placeholder="특이사항 또는 요청사항"
-                    className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none" />
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">상태</label>
+                    <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}
+                      className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                      {STATUS_LIST.map(s => <option key={s}>{s}</option>)}
+                    </select>
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">요청사항</label>
+                    <textarea value={form.note} onChange={e => setForm({ ...form, note: e.target.value })} rows={2}
+                      placeholder="특이사항 또는 배송 요청사항"
+                      className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none" />
+                  </div>
                 </div>
               </div>
 
-              {/* 상품 목록 */}
+              {/* 주문 상품 */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">주문 상품 (일반 구매가 적용)</label>
-                  <button onClick={addItem} className="text-xs text-sky-500 hover:text-sky-600 font-medium">+ 상품 추가</button>
+                  <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">🛒 주문 상품</p>
+                  <button onClick={addItem} className="text-xs font-bold text-indigo-500 hover:text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors">
+                    + 상품 추가
+                  </button>
                 </div>
                 <div className="space-y-3">
                   {items.map((item, i) => (
-                    <div key={i} className="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-4 space-y-3">
+                    <div key={i} className="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-4 space-y-3 border border-slate-100 dark:border-gray-600">
                       <div className="flex gap-3">
                         <div className="flex-1">
                           <label className="block text-xs text-slate-400 dark:text-slate-500 mb-1">상품 선택</label>
                           <select value={item.product_id} onChange={e => updateItem(i, 'product_id', e.target.value)}
-                            className="w-full border border-slate-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
-                            <option value="">직접입력</option>
-                            {products.map(p => <option key={p.id} value={p.id}>{p.name} ({p.retail_price.toLocaleString()}원 / 일반구매가)</option>)}
+                            className="w-full border border-slate-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                            <option value="">직접 입력</option>
+                            {products.map(p => <option key={p.id} value={p.id}>{p.name} ({p.retail_price.toLocaleString()}원/{p.unit})</option>)}
                           </select>
                         </div>
                         {items.length > 1 && (
-                          <button onClick={() => removeItem(i)} className="text-red-400 hover:text-red-500 text-sm mt-5">✕</button>
+                          <button onClick={() => removeItem(i)} className="text-red-400 hover:text-red-500 text-lg mt-5 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">✕</button>
                         )}
                       </div>
                       {!item.product_id && (
                         <input type="text" placeholder="상품명 직접 입력" value={item.product_name}
                           onChange={e => updateItem(i, 'product_name', e.target.value)}
-                          className="w-full border border-slate-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500" />
+                          className="w-full border border-slate-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400" />
                       )}
                       <div className="grid grid-cols-3 gap-2">
-                        <div>
-                          <label className="block text-xs text-slate-400 dark:text-slate-500 mb-1">수량</label>
-                          <input type="number" value={item.quantity} onChange={e => updateItem(i, 'quantity', Number(e.target.value))}
-                            className="w-full border border-slate-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500" />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-slate-400 dark:text-slate-500 mb-1">단가(원) ✏️수정가능</label>
-                          <input type="number" value={item.unit_price} onChange={e => updateItem(i, 'unit_price', Number(e.target.value))}
-                            className="w-full border border-sky-200 dark:border-sky-700 rounded-lg px-3 py-2 text-sm bg-sky-50 dark:bg-sky-900/20 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium" />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-slate-400 dark:text-slate-500 mb-1">단위</label>
-                          <input type="text" value={item.unit} onChange={e => updateItem(i, 'unit', e.target.value)}
-                            className="w-full border border-slate-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500" />
-                        </div>
+                        {[
+                          { label: '수량', key: 'quantity', type: 'number' },
+                          { label: '단가(원)', key: 'unit_price', type: 'number' },
+                          { label: '단위', key: 'unit', type: 'text' },
+                        ].map(f => (
+                          <div key={f.key}>
+                            <label className="block text-xs text-slate-400 dark:text-slate-500 mb-1">{f.label}</label>
+                            <input type={f.type} value={(item as any)[f.key]}
+                              onChange={e => updateItem(i, f.key, f.type === 'number' ? Number(e.target.value) : e.target.value)}
+                              className="w-full border border-slate-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+                          </div>
+                        ))}
                       </div>
                       <div className="text-right">
-                        <span className="text-xs text-slate-400 dark:text-slate-500">소계 </span>
-                        <span className="text-sm font-bold text-sky-500">{item.total_price.toLocaleString()}원</span>
+                        <span className="text-xs text-slate-400">소계 </span>
+                        <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">{item.total_price.toLocaleString()}원</span>
                       </div>
                     </div>
                   ))}
                 </div>
-                <div className="flex justify-between items-center mt-4 px-1">
-                  <span className="text-sm font-bold text-slate-800 dark:text-white">합계</span>
-                  <span className="text-xl font-bold text-sky-500">{totalAmount.toLocaleString()}원</span>
+
+                {/* 합계 */}
+                <div className="flex justify-between items-center mt-4 px-4 py-3 rounded-xl" style={{ background: 'linear-gradient(135deg,rgba(99,102,241,0.08),rgba(139,92,246,0.08))' }}>
+                  <span className="font-bold text-slate-800 dark:text-white">합계</span>
+                  <span className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{totalAmount.toLocaleString()}원</span>
                 </div>
               </div>
             </div>
+
             <div className="flex gap-3 p-6 border-t border-slate-100 dark:border-gray-700">
-              <button onClick={resetForm} className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-gray-600 text-slate-500 dark:text-slate-400 text-sm font-medium hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors">취소</button>
-              <button onClick={saveOrder} className="flex-1 py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-white text-sm font-bold transition-colors active:scale-95">
-                {editOrder ? '수정 완료' : '주문 등록'}
+              <button onClick={resetForm} className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-gray-600 text-slate-500 dark:text-slate-400 text-sm font-medium hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors">
+                취소
+              </button>
+              <button onClick={saveOrder}
+                className="flex-1 py-3 rounded-xl text-white text-sm font-bold transition-all active:scale-95 shadow-lg"
+                style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', boxShadow: '0 4px 15px rgba(99,102,241,0.35)' }}>
+                {editOrder ? '✅ 수정 완료' : '✨ 주문 등록'}
               </button>
             </div>
           </div>
         </div>
       )}
+
+      <style>{`
+        @keyframes fadeIn { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
+        .animate-fadeIn { animation: fadeIn 0.2s ease }
+      `}</style>
     </div>
   )
 }
