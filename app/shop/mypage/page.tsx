@@ -388,6 +388,19 @@ export default function MyPage() {
                       {order.payment_method && <p style={{ fontSize:'12px', color:D.sub, margin:0 }}>💳 {order.payment_method}</p>}
                       {order.note         && <p style={{ fontSize:'12px', color:D.sub, margin:0 }}>📝 {order.note}</p>}
                     </div>
+                    {order.status === '접수' && (
+                      <button
+                        onClick={async () => {
+                          if (!confirm('주문을 취소하시겠습니까?')) return
+                          const table = member?.member_type === '도매업' ? 'wholesale_orders' : member?.member_type === '소매업' ? 'retail_orders' : 'general_orders'
+                          await supabase.from(table).update({ status: '취소', updated_at: new Date().toISOString() }).eq('id', order.id)
+                          setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: '취소' } : o))
+                          setExpandedOrder(null)
+                        }}
+                        style={{ marginTop:'14px', width:'100%', padding:'12px', borderRadius:'12px', border:'1.5px solid rgba(239,68,68,0.4)', background:'rgba(239,68,68,0.06)', color:'#ef4444', fontSize:'13px', fontWeight:700, cursor:'pointer' }}>
+                        🚫 주문 취소
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -583,6 +596,7 @@ function OrderBadge({ status }: { status: string }) {
     '준비중':{ bg:'rgba(245,158,11,0.12)',   color:'#f59e0b' },
     '출고':  { bg:'rgba(139,92,246,0.12)',  color:'#8b5cf6' },
     '완료':  { bg:'rgba(34,197,94,0.12)',   color:'#22c55e' },
+    '취소':  { bg:'rgba(239,68,68,0.12)',   color:'#ef4444' },
   }
   const s = styles[status] || styles['접수']
   const step = STATUS_STEP[status] || 0
