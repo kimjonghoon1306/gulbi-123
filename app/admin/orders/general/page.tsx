@@ -98,7 +98,8 @@ export default function GeneralOrdersPage() {
   const totalAmount = items.reduce((s, i) => s + (i.total_price || 0), 0)
 
 
-  const downloadExcel = () => {
+  const downloadExcel = async () => {
+    const XLSX = await import('https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs')
     const headers = ['주문번호', '고객명', '연락처', '배송지', '결제방법', '상태', '금액', '주문일시']
     const rows = filtered.map(o => [
       o.order_number || '',
@@ -110,17 +111,13 @@ export default function GeneralOrdersPage() {
       o.total_amount || 0,
       new Date(o.created_at).toLocaleString('ko-KR'),
     ])
-    const csvContent = [headers, ...rows]
-      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-      .join('\n')
-    const BOM = '\uFEFF'
-    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `일반주문_${new Date().toLocaleDateString('ko-KR').replace(/\./g, '').replace(/ /g, '')}.csv`
-    a.click()
-    URL.revokeObjectURL(url)
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows])
+    ws['!cols'] = [
+      {wch:15},{wch:12},{wch:15},{wch:30},{wch:10},{wch:8},{wch:12},{wch:20}
+    ]
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, '일반주문')
+    XLSX.writeFile(wb, `일반주문_${new Date().toLocaleDateString('ko-KR').replace(/\./g, '').replace(/ /g, '')}.xlsx`)
   }
   const saveOrder = async () => {
     if (!form.customer_name) return alert('고객명을 입력해주세요.')
