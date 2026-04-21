@@ -24,11 +24,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [dark, setDark] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [lowStockCount, setLowStockCount] = useState(0)
 
   useEffect(() => {
     setMounted(true)
     const saved = localStorage.getItem('theme')
     if (saved === 'dark') setDark(true)
+    // 재고 부족 카운트
+    const fetchLowStock = async () => {
+      const supabase = createClient()
+      const { data } = await supabase.from('products').select('id, stock, min_stock')
+      if (data) setLowStockCount(data.filter(p => p.min_stock > 0 && p.stock <= p.min_stock).length)
+    }
+    fetchLowStock()
   }, [])
 
   useEffect(() => {
@@ -83,8 +91,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   {menu.icon}
                 </span>
                 {!collapsed && (
-                  <span className="text-sm font-medium whitespace-nowrap overflow-hidden">
+                  <span className="text-sm font-medium whitespace-nowrap overflow-hidden flex-1">
                     {menu.label}
+                  </span>
+                )}
+                {!collapsed && menu.href === '/admin/inventory' && lowStockCount > 0 && (
+                  <span className="text-xs font-bold bg-red-500 text-white px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                    {lowStockCount}
                   </span>
                 )}
               </Link>
