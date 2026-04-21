@@ -77,7 +77,12 @@ export default function MyPage() {
       }
       setMember(m)
       const table = m.member_type === '도매업' ? 'wholesale_orders' : m.member_type === '소매업' ? 'retail_orders' : 'general_orders'
-      const { data: o } = await supabase.from(table).select('*').eq('contact', m.contact).order('created_at', { ascending: false })
+      // user_id로 먼저 조회, 없으면 contact로 조회
+      let { data: o } = await supabase.from(table).select('*').eq('user_id', user.id).order('created_at', { ascending: false })
+      if (!o || o.length === 0) {
+        const { data: o2 } = await supabase.from(table).select('*').eq('contact', m.contact).order('created_at', { ascending: false })
+        o = o2
+      }
       setOrders(o || [])
       setLoading(false)
     } catch (e) {
