@@ -248,12 +248,14 @@ export default function GeneralOrderPage() {
             </div>
             <div className="p-6 space-y-5">
               <div className="grid grid-cols-2 gap-4">
-                {[
-                  { label: '고객명 *', key: 'customer_name', placeholder: '예) 홍길동' },
-                  { label: '연락처',   key: 'contact',       placeholder: '010-0000-0000' },
-                  { label: '배송지 *', key: 'address',       placeholder: '배송 주소 (필수)', col2: true },
-                ].map(f => (
-                  <div key={f.key} className={(f as any).col2 ? 'col-span-2' : ''}>
+                {(
+                  [
+                    { label: '고객명 *', key: 'customer_name', placeholder: '예) 홍길동',        col2: false },
+                    { label: '연락처',   key: 'contact',       placeholder: '010-0000-0000',    col2: false },
+                    { label: '배송지 *', key: 'address',       placeholder: '배송 주소 (필수)', col2: true  },
+                  ] as { label: string; key: string; placeholder: string; col2: boolean }[]
+                ).map(f => (
+                  <div key={f.key} className={f.col2 ? 'col-span-2' : ''}>
                     <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">{f.label}</label>
                     <input type="text" placeholder={f.placeholder} value={(form as any)[f.key]}
                       onChange={e => setForm({ ...form, [f.key]: e.target.value })}
@@ -350,4 +352,3 @@ export default function GeneralOrderPage() {
     </div>
   )
 }
-
