@@ -23,7 +23,6 @@ export default function ProductDetailPage() {
   const [popup, setPopup] = useState<{name:string;action:string;show:boolean}>({name:'',action:'',show:false})
   const [visitorCount, setVisitorCount] = useState(0)
   const [socialComments, setSocialComments] = useState<any[]>([])
-  const [isAdmin, setIsAdmin] = useState(false)
   const [memberInfo, setMemberInfo] = useState<any>(null)
   const [showOrderForm, setShowOrderForm] = useState(false)
   const [orderForm, setOrderForm] = useState({ address: '', note: '', payment_method: '계좌이체' })
@@ -45,9 +44,8 @@ export default function ProductDetailPage() {
       if (member) {
         setMemberType(member.member_type)
         setMemberInfo(member)
-        // 주소 자동입력
-        setOrderForm(prev => ({ ...prev }))
       } else {
+        // shop_members에 없으면 관리자로 판단 → 탭 클릭 가능
         setIsAdmin(true)
       }
     }
@@ -222,7 +220,7 @@ export default function ProductDetailPage() {
             </p>
             <h1 style={{fontSize:'26px',fontWeight:900,letterSpacing:'-0.8px',lineHeight:1.25,marginBottom:'14px',color:D.text}}>{product.name}</h1>
 
-            {/* 회원 유형별 가격 탭 */}
+            {/* 회원 유형별 가격 탭 - 표시 전용 */}
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'6px',marginBottom:'14px'}}>
               {([
                 {type:'일반',   label:'일반 소매가', emoji:'🛒', color:'#6366f1'},
@@ -494,6 +492,7 @@ export default function ProductDetailPage() {
                         const orderData = {
                           customer_name: memberInfo?.name || '',
                           contact: memberInfo?.contact || '',
+                          user_id: user?.id || '',
                           address: orderForm.address,
                           note: orderForm.note,
                           payment_method: orderForm.payment_method,
