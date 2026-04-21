@@ -10,6 +10,7 @@ const menus = [
   { href: '/admin/products', icon: '🐟', label: '상품관리' },
   { href: '/admin/orders/wholesale', icon: '📋', label: '도매주문' },
   { href: '/admin/orders/retail', icon: '🛒', label: '소매주문' },
+  { href: '/admin/orders/general', icon: '🧑‍💼', label: '일반구매' },
   { href: '/admin/members', icon: '👥', label: '회원관리' },
   { href: '/admin/inventory', icon: '📦', label: '재고관리' },
   { href: '/admin/tax', icon: '🧾', label: '세금계산서' },
