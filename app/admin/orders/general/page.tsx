@@ -107,35 +107,31 @@ export default function GeneralOrdersPage() {
       o.address || '',
       o.payment_method || '',
       o.status || '',
-      o.total_amount || 0,
+      String(o.total_amount || 0),
       new Date(o.created_at).toLocaleString('ko-KR'),
     ])
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<?mso-application progid="Excel.Sheet"?>
-<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
- xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
- <Styles>
-  <Style ss:ID="header"><Font ss:Bold="1"/><Interior ss:Color="#F0F4FF" ss:Pattern="Solid"/></Style>
- </Styles>
- <Worksheet ss:Name="일반주문">
-  <Table>
-   <Column ss:Width="120"/><Column ss:Width="90"/><Column ss:Width="120"/>
-   <Column ss:Width="200"/><Column ss:Width="80"/><Column ss:Width="60"/>
-   <Column ss:Width="100"/><Column ss:Width="150"/>
-   <Row ss:StyleID="header">${headers.map(h => `<Cell><Data ss:Type="String">${h}</Data></Cell>`).join('')}</Row>
-   ${rows.map(row => '<Row>' + row.map(cell => `<Cell><Data ss:Type="${typeof cell === 'number' ? 'Number' : 'String'}">${String(cell).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</Data></Cell>`).join('') + '</Row>').join('')}
-  </Table>
- </Worksheet>
-</Workbook>`
-    const BOM = '\uFEFF'
-    const blob = new Blob([BOM + xml], { type: 'application/vnd.ms-excel;charset=utf-8' })
+    const escape = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    const headerRow = headers.map(h => '<Cell ss:StyleID="h"><Data ss:Type="String">' + escape(h) + '</Data></Cell>').join('')
+    const dataRows = rows.map(row =>
+      '<Row>' + row.map(cell => '<Cell><Data ss:Type="String">' + escape(cell) + '</Data></Cell>').join('') + '</Row>'
+    ).join('\n   ')
+    const xml = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+      '<?mso-application progid="Excel.Sheet"?>\n' +
+      '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">\n' +
+      '<Styles><Style ss:ID="h"><Font ss:Bold="1"/><Interior ss:Color="#EEF2FF" ss:Pattern="Solid"/></Style></Styles>\n' +
+      '<Worksheet ss:Name="일반주문"><Table>\n' +
+      '<Row>' + headerRow + '</Row>\n   ' +
+      dataRows +
+      '\n</Table></Worksheet></Workbook>'
+    const blob = new Blob(['\uFEFF' + xml], { type: 'application/vnd.ms-excel;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `일반주문_${new Date().toLocaleDateString('ko-KR').replace(/\./g, '').replace(/ /g, '')}.xls`
+    a.download = '일반주문_' + new Date().toLocaleDateString('ko-KR').replace(/\./g, '').replace(/ /g, '') + '.xls'
     a.click()
     URL.revokeObjectURL(url)
   }
+
   const saveOrder = async () => {
     if (!form.customer_name) return alert('고객명을 입력해주세요.')
     if (!form.address) return alert('배송지를 입력해주세요.')
@@ -186,16 +182,18 @@ export default function GeneralOrdersPage() {
           <h1 className="text-2xl font-bold text-slate-800 dark:text-white">일반주문 관리</h1>
           <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">일반 소비자 주문 접수 및 관리</p>
         </div>
-        <button onClick={downloadExcel}
-          className="text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-all duration-200 active:scale-95 shadow-lg flex items-center gap-2"
-          style={{ background: 'linear-gradient(135deg,#059669,#10b981)', boxShadow: '0 4px 15px rgba(5,150,105,0.35)' }}>
-          📥 엑셀 다운로드
-        </button>
-        <button onClick={() => { resetForm(); setShowForm(true) }}
-          className="text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95 shadow-lg"
-          style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', boxShadow: '0 4px 15px rgba(99,102,241,0.35)' }}>
-          + 주문 등록
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={downloadExcel}
+            className="text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-all duration-200 active:scale-95 shadow-lg flex items-center gap-2"
+            style={{ background: 'linear-gradient(135deg,#059669,#10b981)', boxShadow: '0 4px 15px rgba(5,150,105,0.35)' }}>
+            📥 엑셀 다운로드
+          </button>
+          <button onClick={() => { resetForm(); setShowForm(true) }}
+            className="text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95 shadow-lg"
+            style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', boxShadow: '0 4px 15px rgba(99,102,241,0.35)' }}>
+            + 주문 등록
+          </button>
+        </div>
       </div>
 
       {/* 통계 카드 */}
