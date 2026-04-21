@@ -53,40 +53,29 @@ export default function MyPage() {
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null)
   const [itemsLoading, setItemsLoading]   = useState<string | null>(null)
 
-  const fetchData = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/shop/login'); return }
-      const { data: m, error } = await supabase.from('shop_members').select('*').eq('id', user.id).single()
-      if (error || !m) {
-        // shop_members에 없으면 기본 일반회원으로 표시 (로그인 상태는 유지)
-        setMember({ id: user.id, email: user.email || '', name: user.email?.split('@')[0] || '회원', contact: '', member_type: '일반', business_name: '', business_number: '', status: '승인', created_at: user.created_at || '' })
-        setOrders([])
-        setLoading(false)
-        return
-      }
-      setMember(m)
-      const table = m.member_type === '도매업' ? 'wholesale_orders' : 'retail_orders'
-      const { data: o } = await supabase.from(table).select('*').eq('contact', m.contact).order('created_at', { ascending: false })
-      setOrders(o || [])
-      setLoading(false)
-    } catch {
-      setLoading(false)
-    }
-  }
-
   useEffect(() => {
     const saved = localStorage.getItem('shop-theme')
     if (saved === 'dark') setDark(true)
     fetchData()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const fetchData = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { router.push('/shop/login'); return }
+    const { data: m } = await supabase.from('shop_members').select('*').eq('id', user.id).single()
+    if (!m) { router.push('/shop/login'); return }
+    setMember(m)
+    const table = m.member_type === '도매업' ? 'wholesale_orders' : m.member_type === '소매업' ? 'retail_orders' : 'general_orders'
+    const { data: o } = await supabase.from(table).select('*').eq('contact', m.contact).order('created_at', { ascending: false })
+    setOrders(o || [])
+    setLoading(false)
+  }
 
   const toggleOrder = async (orderId: string) => {
     if (expandedOrder === orderId) { setExpandedOrder(null); return }
     if (!orderItems[orderId]) {
       setItemsLoading(orderId)
-      const table = member?.member_type === '도매업' ? 'wholesale_order_items' : 'retail_order_items'
+      const table = member?.member_type === '도매업' ? 'wholesale_order_items' : member?.member_type === '소매업' ? 'retail_order_items' : 'general_order_items'
       const { data } = await supabase.from(table).select('*').eq('order_id', orderId)
       setOrderItems(prev => ({ ...prev, [orderId]: data || [] }))
       setItemsLoading(null)
@@ -108,7 +97,7 @@ export default function MyPage() {
   // Derived values
   const tc           = member ? TYPE_CONFIG[member.member_type] : TYPE_CONFIG['일반']
   const totalAmount  = orders.reduce((s, o) => s + (o.total_amount || 0), 0)
-  const curGrade     = [...GRADE_INFO].reverse().find(g => totalAmount >= g.min) || GRADE_INFO[0]
+  const curGrade     = [...GRADE_INFO].filter(g => totalAmount >= g.min).pop() || GRADE_INFO[0]
   const nextGrade    = GRADE_INFO[GRADE_INFO.indexOf(curGrade) + 1] || null
   const gradeProgress= nextGrade ? Math.min((totalAmount / nextGrade.min) * 100, 100) : 100
 
@@ -127,6 +116,7 @@ export default function MyPage() {
     <div style={{ minHeight:'100vh', background:D.bg, display:'flex', alignItems:'center', justifyContent:'center', flexDirection:'column', gap:'16px' }}>
       <div style={{ width:'44px', height:'44px', borderRadius:'50%', border:`3px solid ${tc.color}`, borderTopColor:'transparent', animation:'spin 0.8s linear infinite' }} />
       <p style={{ color:D.sub, fontSize:'13px', margin:0 }}>불러오는 중...</p>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   )
 
@@ -415,10 +405,10 @@ export default function MyPage() {
                 <div style={{ background:D.card, borderRadius:'20px', padding:'20px', border:`1px solid ${D.border}` }}>
                   <p style={{ fontSize:'13px', fontWeight:800, color:D.text, margin:'0 0 14px' }}>🎁 등급별 혜택</p>
                   {[
-                    { grade:'🛒 일반', benefit:'기본 소매가 구매',         range:'0원~',     active: curGrade.name==='일반' },
-                    { grade:'🥈 실버', benefit:'소매가 3% 할인 쿠폰',      range:'50만원~',  active: curGrade.name==='실버' },
-                    { grade:'🥇 골드', benefit:'소매가 5% 할인 + 우선 배송', range:'200만원~', active: curGrade.name==='골드' },
-                    { grade:'💎 VIP',  benefit:'소매가 10% 할인 + 전담 CS', range:'500만원~', active: curGrade.name==='VIP' },
+                    { grade:'🛒 일반', benefit:'기본 구매가 적용',           range:'0원~',     active: curGrade.name==='일반' },
+                    { grade:'🥈 실버', benefit:'구매가 3% 할인 쿠폰',        range:'50만원~',  active: curGrade.name==='실버' },
+                    { grade:'🥇 골드', benefit:'구매가 5% 할인 + 우선 배송', range:'200만원~', active: curGrade.name==='골드' },
+                    { grade:'💎 VIP',  benefit:'구매가 10% 할인 + 전담 CS',  range:'500만원~', active: curGrade.name==='VIP' },
                   ].map((g, i, arr) => (
                     <div key={i} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'12px 0', borderBottom: i < arr.length-1 ? `1px solid ${D.border}` : 'none', opacity: g.active ? 1 : 0.45 }}>
                       <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
@@ -576,4 +566,3 @@ function OrderBadge({ status }: { status: string }) {
     </span>
   )
 }
-
