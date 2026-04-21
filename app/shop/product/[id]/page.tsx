@@ -464,9 +464,7 @@ export default function ProductDetailPage() {
                     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
                       {[
                         {label:'계좌이체', icon:'🏦'},
-                        {label:'현금',    icon:'💵'},
                         {label:'카드',    icon:'💳'},
-                        {label:'외상',    icon:'📝'},
                       ].map(pm => (
                         <button key={pm.label} onClick={() => setOrderForm(p => ({...p, payment_method: pm.label}))}
                           style={{padding:'12px 10px',borderRadius:'12px',border:`2px solid ${orderForm.payment_method===pm.label ? '#ec4899' : D.border}`,background:orderForm.payment_method===pm.label ? 'rgba(236,72,153,0.08)' : D.input,color:orderForm.payment_method===pm.label ? '#ec4899' : D.sub,fontSize:'13px',fontWeight:orderForm.payment_method===pm.label ? 800 : 500,cursor:'pointer',transition:'all 0.15s',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px'}}>
