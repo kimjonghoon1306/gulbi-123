@@ -97,6 +97,31 @@ export default function GeneralOrdersPage() {
 
   const totalAmount = items.reduce((s, i) => s + (i.total_price || 0), 0)
 
+
+  const downloadExcel = () => {
+    const headers = ['주문번호', '고객명', '연락처', '배송지', '결제방법', '상태', '금액', '주문일시']
+    const rows = filtered.map(o => [
+      o.order_number || '',
+      o.customer_name || '',
+      o.contact || '',
+      o.address || '',
+      o.payment_method || '',
+      o.status || '',
+      o.total_amount || 0,
+      new Date(o.created_at).toLocaleString('ko-KR'),
+    ])
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n')
+    const BOM = '\uFEFF'
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `일반주문_${new Date().toLocaleDateString('ko-KR').replace(/\./g, '').replace(/ /g, '')}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
   const saveOrder = async () => {
     if (!form.customer_name) return alert('고객명을 입력해주세요.')
     if (!form.address) return alert('배송지를 입력해주세요.')
@@ -147,6 +172,11 @@ export default function GeneralOrdersPage() {
           <h1 className="text-2xl font-bold text-slate-800 dark:text-white">일반주문 관리</h1>
           <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">일반 소비자 주문 접수 및 관리</p>
         </div>
+        <button onClick={downloadExcel}
+          className="text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-all duration-200 active:scale-95 shadow-lg flex items-center gap-2"
+          style={{ background: 'linear-gradient(135deg,#059669,#10b981)', boxShadow: '0 4px 15px rgba(5,150,105,0.35)' }}>
+          📥 엑셀 다운로드
+        </button>
         <button onClick={() => { resetForm(); setShowForm(true) }}
           className="text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95 shadow-lg"
           style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', boxShadow: '0 4px 15px rgba(99,102,241,0.35)' }}>
