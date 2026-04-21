@@ -23,8 +23,17 @@ export default function ProductDetailPage() {
   const [popup, setPopup] = useState<{name:string;action:string;show:boolean}>({name:'',action:'',show:false})
   const [visitorCount, setVisitorCount] = useState(0)
   const [socialComments, setSocialComments] = useState<any[]>([])
-  const [isAdmin, setIsAdmin] = useState(false)
   const popupTimer = useRef<any>(null)
+
+  useEffect(() => {
+    fetchProduct()
+    checkUser()
+    const saved = localStorage.getItem('shop-theme')
+    if (saved === 'dark') setDark(true)
+    fetchSocialData()
+    startPopupCycle()
+    return () => { if (popupTimer.current) clearTimeout(popupTimer.current) }
+  }, [id])
 
   const fetchProduct = async () => {
     const { data } = await supabase.from('products').select('*').eq('id', id).single()
@@ -37,27 +46,23 @@ export default function ProductDetailPage() {
     if (user) {
       setUser(user)
       const { data: member } = await supabase.from('shop_members').select('member_type').eq('id', user.id).single()
-      if (member) {
-        setMemberType(member.member_type)
-      } else {
-        // shop_members에 없으면 관리자로 판단
-        setIsAdmin(true)
-      }
+      if (member) setMemberType(member.member_type)
     }
   }
 
   const fetchSocialData = async () => {
     try {
+      // 방문자수 설정값
       const { data: vc } = await supabase.from('system_settings').select('value').eq('key', 'visitor_count_override').single()
       if (vc?.value) setVisitorCount(Number(vc.value))
       else setVisitorCount(Math.floor(Math.random() * 80) + 20)
+      // 소셜 댓글
       const { data: comments } = await supabase.from('social_proof_comments').select('*').eq('is_active', true).order('sort_order')
       if (comments) setSocialComments(comments)
     } catch {}
   }
 
   const startPopupCycle = () => {
-    if (popupTimer.current) clearTimeout(popupTimer.current)
     const show = () => {
       const name = KOREAN_NAMES[Math.floor(Math.random() * KOREAN_NAMES.length)]
       const action = ACTIONS[Math.floor(Math.random() * ACTIONS.length)]
@@ -70,17 +75,6 @@ export default function ProductDetailPage() {
     popupTimer.current = setTimeout(show, 3000)
   }
 
-  useEffect(() => {
-    fetchProduct()
-    checkUser()
-    const saved = localStorage.getItem('shop-theme')
-    if (saved === 'dark') setDark(true)
-    fetchSocialData()
-    startPopupCycle()
-    return () => { if (popupTimer.current) clearTimeout(popupTimer.current) }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id])
-
   const getPrice = () => {
     if (!product) return 0
     if (memberType === '도매업') return product.wholesale_price
@@ -91,7 +85,7 @@ export default function ProductDetailPage() {
   const getPriceLabel = () => {
     if (memberType === '도매업') return '도매 유통가'
     if (memberType === '소매업') return '소매 유통가'
-    return '일반 소매가'
+    return '일반 구매가'
   }
 
   const getPriceColor = () => {
@@ -218,30 +212,18 @@ export default function ProductDetailPage() {
             {/* 회원 유형별 가격 탭 */}
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'6px',marginBottom:'14px'}}>
               {([
-                {type:'일반',   label:'일반 소매가', emoji:'🛒', color:'#6366f1'},
+                {type:'일반',   label:'일반 구매가', emoji:'🛒', color:'#6366f1'},
                 {type:'소매업', label:'소매 유통가',  emoji:'🏪', color:'#0f766e'},
                 {type:'도매업', label:'도매 유통가',  emoji:'🏭', color:'#ec4899'},
               ] as const).map(t => (
-                isAdmin ? (
-                  <button key={t.type} onClick={() => setMemberType(t.type)}
-                    style={{padding:'10px 6px',borderRadius:'12px',
-                      border:`2px solid ${memberType===t.type ? t.color : (dark?'rgba(255,255,255,0.1)':'#e2e8f0')}`,
-                      background:memberType===t.type ? t.color+'15' : D.card,
-                      cursor:'pointer',transition:'all 0.2s',textAlign:'center'}}>
-                    <p style={{fontSize:'16px',margin:'0 0 3px'}}>{t.emoji}</p>
-                    <p style={{fontSize:'10px',color:memberType===t.type ? t.color : D.sub,fontWeight:700,margin:0,lineHeight:1.3}}>{t.label}</p>
-                  </button>
-                ) : (
-                  <div key={t.type}
-                    style={{padding:'10px 6px',borderRadius:'12px',
-                      border:`2px solid ${memberType===t.type ? t.color : (dark?'rgba(255,255,255,0.1)':'#e2e8f0')}`,
-                      background:memberType===t.type ? t.color+'15' : D.card,
-                      textAlign:'center',
-                      opacity: memberType===t.type ? 1 : 0.45}}>
-                    <p style={{fontSize:'16px',margin:'0 0 3px'}}>{t.emoji}</p>
-                    <p style={{fontSize:'10px',color:memberType===t.type ? t.color : D.sub,fontWeight:700,margin:0,lineHeight:1.3}}>{t.label}</p>
-                  </div>
-                )
+                <button key={t.type} onClick={() => setMemberType(t.type)}
+                  style={{padding:'10px 6px',borderRadius:'12px',
+                    border:`2px solid ${memberType===t.type ? t.color : (dark?'rgba(255,255,255,0.1)':'#e2e8f0')}`,
+                    background:memberType===t.type ? t.color+'15' : D.card,
+                    cursor:'pointer',transition:'all 0.2s',textAlign:'center'}}>
+                  <p style={{fontSize:'16px',margin:'0 0 3px'}}>{t.emoji}</p>
+                  <p style={{fontSize:'10px',color:memberType===t.type ? t.color : D.sub,fontWeight:700,margin:0,lineHeight:1.3}}>{t.label}</p>
+                </button>
               ))}
             </div>
 
@@ -316,7 +298,7 @@ export default function ProductDetailPage() {
                 <div style={{width:'32px',height:'32px',background:'linear-gradient(135deg,#ec4899,#f43f5e)',borderRadius:'10px',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'16px'}}>✦</div>
                 <h2 style={{fontSize:'16px',fontWeight:900,letterSpacing:'-0.3px'}}>상품 상세</h2>
               </div>
-              <div dangerouslySetInnerHTML={{__html: product.description}} style={{lineHeight:1.8, pointerEvents:'none', userSelect:'none'}} />
+              <div dangerouslySetInnerHTML={{__html: product.description}} style={{lineHeight:1.8}} />
             </div>
           </div>
         )}
