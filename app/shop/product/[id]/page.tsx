@@ -24,6 +24,7 @@ export default function ProductDetailPage() {
   const [visitorCount, setVisitorCount] = useState(0)
   const [socialComments, setSocialComments] = useState<any[]>([])
   const [memberInfo, setMemberInfo] = useState<any>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [showOrderForm, setShowOrderForm] = useState(false)
   const [orderForm, setOrderForm] = useState({ address: '', note: '', payment_method: '계좌이체' })
   const [orderLoading, setOrderLoading] = useState(false)
