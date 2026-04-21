@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
 
 type Order = {
-  id: string; order_number: string; company_name: string; contact: string
+  id: string; order_number: string; customer_name: string; contact: string
   address: string; note: string; payment_method: string; status: string
   total_amount: number; created_at: string
 }
@@ -18,10 +18,10 @@ const STATUS_LIST = ['접수', '준비중', '출고', '완료']
 const STATUS_CONFIG: Record<string, { color: string; bg: string; icon: string }> = {
   '접수':  { color: 'text-sky-600 dark:text-sky-400',      bg: 'bg-sky-50 dark:bg-sky-900/20 border-sky-100 dark:border-sky-800',      icon: '📋' },
   '준비중':{ color: 'text-amber-600 dark:text-amber-400',  bg: 'bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800',  icon: '📦' },
-  '출고':  { color: 'text-teal-600 dark:text-teal-400',bg: 'bg-violet-50 dark:bg-violet-900/20 border-violet-100 dark:border-violet-800',icon: '🚚' },
+  '출고':  { color: 'text-violet-600 dark:text-violet-400',bg: 'bg-violet-50 dark:bg-violet-900/20 border-violet-100 dark:border-violet-800',icon: '🚚' },
   '완료':  { color: 'text-emerald-600 dark:text-emerald-400',bg: 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-800',icon: '✅' },
 }
-const PAYMENT_LIST = ['계좌이체', '현금', '외상']
+const PAYMENT_LIST = ['계좌이체', '현금', '카드', '외상']
 
 export default function RetailPage() {
   const [orders, setOrders] = useState<Order[]>([])
@@ -33,7 +33,7 @@ export default function RetailPage() {
   const [viewItems, setViewItems] = useState<OrderItem[]>([])
   const [filterStatus, setFilterStatus] = useState('전체')
   const [search, setSearch] = useState('')
-  const [form, setForm] = useState({ company_name: '', contact: '', address: '', note: '', payment_method: '계좌이체', status: '접수' })
+  const [form, setForm] = useState({ customer_name: '', contact: '', address: '', note: '', payment_method: '계좌이체', status: '접수' })
   const [items, setItems] = useState<OrderItem[]>([{ product_id: '', product_name: '', quantity: 1, unit: 'kg', unit_price: 0, total_price: 0 }])
   const supabase = createClient()
 
@@ -51,14 +51,15 @@ export default function RetailPage() {
   }
 
   const resetForm = () => {
-    setForm({ company_name: '', contact: '', address: '', note: '', payment_method: '계좌이체', status: '접수' })
+    setForm({ customer_name: '', contact: '', address: '', note: '', payment_method: '계좌이체', status: '접수' })
     setItems([{ product_id: '', product_name: '', quantity: 1, unit: 'kg', unit_price: 0, total_price: 0 }])
-    setEditOrder(null); setShowForm(false)
+    setEditOrder(null)
+    setShowForm(false)
   }
 
   const openEdit = async (o: Order) => {
     setEditOrder(o)
-    setForm({ company_name: o.company_name, contact: o.contact || '', address: o.address || '', note: o.note || '', payment_method: o.payment_method, status: o.status })
+    setForm({ customer_name: o.customer_name, contact: o.contact || '', address: o.address || '', note: o.note || '', payment_method: o.payment_method, status: o.status })
     const { data } = await supabase.from('retail_order_items').select('*').eq('order_id', o.id)
     setItems(data && data.length > 0 ? data : [{ product_id: '', product_name: '', quantity: 1, unit: 'kg', unit_price: 0, total_price: 0 }])
     setShowForm(true)
@@ -77,40 +78,23 @@ export default function RetailPage() {
     const updated = [...items]
     if (field === 'product_id') {
       const p = products.find(p => p.id === value)
-      if (p) updated[i] = { ...updated[i], product_id: p.id, product_name: p.name, unit_price: p.retail_price, unit: p.unit, total_price: p.retail_price * updated[i].quantity }
+      if (p) {
+        updated[i] = { ...updated[i], product_id: p.id, product_name: p.name, unit_price: p.retail_price, unit: p.unit, total_price: p.retail_price * updated[i].quantity }
+      }
     } else {
       updated[i] = { ...updated[i], [field]: value }
-      if (field === 'quantity' || field === 'unit_price') updated[i].total_price = Number(updated[i].quantity) * Number(updated[i].unit_price)
+      if (field === 'quantity' || field === 'unit_price') {
+        updated[i].total_price = Number(updated[i].quantity) * Number(updated[i].unit_price)
+      }
     }
     setItems(updated)
   }
 
   const totalAmount = items.reduce((s, i) => s + (i.total_price || 0), 0)
 
-
-  const downloadExcel = async () => {
-    const XLSX = await import('https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs')
-    const headers = ['주문번호', '고객명', '연락처', '배송지', '결제방법', '상태', '금액', '주문일시']
-    const rows = filtered.map(o => [
-      o.order_number || '',
-      o.company_name || '',
-      o.contact || '',
-      o.address || '',
-      o.payment_method || '',
-      o.status || '',
-      o.total_amount || 0,
-      new Date(o.created_at).toLocaleString('ko-KR'),
-    ])
-    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows])
-    ws['!cols'] = [
-      {wch:15},{wch:12},{wch:15},{wch:30},{wch:10},{wch:8},{wch:12},{wch:20}
-    ]
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, '소매주문')
-    XLSX.writeFile(wb, `소매주문_${new Date().toLocaleDateString('ko-KR').replace(/\./g, '').replace(/ /g, '')}.xlsx`)
-  }
   const saveOrder = async () => {
-    if (!form.company_name) return alert('업체명을 입력해주세요.')
+    if (!form.customer_name) return alert('고객명을 입력해주세요.')
+    if (!form.address) return alert('배송지를 입력해주세요.')
     if (editOrder) {
       await supabase.from('retail_orders').update({ ...form, total_amount: totalAmount, updated_at: new Date().toISOString() }).eq('id', editOrder.id)
       await supabase.from('retail_order_items').delete().eq('order_id', editOrder.id)
@@ -135,9 +119,43 @@ export default function RetailPage() {
     fetchAll()
   }
 
+  const downloadExcel = () => {
+    const headers = ['주문번호', '고객명', '연락처', '배송지', '결제방법', '상태', '금액', '주문일시']
+    const rows = filtered.map(o => [
+      o.order_number || '',
+      o.customer_name || '',
+      o.contact || '',
+      o.address || '',
+      o.payment_method || '',
+      o.status || '',
+      String(o.total_amount || 0),
+      new Date(o.created_at).toLocaleString('ko-KR'),
+    ])
+    const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    const hRow = headers.map(h => '<Cell ss:StyleID="h"><Data ss:Type="String">' + esc(h) + '</Data></Cell>').join('')
+    const dRows = rows.map(row =>
+      '<Row>' + row.map(c => '<Cell><Data ss:Type="String">' + esc(c) + '</Data></Cell>').join('') + '</Row>'
+    ).join('\n')
+    const xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+      + '<?mso-application progid="Excel.Sheet"?>\n'
+      + '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">\n'
+      + '<Styles><Style ss:ID="h"><Font ss:Bold="1"/><Interior ss:Color="#EEF2FF" ss:Pattern="Solid"/></Style></Styles>\n'
+      + '<Worksheet ss:Name="소매주문"><Table>\n'
+      + '<Row>' + hRow + '</Row>\n'
+      + dRows
+      + '\n</Table></Worksheet></Workbook>'
+    const blob = new Blob(['\uFEFF' + xml], { type: 'application/vnd.ms-excel;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = '소매주문_' + new Date().toLocaleDateString('ko-KR').replace(/\./g, '').replace(/ /g, '') + '.xls'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   const filtered = orders.filter(o => {
     const matchStatus = filterStatus === '전체' || o.status === filterStatus
-    const matchSearch = !search || o.company_name?.includes(search) || o.contact?.includes(search) || o.order_number?.includes(search)
+    const matchSearch = !search || o.customer_name?.includes(search) || o.contact?.includes(search) || o.order_number?.includes(search)
     return matchStatus && matchSearch
   })
 
@@ -156,16 +174,18 @@ export default function RetailPage() {
           <h1 className="text-2xl font-bold text-slate-800 dark:text-white">소매주문 관리</h1>
           <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">소매 고객 주문 접수 및 관리</p>
         </div>
-        <button onClick={downloadExcel}
-          className="text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-all duration-200 active:scale-95 shadow-lg flex items-center gap-2"
-          style={{ background: 'linear-gradient(135deg,#059669,#10b981)', boxShadow: '0 4px 15px rgba(5,150,105,0.35)' }}>
-          📥 엑셀 다운로드
-        </button>
-        <button onClick={() => { resetForm(); setShowForm(true) }}
-          className="text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95 shadow-lg"
-          style={{ background: 'linear-gradient(135deg,#0f766e,#0891b2)', boxShadow: '0 4px 15px rgba(124,58,237,0.35)' }}>
-          + 주문 등록
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={downloadExcel}
+            className="text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-all duration-200 active:scale-95 shadow-lg flex items-center gap-2"
+            style={{ background: 'linear-gradient(135deg,#059669,#10b981)', boxShadow: '0 4px 15px rgba(5,150,105,0.35)' }}>
+            📥 엑셀 다운로드
+          </button>
+          <button onClick={() => { resetForm(); setShowForm(true) }}
+            className="text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95 shadow-lg"
+            style={{ background: 'linear-gradient(135deg,#0f766e,#0891b2)', boxShadow: '0 4px 15px rgba(15,118,110,0.35)' }}>
+            + 주문 등록
+          </button>
+        </div>
       </div>
 
       {/* 통계 카드 */}
@@ -176,7 +196,7 @@ export default function RetailPage() {
           { label: '처리 대기', value: stats.pending + '건', icon: '⏳', color: 'from-amber-500 to-orange-500' },
           { label: '완료 매출', value: (stats.revenue / 10000).toFixed(0) + '만원', icon: '💰', color: 'from-emerald-500 to-teal-500' },
         ].map((s, i) => (
-          <div key={i} className={`bg-gradient-to-br ${s.color} rounded-2xl p-4 text-white`}>
+          <div key={i} className={'bg-gradient-to-br ' + s.color + ' rounded-2xl p-4 text-white'}>
             <div className="flex items-center justify-between mb-2">
               <span className="text-2xl">{s.icon}</span>
               <span className="text-xs font-medium opacity-75 bg-white/20 px-2 py-0.5 rounded-full">{s.label}</span>
@@ -191,12 +211,12 @@ export default function RetailPage() {
         <div className="flex gap-2">
           {['전체', ...STATUS_LIST].map(s => (
             <button key={s} onClick={() => setFilterStatus(s)}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-1.5
-                ${filterStatus === s ? 'text-white shadow-md' : 'bg-white dark:bg-gray-800 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-gray-700'}`}
+              className={'px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-1.5 '
+                + (filterStatus === s ? 'text-white shadow-md' : 'bg-white dark:bg-gray-800 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-gray-700')}
               style={filterStatus === s ? { background: 'linear-gradient(135deg,#0f766e,#0891b2)' } : {}}>
               {s !== '전체' && STATUS_CONFIG[s]?.icon} {s}
               {s !== '전체' && (
-                <span className={`text-xs px-1.5 py-0.5 rounded-full ${filterStatus === s ? 'bg-white/20' : 'bg-slate-100 dark:bg-gray-700'}`}>
+                <span className={'text-xs px-1.5 py-0.5 rounded-full ' + (filterStatus === s ? 'bg-white/20' : 'bg-slate-100 dark:bg-gray-700')}>
                   {orders.filter(o => o.status === s).length}
                 </span>
               )}
@@ -204,7 +224,7 @@ export default function RetailPage() {
           ))}
         </div>
         <input type="text" value={search} onChange={e => setSearch(e.target.value)}
-          placeholder="🔍 업체명 / 연락처 / 주문번호"
+          placeholder="🔍 고객명 / 연락처 / 주문번호"
           className="flex-1 min-w-48 border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-2 text-sm bg-white dark:bg-gray-800 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-400" />
       </div>
 
@@ -228,12 +248,12 @@ export default function RetailPage() {
               className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-100 dark:border-gray-700 p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border ${sc.bg} ${sc.color}`}>
+                  <div className={'flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border ' + sc.bg + ' ' + sc.color}>
                     <span>{sc.icon}</span> {o.status}
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="font-bold text-slate-800 dark:text-white">{o.company_name}</p>
+                      <p className="font-bold text-slate-800 dark:text-white">{o.customer_name}</p>
                       <span className="text-xs text-slate-300 dark:text-slate-600">{o.order_number}</span>
                     </div>
                     <div className="flex items-center gap-3 mt-0.5">
@@ -256,8 +276,8 @@ export default function RetailPage() {
               <div className="flex gap-2 mt-4 pt-4 border-t border-slate-50 dark:border-gray-700" onClick={e => e.stopPropagation()}>
                 {STATUS_LIST.map(s => (
                   <button key={s} onClick={() => updateStatus(o.id, s)}
-                    className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all duration-150
-                      ${o.status === s ? 'text-white shadow-md' : 'bg-slate-50 dark:bg-gray-700 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-gray-600'}`}
+                    className={'flex-1 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 '
+                      + (o.status === s ? 'text-white shadow-md' : 'bg-slate-50 dark:bg-gray-700 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-gray-600')}
                     style={o.status === s ? { background: 'linear-gradient(135deg,#0f766e,#0891b2)' } : {}}>
                     {STATUS_CONFIG[s].icon} {s}
                   </button>
@@ -268,7 +288,7 @@ export default function RetailPage() {
         })}
       </div>
 
-      {/* 상세 보기 모달 */}
+      {/* 상세 모달 */}
       {viewOrder && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setViewOrder(null)}>
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-fadeIn" onClick={e => e.stopPropagation()}>
@@ -276,7 +296,7 @@ export default function RetailPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-white/70 text-xs mb-1">{viewOrder.order_number}</p>
-                  <h2 className="text-xl font-bold text-white">{viewOrder.company_name}</h2>
+                  <h2 className="text-xl font-bold text-white">{viewOrder.customer_name}</h2>
                 </div>
                 <button onClick={() => setViewOrder(null)} className="text-white/70 hover:text-white text-xl w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors">✕</button>
               </div>
@@ -292,7 +312,7 @@ export default function RetailPage() {
                   { label: '📅 주문일시', value: new Date(viewOrder.created_at).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) },
                   { label: '📍 배송지', value: viewOrder.address || '-', full: true },
                 ].map(item => (
-                  <div key={item.label} className={`bg-slate-50 dark:bg-gray-700/50 rounded-xl p-3 ${item.full ? 'col-span-2' : ''}`}>
+                  <div key={item.label} className={'bg-slate-50 dark:bg-gray-700/50 rounded-xl p-3 ' + (item.full ? 'col-span-2' : '')}>
                     <p className="text-xs text-slate-400 dark:text-slate-500 mb-1">{item.label}</p>
                     <p className="text-sm font-medium text-slate-800 dark:text-white">{item.value}</p>
                   </div>
@@ -322,18 +342,6 @@ export default function RetailPage() {
                   <span className="text-xl font-bold text-teal-600 dark:text-teal-400">{viewOrder.total_amount.toLocaleString()}원</span>
                 </div>
               </div>
-              <div>
-                <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">상태 변경</p>
-                <div className="flex gap-2">
-                  {STATUS_LIST.map(s => (
-                    <button key={s} onClick={() => updateStatus(viewOrder.id, s)}
-                      className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${viewOrder.status === s ? 'text-white shadow-md' : 'bg-slate-50 dark:bg-gray-700 text-slate-400 hover:bg-slate-100 dark:hover:bg-gray-600'}`}
-                      style={viewOrder.status === s ? { background: 'linear-gradient(135deg,#0f766e,#0891b2)' } : {}}>
-                      {STATUS_CONFIG[s].icon}<br />{s}
-                    </button>
-                  ))}
-                </div>
-              </div>
               <div className="flex gap-2 pt-2">
                 <button onClick={() => { setViewOrder(null); openEdit(viewOrder) }} className="flex-1 py-2.5 rounded-xl text-sm font-bold border-2 border-teal-200 dark:border-teal-800 text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-colors">✏️ 수정</button>
                 <button onClick={() => deleteOrder(viewOrder.id)} className="flex-1 py-2.5 rounded-xl text-sm font-bold border-2 border-red-200 dark:border-red-900 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">🗑️ 삭제</button>
@@ -359,9 +367,9 @@ export default function RetailPage() {
                 <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">👤 고객 정보</p>
                 <div className="grid grid-cols-2 gap-4">
                   {[
-                    { label: '고객명 *', key: 'company_name', placeholder: '예) 홍길동', col: 1 },
+                    { label: '고객명 *', key: 'customer_name', placeholder: '예) 홍길동', col: 1 },
                     { label: '연락처', key: 'contact', placeholder: '010-0000-0000', col: 1 },
-                    { label: '배송지', key: 'address', placeholder: '배송 주소', col: 2 },
+                    { label: '배송지 *', key: 'address', placeholder: '배송 주소를 입력해주세요', col: 2 },
                   ].map(f => (
                     <div key={f.key} className={f.col === 2 ? 'col-span-2' : ''}>
                       <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">{f.label}</label>
@@ -387,7 +395,7 @@ export default function RetailPage() {
                   <div className="col-span-2">
                     <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">요청사항</label>
                     <textarea value={form.note} onChange={e => setForm({ ...form, note: e.target.value })} rows={2}
-                      placeholder="특이사항 또는 요청사항"
+                      placeholder="특이사항 또는 배송 요청사항"
                       className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-400 resize-none" />
                   </div>
                 </div>
@@ -449,7 +457,7 @@ export default function RetailPage() {
               <button onClick={resetForm} className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-gray-600 text-slate-500 dark:text-slate-400 text-sm font-medium hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors">취소</button>
               <button onClick={saveOrder}
                 className="flex-1 py-3 rounded-xl text-white text-sm font-bold transition-all active:scale-95 shadow-lg"
-                style={{ background: 'linear-gradient(135deg,#0f766e,#0891b2)', boxShadow: '0 4px 15px rgba(124,58,237,0.35)' }}>
+                style={{ background: 'linear-gradient(135deg,#0f766e,#0891b2)', boxShadow: '0 4px 15px rgba(15,118,110,0.35)' }}>
                 {editOrder ? '✅ 수정 완료' : '✨ 주문 등록'}
               </button>
             </div>
