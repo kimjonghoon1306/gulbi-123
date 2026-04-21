@@ -23,17 +23,13 @@ export default function ProductDetailPage() {
   const [popup, setPopup] = useState<{name:string;action:string;show:boolean}>({name:'',action:'',show:false})
   const [visitorCount, setVisitorCount] = useState(0)
   const [socialComments, setSocialComments] = useState<any[]>([])
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [memberInfo, setMemberInfo] = useState<any>(null)
+  const [showOrderForm, setShowOrderForm] = useState(false)
+  const [orderForm, setOrderForm] = useState({ address: '', note: '', payment_method: '계좌이체' })
+  const [orderLoading, setOrderLoading] = useState(false)
+  const [orderDone, setOrderDone] = useState(false)
   const popupTimer = useRef<any>(null)
-
-  useEffect(() => {
-    fetchProduct()
-    checkUser()
-    const saved = localStorage.getItem('shop-theme')
-    if (saved === 'dark') setDark(true)
-    fetchSocialData()
-    startPopupCycle()
-    return () => { if (popupTimer.current) clearTimeout(popupTimer.current) }
-  }, [id])
 
   const fetchProduct = async () => {
     const { data } = await supabase.from('products').select('*').eq('id', id).single()
@@ -45,24 +41,30 @@ export default function ProductDetailPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       setUser(user)
-      const { data: member } = await supabase.from('shop_members').select('member_type').eq('id', user.id).single()
-      if (member) setMemberType(member.member_type)
+      const { data: member } = await supabase.from('shop_members').select('*').eq('id', user.id).single()
+      if (member) {
+        setMemberType(member.member_type)
+        setMemberInfo(member)
+        // 주소 자동입력
+        setOrderForm(prev => ({ ...prev }))
+      } else {
+        setIsAdmin(true)
+      }
     }
   }
 
   const fetchSocialData = async () => {
     try {
-      // 방문자수 설정값
       const { data: vc } = await supabase.from('system_settings').select('value').eq('key', 'visitor_count_override').single()
       if (vc?.value) setVisitorCount(Number(vc.value))
       else setVisitorCount(Math.floor(Math.random() * 80) + 20)
-      // 소셜 댓글
       const { data: comments } = await supabase.from('social_proof_comments').select('*').eq('is_active', true).order('sort_order')
       if (comments) setSocialComments(comments)
     } catch {}
   }
 
   const startPopupCycle = () => {
+    if (popupTimer.current) clearTimeout(popupTimer.current)
     const show = () => {
       const name = KOREAN_NAMES[Math.floor(Math.random() * KOREAN_NAMES.length)]
       const action = ACTIONS[Math.floor(Math.random() * ACTIONS.length)]
@@ -75,6 +77,17 @@ export default function ProductDetailPage() {
     popupTimer.current = setTimeout(show, 3000)
   }
 
+  useEffect(() => {
+    fetchProduct()
+    checkUser()
+    const saved = localStorage.getItem('shop-theme')
+    if (saved === 'dark') setDark(true)
+    fetchSocialData()
+    startPopupCycle()
+    return () => { if (popupTimer.current) clearTimeout(popupTimer.current) }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id])
+
   const getPrice = () => {
     if (!product) return 0
     if (memberType === '도매업') return product.wholesale_price
@@ -85,7 +98,7 @@ export default function ProductDetailPage() {
   const getPriceLabel = () => {
     if (memberType === '도매업') return '도매 유통가'
     if (memberType === '소매업') return '소매 유통가'
-    return '일반 구매가'
+    return '일반 소매가'
   }
 
   const getPriceColor = () => {
@@ -212,18 +225,30 @@ export default function ProductDetailPage() {
             {/* 회원 유형별 가격 탭 */}
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'6px',marginBottom:'14px'}}>
               {([
-                {type:'일반',   label:'일반 구매가', emoji:'🛒', color:'#6366f1'},
+                {type:'일반',   label:'일반 소매가', emoji:'🛒', color:'#6366f1'},
                 {type:'소매업', label:'소매 유통가',  emoji:'🏪', color:'#0f766e'},
                 {type:'도매업', label:'도매 유통가',  emoji:'🏭', color:'#ec4899'},
               ] as const).map(t => (
-                <button key={t.type} onClick={() => setMemberType(t.type)}
-                  style={{padding:'10px 6px',borderRadius:'12px',
-                    border:`2px solid ${memberType===t.type ? t.color : (dark?'rgba(255,255,255,0.1)':'#e2e8f0')}`,
-                    background:memberType===t.type ? t.color+'15' : D.card,
-                    cursor:'pointer',transition:'all 0.2s',textAlign:'center'}}>
-                  <p style={{fontSize:'16px',margin:'0 0 3px'}}>{t.emoji}</p>
-                  <p style={{fontSize:'10px',color:memberType===t.type ? t.color : D.sub,fontWeight:700,margin:0,lineHeight:1.3}}>{t.label}</p>
-                </button>
+                isAdmin ? (
+                  <button key={t.type} onClick={() => setMemberType(t.type)}
+                    style={{padding:'10px 6px',borderRadius:'12px',
+                      border:`2px solid ${memberType===t.type ? t.color : (dark?'rgba(255,255,255,0.1)':'#e2e8f0')}`,
+                      background:memberType===t.type ? t.color+'15' : D.card,
+                      cursor:'pointer',transition:'all 0.2s',textAlign:'center'}}>
+                    <p style={{fontSize:'16px',margin:'0 0 3px'}}>{t.emoji}</p>
+                    <p style={{fontSize:'10px',color:memberType===t.type ? t.color : D.sub,fontWeight:700,margin:0,lineHeight:1.3}}>{t.label}</p>
+                  </button>
+                ) : (
+                  <div key={t.type}
+                    style={{padding:'10px 6px',borderRadius:'12px',
+                      border:`2px solid ${memberType===t.type ? t.color : (dark?'rgba(255,255,255,0.1)':'#e2e8f0')}`,
+                      background:memberType===t.type ? t.color+'15' : D.card,
+                      textAlign:'center',
+                      opacity: memberType===t.type ? 1 : 0.45}}>
+                    <p style={{fontSize:'16px',margin:'0 0 3px'}}>{t.emoji}</p>
+                    <p style={{fontSize:'10px',color:memberType===t.type ? t.color : D.sub,fontWeight:700,margin:0,lineHeight:1.3}}>{t.label}</p>
+                  </div>
+                )
               ))}
             </div>
 
@@ -281,10 +306,11 @@ export default function ProductDetailPage() {
               <button disabled style={{width:'100%',padding:'16px',borderRadius:'14px',background:D.input,color:D.sub,fontSize:'15px',fontWeight:700,border:'none',cursor:'not-allowed'}}>품절</button>
             ) : (
               <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
-                <button style={{width:'100%',padding:'16px',borderRadius:'14px',background:'linear-gradient(135deg,#ec4899,#f43f5e)',color:'white',fontSize:'15px',fontWeight:900,border:'none',cursor:'pointer',boxShadow:'0 8px 20px rgba(236,72,153,0.35)'}}>
-                  🛒 구매 문의하기
+                <button onClick={() => { setOrderDone(false); setOrderForm({ address: '', note: '', payment_method: '계좌이체' }); setShowOrderForm(true) }}
+                  style={{width:'100%',padding:'16px',borderRadius:'14px',background:'linear-gradient(135deg,#ec4899,#f43f5e)',color:'white',fontSize:'15px',fontWeight:900,border:'none',cursor:'pointer',boxShadow:'0 8px 20px rgba(236,72,153,0.35)'}}>
+                  🛒 구매하기
                 </button>
-                <p style={{textAlign:'center',fontSize:'11px',color:D.sub}}>결제 시스템 준비 중 · 카카오톡으로 문의해 주세요</p>
+                <p style={{textAlign:'center',fontSize:'11px',color:D.sub}}>주문 접수 후 연락드려요</p>
               </div>
             )}
           </div>
@@ -298,7 +324,7 @@ export default function ProductDetailPage() {
                 <div style={{width:'32px',height:'32px',background:'linear-gradient(135deg,#ec4899,#f43f5e)',borderRadius:'10px',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'16px'}}>✦</div>
                 <h2 style={{fontSize:'16px',fontWeight:900,letterSpacing:'-0.3px'}}>상품 상세</h2>
               </div>
-              <div dangerouslySetInnerHTML={{__html: product.description}} style={{lineHeight:1.8}} />
+              <div dangerouslySetInnerHTML={{__html: product.description}} style={{lineHeight:1.8, pointerEvents:'none', userSelect:'none'}} />
             </div>
           </div>
         )}
@@ -333,11 +359,203 @@ export default function ProductDetailPage() {
         )}
       </div>
 
+      {/* 주문 폼 모달 */}
+      {showOrderForm && product && (
+        <div
+          onClick={() => !orderLoading && setShowOrderForm(false)}
+          style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.65)',backdropFilter:'blur(10px)',zIndex:9999,display:'flex',
+            alignItems:'flex-end', // 모바일: 하단
+          }}
+          className="order-overlay">
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{background:D.card,width:'100%',maxHeight:'92vh',overflowY:'auto',
+              boxShadow:'0 -20px 60px rgba(0,0,0,0.3)',
+            }}
+            className="order-sheet">
+
+            {orderDone ? (
+              /* ── 완료 화면 ── */
+              <div style={{padding:'48px 28px',textAlign:'center'}}>
+                <div style={{width:'80px',height:'80px',borderRadius:'50%',background:'linear-gradient(135deg,#ec4899,#f43f5e)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'36px',margin:'0 auto 20px',boxShadow:'0 12px 32px rgba(236,72,153,0.4)'}}>🎉</div>
+                <p style={{fontSize:'22px',fontWeight:900,color:D.text,margin:'0 0 8px'}}>주문 접수 완료!</p>
+                <p style={{fontSize:'14px',color:D.sub,margin:'0 0 4px'}}>빠르게 연락드릴게요 😊</p>
+                <p style={{fontSize:'12px',color:D.sub,margin:'0 0 32px'}}>마이페이지에서 주문 현황을 확인하세요</p>
+                {/* 주문 유형 뱃지 */}
+                <div style={{display:'inline-flex',alignItems:'center',gap:'6px',background:memberType==='도매업'?'rgba(124,58,237,0.1)':memberType==='소매업'?'rgba(15,118,110,0.1)':'rgba(99,102,241,0.1)',borderRadius:'20px',padding:'6px 16px',marginBottom:'28px'}}>
+                  <span style={{fontSize:'14px'}}>{memberType==='도매업'?'🏭':memberType==='소매업'?'🏪':'🛒'}</span>
+                  <span style={{fontSize:'12px',fontWeight:700,color:memberType==='도매업'?'#7c3aed':memberType==='소매업'?'#0f766e':'#6366f1'}}>{memberType} 주문 접수됨</span>
+                </div>
+                <div style={{display:'flex',gap:'10px'}}>
+                  <button onClick={() => setShowOrderForm(false)}
+                    style={{flex:1,padding:'14px',borderRadius:'14px',border:`1.5px solid ${D.border}`,background:'transparent',color:D.sub,fontSize:'14px',fontWeight:600,cursor:'pointer'}}>
+                    닫기
+                  </button>
+                  <button onClick={() => { setShowOrderForm(false); router.push('/shop/mypage') }}
+                    style={{flex:2,padding:'14px',borderRadius:'14px',background:'linear-gradient(135deg,#ec4899,#f43f5e)',color:'white',fontSize:'14px',fontWeight:900,border:'none',cursor:'pointer',boxShadow:'0 6px 20px rgba(236,72,153,0.35)'}}>
+                    📦 주문 확인하기 →
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* ── 핸들바 (모바일) ── */}
+                <div style={{display:'flex',justifyContent:'center',padding:'12px 0 0'}} className="sheet-handle">
+                  <div style={{width:'40px',height:'4px',borderRadius:'4px',background:D.border}} />
+                </div>
+
+                {/* ── 컬러풀 헤더 ── */}
+                <div style={{padding:'16px 24px 20px',background:'linear-gradient(135deg,#ec4899,#f43f5e)',margin:'12px 16px 0',borderRadius:'20px',position:'relative',overflow:'hidden'}}>
+                  <div style={{position:'absolute',top:'-20px',right:'-20px',width:'80px',height:'80px',borderRadius:'50%',background:'rgba(255,255,255,0.1)'}} />
+                  <div style={{position:'absolute',bottom:'-30px',left:'20%',width:'100px',height:'100px',borderRadius:'50%',background:'rgba(255,255,255,0.06)'}} />
+                  <div style={{position:'relative',zIndex:1}}>
+                    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'10px'}}>
+                      <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
+                        <span style={{fontSize:'20px'}}>🛒</span>
+                        <p style={{fontSize:'16px',fontWeight:900,color:'white',margin:0}}>주문서</p>
+                      </div>
+                      <button onClick={() => setShowOrderForm(false)}
+                        style={{width:'32px',height:'32px',borderRadius:'10px',background:'rgba(255,255,255,0.2)',border:'none',cursor:'pointer',fontSize:'16px',color:'white',display:'flex',alignItems:'center',justifyContent:'center'}}>✕</button>
+                    </div>
+                    {/* 상품 요약 */}
+                    <div style={{display:'flex',alignItems:'center',gap:'10px',background:'rgba(255,255,255,0.15)',borderRadius:'12px',padding:'10px 12px'}}>
+                      {product.image_url && <img src={product.image_url} alt="" style={{width:'40px',height:'40px',borderRadius:'8px',objectFit:'cover',flexShrink:0}} />}
+                      <div style={{flex:1,minWidth:0}}>
+                        <p style={{fontSize:'13px',fontWeight:800,color:'white',margin:'0 0 2px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{product.name}</p>
+                        <p style={{fontSize:'11px',color:'rgba(255,255,255,0.75)',margin:0}}>{quantity}{product.unit} × {getPrice().toLocaleString()}원</p>
+                      </div>
+                      <p style={{fontSize:'18px',fontWeight:900,color:'white',flexShrink:0}}>{totalPrice.toLocaleString()}원</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{padding:'20px 24px 32px',display:'flex',flexDirection:'column',gap:'18px'}}>
+
+                  {/* 회원 정보 뱃지 */}
+                  {memberInfo && (
+                    <div style={{display:'flex',alignItems:'center',gap:'12px',background:D.input,borderRadius:'14px',padding:'12px 16px'}}>
+                      <div style={{width:'40px',height:'40px',borderRadius:'12px',background:memberType==='도매업'?'linear-gradient(135deg,#7c3aed,#db2777)':memberType==='소매업'?'linear-gradient(135deg,#0f766e,#0891b2)':'linear-gradient(135deg,#6366f1,#8b5cf6)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'18px',flexShrink:0}}>
+                        {memberType==='도매업'?'🏭':memberType==='소매업'?'🏪':'🛒'}
+                      </div>
+                      <div>
+                        <div style={{display:'flex',alignItems:'center',gap:'6px'}}>
+                          <p style={{fontSize:'14px',fontWeight:800,color:D.text,margin:0}}>{memberInfo.name}</p>
+                          <span style={{fontSize:'10px',fontWeight:700,padding:'2px 8px',borderRadius:'20px',background:memberType==='도매업'?'rgba(124,58,237,0.12)':memberType==='소매업'?'rgba(15,118,110,0.12)':'rgba(99,102,241,0.12)',color:memberType==='도매업'?'#7c3aed':memberType==='소매업'?'#0f766e':'#6366f1'}}>{memberType}</span>
+                        </div>
+                        <p style={{fontSize:'11px',color:D.sub,margin:'2px 0 0'}}>{memberInfo.contact || memberInfo.email}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 배송지 */}
+                  <div>
+                    <label style={{display:'flex',alignItems:'center',gap:'6px',fontSize:'13px',fontWeight:800,color:D.text,marginBottom:'10px'}}>
+                      📍 배송지
+                      <span style={{fontSize:'10px',fontWeight:700,color:'#ec4899',background:'rgba(236,72,153,0.1)',padding:'2px 7px',borderRadius:'20px'}}>필수</span>
+                    </label>
+                    <input type="text" value={orderForm.address} onChange={e => setOrderForm(p => ({...p, address: e.target.value}))}
+                      placeholder="배송 받으실 주소를 입력해주세요"
+                      style={{width:'100%',padding:'14px 16px',borderRadius:'14px',border:`2px solid ${orderForm.address ? '#ec4899' : D.border}`,background:D.input,color:D.text,fontSize:'14px',outline:'none',boxSizing:'border-box',transition:'border-color 0.2s'}} />
+                  </div>
+
+                  {/* 결제방법 */}
+                  <div>
+                    <label style={{display:'block',fontSize:'13px',fontWeight:800,color:D.text,marginBottom:'10px'}}>💳 결제방법</label>
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
+                      {[
+                        {label:'계좌이체', icon:'🏦'},
+                        {label:'현금',    icon:'💵'},
+                        {label:'카드',    icon:'💳'},
+                        {label:'외상',    icon:'📝'},
+                      ].map(pm => (
+                        <button key={pm.label} onClick={() => setOrderForm(p => ({...p, payment_method: pm.label}))}
+                          style={{padding:'12px 10px',borderRadius:'12px',border:`2px solid ${orderForm.payment_method===pm.label ? '#ec4899' : D.border}`,background:orderForm.payment_method===pm.label ? 'rgba(236,72,153,0.08)' : D.input,color:orderForm.payment_method===pm.label ? '#ec4899' : D.sub,fontSize:'13px',fontWeight:orderForm.payment_method===pm.label ? 800 : 500,cursor:'pointer',transition:'all 0.15s',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px'}}>
+                          <span>{pm.icon}</span> {pm.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 요청사항 */}
+                  <div>
+                    <label style={{display:'block',fontSize:'13px',fontWeight:800,color:D.text,marginBottom:'10px'}}>💬 요청사항 <span style={{fontSize:'11px',fontWeight:400,color:D.sub}}>(선택)</span></label>
+                    <textarea value={orderForm.note} onChange={e => setOrderForm(p => ({...p, note: e.target.value}))}
+                      placeholder="배송 요청사항이나 특이사항을 입력해주세요"
+                      rows={2}
+                      style={{width:'100%',padding:'14px 16px',borderRadius:'14px',border:`2px solid ${D.border}`,background:D.input,color:D.text,fontSize:'13px',outline:'none',resize:'none',boxSizing:'border-box'}} />
+                  </div>
+
+                  {/* 주문하기 버튼 */}
+                  <button
+                    onClick={async () => {
+                      if (!orderForm.address) return alert('배송지를 입력해주세요.')
+                      setOrderLoading(true)
+                      try {
+                        const table = memberType === '도매업' ? 'wholesale_orders' : memberType === '소매업' ? 'retail_orders' : 'general_orders'
+                        const itemTable = memberType === '도매업' ? 'wholesale_order_items' : memberType === '소매업' ? 'retail_order_items' : 'general_order_items'
+                        const orderData = {
+                          customer_name: memberInfo?.name || '',
+                          contact: memberInfo?.contact || '',
+                          address: orderForm.address,
+                          note: orderForm.note,
+                          payment_method: orderForm.payment_method,
+                          status: '접수',
+                          total_amount: totalPrice,
+                        }
+                        const { data: newOrder } = await supabase.from(table).insert(orderData).select().single()
+                        if (newOrder) {
+                          await supabase.from(itemTable).insert({
+                            order_id: newOrder.id,
+                            product_id: product.id,
+                            product_name: product.name,
+                            quantity,
+                            unit: product.unit,
+                            unit_price: getPrice(),
+                            total_price: totalPrice,
+                          })
+                        }
+                        setOrderDone(true)
+                      } catch { alert('주문 중 오류가 발생했어요. 다시 시도해주세요.') }
+                      finally { setOrderLoading(false) }
+                    }}
+                    disabled={orderLoading}
+                    style={{width:'100%',padding:'18px',borderRadius:'16px',background:orderLoading ? D.input : 'linear-gradient(135deg,#ec4899,#f43f5e)',color:orderLoading ? D.sub : 'white',fontSize:'17px',fontWeight:900,border:'none',cursor:orderLoading ? 'not-allowed' : 'pointer',boxShadow:orderLoading ? 'none' : '0 10px 28px rgba(236,72,153,0.4)',transition:'all 0.2s',letterSpacing:'-0.3px'}}>
+                    {orderLoading ? '⏳ 주문 처리 중...' : `🛒 ${totalPrice.toLocaleString()}원 주문하기`}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}
         @keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes slideUpSheet{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:translateY(0)}}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
         @media(max-width:640px){.product-grid{grid-template-columns:1fr!important;gap:24px!important}}
+
+        /* 모바일: 바텀시트 */
+        @media(max-width:639px){
+          .order-overlay { align-items: flex-end !important; }
+          .order-sheet {
+            border-radius: 28px 28px 0 0 !important;
+            animation: slideUpSheet 0.35s cubic-bezier(0.34,1.56,0.64,1);
+          }
+          .sheet-handle { display: flex !important; }
+        }
+
+        /* PC: 중앙 모달 */
+        @media(min-width:640px){
+          .order-overlay { align-items: center !important; justify-content: center; padding: 20px; }
+          .order-sheet {
+            border-radius: 28px !important;
+            max-width: 460px !important;
+            animation: slideUp 0.25s ease;
+          }
+          .sheet-handle { display: none !important; }
+        }
       `}</style>
     </div>
   )
