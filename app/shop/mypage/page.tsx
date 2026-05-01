@@ -68,19 +68,28 @@ function MyPageInner() {
       if (!user) { router.push('/shop/login'); return }
       const { data: m } = await supabase.from('shop_members').select('*').eq('id', user.id).single()
       if (!m) {
-        // shop_members에 없으면 기본값으로 마이페이지 표시 (관리자 등)
-        setMember({
+        // shop_members 레코드가 없는 경우 (회원가입 시 INSERT 실패 등)
+        // → auth 유저 정보로 기본값 구성 + general_orders에서 주문 조회는 계속 진행
+        const fallbackMember = {
           id: user.id,
           email: user.email || '',
           name: user.email?.split('@')[0] || '회원',
           contact: '',
-          member_type: '일반',
+          member_type: '일반' as const,
           business_name: '',
           business_number: '',
           status: '승인',
           created_at: new Date().toISOString()
-        })
-        setOrders([])
+        }
+        setMember(fallbackMember)
+        // ❌ 기존: setOrders([]) → return  (주문 조회 없이 종료 — 버그)
+        // ✅ 수정: general_orders에서 user_id로 주문 조회
+        const { data: o } = await supabase
+          .from('general_orders')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+        setOrders(o || [])
         setLoading(false)
         return
       }
