@@ -28,33 +28,39 @@ export default function SupplierRegisterPage() {
 
     let userId = ''
 
-    // 1. 신규 가입 먼저 시도
+    // 1. signUp 시도 (Supabase는 기존 이메일도 에러 없이 반환 - identities로 구분)
     const { data: authData, error: authErr } = await supabase.auth.signUp({
       email: form.email, password: form.password,
     })
 
-    if (!authErr && authData.user) {
-      // 신규 가입 성공
-      userId = authData.user.id
-    } else {
-      const msg = authErr?.message || ''
-      if (msg.includes('already registered') || msg.includes('already been registered')) {
-        // 이미 Auth에 있는 이메일 → 로그인으로 userId 획득
-        const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
-          email: form.email, password: form.password,
-        })
-        if (signInErr || !signInData?.user) {
-          setLoading(false)
-          return setError('이미 가입된 이메일입니다. 비밀번호를 정확히 입력해주세요.')
-        }
-        userId = signInData.user.id
-      } else if (msg.includes('invalid email') || msg.includes('Invalid email')) {
-        setLoading(false)
+    if (authErr) {
+      setLoading(false)
+      const msg = authErr.message
+      if (msg.includes('invalid email') || msg.includes('Invalid email'))
         return setError('이메일 형식이 올바르지 않습니다.')
-      } else {
+      return setError('가입 오류: ' + msg)
+    }
+
+    if (!authData.user) {
+      setLoading(false)
+      return setError('가입에 실패했습니다. 다시 시도해주세요.')
+    }
+
+    const isExistingEmail = authData.user.identities && authData.user.identities.length === 0
+
+    if (isExistingEmail) {
+      // 기존 Auth 계정 → 로그인으로 실제 userId 획득
+      const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+        email: form.email, password: form.password,
+      })
+      if (signInErr || !signInData?.user) {
         setLoading(false)
-        return setError('가입 오류: ' + msg)
+        return setError('이미 가입된 이메일입니다. 비밀번호를 정확히 입력해주세요.')
       }
+      userId = signInData.user.id
+    } else {
+      // 신규 계정 생성 성공
+      userId = authData.user.id
     }
 
     // 2. 이미 공급업체로 가입된 경우 체크
@@ -186,13 +192,13 @@ export default function SupplierRegisterPage() {
               <input type="text" placeholder="업체명 *" value={form.company_name}
                 onChange={e => setForm({ ...form, company_name: e.target.value })}
                 style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }} className="rep-grid">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', overflow: 'hidden' }} className="rep-grid">
                 <input type="text" placeholder="대표자명" value={form.representative}
                   onChange={e => setForm({ ...form, representative: e.target.value })}
-                  style={{ ...inputStyle, width: 'auto' }} onFocus={handleFocus} onBlur={handleBlur} />
+                  style={{ ...inputStyle, width: '100%' }} onFocus={handleFocus} onBlur={handleBlur} />
                 <input type="text" placeholder="사업자등록번호" value={form.business_number}
                   onChange={e => setForm({ ...form, business_number: e.target.value })}
-                  style={{ ...inputStyle, width: 'auto' }} onFocus={handleFocus} onBlur={handleBlur} />
+                  style={{ ...inputStyle, width: '100%' }} onFocus={handleFocus} onBlur={handleBlur} />
               </div>
               <input type="text" placeholder="연락처" value={form.contact}
                 onChange={e => setForm({ ...form, contact: e.target.value })}
@@ -216,6 +222,14 @@ export default function SupplierRegisterPage() {
               <p style={{ color: '#f87171', fontSize: '13px', margin: 0 }}>⚠️ {error}</p>
             </div>
           )}
+
+          {/* 이메일 중복 안내 */}
+          <div style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: '12px', padding: '14px 16px' }}>
+            <p style={{ color: '#a78bfa', fontSize: '12px', margin: 0, lineHeight: 1.7 }}>
+              📌 쇼핑몰 회원과 공급업체 계정은 이메일을 각각 다르게 사용해주세요.<br />
+              쇼핑몰에 이미 가입된 이메일로는 공급업체 가입이 불가합니다.
+            </p>
+          </div>
 
           <button onClick={handleSubmit} disabled={loading} style={{
             width: '100%', padding: '15px', borderRadius: '14px', border: 'none',
