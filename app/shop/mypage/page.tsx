@@ -95,6 +95,16 @@ export default function MyPage() {
     const saved = localStorage.getItem('shop-theme')
     if (saved === 'dark') setDark(true)
     fetchData()
+
+    // 📦 주문 완료 후 마이페이지 이동 시 자동 갱신
+    const refreshOrders = () => {
+      if (document.visibilityState === 'visible') fetchData()
+    }
+    document.addEventListener('visibilitychange', refreshOrders)
+
+    return () => {
+      document.removeEventListener('visibilitychange', refreshOrders)
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
