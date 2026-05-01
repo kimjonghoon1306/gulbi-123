@@ -32,6 +32,23 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#0a0f1e] text-white overflow-x-hidden">
 
+      {/* ── 공급업체 플로팅 버튼 ── */}
+      <a
+        href="/supplier/login"
+        className="fixed bottom-5 left-4 sm:bottom-8 sm:left-8 z-50 flex items-center gap-1.5 sm:gap-2 text-slate-900 text-xs sm:text-sm font-bold px-3.5 sm:px-5 py-2.5 sm:py-3.5 rounded-full select-none"
+        style={{
+          background: 'linear-gradient(135deg, #fbbf24, #f59e0b, #d97706)',
+          boxShadow: '0 8px 30px rgba(251,191,36,0.5)',
+          animation: 'floatBtn 3s ease-in-out infinite',
+          animationDelay: '1.5s',
+        }}
+      >
+        <span style={{ animation: 'spinIcon 4s linear infinite', display: 'inline-block' }}>🏭</span>
+        <span className="hidden sm:inline">공급업체 포털</span>
+        <span className="sm:hidden">공급업체</span>
+        <span>→</span>
+      </a>
+
       {/* ── 유안 F&B 플로팅 버튼 ── */}
       <a
         href="https://yuanfnb.com"
