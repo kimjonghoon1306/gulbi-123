@@ -189,7 +189,7 @@ export default function MyPage() {
             </div>
 
             {/* 통계 3칸 */}
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'8px' }}>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'8px' }} className="stat-grid">
               {[
                 { label:'총 주문',   value: `${orders.length}건` },
                 { label:'누적 금액', value: totalAmount > 0 ? `${Math.floor(totalAmount/10000)}만원` : '0원' },
@@ -198,9 +198,9 @@ export default function MyPage() {
                     ? `${curGrade.icon} ${curGrade.name}`
                     : member.status === '승인' ? '✅ 승인' : member.status === '대기중' ? '⏳ 대기' : '❌ 거절' },
               ].map((s, i) => (
-                <div key={i} style={{ background:'rgba(255,255,255,0.15)', borderRadius:'14px', padding:'12px 8px', textAlign:'center', backdropFilter:'blur(8px)' }}>
+                <div key={i} style={{ background:'rgba(255,255,255,0.15)', borderRadius:'14px', padding:'12px 8px', textAlign:'center', backdropFilter:'blur(8px)' }} className="stat-card">
                   <p style={{ color:'rgba(255,255,255,0.65)', fontSize:'10px', margin:'0 0 4px', letterSpacing:'0.04em' }}>{s.label}</p>
-                  <p style={{ color:'white', fontSize:'14px', fontWeight:800, margin:0 }}>{s.value}</p>
+                  <p style={{ color:'white', fontSize:'14px', fontWeight:800, margin:0 }} className="stat-value">{s.value}</p>
                 </div>
               ))}
             </div>
@@ -346,10 +346,11 @@ export default function MyPage() {
                               <div style={{ width:'28px', height:'28px', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'12px', fontWeight:700, flexShrink:0, transition:'all 0.3s',
                                 background: done ? tc.gradient : D.input,
                                 color: done ? 'white' : D.sub,
-                                boxShadow: current ? `0 0 0 3px ${tc.color}33` : 'none' }}>
+                                boxShadow: current ? `0 0 0 3px ${tc.color}33` : 'none' }}
+                                className="status-circle">
                                 {done ? (current ? STATUS_ICON[i] : '✓') : i+1}
                               </div>
-                              <p style={{ fontSize:'9px', fontWeight: current ? 700 : 400, color: done ? tc.color : D.sub, margin:0, whiteSpace:'nowrap' }}>{s}</p>
+                              <p style={{ fontSize:'9px', fontWeight: current ? 700 : 400, color: done ? tc.color : D.sub, margin:0, whiteSpace:'nowrap' }} className="status-label">{s}</p>
                             </div>
                             {i < 3 && (
                               <div style={{ flex:1, height:'2px', background: i < (STATUS_STEP[order.status]||0) ? tc.color : D.border, margin:'0 4px 16px', borderRadius:'2px', transition:'background 0.3s' }} />
@@ -583,7 +584,39 @@ export default function MyPage() {
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
-        @media (max-width: 640px) { }
+
+        @media (max-width: 640px) {
+          /* 주문 배송 단계 - 작은 화면에서 원 크기 축소 */
+          .status-circle {
+            width: 24px !important;
+            height: 24px !important;
+            font-size: 10px !important;
+          }
+          .status-label {
+            font-size: 8px !important;
+          }
+          /* 3열 통계 - 아주 작은 화면 대응 */
+          .stat-grid {
+            gap: 6px !important;
+          }
+          .stat-card {
+            padding: 10px 4px !important;
+          }
+          .stat-value {
+            font-size: 12px !important;
+          }
+          /* 퀵메뉴 카드 패딩 축소 */
+          .quick-card {
+            padding: 14px 12px !important;
+          }
+        }
+
+        @media (max-width: 360px) {
+          /* 아주 작은 기기 - 통계 2열로 변경 */
+          .stat-grid {
+            grid-template-columns: 1fr 1fr !important;
+          }
+        }
       `}</style>
     </div>
   )
