@@ -84,7 +84,7 @@ export default function SupplierRegisterPage() {
     setDone(true)
   }
 
-  const bg = dark ? '#0d1117' : '#f1f5f9'
+  const bg = dark ? '#07090f' : '#f0f2f8'
   const cardBg = dark ? '#161b22' : '#ffffff'
   const border = dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'
   const text = dark ? 'white' : '#1e293b'
@@ -126,13 +126,32 @@ export default function SupplierRegisterPage() {
   )
 
   return (
-    <div style={{ minHeight: '100vh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', position: 'relative', transition: 'background 0.3s' }}>
+    <div style={{ minHeight: '100vh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', position: 'relative', overflow: 'hidden', transition: 'background 0.4s' }}>
 
-      {/* 배경 장식 */}
-      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-        <div style={{ position: 'absolute', top: '-20%', right: '-10%', width: '500px', height: '500px', borderRadius: '50%', background: dark ? 'rgba(167,139,250,0.04)' : 'rgba(167,139,250,0.06)', filter: 'blur(80px)' }} />
-        <div style={{ position: 'absolute', bottom: '-20%', left: '-10%', width: '400px', height: '400px', borderRadius: '50%', background: dark ? 'rgba(245,158,11,0.04)' : 'rgba(245,158,11,0.06)', filter: 'blur(80px)' }} />
-      </div>
+      {/* SVG 배경 */}
+      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="rg1" cx="75%" cy="25%" r="50%">
+            <stop offset="0%" stopColor={dark ? '#7c3aed' : '#a78bfa'} stopOpacity={dark ? '0.12' : '0.1'} />
+            <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id="rg2" cx="25%" cy="75%" r="50%">
+            <stop offset="0%" stopColor="#f59e0b" stopOpacity={dark ? '0.08' : '0.07'} />
+            <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#rg1)" />
+        <rect width="100%" height="100%" fill="url(#rg2)" />
+        <pattern id="hexR" x="0" y="0" width="60" height="52" patternUnits="userSpaceOnUse">
+          <polygon points="30,2 58,17 58,35 30,50 2,35 2,17" fill="none" stroke={dark ? 'rgba(139,92,246,0.05)' : 'rgba(139,92,246,0.07)'} strokeWidth="1" />
+        </pattern>
+        <rect width="100%" height="100%" fill="url(#hexR)" />
+        <circle cx="85%" cy="10%" r="100" fill={dark ? 'rgba(124,58,237,0.05)' : 'rgba(124,58,237,0.04)'} className="float1" />
+        <circle cx="10%" cy="85%" r="140" fill={dark ? 'rgba(245,158,11,0.04)' : 'rgba(245,158,11,0.03)'} className="float2" />
+        {[[20,30],[80,20],[65,70],[15,60],[55,40],[40,90]].map(([x,y], i) => (
+          <circle key={i} cx={`${x}%`} cy={`${y}%`} r="2" fill={dark ? 'rgba(167,139,250,0.35)' : 'rgba(124,58,237,0.25)'} className={`sparkle${i % 3}`} />
+        ))}
+      </svg>
 
       {/* 다크모드 토글 */}
       <button onClick={() => setDark(v => !v)} style={{
@@ -147,11 +166,14 @@ export default function SupplierRegisterPage() {
       {/* 카드 */}
       <div style={{
         width: '100%', maxWidth: '480px', position: 'relative', zIndex: 1,
-        background: cardBg, borderRadius: '24px',
+        background: dark ? 'rgba(15,18,28,0.85)' : 'rgba(255,255,255,0.9)',
+        backdropFilter: 'blur(24px)',
+        borderRadius: '28px',
         border: `1px solid ${border}`,
-        boxShadow: dark ? '0 32px 64px rgba(0,0,0,0.4)' : '0 32px 64px rgba(0,0,0,0.08)',
+        boxShadow: dark ? '0 32px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)' : '0 32px 80px rgba(0,0,0,0.1)',
         overflow: 'hidden',
       }}>
+        <div style={{ height: '2px', background: 'linear-gradient(90deg, transparent, #7c3aed, #f59e0b, transparent)' }} />
 
         {/* 헤더 */}
         <div style={{
@@ -227,7 +249,7 @@ export default function SupplierRegisterPage() {
           <div style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: '12px', padding: '14px 16px' }}>
             <p style={{ color: '#a78bfa', fontSize: '12px', margin: 0, lineHeight: 1.7 }}>
               📌 쇼핑몰 회원과 공급업체 계정은 이메일을 각각 다르게 사용해주세요.<br />
-              쇼핑몰에 이미 가입된 이메일로는 공급업체 가입이 불가합니다.
+              각각의 회원을 분리하여 관리하기 위함이니 양해 바랍니다.
             </p>
           </div>
 
@@ -253,7 +275,24 @@ export default function SupplierRegisterPage() {
           </div>
         </div>
       </div>
-      <style>{`* { box-sizing: border-box; } @media (max-width: 520px) { .rep-grid { grid-template-columns: 1fr !important; } } select option { background: #161b22; color: white; }`}</style>
+      <style>{`
+        * { box-sizing: border-box; }
+        @keyframes float1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(20px,-30px)} }
+        @keyframes float2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-25px,20px)} }
+        @keyframes sparkle { 0%,100%{opacity:0.2;transform:scale(1)} 50%{opacity:1;transform:scale(1.5)} }
+        .float1 { animation: float1 9s ease-in-out infinite; }
+        .float2 { animation: float2 12s ease-in-out infinite; }
+        .sparkle0 { animation: sparkle 3s ease-in-out infinite; }
+        .sparkle1 { animation: sparkle 4.5s ease-in-out infinite 1s; }
+        .sparkle2 { animation: sparkle 3.5s ease-in-out infinite 2s; }
+        .submit-btn { transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1) !important; }
+        .submit-btn:hover:not(:disabled) { transform: translateY(-3px) scale(1.02) !important; box-shadow: 0 16px 40px rgba(124,58,237,0.5) !important; }
+        .submit-btn:active:not(:disabled) { transform: translateY(1px) scale(0.98) !important; }
+        .submit-btn::after { content:''; position:absolute; top:0; left:-100%; width:60%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent); transition:left 0.5s; }
+        .submit-btn:hover::after { left:150%; }
+        @media (max-width: 520px) { .rep-grid { grid-template-columns: 1fr !important; } }
+        select option { background: #161b22; color: white; }
+      `}</style>
     </div>
   )
 }
