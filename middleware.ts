@@ -30,22 +30,38 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // 세션 갱신 (이게 핵심!)
   const { data: { user } } = await supabase.auth.getUser()
+  const { pathname } = request.nextUrl
 
-  // 로그인 안 된 상태에서 /admin 접근 시 로그인 페이지로
-  if (!user && request.nextUrl.pathname.startsWith('/admin')) {
-    return NextResponse.redirect(new URL('/auth/login', request.url))
+  // ── 어드민 라우트 ──────────────────────────────────────
+  if (pathname.startsWith('/admin')) {
+    if (!user) return NextResponse.redirect(new URL('/auth/login', request.url))
   }
 
-  // 로그인 된 상태에서 /auth/login 접근 시 대시보드로
-  if (user && request.nextUrl.pathname.startsWith('/auth/login')) {
+  if (pathname.startsWith('/auth/login') && user) {
+    // 어드민이 로그인 페이지 접근 시 대시보드로
     return NextResponse.redirect(new URL('/admin/dashboard', request.url))
+  }
+
+  // ── 공급업체 라우트 ────────────────────────────────────
+  const isSupplierPublic =
+    pathname === '/supplier/login' ||
+    pathname === '/supplier/register'
+
+  if (pathname.startsWith('/supplier') && !isSupplierPublic) {
+    if (!user) {
+      return NextResponse.redirect(new URL('/supplier/login', request.url))
+    }
+  }
+
+  if (pathname === '/supplier/login' && user) {
+    // 이미 로그인된 공급업체가 로그인 페이지 접근 시 대시보드로
+    return NextResponse.redirect(new URL('/supplier/dashboard', request.url))
   }
 
   return response
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/auth/login'],
+  matcher: ['/admin/:path*', '/auth/login', '/supplier/:path*'],
 }
