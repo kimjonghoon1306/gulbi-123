@@ -28,33 +28,39 @@ export default function SupplierRegisterPage() {
 
     let userId = ''
 
-    // 1. 기존 계정 로그인 시도 (쇼핑몰 회원이었을 경우 대비)
-    const { data: signInData } = await supabase.auth.signInWithPassword({
+    // 1. 신규 가입 먼저 시도
+    const { data: authData, error: authErr } = await supabase.auth.signUp({
       email: form.email, password: form.password,
     })
 
-    if (signInData?.user) {
-      // 기존 계정으로 로그인 성공
-      userId = signInData.user.id
-    } else {
-      // 신규 계정 생성
-      const { data: authData, error: authErr } = await supabase.auth.signUp({
-        email: form.email, password: form.password,
-      })
-      if (authErr || !authData.user) {
-        setLoading(false)
-        const msg = authErr?.message || ''
-        if (msg.includes('invalid email') || msg.includes('Invalid email')) {
-          return setError('이메일 형식이 올바르지 않습니다.')
-        }
-        return setError('가입 중 오류가 발생했습니다. 다시 시도해주세요.')
-      }
+    if (!authErr && authData.user) {
+      // 신규 가입 성공
       userId = authData.user.id
+    } else {
+      const msg = authErr?.message || ''
+      if (msg.includes('already registered') || msg.includes('already been registered')) {
+        // 이미 Auth에 있는 이메일 → 로그인으로 userId 획득
+        const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+          email: form.email, password: form.password,
+        })
+        if (signInErr || !signInData?.user) {
+          setLoading(false)
+          return setError('이미 가입된 이메일입니다. 비밀번호를 정확히 입력해주세요.')
+        }
+        userId = signInData.user.id
+      } else if (msg.includes('invalid email') || msg.includes('Invalid email')) {
+        setLoading(false)
+        return setError('이메일 형식이 올바르지 않습니다.')
+      } else {
+        setLoading(false)
+        return setError('가입 오류: ' + msg)
+      }
     }
 
     // 2. 이미 공급업체로 가입된 경우 체크
     const { data: existing } = await supabase.from('suppliers').select('id').eq('id', userId).single()
     if (existing) {
+      await supabase.auth.signOut()
       setLoading(false)
       return setError('이미 공급업체로 가입된 계정입니다. 로그인 페이지에서 로그인해주세요.')
     }
@@ -66,9 +72,9 @@ export default function SupplierRegisterPage() {
       business_number: form.business_number, contact: form.contact,
       address: form.address, category: form.category, status: '대기중',
     })
+    await supabase.auth.signOut()
     setLoading(false)
     if (dbErr) return setError('정보 저장 실패: ' + dbErr.message)
-    await supabase.auth.signOut()
     setDone(true)
   }
 
@@ -180,7 +186,7 @@ export default function SupplierRegisterPage() {
               <input type="text" placeholder="업체명 *" value={form.company_name}
                 onChange={e => setForm({ ...form, company_name: e.target.value })}
                 style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }} className="rep-grid">
                 <input type="text" placeholder="대표자명" value={form.representative}
                   onChange={e => setForm({ ...form, representative: e.target.value })}
                   style={{ ...inputStyle, width: 'auto' }} onFocus={handleFocus} onBlur={handleBlur} />
@@ -195,7 +201,7 @@ export default function SupplierRegisterPage() {
                 onChange={e => setForm({ ...form, address: e.target.value })}
                 style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
               <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}
-                style={{ ...inputStyle, color: form.category ? text : subText }}
+                style={{ ...inputStyle, color: text }}
                 onFocus={handleFocus} onBlur={handleBlur}>
                 <option value="">취급 품목 선택</option>
                 {['어류', '갑각류', '패류', '해조류', '건어물', '기타'].map(c => (
@@ -233,7 +239,7 @@ export default function SupplierRegisterPage() {
           </div>
         </div>
       </div>
-      <style>{`* { box-sizing: border-box; } @media (max-width: 480px) { .register-grid { grid-template-columns: 1fr !important; } }`}</style>
+      <style>{`* { box-sizing: border-box; } @media (max-width: 520px) { .rep-grid { grid-template-columns: 1fr !important; } } select option { background: #161b22; color: white; }`}</style>
     </div>
   )
 }
