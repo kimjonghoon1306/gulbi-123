@@ -108,9 +108,16 @@ export default function DashboardPage() {
     <div className="animate-fadeIn space-y-6">
 
       {/* 인사말 */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-800 dark:text-white">{greeting}</h1>
-        <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">오늘도 굴비가게 화이팅! 🐟</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-white">{greeting}</h1>
+          <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">오늘도 굴비가게 화이팅! 🐟</p>
+        </div>
+        <Link href="/admin/suppliers"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all active:scale-95 hover:-translate-y-0.5"
+          style={{ background: 'linear-gradient(135deg,#7c3aed,#a855f7)', color: 'white', boxShadow: '0 4px 15px rgba(124,58,237,0.3)' }}>
+          🏭 공급업체 관리
+        </Link>
       </div>
 
       {/* 재고 부족 알림 배너 */}
