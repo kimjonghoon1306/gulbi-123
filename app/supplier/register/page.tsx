@@ -212,7 +212,7 @@ export default function SupplierRegisterPage() {
               </button>
 
               <div style={{display:'flex', justifyContent:'space-between', marginTop:'16px', alignItems:'center'}}>
-                <Link href="/landing" className="back-link">← 대문으로</Link>
+                <Link href="/supplier/login" className="back-link">← 로그인으로 가기</Link>
                 <p style={{fontSize:'13px', opacity:0.5}}>
                   이미 계정이 있으신가요?{' '}
                   <Link href="/supplier/login" className="link-gold">로그인</Link>
