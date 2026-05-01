@@ -115,6 +115,8 @@ export default function CartPage() {
         )
       }
       await clearCart()
+      // 🛒 헤더 카운트 0 갱신 신호
+      localStorage.setItem('cart-updated', Date.now().toString())
       setOrderDone(true)
     } catch { alert('주문 중 오류가 발생했습니다.') }
     finally { setOrderLoading(false) }
