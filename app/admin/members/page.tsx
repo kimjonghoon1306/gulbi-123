@@ -50,7 +50,9 @@ export default function MembersPage() {
 
   const deleteMember = async (id: string) => {
     if (!confirm('정말 삭제하시겠습니까?')) return
+    await supabase.from('cart_items').delete().eq('user_id', id)
     await supabase.from('shop_members').delete().eq('id', id)
+    await supabase.rpc('delete_auth_user', { user_id: id })
     setSelected(null); fetchAll()
   }
 
