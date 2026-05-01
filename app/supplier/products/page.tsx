@@ -43,21 +43,25 @@ export default function SupplierProductsPage() {
   useEffect(() => { init() }, [])
 
   const init = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.push('/supplier/login'); return }
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.push('/supplier/login'); return }
 
-    const [{ data: sup }, { data: cats }, { data: prods }] = await Promise.all([
-      supabase.from('suppliers').select('status').eq('id', user.id).single(),
-      supabase.from('categories').select('id, name').order('sort_order'),
-      supabase.from('products').select('*').eq('supplier_id', user.id).order('created_at', { ascending: false })
-    ])
+      const [{ data: sup }, { data: cats }, { data: prods }] = await Promise.all([
+        supabase.from('suppliers').select('status').eq('id', user.id).single(),
+        supabase.from('categories').select('id, name').order('sort_order'),
+        supabase.from('products').select('*').eq('supplier_id', user.id).order('created_at', { ascending: false })
+      ])
 
-    if (!sup) { router.push('/supplier/login'); return }
-    setSupplierId(user.id)
-    setSupplierStatus(sup.status)
-    setCategories(cats || [])
-    setProducts(prods || [])
-    setLoading(false)
+      setSupplierId(user.id)
+      setSupplierStatus(sup?.status || '승인') // suppliers에 없으면 관리자 → 승인으로 처리
+      setCategories(cats || [])
+      setProducts(prods || [])
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -322,4 +326,3 @@ export default function SupplierProductsPage() {
     </SupplierLayout>
   )
 }
-
