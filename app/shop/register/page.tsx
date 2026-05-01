@@ -45,6 +45,16 @@ export default function ShopRegisterPage() {
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: form.email,
         password: form.password,
+        options: {
+          // DB 트리거가 shop_members 자동 생성 시 사용할 메타데이터
+          data: {
+            name: form.name,
+            contact: form.contact,
+            member_type: memberType,
+            business_name: form.businessName || null,
+            business_number: form.businessNumber || null,
+          }
+        }
       })
       if (signUpError) {
         const msg = signUpError.message
@@ -70,7 +80,7 @@ export default function ShopRegisterPage() {
           }
         }
         const status = memberType === '일반' ? '승인' : '대기중'
-        const { error: insertError } = await supabase.from('shop_members').insert({
+        const { error: insertError } = await supabase.from('shop_members').upsert({
           id: data.user.id,
           email: form.email,
           name: form.name,
@@ -79,7 +89,7 @@ export default function ShopRegisterPage() {
           business_name: form.businessName || null,
           business_number: form.businessNumber || null,
           status,
-        })
+        }, { onConflict: 'id' })
         if (insertError) return setError(`정보 저장 중 오류가 발생했어요: ${insertError.message}`)
         setStep(3)
       }
