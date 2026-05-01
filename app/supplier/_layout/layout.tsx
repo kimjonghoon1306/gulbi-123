@@ -28,9 +28,9 @@ export default function SupplierLayout({ children }: { children: React.ReactNode
       .select('company_name, status')
       .eq('id', user.id)
       .single()
-    if (!data) { router.push('/supplier/login'); return }
-    setCompanyName(data.company_name)
-    setStatus(data.status)
+    // suppliers에 없으면 관리자 → 그냥 통과
+    setCompanyName(data?.company_name || '관리자')
+    setStatus(data?.status || '승인')
   }
 
   const handleLogout = async () => {
