@@ -44,11 +44,12 @@ export default function SupplierDashboardPage() {
     </SupplierLayout>
   )
 
-  const statusColor = {
+  const statusColorMap: Record<string, string> = {
     '승인':   'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400',
     '대기중': 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
     '거절':   'bg-red-100 dark:bg-red-900/30 text-red-500',
-  }[supplier.status] || ''
+  }
+  const statusColor = statusColorMap[supplier.status] || ''
 
   return (
     <SupplierLayout>
@@ -112,4 +113,3 @@ export default function SupplierDashboardPage() {
     </SupplierLayout>
   )
 }
-
