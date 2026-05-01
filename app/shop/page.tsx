@@ -108,8 +108,24 @@ export default function ShopPage() {
     window.addEventListener('scroll', handleScroll)
     setTimeout(() => setHeroVisible(true), 100)
     setVisitorCount(Math.floor(Math.random() * 80) + 40)
+
+    // 🛒 장바구니 카운트 실시간 동기화
+    // 상품 상세에서 담고 돌아올 때 / 탭 전환 후 돌아올 때 자동 갱신
+    const refreshCart = () => {
+      if (document.visibilityState === 'visible') checkUser()
+    }
+    const refreshCartOnStorage = (e: StorageEvent) => {
+      if (e.key === 'cart-updated') checkUser()
+    }
+    document.addEventListener('visibilitychange', refreshCart)
+    window.addEventListener('focus', refreshCart)
+    window.addEventListener('storage', refreshCartOnStorage)
+
     return () => {
       window.removeEventListener('scroll', handleScroll)
+      document.removeEventListener('visibilitychange', refreshCart)
+      window.removeEventListener('focus', refreshCart)
+      window.removeEventListener('storage', refreshCartOnStorage)
       if (popupTimer.current) clearTimeout(popupTimer.current)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
