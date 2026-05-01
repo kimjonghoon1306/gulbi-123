@@ -72,7 +72,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Link
                 key={menu.href}
                 href={menu.href}
-                className={`flex items-center gap-3 px-4 py-3 mx-2 rounded-xl mb-1 transition-all duration-200 group
+                className={`flex items-center gap-3 px-4 py-2 mx-2 rounded-xl mb-0.5 transition-all duration-200 group
                   ${active
                     ? 'bg-sky-500 text-white shadow-md shadow-sky-200'
                     : dark
