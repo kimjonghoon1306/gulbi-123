@@ -63,6 +63,8 @@ export default function ProductDetailPage() {
     } else {
       await supabase.from('cart_items').insert({ user_id: user.id, product_id: id, quantity })
     }
+    // 🛒 헤더 카운트 갱신 신호
+    localStorage.setItem('cart-updated', Date.now().toString())
     setCartAdded(true)
     setCartLoading(false)
     setTimeout(() => setCartAdded(false), 2000)
