@@ -57,6 +57,18 @@ export default function ShopRegisterPage() {
         return setError(`오류가 발생했어요: ${msg}`)
       }
       if (data.user) {
+        // signUp 직후 세션이 없는 경우(이메일 인증 설정 등) → 즉시 로그인으로 세션 확보
+        // 세션 없으면 RLS 정책에 의해 shop_members INSERT가 차단됨
+        if (!data.session) {
+          const { error: signInError } = await supabase.auth.signInWithPassword({
+            email: form.email,
+            password: form.password,
+          })
+          if (signInError) {
+            // 로그인 실패 시 서비스 역할 키가 없으면 insert 불가 → 안내 메시지
+            return setError('계정 생성 후 로그인에 실패했어요. 이메일 인증을 완료한 후 다시 로그인해주세요.')
+          }
+        }
         const status = memberType === '일반' ? '승인' : '대기중'
         const { error: insertError } = await supabase.from('shop_members').insert({
           id: data.user.id,
