@@ -50,11 +50,12 @@ export default function SupplierLayout({ children }: { children: React.ReactNode
     router.push('/supplier/login')
   }
 
-  const statusStyle = {
+  const statusStyleMap: Record<string, string> = {
     '승인':   'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400',
     '대기중': 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
     '거절':   'bg-red-100 dark:bg-red-900/30 text-red-500',
-  }[status] || ''
+  }
+  const statusStyle = statusStyleMap[status] || ''
 
   return (
     <div className={`flex min-h-screen transition-colors duration-300 ${dark ? 'bg-gray-950 text-gray-100' : 'bg-slate-50 text-slate-800'}`}>
@@ -127,4 +128,3 @@ export default function SupplierLayout({ children }: { children: React.ReactNode
     </div>
   )
 }
-
