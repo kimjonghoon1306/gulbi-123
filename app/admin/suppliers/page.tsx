@@ -98,6 +98,11 @@ export default function AdminSuppliersPage() {
             )}
           </p>
         </div>
+        <a href="/supplier/dashboard" target="_blank" rel="noopener noreferrer"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95 hover:-translate-y-0.5"
+          style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#111', boxShadow: '0 4px 15px rgba(245,158,11,0.3)' }}>
+          🏭 공급업체 포털 보기 →
+        </a>
       </div>
 
       {/* 탭 */}
@@ -330,4 +335,3 @@ export default function AdminSuppliersPage() {
     </div>
   )
 }
-
