@@ -56,239 +56,458 @@ export default function SupplierLoginPage() {
     setFindPwMsg(error ? '오류가 발생했습니다.' : '✅ 비밀번호 재설정 링크를 이메일로 보냈습니다.')
   }
 
-  const c = {
-    bg: dark ? '#07090f' : '#f0f2f8',
-    card: dark ? 'rgba(15,18,28,0.85)' : 'rgba(255,255,255,0.9)',
-    border: dark ? 'rgba(139,92,246,0.2)' : 'rgba(139,92,246,0.15)',
-    text: dark ? '#f0eefc' : '#1a1030',
-    sub: dark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)',
-    inputBg: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
-    inputBorder: dark ? 'rgba(139,92,246,0.2)' : 'rgba(139,92,246,0.25)',
-  }
-
-  const inputStyle: React.CSSProperties = {
-    width: '100%', padding: '13px 16px', borderRadius: '12px',
-    border: `1.5px solid ${c.inputBorder}`, background: c.inputBg,
-    color: c.text, fontSize: '14px', outline: 'none', boxSizing: 'border-box',
-    transition: 'all 0.2s',
-  }
-
   const MsgBox = ({ msg }: { msg: string }) => !msg ? null : (
-    <div style={{ background: msg.startsWith('✅') ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', border: `1px solid ${msg.startsWith('✅') ? 'rgba(16,185,129,0.25)' : 'rgba(239,68,68,0.25)'}`, borderRadius: '10px', padding: '12px 16px' }}>
-      <p style={{ color: msg.startsWith('✅') ? '#34d399' : '#f87171', fontSize: '13px', margin: 0, lineHeight: 1.6 }}>{msg}</p>
+    <div className={`msg-box ${msg.startsWith('✅') ? 'msg-ok' : 'msg-err'}`}>
+      <p>{msg}</p>
     </div>
   )
 
-  const titles: Record<Mode, string> = { login: '공급업체 포털', findEmail: '이메일 찾기', findPw: '비밀번호 찾기' }
-
   return (
-    <div style={{ minHeight: '100vh', background: c.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', position: 'relative', overflow: 'hidden', transition: 'background 0.4s' }}>
+    <div className={`root ${dark ? 'dark' : 'light'}`}>
 
       {/* SVG 배경 */}
-      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} xmlns="http://www.w3.org/2000/svg">
+      <svg className="bg-svg" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <radialGradient id="g1" cx="80%" cy="20%" r="50%">
-            <stop offset="0%" stopColor={dark ? '#7c3aed' : '#a78bfa'} stopOpacity={dark ? '0.15' : '0.12'} />
-            <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+          <radialGradient id="lg1" cx="70%" cy="20%" r="55%">
+            <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.18"/>
+            <stop offset="100%" stopColor="transparent" stopOpacity="0"/>
           </radialGradient>
-          <radialGradient id="g2" cx="20%" cy="80%" r="50%">
-            <stop offset="0%" stopColor={dark ? '#f59e0b' : '#f59e0b'} stopOpacity={dark ? '0.1' : '0.08'} />
-            <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+          <radialGradient id="lg2" cx="20%" cy="80%" r="50%">
+            <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.12"/>
+            <stop offset="100%" stopColor="transparent" stopOpacity="0"/>
           </radialGradient>
-          <radialGradient id="g3" cx="50%" cy="50%" r="40%">
-            <stop offset="0%" stopColor={dark ? '#ec4899' : '#ec4899'} stopOpacity="0.04" />
-            <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+          <radialGradient id="lg3" cx="90%" cy="90%" r="40%">
+            <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.08"/>
+            <stop offset="100%" stopColor="transparent" stopOpacity="0"/>
           </radialGradient>
+          <pattern id="dots" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
+            <circle cx="12" cy="12" r="1" fill="currentColor" opacity="0.15"/>
+          </pattern>
         </defs>
-        <rect width="100%" height="100%" fill="url(#g1)" />
-        <rect width="100%" height="100%" fill="url(#g2)" />
-        <rect width="100%" height="100%" fill="url(#g3)" />
-        {/* 육각형 그리드 패턴 */}
-        <pattern id="hex" x="0" y="0" width="60" height="52" patternUnits="userSpaceOnUse">
-          <polygon points="30,2 58,17 58,35 30,50 2,35 2,17" fill="none" stroke={dark ? 'rgba(139,92,246,0.06)' : 'rgba(139,92,246,0.08)'} strokeWidth="1" />
-        </pattern>
-        <rect width="100%" height="100%" fill="url(#hex)" />
-        {/* 떠다니는 원형 */}
-        <circle cx="10%" cy="15%" r="80" fill={dark ? 'rgba(124,58,237,0.06)' : 'rgba(124,58,237,0.05)'} className="float1" />
-        <circle cx="90%" cy="70%" r="120" fill={dark ? 'rgba(245,158,11,0.05)' : 'rgba(245,158,11,0.04)'} className="float2" />
-        <circle cx="50%" cy="90%" r="60" fill={dark ? 'rgba(236,72,153,0.05)' : 'rgba(236,72,153,0.04)'} className="float3" />
-        {/* 반짝이는 점들 */}
-        {[[15,25],[85,15],[70,60],[25,75],[60,35],[40,85]].map(([x,y], i) => (
-          <circle key={i} cx={`${x}%`} cy={`${y}%`} r="2" fill={dark ? 'rgba(167,139,250,0.4)' : 'rgba(124,58,237,0.3)'} className={`sparkle${i % 3}`} />
+        <rect width="100%" height="100%" fill="url(#lg1)"/>
+        <rect width="100%" height="100%" fill="url(#lg2)"/>
+        <rect width="100%" height="100%" fill="url(#lg3)"/>
+        <rect width="100%" height="100%" fill="url(#dots)" className="dot-pattern"/>
+        {/* 큰 글로우 오브 */}
+        <ellipse cx="75%" cy="15%" rx="300" ry="200" fill="#7c3aed" opacity="0.04" className="orb1"/>
+        <ellipse cx="15%" cy="85%" rx="250" ry="180" fill="#f59e0b" opacity="0.05" className="orb2"/>
+        <ellipse cx="85%" cy="75%" rx="180" ry="150" fill="#06b6d4" opacity="0.04" className="orb3"/>
+        {/* 빛나는 파티클 */}
+        {[
+          [8,12],[25,35],[18,68],[42,22],[55,78],[72,18],[88,45],[65,88],[35,92],[80,62]
+        ].map(([x,y],i) => (
+          <circle key={i} cx={`${x}%`} cy={`${y}%`} r={i%2===0?'2.5':'1.5'}
+            fill={i%3===0?'#a78bfa':i%3===1?'#fbbf24':'#67e8f9'}
+            opacity="0.6" className={`star star-${i%4}`}/>
         ))}
       </svg>
 
-      {/* 다크모드 토글 */}
-      <button onClick={() => setDark(v => !v)} className="theme-btn" style={{
-        position: 'fixed', top: '20px', right: '20px', width: '44px', height: '44px',
-        borderRadius: '12px', border: `1px solid ${c.border}`, background: c.card,
-        backdropFilter: 'blur(12px)', fontSize: '18px', cursor: 'pointer',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10,
-        boxShadow: dark ? '0 4px 20px rgba(124,58,237,0.2)' : '0 4px 20px rgba(0,0,0,0.08)',
-      }}>{dark ? '🌙' : '☀️'}</button>
-
-      {/* 관리자 버튼 */}
-      <a href="/admin/dashboard" className="admin-btn" style={{
-        position: 'fixed', bottom: '24px', right: '24px', width: '52px', height: '52px',
-        borderRadius: '16px', border: `1px solid ${c.border}`, background: c.card,
-        backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: '22px', textDecoration: 'none', zIndex: 10,
-        boxShadow: dark ? '0 8px 24px rgba(124,58,237,0.2)' : '0 8px 24px rgba(0,0,0,0.08)',
-      }}>⚙️</a>
-
-      {/* 카드 */}
-      <div style={{
-        width: '100%', maxWidth: '420px', position: 'relative', zIndex: 1,
-        background: c.card, backdropFilter: 'blur(24px)',
-        borderRadius: '28px', border: `1px solid ${c.border}`,
-        boxShadow: dark ? '0 32px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)' : '0 32px 80px rgba(0,0,0,0.1)',
-        overflow: 'hidden',
-      }}>
-        {/* 카드 상단 글로우 라인 */}
-        <div style={{ height: '2px', background: 'linear-gradient(90deg, transparent, #7c3aed, #f59e0b, transparent)' }} />
-
-        {/* 헤더 */}
-        <div style={{ padding: '36px 40px 28px', textAlign: 'center', position: 'relative' }}>
-          <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '200px', height: '100px', background: 'radial-gradient(ellipse, rgba(124,58,237,0.15) 0%, transparent 70%)', pointerEvents: 'none' }} />
-          <div className="logo-icon" style={{
-            width: '68px', height: '68px', borderRadius: '20px', margin: '0 auto 16px',
-            background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '30px', boxShadow: '0 8px 32px rgba(245,158,11,0.45), inset 0 1px 0 rgba(255,255,255,0.2)',
-            position: 'relative', zIndex: 1,
-          }}>🏭</div>
-          <h1 style={{ fontSize: '22px', fontWeight: 800, color: c.text, margin: '0 0 6px', letterSpacing: '-0.5px' }}>{titles[mode]}</h1>
-          <p style={{ fontSize: '13px', color: c.sub, margin: 0 }}>굴비가게 공급업체 전용</p>
+      {/* 상단 네비 */}
+      <nav className="top-nav">
+        <Link href="/landing" className="back-home">
+          <span className="back-icon">←</span>
+          <span>대문으로</span>
+        </Link>
+        <div className="nav-right">
+          <button onClick={() => setDark(v => !v)} className="icon-btn theme-btn">
+            {dark ? '🌙' : '☀️'}
+          </button>
+          <a href="/admin/dashboard" className="icon-btn gear-btn">⚙️</a>
         </div>
+      </nav>
 
-        {/* 본문 */}
-        <div style={{ padding: '4px 40px 40px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      {/* 메인 레이아웃 */}
+      <div className="main-layout">
 
-          {mode === 'login' && (<>
-            <div>
-              <label style={{ fontSize: '11px', fontWeight: 700, color: c.sub, display: 'block', marginBottom: '8px', letterSpacing: '0.8px', textTransform: 'uppercase' }}>이메일</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleLogin()}
-                placeholder="example@company.com" style={inputStyle}
-                onFocus={e => { e.target.style.borderColor = '#a78bfa'; e.target.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.1)' }}
-                onBlur={e => { e.target.style.borderColor = c.inputBorder; e.target.style.boxShadow = 'none' }} />
-            </div>
-            <div>
-              <label style={{ fontSize: '11px', fontWeight: 700, color: c.sub, display: 'block', marginBottom: '8px', letterSpacing: '0.8px', textTransform: 'uppercase' }}>비밀번호</label>
-              <div style={{ position: 'relative' }}>
-                <input type={showPw ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleLogin()}
-                  placeholder="비밀번호" style={{ ...inputStyle, paddingRight: '48px' }}
-                  onFocus={e => { e.target.style.borderColor = '#a78bfa'; e.target.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.1)' }}
-                  onBlur={e => { e.target.style.borderColor = c.inputBorder; e.target.style.boxShadow = 'none' }} />
-                <button onClick={() => setShowPw(v => !v)} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: c.sub, fontSize: '16px' }}>
-                  {showPw ? '🙈' : '👁️'}
-                </button>
-              </div>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px' }}>
-              {[{ label: '이메일 찾기', m: 'findEmail' }, { label: '비밀번호 찾기', m: 'findPw' }].map(({ label, m }) => (
-                <button key={m} onClick={() => { setMode(m as Mode); setFindEmailResult(''); setFindEmailMsg(''); setFindPwMsg('') }}
-                  style={{ background: 'none', border: 'none', color: c.sub, fontSize: '12px', cursor: 'pointer', padding: 0 }}>{label}</button>
-              ))}
-            </div>
-            <MsgBox msg={error} />
-            <button onClick={handleLogin} disabled={loading} className="primary-btn" style={{
-              width: '100%', padding: '15px', borderRadius: '14px', border: 'none',
-              background: loading ? 'rgba(245,158,11,0.4)' : 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)',
-              color: loading ? 'rgba(255,255,255,0.5)' : '#111',
-              fontSize: '15px', fontWeight: 800, cursor: loading ? 'not-allowed' : 'pointer',
-              boxShadow: loading ? 'none' : '0 8px 24px rgba(245,158,11,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
-              position: 'relative', overflow: 'hidden',
-            }}>
-              {loading ? '로그인 중...' : '로그인'}
-            </button>
-            <p style={{ textAlign: 'center', fontSize: '13px', color: c.sub, margin: 0 }}>
-              처음이신가요?{' '}
-              <Link href="/supplier/register" style={{ color: '#f59e0b', fontWeight: 700, textDecoration: 'none' }}>가입 신청</Link>
-            </p>
-          </>)}
-
-          {mode === 'findEmail' && (<>
-            <p style={{ fontSize: '13px', color: c.sub, margin: 0, lineHeight: 1.7 }}>가입 시 입력한 <strong style={{ color: c.text }}>업체명</strong>과 <strong style={{ color: c.text }}>연락처</strong>로 이메일을 찾을 수 있습니다.</p>
+        {/* 왼쪽 브랜드 패널 */}
+        <div className="brand-panel">
+          <div className="brand-logo">🏭</div>
+          <h1 className="brand-title">굴비가게<br/><span>공급업체 포털</span></h1>
+          <p className="brand-desc">신뢰할 수 있는 수산물 공급망<br/>파트너와 함께 성장하세요</p>
+          <div className="brand-features">
             {[
-              { label: '업체명', val: findCompany, set: setFindCompany, ph: '가입 시 입력한 업체명' },
-              { label: '연락처', val: findContact, set: setFindContact, ph: '가입 시 입력한 연락처' },
-            ].map(f => (
-              <div key={f.label}>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: c.sub, display: 'block', marginBottom: '8px', letterSpacing: '0.8px', textTransform: 'uppercase' }}>{f.label}</label>
-                <input type="text" value={f.val} onChange={e => f.set(e.target.value)} placeholder={f.ph} style={inputStyle}
-                  onFocus={e => { e.target.style.borderColor = '#a78bfa'; e.target.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.1)' }}
-                  onBlur={e => { e.target.style.borderColor = c.inputBorder; e.target.style.boxShadow = 'none' }} />
+              { icon: '📦', text: '상품 등록 · 관리' },
+              { icon: '💰', text: '가격 제안 · 확정' },
+              { icon: '📊', text: '판매 현황 모니터링' },
+              { icon: '🚚', text: '주문 · 배송 추적' },
+            ].map((f, i) => (
+              <div key={i} className="feature-item" style={{ animationDelay: `${i * 0.1}s` }}>
+                <span>{f.icon}</span>
+                <span>{f.text}</span>
               </div>
             ))}
-            {findEmailResult && (
-              <div style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
-                <p style={{ color: c.sub, fontSize: '11px', margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.8px' }}>찾은 이메일</p>
-                <p style={{ color: '#34d399', fontSize: '18px', fontWeight: 800, margin: 0 }}>{findEmailResult}</p>
+          </div>
+        </div>
+
+        {/* 오른쪽 카드 */}
+        <div className="card-wrap">
+          <div className="card">
+            <div className="card-glow-line"/>
+
+            {/* 모드 탭 */}
+            <div className="mode-tabs">
+              {[
+                { k: 'login', label: '로그인' },
+                { k: 'findEmail', label: '이메일 찾기' },
+                { k: 'findPw', label: '비밀번호 찾기' },
+              ].map(t => (
+                <button key={t.k} onClick={() => { setMode(t.k as Mode); setError(''); setFindEmailResult(''); setFindEmailMsg(''); setFindPwMsg('') }}
+                  className={`tab-btn ${mode === t.k ? 'tab-active' : ''}`}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {/* 로그인 */}
+            {mode === 'login' && (
+              <div className="form-body">
+                <div className="field">
+                  <label>이메일</label>
+                  <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                    placeholder="example@company.com" className="inp"/>
+                </div>
+                <div className="field">
+                  <label>비밀번호</label>
+                  <div style={{ position: 'relative' }}>
+                    <input type={showPw ? 'text' : 'password'} value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                      placeholder="비밀번호" className="inp" style={{ paddingRight: '48px' }}/>
+                    <button onClick={() => setShowPw(v => !v)} className="pw-eye">
+                      {showPw ? '🙈' : '👁️'}
+                    </button>
+                  </div>
+                </div>
+                <MsgBox msg={error}/>
+                <button onClick={handleLogin} disabled={loading} className="submit-btn">
+                  <span className="btn-shine"/>
+                  {loading ? '로그인 중...' : '로그인 →'}
+                </button>
+                <p className="form-footer">
+                  처음이신가요?{' '}
+                  <Link href="/supplier/register" className="link-gold">가입 신청</Link>
+                </p>
               </div>
             )}
-            <MsgBox msg={findEmailMsg} />
-            <button onClick={handleFindEmail} disabled={findEmailLoading} className="primary-btn" style={{ width: '100%', padding: '15px', borderRadius: '14px', border: 'none', background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#111', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 8px 24px rgba(245,158,11,0.35)' }}>
-              {findEmailLoading ? '조회 중...' : '이메일 찾기'}
-            </button>
-            <button onClick={() => setMode('login')} style={{ background: 'none', border: 'none', color: c.sub, fontSize: '13px', cursor: 'pointer', padding: 0 }}>← 로그인으로 돌아가기</button>
-          </>)}
 
-          {mode === 'findPw' && (<>
-            <p style={{ fontSize: '13px', color: c.sub, margin: 0, lineHeight: 1.7 }}>가입한 이메일로 <strong style={{ color: c.text }}>비밀번호 재설정 링크</strong>를 보내드립니다.</p>
-            <div>
-              <label style={{ fontSize: '11px', fontWeight: 700, color: c.sub, display: 'block', marginBottom: '8px', letterSpacing: '0.8px', textTransform: 'uppercase' }}>이메일</label>
-              <input type="email" value={findPwEmail} onChange={e => setFindPwEmail(e.target.value)} placeholder="가입한 이메일 주소" style={inputStyle}
-                onFocus={e => { e.target.style.borderColor = '#a78bfa'; e.target.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.1)' }}
-                onBlur={e => { e.target.style.borderColor = c.inputBorder; e.target.style.boxShadow = 'none' }} />
-            </div>
-            <MsgBox msg={findPwMsg} />
-            <button onClick={handleFindPw} disabled={findPwLoading} className="primary-btn" style={{ width: '100%', padding: '15px', borderRadius: '14px', border: 'none', background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#111', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 8px 24px rgba(245,158,11,0.35)' }}>
-              {findPwLoading ? '전송 중...' : '재설정 링크 전송'}
-            </button>
-            <button onClick={() => setMode('login')} style={{ background: 'none', border: 'none', color: c.sub, fontSize: '13px', cursor: 'pointer', padding: 0 }}>← 로그인으로 돌아가기</button>
-          </>)}
+            {/* 이메일 찾기 */}
+            {mode === 'findEmail' && (
+              <div className="form-body">
+                <p className="form-hint">가입 시 입력한 <strong>업체명</strong>과 <strong>연락처</strong>로 이메일을 찾을 수 있습니다.</p>
+                {[
+                  { label: '업체명', val: findCompany, set: setFindCompany, ph: '가입 시 입력한 업체명' },
+                  { label: '연락처', val: findContact, set: setFindContact, ph: '가입 시 입력한 연락처' },
+                ].map(f => (
+                  <div key={f.label} className="field">
+                    <label>{f.label}</label>
+                    <input type="text" value={f.val} onChange={e => f.set(e.target.value)} placeholder={f.ph} className="inp"/>
+                  </div>
+                ))}
+                {findEmailResult && (
+                  <div className="result-box">
+                    <p className="result-label">찾은 이메일</p>
+                    <p className="result-value">{findEmailResult}</p>
+                  </div>
+                )}
+                <MsgBox msg={findEmailMsg}/>
+                <button onClick={handleFindEmail} disabled={findEmailLoading} className="submit-btn">
+                  <span className="btn-shine"/>
+                  {findEmailLoading ? '조회 중...' : '이메일 찾기 →'}
+                </button>
+              </div>
+            )}
+
+            {/* 비밀번호 찾기 */}
+            {mode === 'findPw' && (
+              <div className="form-body">
+                <p className="form-hint">가입한 이메일로 <strong>비밀번호 재설정 링크</strong>를 보내드립니다.</p>
+                <div className="field">
+                  <label>이메일</label>
+                  <input type="email" value={findPwEmail} onChange={e => setFindPwEmail(e.target.value)}
+                    placeholder="가입한 이메일 주소" className="inp"/>
+                </div>
+                <MsgBox msg={findPwMsg}/>
+                <button onClick={handleFindPw} disabled={findPwLoading} className="submit-btn">
+                  <span className="btn-shine"/>
+                  {findPwLoading ? '전송 중...' : '재설정 링크 전송 →'}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       <style>{`
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* 떠다니는 배경 원 */
-        @keyframes float1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(20px,-30px)} }
-        @keyframes float2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-25px,20px)} }
-        @keyframes float3 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(15px,25px)} }
-        .float1 { animation: float1 8s ease-in-out infinite; }
-        .float2 { animation: float2 11s ease-in-out infinite; }
-        .float3 { animation: float3 7s ease-in-out infinite; }
+        .root {
+          min-height: 100vh;
+          font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+          position: relative; overflow: hidden;
+          transition: background 0.4s;
+        }
+        .root.dark { background: #060810; color: #f0eeff; }
+        .root.light { background: #f0f2fc; color: #1a1030; }
 
-        /* 반짝이는 점 */
-        @keyframes sparkle { 0%,100%{opacity:0.2;transform:scale(1)} 50%{opacity:1;transform:scale(1.5)} }
-        .sparkle0 { animation: sparkle 3s ease-in-out infinite; }
-        .sparkle1 { animation: sparkle 4.5s ease-in-out infinite 1s; }
-        .sparkle2 { animation: sparkle 3.5s ease-in-out infinite 2s; }
+        .bg-svg {
+          position: absolute; inset: 0;
+          width: 100%; height: 100%;
+          pointer-events: none;
+        }
+        .dot-pattern { color: #7c3aed; }
+        .root.light .dot-pattern { color: #6d28d9; }
 
-        /* 로고 아이콘 pulse */
-        @keyframes logoPulse { 0%,100%{box-shadow:0 8px 32px rgba(245,158,11,0.45)} 50%{box-shadow:0 8px 48px rgba(245,158,11,0.7), 0 0 0 8px rgba(245,158,11,0.08)} }
-        .logo-icon { animation: logoPulse 3s ease-in-out infinite; }
+        @keyframes orbFloat { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-30px,20px) scale(1.1)} }
+        @keyframes orbFloat2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(25px,-20px)} }
+        @keyframes starTwinkle { 0%,100%{opacity:0.2;transform:scale(0.8)} 50%{opacity:1;transform:scale(1.4)} }
 
-        /* 버튼 hover/active */
-        .primary-btn { transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1) !important; }
-        .primary-btn:hover:not(:disabled) { transform: translateY(-3px) scale(1.02) !important; box-shadow: 0 16px 40px rgba(245,158,11,0.5) !important; }
-        .primary-btn:active:not(:disabled) { transform: translateY(1px) scale(0.98) !important; }
+        .orb1 { animation: orbFloat 12s ease-in-out infinite; }
+        .orb2 { animation: orbFloat2 15s ease-in-out infinite; }
+        .orb3 { animation: orbFloat 10s ease-in-out infinite 3s; }
+        .star { animation: starTwinkle 3s ease-in-out infinite; }
+        .star-0 { animation-delay: 0s; }
+        .star-1 { animation-delay: 0.8s; }
+        .star-2 { animation-delay: 1.6s; }
+        .star-3 { animation-delay: 2.4s; }
 
-        /* 버튼 shine 효과 */
-        .primary-btn::after { content:''; position:absolute; top:0; left:-100%; width:60%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent); transition: left 0.5s; }
-        .primary-btn:hover::after { left:150%; }
+        /* 상단 네비 */
+        .top-nav {
+          position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 16px 32px;
+          background: transparent;
+        }
+        .back-home {
+          display: flex; align-items: center; gap: 8px;
+          color: rgba(167,139,250,0.8); text-decoration: none;
+          font-size: 13px; font-weight: 600;
+          padding: 8px 16px; border-radius: 100px;
+          background: rgba(124,58,237,0.12);
+          border: 1px solid rgba(124,58,237,0.25);
+          transition: all 0.2s;
+          backdrop-filter: blur(8px);
+        }
+        .back-home:hover {
+          background: rgba(124,58,237,0.25);
+          color: #c4b5fd;
+          transform: translateX(-3px);
+        }
+        .back-icon { font-size: 16px; }
+        .nav-right { display: flex; gap: 8px; }
+        .icon-btn {
+          width: 40px; height: 40px; border-radius: 12px;
+          border: 1px solid rgba(124,58,237,0.2);
+          background: rgba(15,18,28,0.6);
+          backdrop-filter: blur(12px);
+          display: flex; align-items: center; justify-content: center;
+          font-size: 16px; cursor: pointer; text-decoration: none;
+          transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .icon-btn:hover { transform: scale(1.15); border-color: rgba(245,158,11,0.5); }
+        .gear-btn:hover { transform: rotate(30deg) scale(1.15) !important; }
 
-        /* 테마 버튼 */
-        .theme-btn { transition: all 0.2s !important; }
-        .theme-btn:hover { transform: rotate(20deg) scale(1.1) !important; }
+        /* 메인 레이아웃 */
+        .main-layout {
+          min-height: 100vh;
+          display: flex; align-items: center; justify-content: center;
+          gap: 64px; padding: 100px 40px 40px;
+          position: relative; z-index: 1;
+        }
 
-        /* 관리자 버튼 */
-        .admin-btn { transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1) !important; }
-        .admin-btn:hover { transform: translateY(-4px) rotate(30deg) !important; box-shadow: 0 12px 30px rgba(124,58,237,0.3) !important; }
+        /* 브랜드 패널 */
+        .brand-panel {
+          flex: 1; max-width: 380px;
+          animation: fadeInLeft 0.7s ease both;
+        }
+        @keyframes fadeInLeft { from{opacity:0;transform:translateX(-30px)} to{opacity:1;transform:translateX(0)} }
+
+        .brand-logo {
+          width: 80px; height: 80px; border-radius: 24px;
+          background: linear-gradient(135deg, #f59e0b, #d97706);
+          display: flex; align-items: center; justify-content: center;
+          font-size: 40px; margin-bottom: 28px;
+          box-shadow: 0 12px 40px rgba(245,158,11,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+          animation: logoPulse 3s ease-in-out infinite;
+        }
+        @keyframes logoPulse {
+          0%,100%{box-shadow:0 12px 40px rgba(245,158,11,0.4)}
+          50%{box-shadow:0 12px 60px rgba(245,158,11,0.7), 0 0 0 12px rgba(245,158,11,0.06)}
+        }
+
+        .brand-title {
+          font-size: 42px; font-weight: 900; line-height: 1.15;
+          letter-spacing: -1.5px; margin-bottom: 16px;
+        }
+        .root.dark .brand-title { color: white; }
+        .root.light .brand-title { color: #1a1030; }
+        .brand-title span {
+          background: linear-gradient(135deg, #f59e0b, #fbbf24);
+          -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .brand-desc {
+          font-size: 15px; line-height: 1.8; margin-bottom: 36px;
+          opacity: 0.55;
+        }
+
+        .brand-features { display: flex; flex-direction: column; gap: 12px; }
+        .feature-item {
+          display: flex; align-items: center; gap: 12px;
+          padding: 12px 16px; border-radius: 14px;
+          background: rgba(124,58,237,0.08);
+          border: 1px solid rgba(124,58,237,0.12);
+          font-size: 14px; font-weight: 500;
+          animation: fadeInLeft 0.6s ease both;
+          transition: all 0.2s;
+        }
+        .root.light .feature-item { background: rgba(124,58,237,0.06); }
+        .feature-item:hover { background: rgba(124,58,237,0.14); transform: translateX(4px); }
+        .feature-item span:first-child { font-size: 20px; }
+
+        /* 카드 */
+        .card-wrap { flex: 0 0 420px; animation: fadeInRight 0.7s ease both; }
+        @keyframes fadeInRight { from{opacity:0;transform:translateX(30px)} to{opacity:1;transform:translateX(0)} }
+
+        .card {
+          background: rgba(12,15,25,0.75);
+          backdrop-filter: blur(32px);
+          border-radius: 28px;
+          border: 1px solid rgba(139,92,246,0.2);
+          box-shadow: 0 40px 100px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05);
+          overflow: hidden; position: relative;
+        }
+        .root.light .card {
+          background: rgba(255,255,255,0.85);
+          box-shadow: 0 40px 100px rgba(0,0,0,0.12);
+          border-color: rgba(139,92,246,0.15);
+        }
+
+        .card-glow-line {
+          height: 3px;
+          background: linear-gradient(90deg, transparent 0%, #7c3aed 30%, #f59e0b 60%, #06b6d4 80%, transparent 100%);
+        }
+
+        /* 탭 */
+        .mode-tabs {
+          display: flex; gap: 0;
+          border-bottom: 1px solid rgba(139,92,246,0.12);
+          padding: 0 24px;
+        }
+        .tab-btn {
+          flex: 1; padding: 16px 8px;
+          background: none; border: none; border-bottom: 2px solid transparent;
+          font-size: 13px; font-weight: 600; cursor: pointer;
+          transition: all 0.2s; color: rgba(167,139,250,0.4);
+          margin-bottom: -1px;
+        }
+        .tab-btn:hover { color: rgba(167,139,250,0.7); }
+        .tab-active {
+          color: #a78bfa !important;
+          border-bottom-color: #a78bfa !important;
+        }
+        .root.light .tab-btn { color: rgba(109,40,217,0.4); }
+        .root.light .tab-active { color: #7c3aed !important; border-bottom-color: #7c3aed !important; }
+
+        /* 폼 */
+        .form-body { padding: 28px 32px 36px; display: flex; flex-direction: column; gap: 16px; }
+
+        .field { display: flex; flex-direction: column; gap: 8px; }
+        .field label {
+          font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+          color: rgba(167,139,250,0.6);
+        }
+        .root.light .field label { color: rgba(109,40,217,0.6); }
+
+        .inp {
+          width: 100%; padding: 14px 18px;
+          background: rgba(255,255,255,0.04);
+          border: 1.5px solid rgba(139,92,246,0.18);
+          border-radius: 14px; color: inherit;
+          font-size: 14px; outline: none;
+          transition: all 0.2s;
+        }
+        .root.light .inp { background: rgba(0,0,0,0.04); }
+        .inp:focus {
+          border-color: #a78bfa;
+          box-shadow: 0 0 0 4px rgba(124,58,237,0.12);
+          background: rgba(124,58,237,0.06);
+        }
+        .inp::placeholder { color: rgba(167,139,250,0.3); }
+        .root.light .inp::placeholder { color: rgba(109,40,217,0.3); }
+
+        .pw-eye {
+          position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+          background: none; border: none; cursor: pointer; font-size: 16px;
+          opacity: 0.6; transition: opacity 0.2s;
+        }
+        .pw-eye:hover { opacity: 1; }
+
+        .form-hint {
+          font-size: 13px; line-height: 1.7; opacity: 0.55;
+        }
+        .form-hint strong { opacity: 1; color: #c4b5fd; }
+        .root.light .form-hint strong { color: #7c3aed; }
+
+        /* 버튼 */
+        .submit-btn {
+          width: 100%; padding: 16px;
+          background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+          color: #111; font-size: 15px; font-weight: 800;
+          border: none; border-radius: 16px; cursor: pointer;
+          position: relative; overflow: hidden;
+          box-shadow: 0 8px 32px rgba(245,158,11,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+          transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+          letter-spacing: -0.3px;
+        }
+        .submit-btn:hover:not(:disabled) {
+          transform: translateY(-4px) scale(1.02);
+          box-shadow: 0 20px 50px rgba(245,158,11,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+        .submit-btn:active:not(:disabled) { transform: translateY(1px) scale(0.98); }
+        .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .btn-shine {
+          position: absolute; top: 0; left: -80%;
+          width: 60%; height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+          transform: skewX(-15deg);
+          transition: left 0.5s;
+        }
+        .submit-btn:hover .btn-shine { left: 150%; }
+
+        .form-footer { text-align: center; font-size: 13px; opacity: 0.5; }
+        .link-gold { color: #f59e0b; font-weight: 700; text-decoration: none; }
+        .link-gold:hover { text-decoration: underline; }
+
+        /* 결과 박스 */
+        .result-box {
+          background: rgba(16,185,129,0.08);
+          border: 1px solid rgba(16,185,129,0.25);
+          border-radius: 14px; padding: 18px; text-align: center;
+        }
+        .result-label { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; opacity: 0.5; margin-bottom: 6px; }
+        .result-value { font-size: 20px; font-weight: 800; color: #34d399; }
+
+        /* 메시지 */
+        .msg-box { border-radius: 12px; padding: 12px 16px; }
+        .msg-box p { font-size: 13px; margin: 0; line-height: 1.6; }
+        .msg-ok { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); }
+        .msg-ok p { color: #34d399; }
+        .msg-err { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); }
+        .msg-err p { color: #f87171; }
+
+        /* 모바일 */
+        @media (max-width: 900px) {
+          .brand-panel { display: none; }
+          .main-layout { padding: 80px 20px 40px; }
+          .card-wrap { flex: 0 0 100%; max-width: 440px; }
+        }
+        @media (max-width: 480px) {
+          .form-body { padding: 24px 20px 28px; }
+          .mode-tabs { padding: 0 16px; }
+          .tab-btn { font-size: 12px; padding: 14px 4px; }
+        }
       `}</style>
     </div>
   )
