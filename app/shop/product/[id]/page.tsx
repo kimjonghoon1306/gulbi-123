@@ -29,6 +29,8 @@ export default function ProductDetailPage() {
   const [orderForm, setOrderForm] = useState({ address: '', note: '', payment_method: '계좌이체' })
   const [orderLoading, setOrderLoading] = useState(false)
   const [orderDone, setOrderDone] = useState(false)
+  const [cartAdded, setCartAdded] = useState(false)
+  const [cartLoading, setCartLoading] = useState(false)
   const popupTimer = useRef<any>(null)
 
   const fetchProduct = async () => {
@@ -50,6 +52,20 @@ export default function ProductDetailPage() {
         setIsAdmin(true)
       }
     }
+  }
+
+  const addToCart = async () => {
+    if (!user) { return }
+    setCartLoading(true)
+    const { data: existing } = await supabase.from('cart_items').select('id,quantity').eq('user_id', user.id).eq('product_id', id).single()
+    if (existing) {
+      await supabase.from('cart_items').update({ quantity: existing.quantity + quantity }).eq('id', existing.id)
+    } else {
+      await supabase.from('cart_items').insert({ user_id: user.id, product_id: id, quantity })
+    }
+    setCartAdded(true)
+    setCartLoading(false)
+    setTimeout(() => setCartAdded(false), 2000)
   }
 
   const fetchSocialData = async () => {
@@ -305,10 +321,16 @@ export default function ProductDetailPage() {
               <button disabled style={{width:'100%',padding:'16px',borderRadius:'14px',background:D.input,color:D.sub,fontSize:'15px',fontWeight:700,border:'none',cursor:'not-allowed'}}>품절</button>
             ) : (
               <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
-                <button onClick={() => { setOrderDone(false); setOrderForm({ address: '', note: '', payment_method: '계좌이체' }); setShowOrderForm(true) }}
-                  style={{width:'100%',padding:'16px',borderRadius:'14px',background:'linear-gradient(135deg,#ec4899,#f43f5e)',color:'white',fontSize:'15px',fontWeight:900,border:'none',cursor:'pointer',boxShadow:'0 8px 20px rgba(236,72,153,0.35)'}}>
-                  🛒 구매하기
-                </button>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 2fr',gap:'10px'}}>
+                  <button onClick={addToCart} disabled={cartLoading || !user}
+                    style={{padding:'16px',borderRadius:'14px',background:cartAdded?'rgba(34,197,94,0.15)':D.input,color:cartAdded?'#22c55e':D.text,fontSize:'14px',fontWeight:700,border:`2px solid ${cartAdded?'#22c55e':D.border}`,cursor:user?'pointer':'not-allowed',transition:'all 0.3s'}}>
+                    {cartAdded ? '✓ 담김' : cartLoading ? '...' : '🛒 담기'}
+                  </button>
+                  <button onClick={() => { setOrderDone(false); setOrderForm({ address: '', note: '', payment_method: '계좌이체' }); setShowOrderForm(true) }}
+                    style={{padding:'16px',borderRadius:'14px',background:'linear-gradient(135deg,#ec4899,#f43f5e)',color:'white',fontSize:'15px',fontWeight:900,border:'none',cursor:'pointer',boxShadow:'0 8px 20px rgba(236,72,153,0.35)'}}>
+                    바로 구매
+                  </button>
+                </div>
                 <p style={{textAlign:'center',fontSize:'11px',color:D.sub}}>주문 접수 후 연락드려요</p>
               </div>
             )}
