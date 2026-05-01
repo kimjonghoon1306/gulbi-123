@@ -169,7 +169,7 @@ export default function SupplierProductsPage() {
               <p className="text-sm text-slate-400 dark:text-slate-500">등록된 상품이 없습니다</p>
             </div>
           ) : (
-            <table className="w-full">
+            <table className="w-full supplier-table">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-gray-700">
                   {['상품명', '제안 도매가', '제안 소매가', '확정 가격', '재고', '상태', ''].map(h => (
@@ -186,15 +186,15 @@ export default function SupplierProductsPage() {
                         <span className="text-sm font-medium text-slate-800 dark:text-white">{p.name}</span>
                       </div>
                     </td>
-                    <td className="px-5 py-4 text-sm text-slate-500 dark:text-slate-400">{p.suggested_wholesale_price?.toLocaleString()}원</td>
-                    <td className="px-5 py-4 text-sm text-slate-500 dark:text-slate-400">{p.suggested_retail_price?.toLocaleString()}원</td>
+                    <td className="px-5 py-4 text-sm text-slate-500 dark:text-slate-400" data-label="제안 도매가">{p.suggested_wholesale_price?.toLocaleString()}원</td>
+                    <td className="px-5 py-4 text-sm text-slate-500 dark:text-slate-400" data-label="제안 소매가">{p.suggested_retail_price?.toLocaleString()}원</td>
                     <td className="px-5 py-4 text-sm">
                       {p.wholesale_price > 0
                         ? <span className="text-emerald-600 dark:text-emerald-400 font-medium">{p.wholesale_price.toLocaleString()}원</span>
                         : <span className="text-slate-300 dark:text-slate-600">미확정</span>
                       }
                     </td>
-                    <td className="px-5 py-4 text-sm text-slate-800 dark:text-slate-200">{p.stock}</td>
+                    <td className="px-5 py-4 text-sm text-slate-800 dark:text-slate-200" data-label="재고">{p.stock}</td>
                     <td className="px-5 py-4">
                       <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${APPROVAL_COLOR[p.approval_status] || APPROVAL_COLOR['대기중']}`}>
                         {p.approval_status || '대기중'}
@@ -323,6 +323,35 @@ export default function SupplierProductsPage() {
           </div>
         </div>
       )}
+    <style>{`
+        @media (max-width: 640px) {
+          /* 테이블을 카드형으로 변환 */
+          .supplier-table thead { display: none !important; }
+          .supplier-table tbody tr {
+            display: flex !important;
+            flex-direction: column !important;
+            padding: 16px !important;
+            margin-bottom: 8px !important;
+            background: var(--row-bg, transparent);
+            border-radius: 12px !important;
+            border: 1px solid rgba(255,255,255,0.06) !important;
+          }
+          .supplier-table td {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding: 6px 0 !important;
+            border: none !important;
+            font-size: 13px !important;
+          }
+          .supplier-table td:before {
+            content: attr(data-label);
+            font-size: 11px;
+            color: rgba(255,255,255,0.4);
+            font-weight: 600;
+          }
+        }
+      `}</style>
     </SupplierLayout>
   )
 }
