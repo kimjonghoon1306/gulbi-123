@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
-type Mode = 'login' | 'findPw' | 'changePw'
+type Mode = 'login' | 'findEmail' | 'findPw'
 
 export default function SupplierLoginPage() {
   const router = useRouter()
@@ -17,17 +17,17 @@ export default function SupplierLoginPage() {
   const [error, setError] = useState('')
   const [mode, setMode] = useState<Mode>('login')
 
-  // 비번 찾기
-  const [findEmail, setFindEmail] = useState('')
-  const [findMsg, setFindMsg] = useState('')
-  const [findLoading, setFindLoading] = useState(false)
+  // 이메일 찾기
+  const [findCompany, setFindCompany] = useState('')
+  const [findContact, setFindContact] = useState('')
+  const [findEmailResult, setFindEmailResult] = useState('')
+  const [findEmailMsg, setFindEmailMsg] = useState('')
+  const [findEmailLoading, setFindEmailLoading] = useState(false)
 
-  // 비번 변경
-  const [newPw, setNewPw] = useState('')
-  const [newPwConfirm, setNewPwConfirm] = useState('')
-  const [showNewPw, setShowNewPw] = useState(false)
-  const [changePwMsg, setChangePwMsg] = useState('')
-  const [changePwLoading, setChangePwLoading] = useState(false)
+  // 비밀번호 찾기
+  const [findPwEmail, setFindPwEmail] = useState('')
+  const [findPwMsg, setFindPwMsg] = useState('')
+  const [findPwLoading, setFindPwLoading] = useState(false)
 
   const handleLogin = async () => {
     if (!email || !password) return setError('이메일과 비밀번호를 입력해주세요.')
@@ -50,28 +50,42 @@ export default function SupplierLoginPage() {
     router.push('/supplier/dashboard')
   }
 
-  const handleFindPw = async () => {
-    if (!findEmail) return setFindMsg('이메일을 입력해주세요.')
-    setFindLoading(true); setFindMsg('')
+  // 이메일 찾기: 업체명 + 연락처로 suppliers 테이블 조회
+  const handleFindEmail = async () => {
+    if (!findCompany || !findContact) return setFindEmailMsg('업체명과 연락처를 모두 입력해주세요.')
+    setFindEmailLoading(true); setFindEmailMsg(''); setFindEmailResult('')
     const supabase = createClient()
-    const { error } = await supabase.auth.resetPasswordForEmail(findEmail, {
-      redirectTo: `${window.location.origin}/supplier/login`,
-    })
-    setFindLoading(false)
-    setFindMsg(error ? '오류가 발생했습니다.' : '✅ 비밀번호 재설정 링크를 이메일로 보냈습니다.')
+    const { data } = await supabase
+      .from('suppliers')
+      .select('email')
+      .eq('company_name', findCompany)
+      .eq('contact', findContact)
+      .single()
+    setFindEmailLoading(false)
+    if (!data?.email) {
+      setFindEmailMsg('입력하신 정보와 일치하는 계정을 찾을 수 없습니다.')
+    } else {
+      // 이메일 일부 마스킹: abc***@company.com
+      const [id, domain] = data.email.split('@')
+      const masked = id.slice(0, 3) + '***@' + domain
+      setFindEmailResult(masked)
+      setFindEmailMsg('')
+    }
   }
 
-  const handleChangePw = async () => {
-    if (!newPw || !newPwConfirm) return setChangePwMsg('새 비밀번호를 입력해주세요.')
-    if (newPw !== newPwConfirm) return setChangePwMsg('비밀번호가 일치하지 않습니다.')
-    if (newPw.length < 6) return setChangePwMsg('비밀번호는 6자 이상이어야 합니다.')
-    setChangePwLoading(true); setChangePwMsg('')
+  // 비밀번호 찾기: 이메일로 재설정 링크 발송
+  const handleFindPw = async () => {
+    if (!findPwEmail) return setFindPwMsg('이메일을 입력해주세요.')
+    setFindPwLoading(true); setFindPwMsg('')
     const supabase = createClient()
-    const { error } = await supabase.auth.updateUser({ password: newPw })
-    setChangePwLoading(false)
-    if (error) return setChangePwMsg('오류가 발생했습니다. 먼저 로그인해주세요.')
-    setChangePwMsg('✅ 비밀번호가 변경되었습니다.')
-    setNewPw(''); setNewPwConfirm('')
+    const { error } = await supabase.auth.resetPasswordForEmail(findPwEmail, {
+      redirectTo: `${window.location.origin}/supplier/login`,
+    })
+    setFindPwLoading(false)
+    setFindPwMsg(error
+      ? '오류가 발생했습니다. 이메일을 확인해주세요.'
+      : '✅ 비밀번호 재설정 링크를 이메일로 보냈습니다. 링크를 클릭해 새 비밀번호를 설정하세요.'
+    )
   }
 
   const bg = dark ? '#0d1117' : '#f1f5f9'
@@ -82,36 +96,30 @@ export default function SupplierLoginPage() {
   const inputBg = dark ? 'rgba(255,255,255,0.05)' : '#f8fafc'
   const inputBorder = dark ? 'rgba(255,255,255,0.1)' : '#e2e8f0'
 
-  const Input = ({ type = 'text', value, onChange, placeholder, showToggle, onToggle, show }: any) => (
-    <div style={{ position: 'relative' }}>
-      <input
-        type={showToggle ? (show ? 'text' : 'password') : type}
-        value={value} onChange={e => onChange(e.target.value)}
-        placeholder={placeholder}
-        onKeyDown={e => e.key === 'Enter' && mode === 'login' && handleLogin()}
-        style={{
-          width: '100%', padding: showToggle ? '13px 48px 13px 16px' : '13px 16px',
-          borderRadius: '12px', border: `1px solid ${inputBorder}`,
-          background: inputBg, color: text, fontSize: '14px', outline: 'none',
-          boxSizing: 'border-box', transition: 'border-color 0.2s',
-        }}
-        onFocus={e => { e.target.style.borderColor = '#f59e0b' }}
-        onBlur={e => { e.target.style.borderColor = inputBorder }}
-      />
-      {showToggle && (
-        <button onClick={onToggle} style={{
-          position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)',
-          background: 'none', border: 'none', cursor: 'pointer', color: subText, fontSize: '16px', padding: '4px',
-        }}>{show ? '🙈' : '👁️'}</button>
-      )}
+  const inputStyle = (focused = false): React.CSSProperties => ({
+    width: '100%', padding: '13px 16px', borderRadius: '12px',
+    border: `1px solid ${focused ? '#f59e0b' : inputBorder}`,
+    background: inputBg, color: text, fontSize: '14px',
+    outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s',
+  })
+
+  const Label = ({ children }: { children: React.ReactNode }) => (
+    <label style={{ fontSize: '12px', fontWeight: 600, color: subText, display: 'block', marginBottom: '8px', letterSpacing: '0.5px' }}>
+      {children}
+    </label>
+  )
+
+  const MsgBox = ({ msg }: { msg: string }) => !msg ? null : (
+    <div style={{
+      background: msg.startsWith('✅') ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
+      border: `1px solid ${msg.startsWith('✅') ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}`,
+      borderRadius: '10px', padding: '12px 16px',
+    }}>
+      <p style={{ color: msg.startsWith('✅') ? '#34d399' : '#f87171', fontSize: '13px', margin: 0, lineHeight: 1.6 }}>{msg}</p>
     </div>
   )
 
-  const Label = ({ children }: any) => (
-    <label style={{ fontSize: '12px', fontWeight: 600, color: subText, display: 'block', marginBottom: '8px', letterSpacing: '0.5px' }}>{children}</label>
-  )
-
-  const PrimaryBtn = ({ onClick, disabled, children }: any) => (
+  const PrimaryBtn = ({ onClick, disabled, children }: { onClick: () => void; disabled?: boolean; children: React.ReactNode }) => (
     <button onClick={onClick} disabled={disabled} style={{
       width: '100%', padding: '15px', borderRadius: '14px', border: 'none',
       background: disabled ? 'rgba(245,158,11,0.4)' : 'linear-gradient(135deg, #f59e0b, #d97706)',
@@ -121,21 +129,18 @@ export default function SupplierLoginPage() {
     }}>{children}</button>
   )
 
-  const BackBtn = ({ onClick }: any) => (
-    <button onClick={onClick} style={{ background: 'none', border: 'none', color: subText, fontSize: '13px', cursor: 'pointer', padding: 0 }}>
+  const BackBtn = () => (
+    <button onClick={() => { setMode('login'); setFindEmailResult(''); setFindEmailMsg(''); setFindPwMsg('') }}
+      style={{ background: 'none', border: 'none', color: subText, fontSize: '13px', cursor: 'pointer', padding: 0 }}>
       ← 로그인으로 돌아가기
     </button>
   )
 
-  const MsgBox = ({ msg }: any) => msg ? (
-    <div style={{
-      background: msg.startsWith('✅') ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
-      border: `1px solid ${msg.startsWith('✅') ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}`,
-      borderRadius: '10px', padding: '12px 16px',
-    }}>
-      <p style={{ color: msg.startsWith('✅') ? '#34d399' : '#f87171', fontSize: '13px', margin: 0 }}>{msg}</p>
-    </div>
-  ) : null
+  const titles: Record<Mode, string> = {
+    login: '공급업체 포털',
+    findEmail: '이메일 찾기',
+    findPw: '비밀번호 찾기',
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', transition: 'background 0.3s', position: 'relative' }}>
@@ -149,41 +154,37 @@ export default function SupplierLoginPage() {
       {/* 다크모드 토글 */}
       <button onClick={() => setDark(v => !v)} style={{
         position: 'fixed', top: '20px', right: '20px',
-        width: '44px', height: '44px', borderRadius: '12px', border: `1px solid ${border}`,
-        background: cardBg, color: text, fontSize: '18px', cursor: 'pointer',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        width: '44px', height: '44px', borderRadius: '12px',
+        border: `1px solid ${border}`, background: cardBg,
+        fontSize: '18px', cursor: 'pointer', display: 'flex',
+        alignItems: 'center', justifyContent: 'center',
         boxShadow: '0 4px 16px rgba(0,0,0,0.15)', zIndex: 10,
       }}>{dark ? '🌙' : '☀️'}</button>
 
-      {/* 관리자 페이지 이동 버튼 */}
-      <a href="/admin/dashboard" style={{
+      {/* 관리자 페이지 버튼 */}
+      <a href="/admin/dashboard" title="관리자 페이지" style={{
         position: 'fixed', bottom: '24px', right: '24px',
         width: '52px', height: '52px', borderRadius: '16px',
         border: `1px solid ${border}`, background: cardBg,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: '22px', textDecoration: 'none', zIndex: 10,
         boxShadow: dark ? '0 8px 24px rgba(0,0,0,0.3)' : '0 8px 24px rgba(0,0,0,0.1)',
-        transition: 'all 0.2s',
-      }}
-        title="관리자 페이지"
-        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.borderColor = '#f59e0b' }}
-        onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = border }}>
-        ⚙️
-      </a>
+      }}>⚙️</a>
 
       {/* 카드 */}
       <div style={{
         width: '100%', maxWidth: '420px', position: 'relative', zIndex: 1,
-        background: cardBg, borderRadius: '24px', border: `1px solid ${border}`,
+        background: cardBg, borderRadius: '24px',
+        border: `1px solid ${border}`,
         boxShadow: dark ? '0 32px 64px rgba(0,0,0,0.4)' : '0 32px 64px rgba(0,0,0,0.08)',
         overflow: 'hidden',
       }}>
 
         {/* 헤더 */}
         <div style={{
-          padding: '40px 40px 32px',
+          padding: '40px 40px 32px', textAlign: 'center',
           background: dark ? 'linear-gradient(135deg, rgba(245,158,11,0.08), rgba(217,119,6,0.02))' : 'linear-gradient(135deg, rgba(245,158,11,0.06), rgba(217,119,6,0.01))',
-          borderBottom: `1px solid ${border}`, textAlign: 'center',
+          borderBottom: `1px solid ${border}`,
         }}>
           <div style={{
             width: '64px', height: '64px', borderRadius: '18px', margin: '0 auto 16px',
@@ -191,25 +192,48 @@ export default function SupplierLoginPage() {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: '28px', boxShadow: '0 8px 24px rgba(245,158,11,0.4)',
           }}>🏭</div>
-          <h1 style={{ fontSize: '22px', fontWeight: 800, color: text, margin: '0 0 6px' }}>
-            {mode === 'login' ? '공급업체 포털' : mode === 'findPw' ? '비밀번호 찾기' : '비밀번호 변경'}
-          </h1>
+          <h1 style={{ fontSize: '22px', fontWeight: 800, color: text, margin: '0 0 6px' }}>{titles[mode]}</h1>
           <p style={{ fontSize: '13px', color: subText, margin: 0 }}>굴비가게 공급업체 전용</p>
         </div>
 
         {/* 본문 */}
         <div style={{ padding: '32px 40px 40px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-          {/* 로그인 */}
+          {/* ── 로그인 ── */}
           {mode === 'login' && (<>
-            <div><Label>이메일</Label><Input type="email" value={email} onChange={setEmail} placeholder="example@company.com" /></div>
+            <div>
+              <Label>이메일</Label>
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                placeholder="example@company.com" style={inputStyle()}
+                onFocus={e => e.target.style.borderColor = '#f59e0b'}
+                onBlur={e => e.target.style.borderColor = inputBorder} />
+            </div>
             <div>
               <Label>비밀번호</Label>
-              <Input value={password} onChange={setPassword} placeholder="비밀번호" showToggle show={showPw} onToggle={() => setShowPw(v => !v)} />
+              <div style={{ position: 'relative' }}>
+                <input type={showPw ? 'text' : 'password'} value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                  placeholder="비밀번호"
+                  style={{ ...inputStyle(), paddingRight: '48px' }}
+                  onFocus={e => e.target.style.borderColor = '#f59e0b'}
+                  onBlur={e => e.target.style.borderColor = inputBorder} />
+                <button onClick={() => setShowPw(v => !v)} style={{
+                  position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)',
+                  background: 'none', border: 'none', cursor: 'pointer', color: subText, fontSize: '16px',
+                }}>{showPw ? '🙈' : '👁️'}</button>
+              </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '-4px' }}>
-              <button onClick={() => { setMode('findPw'); setFindEmail(''); setFindMsg('') }} style={{ background: 'none', border: 'none', color: subText, fontSize: '12px', cursor: 'pointer', padding: 0 }}>비밀번호 찾기</button>
-              <button onClick={() => { setMode('changePw'); setChangePwMsg('') }} style={{ background: 'none', border: 'none', color: subText, fontSize: '12px', cursor: 'pointer', padding: 0 }}>비밀번호 변경</button>
+              <button onClick={() => { setMode('findEmail'); setFindEmailResult(''); setFindEmailMsg('') }}
+                style={{ background: 'none', border: 'none', color: subText, fontSize: '12px', cursor: 'pointer', padding: 0 }}>
+                이메일 찾기
+              </button>
+              <button onClick={() => { setMode('findPw'); setFindPwMsg('') }}
+                style={{ background: 'none', border: 'none', color: subText, fontSize: '12px', cursor: 'pointer', padding: 0 }}>
+                비밀번호 찾기
+              </button>
             </div>
             <MsgBox msg={error} />
             <PrimaryBtn onClick={handleLogin} disabled={loading}>{loading ? '로그인 중...' : '로그인'}</PrimaryBtn>
@@ -218,33 +242,58 @@ export default function SupplierLoginPage() {
             </p>
           </>)}
 
-          {/* 비밀번호 찾기 */}
-          {mode === 'findPw' && (<>
-            <p style={{ fontSize: '13px', color: subText, margin: 0, lineHeight: 1.7 }}>가입 시 사용한 이메일로 재설정 링크를 보내드립니다.</p>
-            <div><Label>이메일</Label><Input type="email" value={findEmail} onChange={setFindEmail} placeholder="가입한 이메일 주소" /></div>
-            <MsgBox msg={findMsg} />
-            <PrimaryBtn onClick={handleFindPw} disabled={findLoading}>{findLoading ? '전송 중...' : '재설정 링크 전송'}</PrimaryBtn>
-            <BackBtn onClick={() => setMode('login')} />
+          {/* ── 이메일 찾기 ── */}
+          {mode === 'findEmail' && (<>
+            <p style={{ fontSize: '13px', color: subText, margin: 0, lineHeight: 1.7 }}>
+              가입 시 입력한 <strong style={{ color: text }}>업체명</strong>과 <strong style={{ color: text }}>연락처</strong>로 이메일을 찾을 수 있습니다.
+            </p>
+            <div>
+              <Label>업체명</Label>
+              <input type="text" value={findCompany} onChange={e => setFindCompany(e.target.value)}
+                placeholder="가입 시 입력한 업체명" style={inputStyle()}
+                onFocus={e => e.target.style.borderColor = '#f59e0b'}
+                onBlur={e => e.target.style.borderColor = inputBorder} />
+            </div>
+            <div>
+              <Label>연락처</Label>
+              <input type="text" value={findContact} onChange={e => setFindContact(e.target.value)}
+                placeholder="가입 시 입력한 연락처" style={inputStyle()}
+                onFocus={e => e.target.style.borderColor = '#f59e0b'}
+                onBlur={e => e.target.style.borderColor = inputBorder} />
+            </div>
+            {findEmailResult && (
+              <div style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+                <p style={{ color: subText, fontSize: '12px', margin: '0 0 6px' }}>찾은 이메일</p>
+                <p style={{ color: '#34d399', fontSize: '18px', fontWeight: 800, margin: 0 }}>{findEmailResult}</p>
+              </div>
+            )}
+            <MsgBox msg={findEmailMsg} />
+            <PrimaryBtn onClick={handleFindEmail} disabled={findEmailLoading}>
+              {findEmailLoading ? '조회 중...' : '이메일 찾기'}
+            </PrimaryBtn>
+            <BackBtn />
           </>)}
 
-          {/* 비밀번호 변경 */}
-          {mode === 'changePw' && (<>
-            <p style={{ fontSize: '13px', color: subText, margin: 0, lineHeight: 1.7 }}>로그인된 상태에서 새 비밀번호로 변경합니다.</p>
+          {/* ── 비밀번호 찾기 ── */}
+          {mode === 'findPw' && (<>
+            <p style={{ fontSize: '13px', color: subText, margin: 0, lineHeight: 1.7 }}>
+              가입한 이메일을 입력하시면 <strong style={{ color: text }}>비밀번호 재설정 링크</strong>를 보내드립니다. 링크를 클릭해 새 비밀번호를 설정하세요.
+            </p>
             <div>
-              <Label>새 비밀번호</Label>
-              <Input value={newPw} onChange={setNewPw} placeholder="새 비밀번호 (6자 이상)" showToggle show={showNewPw} onToggle={() => setShowNewPw(v => !v)} />
+              <Label>이메일</Label>
+              <input type="email" value={findPwEmail} onChange={e => setFindPwEmail(e.target.value)}
+                placeholder="가입한 이메일 주소" style={inputStyle()}
+                onFocus={e => e.target.style.borderColor = '#f59e0b'}
+                onBlur={e => e.target.style.borderColor = inputBorder} />
             </div>
-            <div>
-              <Label>새 비밀번호 확인</Label>
-              <Input value={newPwConfirm} onChange={setNewPwConfirm} placeholder="비밀번호 재입력" showToggle show={showNewPw} onToggle={() => setShowNewPw(v => !v)} />
-            </div>
-            <MsgBox msg={changePwMsg} />
-            <PrimaryBtn onClick={handleChangePw} disabled={changePwLoading}>{changePwLoading ? '변경 중...' : '비밀번호 변경'}</PrimaryBtn>
-            <BackBtn onClick={() => setMode('login')} />
+            <MsgBox msg={findPwMsg} />
+            <PrimaryBtn onClick={handleFindPw} disabled={findPwLoading}>
+              {findPwLoading ? '전송 중...' : '재설정 링크 전송'}
+            </PrimaryBtn>
+            <BackBtn />
           </>)}
         </div>
       </div>
-
       <style>{`* { box-sizing: border-box; }`}</style>
     </div>
   )
