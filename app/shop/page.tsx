@@ -75,6 +75,8 @@ export default function ShopPage() {
       setUser(user)
       const { data: member } = await supabase.from('shop_members').select('member_type').eq('id', user.id).single()
       if (member) setMemberType(member.member_type)
+      const { count } = await supabase.from('cart_items').select('*', { count: 'exact', head: true }).eq('user_id', user.id)
+      setCartCount(count || 0)
     }
   }
 
@@ -257,6 +259,19 @@ export default function ShopPage() {
                       background: memberType === '도매업' ? 'rgba(124,58,237,0.12)' : memberType === '소매업' ? 'rgba(15,118,110,0.12)' : 'rgba(0,0,0,0.06)',
                       color: memberType === '도매업' ? '#7c3aed' : memberType === '소매업' ? '#0f766e' : sub
                     }}>{memberType}</span>
+                    <Link href="/shop/cart" className="header-btn" style={{
+                      position: 'relative', width: '40px', height: '40px', borderRadius: '12px',
+                      background: 'transparent', border: `1.5px solid ${border}`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      textDecoration: 'none', fontSize: '18px', flexShrink: 0
+                    }}>
+                      🛒
+                      {cartCount > 0 && (
+                        <span style={{ position:'absolute', top:'-6px', right:'-6px', width:'18px', height:'18px', borderRadius:'50%', background:'#ec4899', color:'white', fontSize:'10px', fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center', lineHeight:1 }}>
+                          {cartCount > 9 ? '9+' : cartCount}
+                        </span>
+                      )}
+                    </Link>
                     <Link href="/shop/mypage" className="header-btn header-mypage-btn" style={{
                       fontSize: '13px', fontWeight: 700, padding: '9px 16px',
                       borderRadius: '12px', background: 'transparent',
