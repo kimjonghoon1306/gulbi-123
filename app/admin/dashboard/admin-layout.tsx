@@ -14,7 +14,6 @@ const menus = [
   { href: '/admin/members', icon: '👥', label: '회원관리' },
   { href: '/admin/inventory', icon: '📦', label: '재고관리' },
   { href: '/admin/tax', icon: '🧾', label: '세금계산서' },
-  { href: '/admin/shop-members', icon: '🛍️', label: '쇼핑몰회원' },
   { href: '/admin/social-proof', icon: '⭐', label: '소셜 프루프' },
   { href: '/admin/settings', icon: '⚙️', label: '설정' },
 ]
