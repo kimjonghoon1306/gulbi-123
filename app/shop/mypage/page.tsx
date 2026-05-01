@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 type Member = {
   id: string; email: string; name: string; contact: string
@@ -42,6 +42,7 @@ const GRADE_INFO = [
 
 export default function MyPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = createClient()
 
   const [member, setMember]           = useState<Member | null>(null)
@@ -94,6 +95,13 @@ export default function MyPage() {
   useEffect(() => {
     const saved = localStorage.getItem('shop-theme')
     if (saved === 'dark') setDark(true)
+
+    // 장바구니 결제 완료 후 ?tab=orders 로 진입 시 주문내역 탭 바로 열기
+    const tabParam = searchParams.get('tab')
+    if (tabParam === 'orders' || tabParam === 'benefits') {
+      setTab(tabParam)
+    }
+
     fetchData()
 
     // 📦 주문 완료 후 마이페이지 이동 시 자동 갱신
