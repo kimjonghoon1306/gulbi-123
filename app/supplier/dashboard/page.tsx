@@ -40,10 +40,21 @@ export default function SupplierDashboardPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/supplier/login'); return }
 
-      const { data: sup, error: supErr } = await supabase
+      const { data: sup } = await supabase
         .from('suppliers').select('*').eq('id', user.id).single()
 
-      if (supErr || !sup) { router.push('/supplier/login'); return }
+      if (!sup) {
+        // suppliers 테이블에 없으면 관리자 → 관리자용 더미 정보로 표시
+        setSupplier({
+          company_name: '관리자 (미리보기)',
+          representative: '-', business_number: '-',
+          contact: '-', address: '-', category: '-',
+          status: '승인', email: user.email || '',
+          created_at: new Date().toISOString(),
+        })
+        setProducts([])
+        return
+      }
 
       const { data: prods } = await supabase
         .from('products').select('*').eq('supplier_id', user.id)
@@ -70,7 +81,10 @@ export default function SupplierDashboardPage() {
     </SupplierLayout>
   )
 
-  if (!supplier) return null
+  if (!supplier) {
+    router.push('/supplier/login')
+    return null
+  }
 
   const total    = products.length
   const pending  = products.filter(p => p.approval_status === '대기중').length
