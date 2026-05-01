@@ -103,13 +103,13 @@ export default function SupplierDashboardPage() {
 
   return (
     <SupplierLayout>
-      <div style={{ minHeight: '100vh', padding: '32px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div style={{ minHeight: '100vh', padding: '32px', display: 'flex', flexDirection: 'column', gap: '24px' }} className="dashboard-wrap">
 
         {/* 헤더 */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
           <div>
             <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', marginBottom: '6px' }}>{greeting}</p>
-            <h1 style={{ fontSize: '28px', fontWeight: 800, color: 'white', margin: 0 }}>{supplier.company_name}</h1>
+            <h1 style={{ fontSize: '28px', fontWeight: 800, color: 'white', margin: 0 }} className="dashboard-title">{supplier.company_name}</h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
               <span style={{
                 fontSize: '11px', fontWeight: 700, padding: '4px 12px', borderRadius: '20px',
@@ -126,7 +126,7 @@ export default function SupplierDashboardPage() {
           </div>
 
           {/* 시계 */}
-          <div style={{ textAlign: 'right' }}>
+          <div style={{ textAlign: 'right' }} className="dashboard-clock">
             <p style={{ fontSize: '32px', fontWeight: 800, color: 'white', margin: 0, fontVariantNumeric: 'tabular-nums', letterSpacing: '-1px' }}>
               {time.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
             </p>
@@ -152,13 +152,13 @@ export default function SupplierDashboardPage() {
         )}
 
         {/* 메인 그리드 */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px', flex: 1 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px', flex: 1 }} className="dashboard-grid">
 
           {/* 왼쪽 */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
             {/* 통계 카드 4개 */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }} className="stat-grid">
               {[
                 { label: '전체 상품', value: total, color: '#a78bfa', bg: 'rgba(167,139,250,0.08)', icon: '📦' },
                 { label: '승인 대기', value: pending, color: '#fbbf24', bg: 'rgba(245,158,11,0.08)', icon: '⏳' },
@@ -326,7 +326,18 @@ export default function SupplierDashboardPage() {
           </div>
         </div>
       </div>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 900px) {
+          .dashboard-grid { grid-template-columns: 1fr !important; }
+        }
+        @media (max-width: 640px) {
+          .stat-grid { grid-template-columns: 1fr 1fr !important; }
+          .dashboard-clock { display: none !important; }
+          .dashboard-wrap { padding: 16px !important; }
+          .dashboard-title { font-size: 20px !important; }
+        }
+      `}</style>
     </SupplierLayout>
   )
 }
