@@ -36,18 +36,26 @@ export default function SupplierDashboardPage() {
   }, [])
 
   const fetchData = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.push('/supplier/login'); return }
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.push('/supplier/login'); return }
 
-    const [{ data: sup }, { data: prods }] = await Promise.all([
-      supabase.from('suppliers').select('*').eq('id', user.id).single(),
-      supabase.from('products').select('*').eq('supplier_id', user.id).order('created_at', { ascending: false }).limit(5)
-    ])
+      const { data: sup, error: supErr } = await supabase
+        .from('suppliers').select('*').eq('id', user.id).single()
 
-    if (!sup) { router.push('/supplier/login'); return }
-    setSupplier(sup)
-    setProducts(prods || [])
-    setLoading(false)
+      if (supErr || !sup) { router.push('/supplier/login'); return }
+
+      const { data: prods } = await supabase
+        .from('products').select('*').eq('supplier_id', user.id)
+        .order('created_at', { ascending: false }).limit(5)
+
+      setSupplier(sup)
+      setProducts(prods || [])
+    } catch (e) {
+      console.error('fetchData error:', e)
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (loading) return (
