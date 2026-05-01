@@ -32,12 +32,30 @@ export default function CartPage() {
   const [orderDone, setOrderDone] = useState(false)
   const [memberInfo, setMemberInfo] = useState<any>(null)
   const [userId, setUserId] = useState('')
+  const [redirectCount, setRedirectCount] = useState(3)
 
   useEffect(() => {
     const saved = localStorage.getItem('shop-theme')
     if (saved === 'dark') setDark(true)
     fetchAll()
   }, [])
+
+  // 주문 완료 후 3초 카운트다운 → 마이페이지 주문내역 탭 자동 이동
+  useEffect(() => {
+    if (!orderDone) return
+    setRedirectCount(3)
+    const interval = setInterval(() => {
+      setRedirectCount(prev => {
+        if (prev <= 1) {
+          clearInterval(interval)
+          router.push('/shop/mypage?tab=orders')
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [orderDone])
 
   const fetchAll = async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -253,14 +271,33 @@ export default function CartPage() {
 
             {orderDone ? (
               <div style={{ padding:'48px 28px', textAlign:'center' }}>
-                <div style={{ fontSize:'56px', marginBottom:'16px' }}>🎉</div>
+                {/* 성공 아이콘 */}
+                <div style={{ width:'80px', height:'80px', borderRadius:'50%', background:'linear-gradient(135deg,#0f766e,#0891b2)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'36px', margin:'0 auto 20px', boxShadow:'0 12px 32px rgba(15,118,110,0.35)' }}>🎉</div>
                 <p style={{ fontSize:'22px', fontWeight:900, color:D.text, margin:'0 0 8px' }}>주문 완료!</p>
-                <p style={{ fontSize:'14px', color:D.sub, margin:'0 0 32px' }}>마이페이지에서 주문 현황을 확인하세요</p>
+                <p style={{ fontSize:'14px', color:D.sub, margin:'0 0 24px' }}>주문이 정상 접수됐어요</p>
+
+                {/* 카운트다운 링 */}
+                <div style={{ position:'relative', width:'64px', height:'64px', margin:'0 auto 20px' }}>
+                  <svg width="64" height="64" style={{ transform:'rotate(-90deg)' }}>
+                    <circle cx="32" cy="32" r="28" fill="none" stroke={D.border} strokeWidth="4" />
+                    <circle cx="32" cy="32" r="28" fill="none" stroke="#0f766e" strokeWidth="4"
+                      strokeDasharray={`${2 * Math.PI * 28}`}
+                      strokeDashoffset={`${2 * Math.PI * 28 * (1 - redirectCount / 3)}`}
+                      style={{ transition:'stroke-dashoffset 1s linear' }} />
+                  </svg>
+                  <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'20px', fontWeight:900, color:'#0f766e' }}>{redirectCount}</div>
+                </div>
+
+                <p style={{ fontSize:'13px', color:D.sub, margin:'0 0 24px' }}>{redirectCount}초 후 주문내역으로 이동해요</p>
+
                 <div style={{ display:'flex', gap:'10px' }}>
-                  <button onClick={() => setShowOrder(false)} style={{ flex:1, padding:'14px', borderRadius:'14px', border:`1.5px solid ${D.border}`, background:'transparent', color:D.sub, fontSize:'14px', fontWeight:600, cursor:'pointer' }}>닫기</button>
-                  <button onClick={() => { setShowOrder(false); router.push('/shop/mypage') }}
-                    style={{ flex:2, padding:'14px', borderRadius:'14px', background:'linear-gradient(135deg,#0f766e,#0891b2)', color:'white', fontSize:'14px', fontWeight:900, border:'none', cursor:'pointer' }}>
-                    📦 주문 확인하기 →
+                  <button onClick={() => { setShowOrder(false); router.push('/shop') }}
+                    style={{ flex:1, padding:'14px', borderRadius:'14px', border:`1.5px solid ${D.border}`, background:'transparent', color:D.sub, fontSize:'13px', fontWeight:600, cursor:'pointer' }}>
+                    쇼핑 계속
+                  </button>
+                  <button onClick={() => { setShowOrder(false); router.push('/shop/mypage?tab=orders') }}
+                    style={{ flex:2, padding:'14px', borderRadius:'14px', background:'linear-gradient(135deg,#0f766e,#0891b2)', color:'white', fontSize:'14px', fontWeight:900, border:'none', cursor:'pointer', boxShadow:'0 8px 20px rgba(15,118,110,0.3)' }}>
+                    📦 주문내역 바로가기 →
                   </button>
                 </div>
               </div>
