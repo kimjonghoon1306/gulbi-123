@@ -50,6 +50,7 @@ export default function ShopPage() {
   const [user, setUser] = useState<any>(null)
   const [memberType, setMemberType] = useState('일반')
   const [dark, setDark] = useState(false)
+  const [cartCount, setCartCount] = useState(0)
   const [scrolled, setScrolled] = useState(false)
   const [popup, setPopup] = useState<{ show: boolean; name: string; action: string; product: string }>({ show: false, name: '', action: '', product: '' })
   const [visitorCount, setVisitorCount] = useState(0)
