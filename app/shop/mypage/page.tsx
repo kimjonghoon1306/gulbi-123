@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { createClient } from '@/lib/supabase'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -41,6 +41,14 @@ const GRADE_INFO = [
 ]
 
 export default function MyPage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center' }}><div style={{ width:'44px', height:'44px', borderRadius:'50%', border:'3px solid #0f766e', borderTopColor:'transparent', animation:'spin 0.8s linear infinite' }} /><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style></div>}>
+      <MyPageInner />
+    </Suspense>
+  )
+}
+
+function MyPageInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = createClient()
