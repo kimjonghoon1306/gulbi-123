@@ -188,6 +188,10 @@ export default function SupplierLoginPage() {
                   처음이신가요?{' '}
                   <Link href="/supplier/register" className="link-gold">가입 신청</Link>
                 </p>
+                <div className="notice-box">
+                  <p className="notice-title">⚠️ 이메일 계정 분리 안내</p>
+                  <p className="notice-body">쇼핑몰 회원과 공급업체 파트너는 <strong>서로 다른 이메일 주소</strong>로 가입하셔야 합니다. 두 서비스는 독립된 회원 시스템으로 운영되어 각 계정의 권한과 정보를 안전하게 분리 관리하고 있습니다. 불편을 드려 죄송하며, 양해 부탁드립니다. 🙏</p>
+                </div>
               </div>
             )}
 
@@ -496,6 +500,21 @@ export default function SupplierLoginPage() {
         .msg-ok p { color: #34d399; }
         .msg-err { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); }
         .msg-err p { color: #f87171; }
+
+        /* 안내 박스 */
+        .notice-box {
+          background: rgba(245,158,11,0.08);
+          border: 1px solid rgba(245,158,11,0.25);
+          border-radius: 12px; padding: 14px 16px;
+          display: flex; flex-direction: column; gap: 6px;
+        }
+        .notice-title { font-size: 12px; font-weight: 800; color: #fbbf24; margin: 0; letter-spacing: 0.3px; }
+        .notice-body { font-size: 12px; line-height: 1.75; color: rgba(251,191,36,0.75); margin: 0; }
+        .notice-body strong { color: #fbbf24; font-weight: 700; }
+        .root.light .notice-box { background: rgba(245,158,11,0.06); }
+        .root.light .notice-body { color: rgba(180,110,0,0.8); }
+        .root.light .notice-title { color: #b45309; }
+        .root.light .notice-body strong { color: #b45309; }
 
         /* 모바일 */
         @media (max-width: 900px) {
