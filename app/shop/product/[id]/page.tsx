@@ -48,9 +48,22 @@ export default function ProductDetailPage() {
         setMemberType(member.member_type)
         setMemberInfo(member)
       } else {
-        // shop_members에 없으면 관리자로 판단 → 탭 클릭 가능
         setIsAdmin(true)
       }
+      // 찜 여부 조회
+      const { data: wish } = await supabase.from('wishlists').select('id').eq('user_id', user.id).eq('product_id', id).single()
+      setLiked(!!wish)
+    }
+  }
+
+  const toggleLike = async () => {
+    if (!user) { router.push('/shop/login'); return }
+    if (liked) {
+      await supabase.from('wishlists').delete().eq('user_id', user.id).eq('product_id', id)
+      setLiked(false)
+    } else {
+      await supabase.from('wishlists').insert({ user_id: user.id, product_id: id })
+      setLiked(true)
     }
   }
 
@@ -226,7 +239,7 @@ export default function ProductDetailPage() {
                 )}
                 <span style={{background:'rgba(5,150,105,0.9)',color:'white',fontSize:'10px',fontWeight:700,padding:'3px 8px',borderRadius:'100px'}}>무료배송</span>
               </div>
-              <button onClick={() => setLiked(!liked)} style={{position:'absolute',top:'12px',right:'12px',width:'36px',height:'36px',borderRadius:'50%',background:'rgba(255,255,255,0.9)',border:'none',cursor:'pointer',fontSize:'18px',display:'flex',alignItems:'center',justifyContent:'center',backdropFilter:'blur(8px)'}}>
+              <button onClick={toggleLike} style={{position:'absolute',top:'12px',right:'12px',width:'36px',height:'36px',borderRadius:'50%',background:'rgba(255,255,255,0.9)',border:'none',cursor:'pointer',fontSize:'18px',display:'flex',alignItems:'center',justifyContent:'center',backdropFilter:'blur(8px)',transition:'transform 0.15s',boxShadow:'0 2px 8px rgba(0,0,0,0.12)'}}>
                 {liked ? '❤️' : '🤍'}
               </button>
             </div>
