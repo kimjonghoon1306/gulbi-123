@@ -57,7 +57,8 @@ function MyPageInner() {
   const [orders, setOrders]           = useState<Order[]>([])
   const [orderItems, setOrderItems]   = useState<Record<string, OrderItem[]>>({})
   const [loading, setLoading]         = useState(true)
-  const [tab, setTab]                 = useState<'home' | 'orders' | 'benefits'>('home')
+  const [tab, setTab]                 = useState<'home' | 'orders' | 'benefits' | 'wishlist'>('home')
+  const [wishlists, setWishlists]     = useState<any[]>([])
   const [dark, setDark]               = useState(false)
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null)
   const [itemsLoading, setItemsLoading]   = useState<string | null>(null)
@@ -102,6 +103,13 @@ function MyPageInner() {
         o = o2
       }
       setOrders(o || [])
+      // 찜 목록 조회
+      const { data: wishes } = await supabase
+        .from('wishlists')
+        .select('id, created_at, products(id, name, image_url, retail_price, wholesale_price, member_price, unit, stock)')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+      setWishlists(wishes || [])
       setLoading(false)
     } catch (e) {
       console.error('fetchData error:', e)
@@ -115,7 +123,7 @@ function MyPageInner() {
 
     // 장바구니 결제 완료 후 ?tab=orders 로 진입 시 주문내역 탭 바로 열기
     const tabParam = searchParams.get('tab')
-    if (tabParam === 'orders' || tabParam === 'benefits') {
+    if (tabParam === 'orders' || tabParam === 'benefits' || tabParam === 'wishlist') {
       setTab(tabParam)
     }
 
@@ -247,6 +255,7 @@ function MyPageInner() {
           {[
             { key:'home',     icon:'🏠', label:'홈' },
             { key:'orders',   icon:'📦', label:'주문/배송' },
+            { key:'wishlist', icon:'❤️', label:'찜 목록' },
             { key:'benefits', icon: member.member_type === '일반' ? '⭐' : '💼', label: member.member_type === '일반' ? '등급/혜택' : '유통 혜택' },
           ].map(t => (
             <button key={t.key} onClick={() => setTab(t.key as any)}
@@ -441,6 +450,51 @@ function MyPageInner() {
                 )}
               </div>
             ))}
+          </div>
+        )}
+
+        {/* ════════════════ TAB: WISHLIST ════════════════ */}
+        {tab === 'wishlist' && (
+          <div style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'4px' }}>
+              <p style={{ fontSize:'15px', fontWeight:800, color:D.text, margin:0 }}>❤️ 찜한 상품 <span style={{ color:D.sub, fontSize:'13px', fontWeight:500 }}>{wishlists.length}개</span></p>
+            </div>
+            {wishlists.length === 0 ? (
+              <div style={{ background:D.card, borderRadius:'20px', padding:'48px 20px', textAlign:'center', border:`1px solid ${D.border}` }}>
+                <p style={{ fontSize:'40px', marginBottom:'12px' }}>🤍</p>
+                <p style={{ fontSize:'14px', color:D.sub, margin:'0 0 16px' }}>찜한 상품이 없어요</p>
+                <a href="/shop" style={{ display:'inline-block', padding:'10px 20px', borderRadius:'12px', background:tc.gradient, color:'white', fontSize:'13px', fontWeight:700, textDecoration:'none' }}>
+                  쇼핑하러 가기
+                </a>
+              </div>
+            ) : (
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+                {wishlists.map((w: any) => {
+                  const p = w.products
+                  if (!p) return null
+                  return (
+                    <a key={w.id} href={`/shop/product/${p.id}`} style={{ textDecoration:'none', display:'block', background:D.card, borderRadius:'16px', overflow:'hidden', border:`1px solid ${D.border}`, transition:'transform 0.15s' }}>
+                      <div style={{ width:'100%', paddingTop:'100%', position:'relative', background:dark?'#1e2530':'#f8fafc' }}>
+                        {p.image_url
+                          ? <img src={p.image_url} alt={p.name} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} />
+                          : <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'40px' }}>🐟</div>
+                        }
+                        {p.stock === 0 && (
+                          <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.45)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                            <span style={{ background:'rgba(0,0,0,0.7)', color:'white', fontSize:'11px', fontWeight:700, padding:'4px 10px', borderRadius:'20px' }}>품절</span>
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ padding:'10px 12px' }}>
+                        <p style={{ fontSize:'13px', fontWeight:700, color:D.text, margin:'0 0 4px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{p.name}</p>
+                        <p style={{ fontSize:'14px', fontWeight:900, color:tc.color, margin:0 }}>{(p.retail_price||0).toLocaleString()}원</p>
+                        <p style={{ fontSize:'10px', color:D.sub, margin:'2px 0 0' }}>/{p.unit}</p>
+                      </div>
+                    </a>
+                  )
+                })}
+              </div>
+            )}
           </div>
         )}
 
