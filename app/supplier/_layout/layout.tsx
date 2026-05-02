@@ -16,19 +16,21 @@ export default function SupplierLayout({ children }: { children: React.ReactNode
   const [companyName, setCompanyName] = useState('')
   const [status, setStatus] = useState('')
   const [collapsed, setCollapsed] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
 
-  useEffect(() => { fetchInfo() }, [])
+  useEffect(() => {
+    fetchInfo()
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   const fetchInfo = async () => {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/supplier/login'); return }
-    const { data } = await supabase
-      .from('suppliers')
-      .select('company_name, status')
-      .eq('id', user.id)
-      .single()
-    // suppliers에 없으면 관리자 → 그냥 통과
+    const { data } = await supabase.from('suppliers').select('company_name, status').eq('id', user.id).single()
     setCompanyName(data?.company_name || '관리자')
     setStatus(data?.status || '승인')
   }
@@ -46,6 +48,88 @@ export default function SupplierLayout({ children }: { children: React.ReactNode
   }
   const badgeLabel: Record<string, string> = { '승인': '승인됨', '대기중': '심사중', '거절': '거절됨' }
 
+  // ── 모바일: 상단 헤더 + 하단 탭바 ──────────────────────────────
+  if (isMobile) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#0d1117', color: 'white' }}>
+
+        {/* 모바일 상단 헤더 */}
+        <header style={{
+          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
+          height: '56px',
+          background: 'rgba(22,27,34,0.95)',
+          backdropFilter: 'blur(12px)',
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '0 16px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{
+              width: '32px', height: '32px', borderRadius: '8px', flexShrink: 0,
+              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '16px', boxShadow: '0 4px 12px rgba(245,158,11,0.3)',
+            }}>🏭</div>
+            <div>
+              <p style={{ fontSize: '13px', fontWeight: 700, color: 'white', margin: 0, maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {companyName || '공급업체'}
+              </p>
+              {status && (
+                <span style={{ fontSize: '9px', fontWeight: 600, padding: '1px 7px', borderRadius: '20px', display: 'inline-block', ...(badgeStyle[status] || {}) }}>
+                  {badgeLabel[status] || status}
+                </span>
+              )}
+            </div>
+          </div>
+          <button onClick={handleLogout} style={{
+            padding: '8px 14px', borderRadius: '10px', border: '1px solid rgba(239,68,68,0.25)',
+            background: 'rgba(239,68,68,0.08)', color: '#f87171', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+          }}>로그아웃</button>
+        </header>
+
+        {/* 컨텐츠 */}
+        <main style={{ flex: 1, paddingTop: '56px', paddingBottom: '72px', minHeight: '100vh' }}>
+          {children}
+        </main>
+
+        {/* 모바일 하단 탭바 */}
+        <nav style={{
+          position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
+          height: '64px',
+          background: 'rgba(22,27,34,0.97)',
+          backdropFilter: 'blur(16px)',
+          borderTop: '1px solid rgba(255,255,255,0.06)',
+          display: 'flex', alignItems: 'stretch',
+          paddingBottom: 'env(safe-area-inset-bottom)',
+        }}>
+          {menus.map(menu => {
+            const active = pathname === menu.href
+            return (
+              <Link key={menu.href} href={menu.href} style={{
+                flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                gap: '3px', textDecoration: 'none',
+                color: active ? '#f59e0b' : 'rgba(255,255,255,0.35)',
+                position: 'relative',
+                transition: 'color 0.2s',
+              }}>
+                {active && (
+                  <div style={{
+                    position: 'absolute', top: 0, left: '20%', right: '20%', height: '2px',
+                    background: 'linear-gradient(90deg, #f59e0b, #d97706)',
+                    borderRadius: '0 0 4px 4px',
+                  }} />
+                )}
+                <span style={{ fontSize: '22px', lineHeight: 1 }}>{menu.icon}</span>
+                <span style={{ fontSize: '10px', fontWeight: active ? 700 : 500 }}>{menu.label}</span>
+              </Link>
+            )
+          })}
+        </nav>
+      </div>
+    )
+  }
+
+  // ── 데스크톱/태블릿: 사이드바 ──────────────────────────────────
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#0d1117', color: 'white' }}>
 
