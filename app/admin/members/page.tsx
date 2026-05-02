@@ -56,6 +56,33 @@ export default function MembersPage() {
     setSelected(null); fetchAll()
   }
 
+  const downloadExcel = () => {
+    const target = filtered.length > 0 ? filtered : members
+    const headers = ['이름', '이메일', '연락처', '회원유형', '업체명', '사업자번호', '상태', '가입일', '메모']
+    const rows = target.map(m => [
+      m.name || '',
+      m.email || '',
+      m.contact || '',
+      m.member_type || '',
+      m.business_name || '',
+      m.business_number || '',
+      m.status || '',
+      new Date(m.created_at).toLocaleDateString('ko-KR'),
+      m.note || '',
+    ])
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+<Worksheet ss:Name="회원목록"><Table>
+<Row>${headers.map(h => `<Cell><Data ss:Type="String">${h}</Data></Cell>`).join('')}</Row>
+${rows.map(r => `<Row>${r.map(c => `<Cell><Data ss:Type="String">${String(c).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</Data></Cell>`).join('')}</Row>`).join('\n')}
+</Table></Worksheet></Workbook>`
+    const blob = new Blob(['\uFEFF' + xml], { type: 'application/vnd.ms-excel;charset=utf-8' })
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = '회원목록_' + new Date().toLocaleDateString('ko-KR').replace(/\./g, '').replace(/ /g, '') + '.xls'
+    a.click()
+  }
+
   const filtered = members.filter(m => {
     const matchStatus = filterStatus === '전체' || m.status === filterStatus
     const matchType   = filterType === '전체'   || m.member_type === filterType
@@ -86,6 +113,10 @@ export default function MembersPage() {
             )}
           </p>
         </div>
+        <button onClick={downloadExcel}
+          className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-all active:scale-95 shadow-md shadow-emerald-500/20">
+          📥 엑셀 다운로드
+        </button>
       </div>
 
       {/* 필터 */}
