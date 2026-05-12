@@ -234,12 +234,22 @@ function SettingsContent() {
             border: `1px solid rgba(99,102,241,0.2)`,
             borderRadius: '14px', padding: '16px 20px', marginBottom: '20px',
           }}>
-            <p style={{ fontSize: '13px', fontWeight: 700, color: '#818cf8', margin: '0 0 8px' }}>💡 발급 방법</p>
-            <p style={{ fontSize: '12px', color: t.textMuted, margin: 0, lineHeight: 1.7 }}>
-              1. platform.openai.com 접속<br />
+            <p style={{ fontSize: '13px', fontWeight: 700, color: '#818cf8', margin: '0 0 10px' }}>💡 발급 방법</p>
+            <p style={{ fontSize: '12px', color: t.textMuted, margin: '0 0 12px', lineHeight: 1.7 }}>
+              1. 아래 버튼으로 OpenAI 사이트 접속<br />
               2. API Keys → Create new secret key<br />
               3. 생성된 키(sk-proj-...)를 위 입력란에 붙여넣기
             </p>
+            <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer" style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              padding: '11px 16px', borderRadius: '12px', textDecoration: 'none',
+              background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(79,70,229,0.15))',
+              border: '1px solid rgba(99,102,241,0.3)',
+              color: '#818cf8', fontSize: '13px', fontWeight: 700,
+              transition: 'all 0.2s',
+            }}>
+              🔑 OpenAI API 키 발급받기 →
+            </a>
           </div>
 
           {keyMsg && (
