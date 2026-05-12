@@ -43,8 +43,10 @@ export default function ProductDetailPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       setUser(user)
+      // localStorage admin 플래그 체크 (admin 로그인 시 설정됨)
+      const isAdminFlag = typeof window !== 'undefined' && localStorage.getItem('gulbi_admin') === '1'
       const { data: member } = await supabase.from('shop_members').select('*').eq('id', user.id).single()
-      if (member) {
+      if (member && !isAdminFlag) {
         setMemberType(member.member_type)
         setMemberInfo(member)
       } else {
