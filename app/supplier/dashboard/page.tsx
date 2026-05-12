@@ -68,9 +68,10 @@ function DashboardContent() {
   const pending  = products.filter(p => p.approval_status === '대기중').length
   const approved = products.filter(p => p.approval_status === '승인').length
   const rejected = products.filter(p => p.approval_status === '거절').length
+  const revision = products.filter(p => p.approval_status === '수정요청').length
 
-  const statusColor: Record<string, string> = { '대기중': '#fbbf24', '승인': '#34d399', '거절': '#f87171' }
-  const statusBg: Record<string, string>    = { '대기중': 'rgba(245,158,11,0.1)', '승인': 'rgba(16,185,129,0.1)', '거절': 'rgba(239,68,68,0.1)' }
+  const statusColor: Record<string, string> = { '대기중': '#fbbf24', '승인': '#34d399', '거절': '#f87171', '수정요청': '#818cf8' }
+  const statusBg: Record<string, string>    = { '대기중': 'rgba(245,158,11,0.1)', '승인': 'rgba(16,185,129,0.1)', '거절': 'rgba(239,68,68,0.1)', '수정요청': 'rgba(99,102,241,0.1)' }
 
   const h = time.getHours()
   const greeting = h < 6 ? '🌙 새벽에도 열심히시네요' : h < 12 ? '☀️ 좋은 아침이에요' : h < 18 ? '🌤 좋은 오후예요' : '🌙 좋은 저녁이에요'
@@ -79,7 +80,7 @@ function DashboardContent() {
     { label: '전체 상품', value: total,    color: '#a78bfa', bg: 'rgba(167,139,250,0.08)', icon: '📦' },
     { label: '승인 대기', value: pending,   color: '#fbbf24', bg: 'rgba(245,158,11,0.08)',  icon: '⏳' },
     { label: '노출 중',   value: approved,  color: '#34d399', bg: 'rgba(16,185,129,0.08)',  icon: '✅' },
-    { label: '거절',      value: rejected,  color: '#f87171', bg: 'rgba(239,68,68,0.08)',   icon: '❌' },
+    { label: '수정요청',  value: revision,  color: '#818cf8', bg: 'rgba(99,102,241,0.08)',  icon: '✏️' },
   ]
 
   return (
