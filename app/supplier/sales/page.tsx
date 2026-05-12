@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import SupplierLayout from '../_layout/layout'
@@ -511,4 +511,3 @@ export default function SupplierSalesPage() {
     </SupplierLayout>
   )
 }
-
