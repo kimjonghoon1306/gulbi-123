@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { renderLanding, type LandingData } from '@/lib/landing-templates'
+import { getAuthAndOpenAIKey } from '@/lib/supabase-server'
 
 // 페르소나별 카피 톤 지침
 const PERSONA_TONES: Record<string, string> = {
@@ -154,12 +155,12 @@ function mergeData(
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await getAuthAndOpenAIKey()
+    if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status })
+
     const body = await req.json()
     const { persona, productName, retailPrice, wholesalePrice, unit, theme } = body
 
-    // 두 가지 형식 모두 지원:
-    // 신형: images: [{ base64, mimeType }, ...]
-    // 구형: base64: string, mimeType: string (단일 이미지)
     let imageList: { base64: string; mimeType: string }[] = []
     if (Array.isArray(body.images) && body.images.length > 0) {
       imageList = body.images.slice(0, 10)
@@ -171,15 +172,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: '[v2] 이미지를 먼저 올려주세요. (업로드하신 이미지가 서버에 전달되지 않았습니다)' }, { status: 400 })
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    const keyRes = await fetch(
-      `${supabaseUrl}/rest/v1/system_settings?key=eq.openai_api_key&select=value`,
-      { headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` } }
-    )
-    const keyData = await keyRes.json()
-    const openaiKey = keyData?.[0]?.value
-    if (!openaiKey) return NextResponse.json({ error: '설정에서 OpenAI API 키를 입력해주세요.' }, { status: 400 })
+    const openaiKey = auth.openaiKey
 
     const toneText = PERSONA_TONES[persona] || PERSONA_TONES.shohost
 
