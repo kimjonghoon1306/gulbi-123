@@ -9,6 +9,8 @@ import { ThemeContext, darkTheme, lightTheme } from './theme-context'
 const menus = [
   { href: '/supplier/dashboard', icon: '⚡', label: '대시보드' },
   { href: '/supplier/products',  icon: '📦', label: '상품 관리' },
+  { href: '/supplier/sales',     icon: '📊', label: '매출 현황' },
+  { href: '/supplier/settings',  icon: '⚙️', label: '설정' },
 ]
 
 export default function SupplierLayout({ children }: { children: React.ReactNode }) {
