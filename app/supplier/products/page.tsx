@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import SupplierLayout from '../_layout/layout'
+import { useSupplierTheme } from '../_layout/theme-context'
 
 type Product = {
   id: string; name: string; description: string
@@ -26,7 +27,8 @@ const EMPTY_FORM = {
   stock: '', unit: 'kg', image_url: '', description: ''
 }
 
-export default function SupplierProductsPage() {
+function ProductsContent() {
+  const t = useSupplierTheme()
   const router = useRouter()
   const supabase = createClient()
   const [supplierId, setSupplierId] = useState('')
@@ -105,117 +107,96 @@ export default function SupplierProductsPage() {
     init()
   }
 
+  const inputStyle = {
+    width: '100%', background: t.input, border: `1px solid ${t.inputBorder}`,
+    borderRadius: '12px', padding: '13px 16px', fontSize: '14px',
+    color: t.text, outline: 'none', boxSizing: 'border-box' as const,
+  }
+  const labelStyle = {
+    display: 'block', fontSize: '11px', fontWeight: 700,
+    color: t.textMuted, marginBottom: '8px', letterSpacing: '0.5px',
+  }
+
   if (loading) return (
-    <SupplierLayout>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ width: '40px', height: '40px', border: '3px solid rgba(245,158,11,0.2)', borderTop: '3px solid #f59e0b', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px' }}>불러오는 중...</p>
-          <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-        </div>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ width: '40px', height: '40px', border: '3px solid rgba(245,158,11,0.2)', borderTop: '3px solid #f59e0b', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
+        <p style={{ color: t.textMuted, fontSize: '14px' }}>불러오는 중...</p>
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       </div>
-    </SupplierLayout>
+    </div>
   )
 
   return (
-    <SupplierLayout>
-      <div style={{ minHeight: '100vh', padding: '20px 16px', background: '#0d1117' }}>
+    <div style={{ minHeight: '100vh', padding: '20px 16px', background: t.bg }}>
 
-        {/* 헤더 */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', gap: '12px' }}>
-          <div style={{ minWidth: 0 }}>
-            <h1 style={{ fontSize: '20px', fontWeight: 800, color: 'white', margin: '0 0 4px' }}>상품 관리</h1>
-            <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '12px', margin: 0 }}>등록 후 관리자 승인 시 쇼핑몰 노출</p>
-          </div>
-          {supplierStatus === '승인' && (
-            <button onClick={() => { setEditProduct(null); setForm(EMPTY_FORM); setShowForm(true) }}
-              style={{ flexShrink: 0, background: 'linear-gradient(135deg, #7c3aed, #6d28d9)', color: 'white', fontSize: '13px', fontWeight: 700, padding: '10px 18px', borderRadius: '12px', border: 'none', cursor: 'pointer', boxShadow: '0 4px 16px rgba(124,58,237,0.35)', whiteSpace: 'nowrap' }}>
-              + 상품 등록
-            </button>
-          )}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', gap: '12px' }}>
+        <div style={{ minWidth: 0 }}>
+          <h1 style={{ fontSize: '20px', fontWeight: 800, color: t.text, margin: '0 0 4px' }}>상품 관리</h1>
+          <p style={{ color: t.textMuted, fontSize: '12px', margin: 0 }}>등록 후 관리자 승인 시 쇼핑몰 노출</p>
         </div>
-
-        {/* 승인 대기 배너 */}
-        {supplierStatus !== '승인' && (
-          <div style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '14px', padding: '14px 18px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ fontSize: '20px' }}>⏳</span>
-            <p style={{ color: '#fbbf24', fontSize: '13px', fontWeight: 600, margin: 0 }}>관리자 승인 후 상품 등록이 가능합니다</p>
-          </div>
-        )}
-
-        {/* 상품 목록 — 카드형 */}
-        {products.length === 0 ? (
-          <div style={{ background: '#161b22', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', padding: '48px 20px', textAlign: 'center' }}>
-            <p style={{ fontSize: '40px', marginBottom: '12px' }}>📦</p>
-            <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '14px', margin: 0 }}>등록된 상품이 없습니다</p>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {products.map(p => {
-              const st = STATUS_STYLE[p.approval_status] || STATUS_STYLE['대기중']
-              return (
-                <div key={p.id} style={{ background: '#161b22', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden' }}>
-                  {/* 상단: 이미지 + 이름 + 상태 */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px' }}>
-                    <div style={{ width: '52px', height: '52px', borderRadius: '12px', flexShrink: 0, overflow: 'hidden', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {p.image_url ? <img src={p.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: '24px' }}>🐟</span>}
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
-                        <p style={{ fontSize: '14px', fontWeight: 700, color: 'white', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '160px' }}>{p.name}</p>
-                        <span style={{ fontSize: '10px', fontWeight: 700, padding: '3px 9px', borderRadius: '20px', background: st.bg, color: st.color, flexShrink: 0 }}>{st.label}</span>
-                      </div>
-                      <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', margin: 0 }}>재고 {p.stock} {p.unit}</p>
-                    </div>
-                  </div>
-
-                  {/* 가격 정보 */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-                    {[
-                      { label: '도매 제안가', value: `${p.suggested_wholesale_price?.toLocaleString()}원`, color: 'rgba(255,255,255,0.7)' },
-                      { label: '소매 제안가', value: `${p.suggested_retail_price?.toLocaleString()}원`, color: 'rgba(255,255,255,0.7)' },
-                      { label: '확정 도매가', value: p.wholesale_price > 0 ? `${p.wholesale_price.toLocaleString()}원` : '미확정', color: p.wholesale_price > 0 ? '#34d399' : 'rgba(255,255,255,0.25)' },
-                    ].map(item => (
-                      <div key={item.label} style={{ padding: '12px 10px', textAlign: 'center', borderRight: '1px solid rgba(255,255,255,0.04)' }}>
-                        <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)', margin: '0 0 4px', fontWeight: 600 }}>{item.label}</p>
-                        <p style={{ fontSize: '12px', fontWeight: 700, color: item.color, margin: 0 }}>{item.value}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* 액션 버튼 */}
-                  <div style={{ display: 'flex', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-                    {p.approval_status !== '승인' && (
-                      <button onClick={() => openEdit(p)} style={{ flex: 1, padding: '12px', background: 'transparent', border: 'none', color: '#a78bfa', fontSize: '13px', fontWeight: 600, cursor: 'pointer', borderRight: '1px solid rgba(255,255,255,0.04)' }}>
-                        ✏️ 수정
-                      </button>
-                    )}
-                    <button onClick={() => handleDelete(p.id)} style={{ flex: 1, padding: '12px', background: 'transparent', border: 'none', color: 'rgba(239,68,68,0.7)', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>
-                      🗑 삭제
-                    </button>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+        {supplierStatus === '승인' && (
+          <button onClick={() => { setEditProduct(null); setForm(EMPTY_FORM); setShowForm(true) }}
+            style={{ padding: '12px 20px', borderRadius: '14px', background: 'linear-gradient(135deg, #7c3aed, #6d28d9)', color: 'white', fontSize: '13px', fontWeight: 700, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 16px rgba(124,58,237,0.35)' }}>
+            + 상품 등록
+          </button>
         )}
       </div>
 
-      {/* 상품 등록/수정 모달 — 다크 테마 일관 */}
-      {showForm && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)', zIndex: 100, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0' }} className="modal-overlay">
-          <div style={{ background: '#161b22', borderRadius: '24px 24px 0 0', width: '100%', maxWidth: '560px', maxHeight: '92vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', border: '1px solid rgba(255,255,255,0.08)', borderBottom: 'none' }} className="modal-desktop">
+      {products.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '60px 20px', background: t.card, borderRadius: '20px', border: `1px solid ${t.border}` }}>
+          <p style={{ fontSize: '40px', marginBottom: '12px' }}>📦</p>
+          <p style={{ color: t.textMuted, fontSize: '14px', margin: '0 0 16px' }}>등록된 상품이 없습니다</p>
+          {supplierStatus === '승인' && (
+            <button onClick={() => setShowForm(true)}
+              style={{ padding: '12px 24px', borderRadius: '12px', background: 'rgba(245,158,11,0.15)', color: '#f59e0b', fontSize: '14px', fontWeight: 600, border: '1px solid rgba(245,158,11,0.25)', cursor: 'pointer' }}>
+              + 첫 상품 등록하기
+            </button>
+          )}
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {products.map(p => {
+            const s = STATUS_STYLE[p.approval_status] || STATUS_STYLE['대기중']
+            return (
+              <div key={p.id} style={{ background: t.card, border: `1px solid ${t.border}`, borderRadius: '16px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '52px', height: '52px', borderRadius: '12px', flexShrink: 0, overflow: 'hidden', background: t.input, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {p.image_url ? <img src={p.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: '22px' }}>🐟</span>}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
+                    <p style={{ fontSize: '14px', fontWeight: 700, color: t.text, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</p>
+                    <span style={{ fontSize: '10px', fontWeight: 600, padding: '2px 8px', borderRadius: '20px', flexShrink: 0, background: s.bg, color: s.color }}>{s.label}</span>
+                  </div>
+                  <p style={{ fontSize: '11px', color: t.textMuted, margin: 0 }}>
+                    제안가 {p.suggested_wholesale_price?.toLocaleString()}원
+                    {p.wholesale_price > 0 && <span style={{ color: '#34d399', marginLeft: '6px' }}>→ 확정가 {p.wholesale_price.toLocaleString()}원</span>}
+                    {p.stock > 0 && <span style={{ marginLeft: '8px' }}>재고 {p.stock}{p.unit}</span>}
+                  </p>
+                </div>
+                <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+                  <button onClick={() => openEdit(p)}
+                    style={{ padding: '7px 12px', borderRadius: '10px', border: `1px solid ${t.border}`, background: t.input, color: t.textMuted, fontSize: '12px', cursor: 'pointer', fontWeight: 600 }}>수정</button>
+                  <button onClick={() => handleDelete(p.id)}
+                    style={{ padding: '7px 12px', borderRadius: '10px', border: '1px solid rgba(239,68,68,0.2)', background: 'rgba(239,68,68,0.08)', color: '#f87171', fontSize: '12px', cursor: 'pointer', fontWeight: 600 }}>삭제</button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
 
-            {/* 모달 헤더 */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 20px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
-              {/* 드래그 인디케이터 (모바일) */}
-              <div style={{ position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)', width: '36px', height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.15)' }} />
-              <h2 style={{ fontSize: '16px', fontWeight: 800, color: 'white', margin: 0 }}>{editProduct ? '상품 수정' : '상품 등록'}</h2>
+      {showForm && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)', zIndex: 100, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }} className="modal-overlay">
+          <div style={{ background: t.card, borderRadius: '24px 24px 0 0', width: '100%', maxWidth: '560px', maxHeight: '92vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', border: `1px solid ${t.border}`, borderBottom: 'none' }} className="modal-desktop">
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 20px 16px', borderBottom: `1px solid ${t.border}`, flexShrink: 0, position: 'relative' }}>
+              <div style={{ position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)', width: '36px', height: '4px', borderRadius: '2px', background: t.inputBorder }} />
+              <h2 style={{ fontSize: '16px', fontWeight: 800, color: t.text, margin: 0 }}>{editProduct ? '상품 수정' : '상품 등록'}</h2>
               <button onClick={() => { setShowForm(false); setEditProduct(null); setForm(EMPTY_FORM); setError('') }}
-                style={{ width: '32px', height: '32px', borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+                style={{ width: '32px', height: '32px', borderRadius: '50%', border: 'none', background: t.input, color: t.textMuted, fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
             </div>
 
-            {/* 모달 본문 */}
             <div style={{ overflowY: 'auto', flex: 1, padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
               {editProduct?.approval_status === '거절' && (
@@ -224,41 +205,35 @@ export default function SupplierProductsPage() {
                 </div>
               )}
 
-              {/* 상품명 */}
               <div>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', marginBottom: '8px', letterSpacing: '0.5px' }}>상품명 *</label>
-                <input type="text" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
-                  placeholder="상품명 입력"
-                  style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '13px 16px', fontSize: '14px', color: 'white', outline: 'none', boxSizing: 'border-box' }} />
+                <label style={labelStyle}>상품명 *</label>
+                <input type="text" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="상품명 입력" style={inputStyle} />
               </div>
 
-              {/* 이미지 업로드 */}
               <div>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', marginBottom: '8px', letterSpacing: '0.5px' }}>대표 이미지</label>
+                <label style={labelStyle}>대표 이미지</label>
                 <input id="sup-img" type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageUpload} />
                 <div onClick={() => document.getElementById('sup-img')?.click()}
-                  style={{ border: '2px dashed rgba(255,255,255,0.1)', borderRadius: '12px', padding: '20px', textAlign: 'center', cursor: 'pointer', background: 'rgba(255,255,255,0.02)', transition: 'border-color 0.2s' }}>
+                  style={{ border: `2px dashed ${t.inputBorder}`, borderRadius: '12px', padding: '20px', textAlign: 'center', cursor: 'pointer', background: t.input }}>
                   {form.image_url
                     ? <img src={form.image_url} alt="" style={{ height: '80px', objectFit: 'contain', margin: '0 auto', display: 'block', borderRadius: '8px' }} />
                     : <div>
                         <p style={{ fontSize: '24px', margin: '0 0 6px' }}>📸</p>
-                        <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '13px', margin: 0 }}>탭해서 이미지 올리기</p>
+                        <p style={{ color: t.textMuted, fontSize: '13px', margin: 0 }}>탭해서 이미지 올리기</p>
                       </div>
                   }
                 </div>
               </div>
 
-              {/* 카테고리 */}
               <div>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', marginBottom: '8px', letterSpacing: '0.5px' }}>카테고리</label>
+                <label style={labelStyle}>카테고리</label>
                 <select value={form.category_id} onChange={e => setForm(p => ({ ...p, category_id: e.target.value }))}
-                  style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '13px 16px', fontSize: '14px', color: 'white', outline: 'none', boxSizing: 'border-box' }}>
-                  <option value="" style={{ background: '#1e2530' }}>카테고리 선택</option>
-                  {categories.map(c => <option key={c.id} value={c.id} style={{ background: '#1e2530' }}>{c.name}</option>)}
+                  style={{ ...inputStyle, background: t.input }}>
+                  <option value="" style={{ background: t.optionBg }}>카테고리 선택</option>
+                  {categories.map(c => <option key={c.id} value={c.id} style={{ background: t.optionBg }}>{c.name}</option>)}
                 </select>
               </div>
 
-              {/* 가격 제안 */}
               <div style={{ background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.2)', borderRadius: '14px', padding: '16px' }}>
                 <p style={{ fontSize: '12px', fontWeight: 700, color: '#a78bfa', margin: '0 0 12px' }}>💡 가격 제안 (관리자가 최종 확정합니다)</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
@@ -267,36 +242,33 @@ export default function SupplierProductsPage() {
                     { label: '🛒 소매 제안가 (원) *', key: 'suggested_retail_price' },
                   ].map(({ label, key }) => (
                     <div key={key}>
-                      <label style={{ display: 'block', fontSize: '10px', color: 'rgba(255,255,255,0.35)', marginBottom: '6px' }}>{label}</label>
+                      <label style={{ display: 'block', fontSize: '10px', color: t.textMuted, marginBottom: '6px' }}>{label}</label>
                       <input type="number" value={form[key as keyof typeof form]} onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))}
-                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '11px 12px', fontSize: '14px', color: 'white', outline: 'none', boxSizing: 'border-box' }} />
+                        style={{ ...inputStyle, borderRadius: '10px', padding: '11px 12px' }} />
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* 재고 + 단위 */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', marginBottom: '8px', letterSpacing: '0.5px' }}>재고 수량</label>
-                  <input type="number" value={form.stock} onChange={e => setForm(p => ({ ...p, stock: e.target.value }))}
-                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '13px 16px', fontSize: '14px', color: 'white', outline: 'none', boxSizing: 'border-box' }} />
+                  <label style={labelStyle}>재고 수량</label>
+                  <input type="number" value={form.stock} onChange={e => setForm(p => ({ ...p, stock: e.target.value }))} style={inputStyle} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', marginBottom: '8px', letterSpacing: '0.5px' }}>단위</label>
+                  <label style={labelStyle}>단위</label>
                   <select value={form.unit} onChange={e => setForm(p => ({ ...p, unit: e.target.value }))}
-                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '13px 16px', fontSize: '14px', color: 'white', outline: 'none', boxSizing: 'border-box' }}>
-                    {['kg', 'g', '박스', '마리', '개', '묶음'].map(u => <option key={u} style={{ background: '#1e2530' }}>{u}</option>)}
+                    style={{ ...inputStyle, background: t.input }}>
+                    {['kg', 'g', '박스', '마리', '개', '묶음'].map(u => <option key={u} style={{ background: t.optionBg }}>{u}</option>)}
                   </select>
                 </div>
               </div>
 
-              {/* 상품 설명 */}
               <div>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', marginBottom: '8px', letterSpacing: '0.5px' }}>상품 설명</label>
+                <label style={labelStyle}>상품 설명</label>
                 <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} rows={3}
                   placeholder="상품에 대한 간단한 설명"
-                  style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '13px 16px', fontSize: '14px', color: 'white', outline: 'none', resize: 'none', boxSizing: 'border-box', fontFamily: 'inherit' }} />
+                  style={{ ...inputStyle, resize: 'none', fontFamily: 'inherit' }} />
               </div>
 
               {error && (
@@ -306,10 +278,9 @@ export default function SupplierProductsPage() {
               )}
             </div>
 
-            {/* 모달 푸터 */}
-            <div style={{ display: 'flex', gap: '10px', padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
+            <div style={{ display: 'flex', gap: '10px', padding: '16px 20px', borderTop: `1px solid ${t.border}`, flexShrink: 0 }}>
               <button onClick={() => { setShowForm(false); setEditProduct(null); setForm(EMPTY_FORM); setError('') }}
-                style={{ flex: 1, padding: '14px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: 'rgba(255,255,255,0.4)', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}>
+                style={{ flex: 1, padding: '14px', borderRadius: '14px', border: `1px solid ${t.border}`, background: 'transparent', color: t.textMuted, fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}>
                 취소
               </button>
               <button onClick={handleSave} disabled={saving}
@@ -328,6 +299,14 @@ export default function SupplierProductsPage() {
           .modal-desktop { border-radius: 20px !important; max-height: 85vh !important; }
         }
       `}</style>
+    </div>
+  )
+}
+
+export default function SupplierProductsPage() {
+  return (
+    <SupplierLayout>
+      <ProductsContent />
     </SupplierLayout>
   )
 }
