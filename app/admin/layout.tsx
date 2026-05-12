@@ -64,6 +64,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     setMounted(true)
+    localStorage.setItem('gulbi_admin', '1')  // 관리자 식별 플래그
     const saved = localStorage.getItem('theme')
     if (saved === 'dark') setDark(true)
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
@@ -86,6 +87,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const handleLogout = async () => {
     const supabase = createClient()
+    localStorage.removeItem('gulbi_admin')
     await supabase.auth.signOut()
     router.push('/auth/login')
   }
