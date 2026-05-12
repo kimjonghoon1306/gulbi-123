@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { ThemeContext, darkTheme, lightTheme } from './theme-context'
 
 const menus = [
   { href: '/supplier/dashboard', icon: '⚡', label: '대시보드' },
@@ -80,6 +81,7 @@ export default function SupplierLayout({ children }: { children: React.ReactNode
   // ── 모바일: 상단 헤더 + 하단 탭바 ──────────────────────────────
   if (isMobile) {
     return (
+      <ThemeContext.Provider value={isDark ? darkTheme : lightTheme}>
       <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: t.bg, color: t.text }}>
 
         {/* 모바일 상단 헤더 */}
@@ -158,11 +160,13 @@ export default function SupplierLayout({ children }: { children: React.ReactNode
           })}
         </nav>
       </div>
+      </ThemeContext.Provider>
     )
   }
 
   // ── 데스크톱/태블릿: 사이드바 ──────────────────────────────────
   return (
+    <ThemeContext.Provider value={isDark ? darkTheme : lightTheme}>
     <div style={{ display: 'flex', minHeight: '100vh', background: t.bg, color: t.text }}>
 
       <aside style={{
@@ -247,5 +251,6 @@ export default function SupplierLayout({ children }: { children: React.ReactNode
         {children}
       </main>
     </div>
+    </ThemeContext.Provider>
   )
 }
