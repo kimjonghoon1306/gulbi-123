@@ -3,7 +3,49 @@
 import { useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import { renderLanding, type PresetKey, type TemplateKey, type LandingData, TEMPLATES } from '@/lib/landing-templates'
-import FloatingToolbar from './FloatingToolbar'
+
+// ── 인라인 FloatingToolbar ──────────────────────────────────
+function FloatingToolbar({ previewId }: { previewId: string }) {
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(null)
+  const savedRange = useRef<Range | null>(null)
+
+  useEffect(() => {
+    const container = document.getElementById(previewId)
+    if (!container) return
+    const onSelect = () => {
+      const sel = window.getSelection()
+      if (!sel || sel.rangeCount === 0 || sel.isCollapsed) { setPos(null); return }
+      const range = sel.getRangeAt(0)
+      if (!container.contains(range.commonAncestorContainer)) { setPos(null); return }
+      savedRange.current = range.cloneRange()
+      const rect = range.getBoundingClientRect()
+      setPos({ x: rect.left + rect.width / 2, y: rect.top - 6 })
+    }
+    document.addEventListener('selectionchange', onSelect)
+    return () => document.removeEventListener('selectionchange', onSelect)
+  }, [previewId])
+
+  const restore = () => {
+    if (!savedRange.current) return
+    const sel = window.getSelection()
+    if (!sel) return
+    sel.removeAllRanges(); sel.addRange(savedRange.current)
+  }
+  const exec = (cmd: string, val?: string) => { restore(); document.execCommand(cmd, false, val) }
+
+  if (!pos) return null
+  return (
+    <div onMouseDown={e => e.preventDefault()} style={{ position: 'fixed', left: pos.x, top: pos.y, transform: 'translate(-50%, -100%)', zIndex: 200000, display: 'flex', alignItems: 'center', gap: '2px', background: '#111', border: '1px solid rgba(200,169,110,0.4)', borderRadius: '10px', padding: '5px 6px', boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}>
+      {[{ cmd: 'bold', label: <strong style={{ fontSize: '13px' }}>B</strong> }, { cmd: 'italic', label: <em style={{ fontSize: '13px' }}>I</em> }, { cmd: 'underline', label: <u style={{ fontSize: '12px' }}>U</u> }].map(({ cmd, label }) => (
+        <button key={cmd} onClick={() => exec(cmd)} style={{ width: '28px', height: '28px', borderRadius: '6px', border: 'none', background: 'transparent', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{label}</button>
+      ))}
+      <div style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.2)', margin: '0 2px' }} />
+      {[{ color: '#C8842D', label: '골드' }, { color: '#DC2626', label: '빨강' }, { color: '#1D4ED8', label: '파랑' }, { color: '#FFFFFF', label: '흰색' }].map(({ color, label }) => (
+        <button key={color} onClick={() => exec('foreColor', color)} title={label} style={{ width: '20px', height: '20px', borderRadius: '50%', background: color, cursor: 'pointer', border: 'none', outline: color === '#FFFFFF' ? '1.5px solid rgba(255,255,255,0.5)' : 'none', outlineOffset: '1px' }} />
+      ))}
+    </div>
+  )
+}
 
 type SupplierProduct = {
   id: string; name: string; description: string
@@ -536,4 +578,3 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
     </>
   )
 }
-
