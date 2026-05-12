@@ -25,6 +25,7 @@ export default function LoginPage() {
       if (error) {
         setError(`오류: ${error.message}`)
       } else if (data.session) {
+        localStorage.setItem('gulbi_admin', '1')
         router.push('/admin/dashboard')
         router.refresh()
       } else {
