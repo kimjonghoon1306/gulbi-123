@@ -31,21 +31,38 @@ export default function SettingsPage() {
   }, [])
 
   const fetchOpenaiKey = async () => {
-    const { data } = await supabase.from('system_settings').select('value').eq('key', 'openai_api_key').single()
-    if (data?.value) setOpenaiKey(data.value)
+    try {
+      const res = await fetch('/api/user-key')
+      if (res.ok) {
+        const data = await res.json()
+        if (data.keyHint) setOpenaiKey(data.keyHint)
+      }
+    } catch {}
   }
 
   const saveOpenaiKey = async () => {
     if (!openaiKey.trim()) return setOpenaiKeyMsg({ type: 'error', text: 'API 키를 입력해주세요.' })
+    if (openaiKey.startsWith('sk-') === false && openaiKey.includes('...')) {
+      return setOpenaiKeyMsg({ type: 'error', text: '새 키를 입력해주세요. (현재 표시된 것은 마스킹된 힌트입니다)' })
+    }
     setOpenaiKeyLoading(true)
     setOpenaiKeyMsg(null)
-    await supabase.from('system_settings').delete().eq('key', 'openai_api_key')
-    const { error } = await supabase.from('system_settings').insert({ key: 'openai_api_key', value: openaiKey.trim(), updated_at: new Date().toISOString() })
-    if (error) {
-      setOpenaiKeyMsg({ type: 'error', text: `오류: ${error.message}` })
-    } else {
-      setOpenaiKeyMsg({ type: 'success', text: '✅ API 키가 저장됐어요!' })
-      setTimeout(() => setOpenaiKeyMsg(null), 3000)
+    try {
+      const res = await fetch('/api/user-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ openaiKey: openaiKey.trim() }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setOpenaiKeyMsg({ type: 'error', text: data.error || '저장 실패' })
+      } else {
+        setOpenaiKeyMsg({ type: 'success', text: '✅ API 키가 저장됐어요!' })
+        setOpenaiKey(data.keyHint || '')
+        setTimeout(() => setOpenaiKeyMsg(null), 3000)
+      }
+    } catch (e: any) {
+      setOpenaiKeyMsg({ type: 'error', text: e.message })
     }
     setOpenaiKeyLoading(false)
   }
@@ -282,9 +299,12 @@ export default function SettingsPage() {
                 </div>
                 <div className="p-6 space-y-4">
                   <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
-                    <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">💡 platform.openai.com에서 발급 가능</p>
+                    <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">💡 아래 버튼에서 키를 발급받을 수 있어요</p>
                     <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer"
-                      className="text-xs text-amber-600 dark:text-amber-400 underline mt-1 block">platform.openai.com/api-keys →</a>
+                      className="mt-2 flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-xs font-bold"
+                      style={{ background: 'linear-gradient(135deg, rgba(245,158,11,0.15), rgba(217,119,6,0.15))', border: '1px solid rgba(245,158,11,0.3)', color: '#d97706', textDecoration: 'none' }}>
+                      🔑 OpenAI API 키 발급받기 →
+                    </a>
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">OpenAI API 키</label>
