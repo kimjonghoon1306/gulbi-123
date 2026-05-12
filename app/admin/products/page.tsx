@@ -49,7 +49,7 @@ export default function ProductsPage() {
 
   // 공급업체 승인
   const [supplierProducts, setSupplierProducts] = useState<SupplierProduct[]>([])
-  const [approvalFilter, setApprovalFilter] = useState<'대기중' | '승인' | '거절'>('대기중')
+  const [approvalFilter, setApprovalFilter] = useState<'대기중' | '승인' | '거절' | '수정요청'>('대기중')
   const [reviewProduct, setReviewProduct] = useState<SupplierProduct | null>(null)
   const [reviewForm, setReviewForm] = useState({
     name: '', wholesale_price: '', retail_price: '', member_price: '',
@@ -159,11 +159,9 @@ export default function ProductsPage() {
     await supabase.from('products').update({
       approval_status: '거절',
       is_active: false,
-      description: reviewProduct.description,
+      rejection_reason: rejectReason.trim(),
       updated_at: new Date().toISOString(),
     }).eq('id', reviewProduct.id)
-    // 거절 사유를 supplier에게 알리기 위해 별도 컬럼 저장 (선택적)
-    // supabase from('products').update({ rejection_reason: rejectReason })
     setReviewProduct(null); setReviewLoading(false); setShowRejectInput(false); fetchAll()
   }
 
@@ -174,6 +172,7 @@ export default function ProductsPage() {
     await supabase.from('products').update({
       approval_status: '수정요청',
       is_active: false,
+      rejection_reason: rejectReason.trim(),
       updated_at: new Date().toISOString(),
     }).eq('id', reviewProduct.id)
     setReviewProduct(null); setReviewLoading(false); setShowRejectInput(false); fetchAll()
@@ -241,7 +240,7 @@ export default function ProductsPage() {
         <div>
           {/* 상태 필터 */}
           <div className="flex gap-2 mb-4">
-            {(['대기중', '승인', '거절'] as const).map(s => (
+            {(['대기중', '승인', '거절', '수정요청'] as const).map(s => (
               <button key={s} onClick={() => setApprovalFilter(s)}
                 style={{
                   padding: '8px 18px', borderRadius: '20px', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 700,
