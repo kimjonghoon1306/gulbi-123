@@ -43,16 +43,14 @@ export default function ProductDetailPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       setUser(user)
-      // localStorage admin 플래그 체크 (admin 로그인 시 설정됨)
-      const isAdminFlag = typeof window !== 'undefined' && localStorage.getItem('gulbi_admin') === '1'
+      const isAdminRole = user.app_metadata?.role === 'admin'
       const { data: member } = await supabase.from('shop_members').select('*').eq('id', user.id).single()
-      if (member && !isAdminFlag) {
+      if (member && !isAdminRole) {
         setMemberType(member.member_type)
         setMemberInfo(member)
       } else {
         setIsAdmin(true)
       }
-      // 찜 여부 조회
       const { data: wish } = await supabase.from('wishlists').select('id').eq('user_id', user.id).eq('product_id', id).single()
       setLiked(!!wish)
     }
