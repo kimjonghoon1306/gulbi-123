@@ -13,7 +13,10 @@ type Comment = {
   created_label: string
   is_active: boolean
   sort_order: number
+  product_id: string | null
 }
+
+type Product = { id: string; name: string; image_url: string }
 
 const AVATAR_PRESETS = [
   ['#ec4899','#f43f5e'],['#3b82f6','#6366f1'],['#059669','#0f766e'],
@@ -23,26 +26,31 @@ const AVATAR_PRESETS = [
 export default function SocialProofPage() {
   const supabase = createClient()
   const [comments, setComments] = useState<Comment[]>([])
+  const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [visitorOverride, setVisitorOverride] = useState('')
   const [visitorSaved, setVisitorSaved] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [editItem, setEditItem] = useState<Comment|null>(null)
+  const [productFilter, setProductFilter] = useState<'all' | string>('all')
   const [form, setForm] = useState({
     author: '', content: '', rating: 5,
     avatar_color: '#ec4899', avatar_color2: '#f43f5e',
-    created_label: '방금 전', is_active: true, sort_order: 0
+    created_label: '방금 전', is_active: true, sort_order: 0,
+    product_id: null as string | null,
   })
 
   useEffect(() => { fetchAll() }, [])
 
   const fetchAll = async () => {
     setLoading(true)
-    const [{ data: comms }, { data: vc }] = await Promise.all([
+    const [{ data: comms }, { data: vc }, { data: prods }] = await Promise.all([
       supabase.from('social_proof_comments').select('*').order('sort_order'),
-      supabase.from('system_settings').select('value').eq('key','visitor_count_override').single()
+      supabase.from('system_settings').select('value').eq('key','visitor_count_override').single(),
+      supabase.from('products').select('id, name, image_url').eq('is_active', true).order('created_at', { ascending: false }),
     ])
     setComments(comms || [])
+    setProducts(prods || [])
     if (vc?.value) setVisitorOverride(vc.value)
     setLoading(false)
   }
@@ -56,22 +64,23 @@ export default function SocialProofPage() {
 
   const openNew = () => {
     setEditItem(null)
-    setForm({ author:'', content:'', rating:5, avatar_color:'#ec4899', avatar_color2:'#f43f5e', created_label:'방금 전', is_active:true, sort_order: comments.length })
+    setForm({ author:'', content:'', rating:5, avatar_color:'#ec4899', avatar_color2:'#f43f5e', created_label:'방금 전', is_active:true, sort_order: comments.length, product_id: null })
     setShowForm(true)
   }
 
   const openEdit = (c: Comment) => {
     setEditItem(c)
-    setForm({ author:c.author, content:c.content, rating:c.rating, avatar_color:c.avatar_color, avatar_color2:c.avatar_color2, created_label:c.created_label, is_active:c.is_active, sort_order:c.sort_order })
+    setForm({ author:c.author, content:c.content, rating:c.rating, avatar_color:c.avatar_color, avatar_color2:c.avatar_color2, created_label:c.created_label, is_active:c.is_active, sort_order:c.sort_order, product_id: c.product_id })
     setShowForm(true)
   }
 
   const save = async () => {
     if (!form.author.trim() || !form.content.trim()) return
+    const data = { ...form, product_id: form.product_id || null }
     if (editItem) {
-      await supabase.from('social_proof_comments').update(form).eq('id', editItem.id)
+      await supabase.from('social_proof_comments').update(data).eq('id', editItem.id)
     } else {
-      await supabase.from('social_proof_comments').insert(form)
+      await supabase.from('social_proof_comments').insert(data)
     }
     setShowForm(false)
     fetchAll()
@@ -89,6 +98,18 @@ export default function SocialProofPage() {
   }
 
   const TIME_LABELS = ['방금 전','1시간 전','2시간 전','어제','2일 전','3일 전','1주일 전','2주일 전','1달 전']
+
+  // 필터된 댓글
+  const filteredComments = productFilter === 'all'
+    ? comments
+    : productFilter === 'global'
+    ? comments.filter(c => !c.product_id)
+    : comments.filter(c => c.product_id === productFilter)
+
+  const getProductName = (id: string | null) => {
+    if (!id) return null
+    return products.find(p => p.id === id)?.name || '삭제된 상품'
+  }
 
   return (
     <div className="animate-fadeIn">
@@ -112,47 +133,71 @@ export default function SocialProofPage() {
           </div>
         </div>
         <div className="flex gap-3">
-          <input
-            type="number"
-            value={visitorOverride}
-            onChange={e => setVisitorOverride(e.target.value)}
-            placeholder="예) 147"
-            className="flex-1 border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-400"
-          />
-          <button onClick={saveVisitorCount}
-            className="px-6 py-3 rounded-xl text-sm font-bold text-white transition-all active:scale-95"
-            style={{background:'linear-gradient(135deg,#ec4899,#f43f5e)'}}>
+          <input type="number" value={visitorOverride} onChange={e => setVisitorOverride(e.target.value)} placeholder="예) 147"
+            className="flex-1 border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-400" />
+          <button onClick={saveVisitorCount} className="px-6 py-3 rounded-xl text-sm font-bold text-white transition-all active:scale-95" style={{background:'linear-gradient(135deg,#ec4899,#f43f5e)'}}>
             {visitorSaved ? '✅ 저장됨' : '저장'}
           </button>
         </div>
       </div>
 
-      {/* 팝업 안내 */}
+      {/* 안내 */}
       <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 mb-6">
-        <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">💬 구매 팝업은 쇼핑몰에서 20초마다 자동으로 랜덤 이름 + 행동으로 표시됩니다. 아래 후기는 상세페이지 하단에 표시돼요.</p>
+        <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">
+          💬 후기를 특정 상품에 연결하면 그 상품 상세페이지에만 표시됩니다. 상품을 선택하지 않으면 모든 상품에 공통으로 표시됩니다.
+        </p>
+      </div>
+
+      {/* 상품별 필터 */}
+      <div className="flex gap-2 mb-4 flex-wrap">
+        <button onClick={() => setProductFilter('all')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${productFilter === 'all' ? 'bg-sky-500 text-white' : 'bg-white dark:bg-gray-800 text-slate-400 border border-slate-200 dark:border-gray-700'}`}>
+          전체 ({comments.length})
+        </button>
+        <button onClick={() => setProductFilter('global')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${productFilter === 'global' ? 'bg-slate-700 text-white' : 'bg-white dark:bg-gray-800 text-slate-400 border border-slate-200 dark:border-gray-700'}`}>
+          🌐 공통 ({comments.filter(c => !c.product_id).length})
+        </button>
+        {products.filter(p => comments.some(c => c.product_id === p.id)).map(p => (
+          <button key={p.id} onClick={() => setProductFilter(p.id)}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${productFilter === p.id ? 'bg-pink-500 text-white' : 'bg-white dark:bg-gray-800 text-slate-400 border border-slate-200 dark:border-gray-700'}`}>
+            {p.image_url && <img src={p.image_url} alt="" className="w-4 h-4 rounded object-cover" />}
+            {p.name} ({comments.filter(c => c.product_id === p.id).length})
+          </button>
+        ))}
       </div>
 
       {/* 후기 목록 */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-100 dark:border-gray-700 overflow-hidden shadow-sm">
         {loading ? (
           <div className="p-12 text-center text-slate-400">불러오는 중...</div>
-        ) : comments.length === 0 ? (
+        ) : filteredComments.length === 0 ? (
           <div className="p-12 text-center">
             <p className="text-4xl mb-3">⭐</p>
             <p className="text-sm text-slate-400">등록된 후기가 없습니다</p>
           </div>
         ) : (
           <div>
-            {comments.map(c => (
+            {filteredComments.map(c => (
               <div key={c.id} className="flex items-start gap-4 px-6 py-4 border-b border-slate-50 dark:border-gray-700/50 hover:bg-slate-50 dark:hover:bg-gray-700/30 transition-colors">
                 <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-black flex-shrink-0" style={{background:`linear-gradient(135deg,${c.avatar_color},${c.avatar_color2})`}}>
                   {(c.author||'익')[0]}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <span className="text-sm font-bold text-slate-800 dark:text-white">{c.author}</span>
                     <span className="text-xs text-slate-400">{c.created_label}</span>
                     <span className="text-xs">{'⭐'.repeat(c.rating)}</span>
+                    {/* 상품 태그 */}
+                    {c.product_id ? (
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-pink-50 dark:bg-pink-900/20 text-pink-500 border border-pink-100 dark:border-pink-800">
+                        🐟 {getProductName(c.product_id)}
+                      </span>
+                    ) : (
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-50 dark:bg-gray-700 text-slate-400">
+                        🌐 공통
+                      </span>
+                    )}
                     <span className={`ml-auto text-xs font-semibold px-2 py-0.5 rounded-full ${c.is_active ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400 dark:bg-gray-700'}`}>
                       {c.is_active ? '표시중' : '숨김'}
                     </span>
@@ -181,6 +226,24 @@ export default function SocialProofPage() {
               <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600 text-xl">✕</button>
             </div>
             <div className="p-6 space-y-4">
+
+              {/* 상품 선택 */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5">적용 상품</label>
+                <select
+                  value={form.product_id || ''}
+                  onChange={e => setForm({...form, product_id: e.target.value || null})}
+                  className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-400">
+                  <option value="">🌐 전체 상품 공통 (선택 안 함)</option>
+                  {products.map(p => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-slate-400 mt-1">
+                  {form.product_id ? '선택한 상품 상세페이지에만 표시됩니다' : '모든 상품 상세페이지에 표시됩니다'}
+                </p>
+              </div>
+
               {/* 아바타 컬러 */}
               <div>
                 <label className="block text-xs font-semibold text-slate-500 mb-2">아바타 색상</label>
@@ -192,16 +255,19 @@ export default function SocialProofPage() {
                   ))}
                 </div>
               </div>
+
               <div>
                 <label className="block text-xs font-semibold text-slate-500 mb-1.5">작성자 이름</label>
                 <input value={form.author} onChange={e => setForm({...form,author:e.target.value})} placeholder="예) 김민준"
                   className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-400" />
               </div>
+
               <div>
                 <label className="block text-xs font-semibold text-slate-500 mb-1.5">후기 내용</label>
                 <textarea value={form.content} onChange={e => setForm({...form,content:e.target.value})} rows={4} placeholder="후기 내용을 입력하세요"
                   className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-400 resize-none" />
               </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 mb-1.5">별점</label>
@@ -218,6 +284,7 @@ export default function SocialProofPage() {
                   </select>
                 </div>
               </div>
+
               <div className="flex items-center gap-3">
                 <label className="text-xs font-semibold text-slate-500">표시 여부</label>
                 <button onClick={() => setForm({...form,is_active:!form.is_active})}
@@ -226,6 +293,7 @@ export default function SocialProofPage() {
                 </button>
               </div>
             </div>
+
             <div className="flex gap-3 p-6 border-t border-slate-100 dark:border-gray-700">
               <button onClick={() => setShowForm(false)} className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-gray-600 text-slate-500 text-sm font-medium">취소</button>
               <button onClick={save} className="flex-1 py-3 rounded-xl text-white text-sm font-bold transition-all active:scale-95" style={{background:'linear-gradient(135deg,#ec4899,#f43f5e)'}}>
@@ -238,4 +306,3 @@ export default function SocialProofPage() {
     </div>
   )
 }
-
