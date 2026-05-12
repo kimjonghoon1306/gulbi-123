@@ -88,7 +88,13 @@ export default function ProductDetailPage() {
       const { data: vc } = await supabase.from('system_settings').select('value').eq('key', 'visitor_count_override').single()
       if (vc?.value) setVisitorCount(Number(vc.value))
       else setVisitorCount(Math.floor(Math.random() * 80) + 20)
-      const { data: comments } = await supabase.from('social_proof_comments').select('*').eq('is_active', true).order('sort_order')
+      // 해당 상품 댓글 + 공통 댓글(product_id가 null인 것) 같이 불러오기
+      const { data: comments } = await supabase
+        .from('social_proof_comments')
+        .select('*')
+        .eq('is_active', true)
+        .or(`product_id.eq.${id},product_id.is.null`)
+        .order('sort_order')
       if (comments) setSocialComments(comments)
     } catch {}
   }
