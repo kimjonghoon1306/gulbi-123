@@ -445,9 +445,6 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
 
               {/* 오른쪽 미리보기 */}
               <div style={{ flex: 1, overflowY: 'auto', background: '#d0d0d0', display: 'flex', justifyContent: 'center', padding: '16px' }}>
-                {aiBgRemovedPreview && (
-                  <div style={{ position: 'sticky', top: 0, zIndex: 10 }} />
-                )}
                 <div style={{ width: '390px', background: 'white', boxShadow: '0 24px 60px rgba(0,0,0,0.3)', borderRadius: '16px', overflow: 'hidden' }}>
                   {aiImagePreview && (
                     <div style={{ width: '100%', aspectRatio: '1', background: BG_PRESETS[aiSelectedBg as keyof typeof BG_PRESETS]?.bg || '#0d0d0d', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
