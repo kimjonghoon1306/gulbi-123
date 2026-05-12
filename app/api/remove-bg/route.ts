@@ -1,21 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthUser } from '@/lib/supabase-server'
 
 export async function POST(req: NextRequest) {
   try {
+    const user = await getAuthUser()
+    if (!user) return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
+
     const { base64, mimeType } = await req.json()
-    if (!base64 || !mimeType) {
+    if (!base64 || !mimeType)
       return NextResponse.json({ error: '이미지가 없어요.' }, { status: 400 })
-    }
 
     const apiKey = process.env.REMOVE_BG_API_KEY
-    if (!apiKey) {
+    if (!apiKey)
       return NextResponse.json({ error: 'REMOVE_BG_API_KEY가 없어요.' }, { status: 500 })
-    }
 
-    // base64 → binary
     const binary = Buffer.from(base64, 'base64')
     const blob = new Blob([binary], { type: mimeType })
-
     const form = new FormData()
     form.append('image_file', blob, 'image.jpg')
     form.append('size', 'auto')
@@ -38,4 +38,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `오류: ${e.message}` }, { status: 500 })
   }
 }
-
