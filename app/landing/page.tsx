@@ -7,7 +7,20 @@ export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false)
   const [visible, setVisible] = useState(false)
   const [promoStep, setPromoStep] = useState(0)
+  const [promoKey, setPromoKey] = useState(0) // 스텝 바뀔 때 애니메이션 리트리거
+  const [orderIdx, setOrderIdx] = useState(-1) // 주문 아이템 순차 등장
+  const [barWidths, setBarWidths] = useState([0, 0, 0, 0]) // 재고 바 너비
+  const [countVal, setCountVal] = useState(0) // 정산 카운트업
+  const [rankIdx, setRankIdx] = useState(-1) // 베스트 순차 등장
   const promoTimer = useRef<any>(null)
+  const animTimer = useRef<any>(null)
+
+  const goStep = (i: number) => {
+    setPromoStep(i)
+    setPromoKey(k => k + 1)
+    clearInterval(promoTimer.current)
+    promoTimer.current = setInterval(() => goStep((i + 1) % 4), 4000)
+  }
 
   useEffect(() => {
     setVisible(true)
@@ -17,9 +30,49 @@ export default function LandingPage() {
   }, [])
 
   useEffect(() => {
-    promoTimer.current = setInterval(() => setPromoStep(p => (p + 1) % 4), 4000)
+    promoTimer.current = setInterval(() => setPromoStep(p => { const next = (p + 1) % 4; setPromoKey(k => k + 1); return next }), 4000)
     return () => clearInterval(promoTimer.current)
   }, [])
+
+  // 스텝별 애니메이션
+  useEffect(() => {
+    clearInterval(animTimer.current)
+    setOrderIdx(-1); setBarWidths([0,0,0,0]); setCountVal(0); setRankIdx(-1)
+
+    if (promoStep === 0) {
+      // 주문 아이템 순차 등장
+      let i = 0
+      animTimer.current = setInterval(() => {
+        setOrderIdx(i); i++
+        if (i >= 3) clearInterval(animTimer.current)
+      }, 350)
+    }
+    if (promoStep === 1) {
+      // 재고 바 순차 채우기
+      setTimeout(() => setBarWidths([85, 0, 0, 0]), 100)
+      setTimeout(() => setBarWidths([85, 23, 0, 0]), 300)
+      setTimeout(() => setBarWidths([85, 23, 67, 0]), 500)
+      setTimeout(() => setBarWidths([85, 23, 67, 12]), 700)
+    }
+    if (promoStep === 2) {
+      // 금액 카운트업
+      let v = 0; const target = 48200000
+      animTimer.current = setInterval(() => {
+        v = Math.min(v + 1600000, target)
+        setCountVal(v)
+        if (v >= target) clearInterval(animTimer.current)
+      }, 40)
+    }
+    if (promoStep === 3) {
+      // 베스트 순차 등장
+      let i = 0
+      animTimer.current = setInterval(() => {
+        setRankIdx(i); i++
+        if (i >= 4) clearInterval(animTimer.current)
+      }, 250)
+    }
+    return () => clearInterval(animTimer.current)
+  }, [promoStep, promoKey])
 
   const features = [
     { icon: '📋', title: '도매·소매 주문관리', desc: '거래처별 도매주문과 개인 소매주문을 한 곳에서 관리. 주문 상태를 실시간으로 추적하세요.', gradient: 'from-sky-500 to-blue-600', shadow: 'shadow-sky-500/20' },
@@ -184,7 +237,7 @@ export default function LandingPage() {
             <div className="flex border-b border-slate-700/50 bg-slate-900/60">
               {['주문 접수','재고 관리','정산 처리','분석 리포트'].map((label, i) => (
                 <button key={i}
-                  onClick={() => { setPromoStep(i); clearInterval(promoTimer.current); promoTimer.current = setInterval(() => setPromoStep(p => (p+1)%4), 4000) }}
+                  onClick={() => goStep(i)}
                   className="flex-1 py-3.5 text-xs sm:text-sm font-semibold transition-all duration-200"
                   style={{
                     color: promoStep === i ? '#22d3ee' : 'rgba(255,255,255,0.35)',
@@ -222,7 +275,12 @@ export default function LandingPage() {
                       { buyer: '해진식품', product: '갈치 5kg × 10박스', status: '처리중', time: '2분 전', dot: '#38bdf8' },
                       { buyer: '동해수산㈜', product: '새우 3kg × 20박스', status: '출고완료', time: '15분 전', dot: '#34d399' },
                     ].map((o, i) => (
-                      <div key={i} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                      <div key={i} className="flex items-center gap-3 p-3 rounded-xl" style={{
+                        background: 'rgba(255,255,255,0.04)',
+                        opacity: orderIdx >= i ? 1 : 0,
+                        transform: orderIdx >= i ? 'translateX(0)' : 'translateX(-16px)',
+                        transition: 'all 0.4s ease',
+                      }}>
                         <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: o.dot }} />
                         <div className="flex-1 min-w-0">
                           <div className="text-xs font-bold text-white">{o.buyer}</div>
@@ -251,22 +309,34 @@ export default function LandingPage() {
                       ))}
                     </div>
                   </div>
-                  <div className="space-y-3" style={{ animation: 'promoIn 0.4s ease' }}>
+                  <div className="space-y-3">
                     {[
-                      { name: '영광 굴비', stock: 85, max: 100, warn: false, emoji: '🐟' },
-                      { name: '제주 갈치', stock: 23, max: 100, warn: true,  emoji: '🐠' },
-                      { name: '동해 새우', stock: 67, max: 100, warn: false, emoji: '🦐' },
-                      { name: '완도 전복', stock: 12, max: 100, warn: true,  emoji: '🦪' },
+                      { name: '영광 굴비', warn: false, emoji: '🐟' },
+                      { name: '제주 갈치', warn: true,  emoji: '🐠' },
+                      { name: '동해 새우', warn: false, emoji: '🦐' },
+                      { name: '완도 전복', warn: true,  emoji: '🦪' },
                     ].map((item, i) => (
-                      <div key={i} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${item.warn ? 'rgba(251,146,60,0.25)' : 'rgba(255,255,255,0.06)'}` }}>
+                      <div key={i} className="flex items-center gap-3 p-3 rounded-xl" style={{
+                        background: 'rgba(255,255,255,0.04)',
+                        border: `1px solid ${item.warn ? 'rgba(251,146,60,0.25)' : 'rgba(255,255,255,0.06)'}`,
+                        opacity: barWidths[i] > 0 ? 1 : 0,
+                        transform: barWidths[i] > 0 ? 'translateX(0)' : 'translateX(16px)',
+                        transition: 'opacity 0.4s ease, transform 0.4s ease',
+                      }}>
                         <span className="text-xl flex-shrink-0">{item.emoji}</span>
                         <div className="flex-1 min-w-0">
                           <div className="flex justify-between items-center mb-1.5">
                             <span className="text-xs font-bold text-white">{item.name}</span>
-                            <span className="text-xs font-bold" style={{ color: item.warn ? '#fb923c' : '#22d3ee' }}>{item.stock}%{item.warn ? ' ⚠️' : ''}</span>
+                            <span className="text-xs font-bold" style={{ color: item.warn ? '#fb923c' : '#22d3ee' }}>
+                              {barWidths[i]}%{item.warn ? ' ⚠️' : ''}
+                            </span>
                           </div>
                           <div className="h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                            <div style={{ width: `${item.stock}%`, height: '100%', borderRadius: '9999px', background: item.warn ? 'linear-gradient(90deg,#fb923c,#ef4444)' : 'linear-gradient(90deg,#22d3ee,#38bdf8)', transition: 'width 1s ease' }} />
+                            <div style={{
+                              width: `${barWidths[i]}%`, height: '100%', borderRadius: '9999px',
+                              background: item.warn ? 'linear-gradient(90deg,#fb923c,#ef4444)' : 'linear-gradient(90deg,#22d3ee,#38bdf8)',
+                              transition: 'width 0.8s cubic-bezier(0.34,1.2,0.64,1)',
+                            }} />
                           </div>
                         </div>
                       </div>
@@ -290,8 +360,21 @@ export default function LandingPage() {
                   </div>
                   <div className="rounded-2xl p-5" style={{ background: 'rgba(34,211,238,0.06)', border: '1px solid rgba(34,211,238,0.15)' }}>
                     <div className="text-xs font-bold text-slate-400 mb-3">📊 이번 달 정산 현황</div>
-                    <div className="text-3xl font-black text-white mb-1">₩48,200,000</div>
+                    {/* 카운트업 금액 */}
+                    <div className="text-3xl font-black text-white mb-1">
+                      ₩{countVal.toLocaleString()}
+                    </div>
                     <div className="text-xs text-cyan-400 font-bold mb-4">▲ 전월 대비 +23%</div>
+                    {/* 정산 진행 바 */}
+                    <div className="mb-4">
+                      <div className="flex justify-between text-xs mb-1.5">
+                        <span className="text-slate-400">수금 진행률</span>
+                        <span className="text-cyan-400 font-bold">{Math.round((countVal / 48200000) * 83)}%</span>
+                      </div>
+                      <div className="h-2 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                        <div style={{ width: `${Math.round((countVal / 48200000) * 83)}%`, height: '100%', borderRadius: '9999px', background: 'linear-gradient(90deg,#22d3ee,#34d399)', transition: 'width 0.1s linear' }} />
+                      </div>
+                    </div>
                     <div className="space-y-2.5">
                       {[
                         { label: '미수금', value: '₩8,400,000', color: '#fb923c' },
@@ -330,7 +413,12 @@ export default function LandingPage() {
                         { rank: '3', name: '동해 홍게 살아있음', sales: '₩6,200,000', change: '+41%', emoji: '🦀' },
                         { rank: '4', name: '완도 전복 1kg', sales: '₩4,800,000', change: '-5%', emoji: '🦪' },
                       ].map((p, i) => (
-                        <div key={i} className="flex items-center gap-3 py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                        <div key={i} className="flex items-center gap-3 py-2" style={{
+                          borderBottom: '1px solid rgba(255,255,255,0.06)',
+                          opacity: rankIdx >= i ? 1 : 0,
+                          transform: rankIdx >= i ? 'translateX(0)' : 'translateX(20px)',
+                          transition: 'all 0.35s ease',
+                        }}>
                           <span className="text-xs font-black w-4 text-slate-500">{p.rank}</span>
                           <span className="text-base">{p.emoji}</span>
                           <div className="flex-1 min-w-0">
@@ -349,8 +437,7 @@ export default function LandingPage() {
             {/* 하단 점 네비 */}
             <div className="flex justify-center gap-2 py-5 border-t border-slate-700/40">
               {[0,1,2,3].map(i => (
-                <div key={i}
-                  onClick={() => { setPromoStep(i); clearInterval(promoTimer.current); promoTimer.current = setInterval(() => setPromoStep(p => (p+1)%4), 4000) }}
+                <div key={i} onClick={() => goStep(i)}
                   style={{ width: promoStep === i ? '22px' : '7px', height: '7px', borderRadius: '4px', cursor: 'pointer', background: promoStep === i ? '#22d3ee' : 'rgba(255,255,255,0.2)', transition: 'all 0.3s' }}
                 />
               ))}
