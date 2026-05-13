@@ -409,49 +409,41 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
 
           {/* STEP 3: 결과 */}
           {aiStep === 3 && (
-            <div style={{ flex: 1, display: 'flex', gap: '0', minHeight: 0, overflow: 'hidden' }}>
-              {/* 왼쪽 컨트롤 */}
-              <div style={{ width: '220px', flexShrink: 0, background: aiDark ? '#111' : '#fafafa', borderRight: '1px solid rgba(200,169,110,0.15)', display: 'flex', flexDirection: 'column', gap: '0', overflowY: 'auto' }}>
-                <div style={{ padding: '14px', borderBottom: '1px solid rgba(200,169,110,0.1)' }}>
-                  <p style={{ color: aiDark ? 'rgba(255,255,255,0.4)' : '#666', fontSize: '10px', fontWeight: 700, letterSpacing: '1px', margin: '0 0 8px' }}>🎨 색상 테마</p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    {Object.keys((TEMPLATES as any)?.premium?.presets || {}).slice(0, 6).map((k: string) => (
-                      <button key={k} onClick={() => handleChangePreset(k as PresetKey)}
-                        style={{ padding: '6px 10px', borderRadius: '8px', border: '1px solid ' + (aiPresetKey === k ? '#c8a96e' : 'rgba(255,255,255,0.08)'), background: aiPresetKey === k ? 'rgba(200,169,110,0.12)' : 'transparent', color: aiPresetKey === k ? '#c8a96e' : aiDark ? 'rgba(255,255,255,0.5)' : '#555', fontSize: '11px', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}>
-                        {k}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div style={{ padding: '14px', borderBottom: '1px solid rgba(200,169,110,0.1)' }}>
-                  <p style={{ color: aiDark ? 'rgba(255,255,255,0.4)' : '#666', fontSize: '10px', fontWeight: 700, letterSpacing: '1px', margin: '0 0 8px' }}>📐 레이아웃</p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    {Object.keys(TEMPLATES).map((k: string) => (
-                      <button key={k} onClick={() => handleChangeTemplate(k as TemplateKey)}
-                        style={{ padding: '6px 10px', borderRadius: '8px', border: '1px solid ' + (aiTemplateKey === k ? '#c8a96e' : 'rgba(255,255,255,0.08)'), background: aiTemplateKey === k ? 'rgba(200,169,110,0.12)' : 'transparent', color: aiTemplateKey === k ? '#c8a96e' : aiDark ? 'rgba(255,255,255,0.5)' : '#555', fontSize: '11px', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}>
-                        {k}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div style={{ padding: '14px', flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', justifyContent: 'flex-end' }}>
-                  <button onClick={() => setShowBuyerPreview('mobile')}
-                    style={{ padding: '10px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: aiDark ? 'rgba(255,255,255,0.6)' : '#555', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>
-                    📱 미리보기
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
+              {/* 상단 툴바 - admin과 동일 */}
+              <div style={{ background: '#111', borderBottom: '1px solid rgba(255,255,255,0.1)', padding: '6px 10px', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '9px', flexShrink: 0 }}>🖼️</span>
+                {TEMPLATES.map((t: any) => (
+                  <button key={t.key} onClick={() => handleChangeTemplate(t.key as TemplateKey)}
+                    style={{ padding: '4px 8px', borderRadius: '6px', border: '1.5px solid', borderColor: aiTemplateKey === t.key ? '#c8a96e' : 'rgba(255,255,255,0.12)', background: aiTemplateKey === t.key ? 'rgba(200,169,110,0.2)' : 'transparent', color: aiTemplateKey === t.key ? '#e8c878' : 'rgba(255,255,255,0.45)', fontSize: '10px', fontWeight: aiTemplateKey === t.key ? 700 : 500, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                    {t.emoji} {t.name}
                   </button>
-                  <button onClick={() => { setAiStep(1); setAiLandingHtml(''); setAiError('') }}
-                    style={{ padding: '10px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: aiDark ? 'rgba(255,255,255,0.4)' : '#888', fontSize: '12px', cursor: 'pointer' }}>
-                    ↩ 다시 생성
-                  </button>
-                  {aiError && <p style={{ color: '#f87171', fontSize: '11px', margin: 0 }}>{aiError}</p>}
-                  <button onClick={handleAiRegister} disabled={aiLoading}
-                    style={{ padding: '14px', borderRadius: '12px', background: aiLoading ? 'rgba(200,169,110,0.2)' : 'linear-gradient(135deg,#c8a96e,#e8c878)', color: aiLoading ? 'rgba(255,255,255,0.3)' : '#111', fontSize: '14px', fontWeight: 900, border: 'none', cursor: 'pointer' }}>
-                    {aiLoading ? '저장 중...' : '💾 저장하기'}
-                  </button>
-                </div>
+                ))}
+                <div style={{ width: '1px', height: '16px', background: 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
+                <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '9px', flexShrink: 0 }}>🎨</span>
+                {([
+                  { k: 'gold' as PresetKey,  label: '골드',  bg: '#C8842D', border: '#E8B87A' },
+                  { k: 'dark' as PresetKey,  label: '검정',  bg: '#0D0D0D', border: '#555' },
+                  { k: 'blue' as PresetKey,  label: '파랑',  bg: '#1D4ED8', border: '#60A5FA' },
+                  { k: 'red'  as PresetKey,  label: '빨강',  bg: '#DC2626', border: '#F87171' },
+                  { k: 'pink' as PresetKey,  label: '핑크',  bg: '#DB2777', border: '#F9A8D4' },
+                  { k: 'white' as PresetKey, label: '하양',  bg: '#F5F5F5', border: '#374151' },
+                ]).map(t => (
+                  <button key={t.k} onClick={() => handleChangePreset(t.k)} title={t.label}
+                    style={{ width: '22px', height: '22px', borderRadius: '50%', cursor: 'pointer', flexShrink: 0, border: '2px solid ' + (aiPresetKey === t.k ? t.border : 'transparent'), background: t.bg, boxShadow: aiPresetKey === t.k ? `0 0 8px ${t.bg}99` : 'none', transform: aiPresetKey === t.k ? 'scale(1.2)' : 'scale(1)', transition: 'all 0.15s' }} />
+                ))}
+                <div style={{ flex: 1 }} />
+                <button onClick={() => { setAiStep(1); setAiLandingHtml(''); setAiError('') }} style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: 'rgba(255,255,255,0.45)', fontSize: '10px', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>← 설정</button>
+                <button onClick={handleGenerateLanding} disabled={aiLoading} style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(200,169,110,0.5)', background: 'transparent', color: '#c8a96e', fontSize: '10px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>🔄 재생성</button>
+                <button onClick={() => setShowBuyerPreview('mobile')} style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(100,200,100,0.4)', background: 'rgba(100,200,100,0.07)', color: '#6ee7b7', fontSize: '10px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>📱 모바일</button>
+                <button onClick={() => setShowBuyerPreview('desktop')} style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(147,197,253,0.4)', background: 'rgba(147,197,253,0.07)', color: '#93c5fd', fontSize: '10px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>🖥️ PC</button>
+                <button onClick={handleAiRegister} disabled={aiLoading} style={{ padding: '5px 14px', borderRadius: '6px', background: 'linear-gradient(135deg,#c8a96e,#e8c878)', color: '#111', fontSize: '11px', fontWeight: 900, border: 'none', cursor: aiLoading ? 'not-allowed' : 'pointer', opacity: aiLoading ? 0.6 : 1, whiteSpace: 'nowrap' }}>
+                  {aiLoading ? '저장 중...' : '💾 저장'}
+                </button>
               </div>
+              {aiError && <p style={{ color: '#f87171', fontSize: '12px', padding: '6px 12px', background: 'rgba(239,68,68,0.1)', margin: 0, flexShrink: 0 }}>{aiError}</p>}
 
-              {/* 오른쪽 미리보기 */}
+              {/* 미리보기 */}
               <div style={{ flex: 1, overflowY: 'auto', background: '#d0d0d0', display: 'flex', justifyContent: 'center', padding: '16px' }}>
                 <div style={{ width: '390px', background: 'white', boxShadow: '0 24px 60px rgba(0,0,0,0.3)', borderRadius: '16px', overflow: 'hidden' }}>
                   {aiImagePreview && (
