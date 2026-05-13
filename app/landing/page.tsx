@@ -1,17 +1,24 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false)
   const [visible, setVisible] = useState(false)
+  const [promoStep, setPromoStep] = useState(0)
+  const promoTimer = useRef<any>(null)
 
   useEffect(() => {
     setVisible(true)
     const handleScroll = () => setScrolled(window.scrollY > 50)
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  useEffect(() => {
+    promoTimer.current = setInterval(() => setPromoStep(p => (p + 1) % 4), 4000)
+    return () => clearInterval(promoTimer.current)
   }, [])
 
   const features = [
@@ -161,6 +168,198 @@ export default function LandingPage() {
         ))}
       </section>
 
+      {/* ── 프로모션 애니메이션 ── */}
+      <section className="py-20 px-4 sm:px-6 bg-[#0a0f1e]">
+        <div className="max-w-5xl mx-auto text-center">
+
+          <p className="text-cyan-400 text-xs font-bold mb-4 tracking-widest uppercase">✦ 이렇게 작동해요</p>
+          <h2 className="text-3xl md:text-5xl font-black mb-12 leading-tight">
+            수산물 도매를<br />
+            <span className="bg-gradient-to-r from-cyan-400 to-sky-500 bg-clip-text text-transparent">이제 스마트하게</span>
+          </h2>
+
+          <div className="bg-slate-800/60 border border-slate-700/50 rounded-3xl overflow-hidden shadow-2xl">
+
+            {/* 탭 */}
+            <div className="flex border-b border-slate-700/50 bg-slate-900/60">
+              {['주문 접수','재고 관리','정산 처리','분석 리포트'].map((label, i) => (
+                <button key={i}
+                  onClick={() => { setPromoStep(i); clearInterval(promoTimer.current); promoTimer.current = setInterval(() => setPromoStep(p => (p+1)%4), 4000) }}
+                  className="flex-1 py-3.5 text-xs sm:text-sm font-semibold transition-all duration-200"
+                  style={{
+                    color: promoStep === i ? '#22d3ee' : 'rgba(255,255,255,0.35)',
+                    borderBottom: `2px solid ${promoStep === i ? '#22d3ee' : 'transparent'}`,
+                    fontWeight: promoStep === i ? 700 : 500,
+                    background: 'transparent', border: 'none',
+                    borderBottom: `2px solid ${promoStep === i ? '#22d3ee' : 'transparent'}`,
+                    cursor: 'pointer', fontFamily: 'inherit',
+                  }}>{label}</button>
+              ))}
+            </div>
+
+            {/* 진행 바 */}
+            <div className="h-0.5 bg-slate-700/40">
+              <div style={{ width: `${(promoStep + 1) * 25}%`, transition: 'width 0.4s ease', height: '100%', background: 'linear-gradient(90deg,#22d3ee,#38bdf8)', borderRadius: '0 2px 2px 0' }} />
+            </div>
+
+            <div className="p-6 sm:p-10">
+
+              {/* STEP 0: 주문 접수 */}
+              {promoStep === 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center text-left" style={{ animation: 'promoIn 0.4s ease' }}>
+                  <div>
+                    <div className="text-7xl font-black text-cyan-400/10 leading-none mb-3 tracking-tighter">01</div>
+                    <h3 className="text-xl sm:text-2xl font-black mb-3 text-white">모바일로 간편 주문 접수</h3>
+                    <p className="text-slate-400 text-sm sm:text-base leading-relaxed">도매업체 고객이 앱이나 웹에서 직접 주문합니다. 전화 없이도 24시간 주문 접수.</p>
+                    <div className="flex gap-2 mt-5 flex-wrap">
+                      {['📱 모바일 주문','💬 카카오 연동','📧 이메일 알림'].map((t,i) => (
+                        <span key={i} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: 'rgba(34,211,238,0.1)', border: '1px solid rgba(34,211,238,0.25)', color: '#22d3ee' }}>{t}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-2xl p-5 space-y-3" style={{ background: 'rgba(34,211,238,0.06)', border: '1px solid rgba(34,211,238,0.15)' }}>
+                    {[
+                      { buyer: '㈜영신수산', product: '굴비 10kg × 5박스', status: '접수완료', time: '방금 전', dot: '#22d3ee' },
+                      { buyer: '해진식품', product: '갈치 5kg × 10박스', status: '처리중', time: '2분 전', dot: '#38bdf8' },
+                      { buyer: '동해수산㈜', product: '새우 3kg × 20박스', status: '출고완료', time: '15분 전', dot: '#34d399' },
+                    ].map((o, i) => (
+                      <div key={i} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                        <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: o.dot }} />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-bold text-white">{o.buyer}</div>
+                          <div className="text-xs text-slate-400 truncate">{o.product}</div>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <div className="text-xs font-bold" style={{ color: o.dot }}>{o.status}</div>
+                          <div className="text-xs text-slate-500">{o.time}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 1: 재고 관리 */}
+              {promoStep === 1 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center text-left" style={{ animation: 'promoIn 0.4s ease' }}>
+                  <div>
+                    <div className="text-7xl font-black text-cyan-400/10 leading-none mb-3 tracking-tighter">02</div>
+                    <h3 className="text-xl sm:text-2xl font-black mb-3 text-white">실시간 재고 자동 관리</h3>
+                    <p className="text-slate-400 text-sm sm:text-base leading-relaxed">주문이 들어오면 재고가 자동으로 차감됩니다. 부족 시 즉시 알림.</p>
+                    <div className="flex gap-2 mt-5 flex-wrap">
+                      {['📦 자동 차감','⚠️ 부족 알림','📊 입출고 기록'].map((t,i) => (
+                        <span key={i} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: 'rgba(34,211,238,0.1)', border: '1px solid rgba(34,211,238,0.25)', color: '#22d3ee' }}>{t}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-3" style={{ animation: 'promoIn 0.4s ease' }}>
+                    {[
+                      { name: '영광 굴비', stock: 85, max: 100, warn: false, emoji: '🐟' },
+                      { name: '제주 갈치', stock: 23, max: 100, warn: true,  emoji: '🐠' },
+                      { name: '동해 새우', stock: 67, max: 100, warn: false, emoji: '🦐' },
+                      { name: '완도 전복', stock: 12, max: 100, warn: true,  emoji: '🦪' },
+                    ].map((item, i) => (
+                      <div key={i} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${item.warn ? 'rgba(251,146,60,0.25)' : 'rgba(255,255,255,0.06)'}` }}>
+                        <span className="text-xl flex-shrink-0">{item.emoji}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-center mb-1.5">
+                            <span className="text-xs font-bold text-white">{item.name}</span>
+                            <span className="text-xs font-bold" style={{ color: item.warn ? '#fb923c' : '#22d3ee' }}>{item.stock}%{item.warn ? ' ⚠️' : ''}</span>
+                          </div>
+                          <div className="h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                            <div style={{ width: `${item.stock}%`, height: '100%', borderRadius: '9999px', background: item.warn ? 'linear-gradient(90deg,#fb923c,#ef4444)' : 'linear-gradient(90deg,#22d3ee,#38bdf8)', transition: 'width 1s ease' }} />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 2: 정산 처리 */}
+              {promoStep === 2 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center text-left" style={{ animation: 'promoIn 0.4s ease' }}>
+                  <div>
+                    <div className="text-7xl font-black text-cyan-400/10 leading-none mb-3 tracking-tighter">03</div>
+                    <h3 className="text-xl sm:text-2xl font-black mb-3 text-white">세금계산서 자동 발행</h3>
+                    <p className="text-slate-400 text-sm sm:text-base leading-relaxed">주문 완료 시 세금계산서가 자동 발행됩니다. 정산이 이렇게 쉬워집니다.</p>
+                    <div className="flex gap-2 mt-5 flex-wrap">
+                      {['🧾 자동 발행','💳 카드·계좌','📑 정산 리포트'].map((t,i) => (
+                        <span key={i} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: 'rgba(34,211,238,0.1)', border: '1px solid rgba(34,211,238,0.25)', color: '#22d3ee' }}>{t}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-2xl p-5" style={{ background: 'rgba(34,211,238,0.06)', border: '1px solid rgba(34,211,238,0.15)' }}>
+                    <div className="text-xs font-bold text-slate-400 mb-3">📊 이번 달 정산 현황</div>
+                    <div className="text-3xl font-black text-white mb-1">₩48,200,000</div>
+                    <div className="text-xs text-cyan-400 font-bold mb-4">▲ 전월 대비 +23%</div>
+                    <div className="space-y-2.5">
+                      {[
+                        { label: '미수금', value: '₩8,400,000', color: '#fb923c' },
+                        { label: '수금완료', value: '₩39,800,000', color: '#34d399' },
+                        { label: '세금계산서 발행', value: '142건', color: '#22d3ee' },
+                      ].map((r, i) => (
+                        <div key={i} className="flex justify-between items-center py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                          <span className="text-xs text-slate-400">{r.label}</span>
+                          <span className="text-sm font-black" style={{ color: r.color }}>{r.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 3: 분석 리포트 */}
+              {promoStep === 3 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center text-left" style={{ animation: 'promoIn 0.4s ease' }}>
+                  <div>
+                    <div className="text-7xl font-black text-cyan-400/10 leading-none mb-3 tracking-tighter">04</div>
+                    <h3 className="text-xl sm:text-2xl font-black mb-3 text-white">데이터 기반 의사결정</h3>
+                    <p className="text-slate-400 text-sm sm:text-base leading-relaxed">매출·재고·고객 데이터를 한눈에. 어떤 상품이 잘 팔리는지 바로 확인.</p>
+                    <div className="flex gap-2 mt-5 flex-wrap">
+                      {['📈 매출 분석','👥 고객 통계','🏆 베스트 상품'].map((t,i) => (
+                        <span key={i} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: 'rgba(34,211,238,0.1)', border: '1px solid rgba(34,211,238,0.25)', color: '#22d3ee' }}>{t}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-2xl p-5" style={{ background: 'rgba(34,211,238,0.06)', border: '1px solid rgba(34,211,238,0.15)' }}>
+                    <div className="text-xs font-bold text-slate-400 mb-3">🏆 이번 달 베스트 상품</div>
+                    <div className="space-y-2.5">
+                      {[
+                        { rank: '1', name: '영광 법성포 굴비', sales: '₩19,500,000', change: '+32%', emoji: '🐟' },
+                        { rank: '2', name: '제주 은갈치 특대', sales: '₩8,400,000', change: '+18%', emoji: '🐠' },
+                        { rank: '3', name: '동해 홍게 살아있음', sales: '₩6,200,000', change: '+41%', emoji: '🦀' },
+                        { rank: '4', name: '완도 전복 1kg', sales: '₩4,800,000', change: '-5%', emoji: '🦪' },
+                      ].map((p, i) => (
+                        <div key={i} className="flex items-center gap-3 py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                          <span className="text-xs font-black w-4 text-slate-500">{p.rank}</span>
+                          <span className="text-base">{p.emoji}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-bold text-white truncate">{p.name}</div>
+                            <div className="text-xs text-cyan-400 font-bold">{p.sales}</div>
+                          </div>
+                          <span className="text-xs font-bold flex-shrink-0" style={{ color: p.change.startsWith('+') ? '#34d399' : '#f87171' }}>{p.change}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 하단 점 네비 */}
+            <div className="flex justify-center gap-2 py-5 border-t border-slate-700/40">
+              {[0,1,2,3].map(i => (
+                <div key={i}
+                  onClick={() => { setPromoStep(i); clearInterval(promoTimer.current); promoTimer.current = setInterval(() => setPromoStep(p => (p+1)%4), 4000) }}
+                  style={{ width: promoStep === i ? '22px' : '7px', height: '7px', borderRadius: '4px', cursor: 'pointer', background: promoStep === i ? '#22d3ee' : 'rgba(255,255,255,0.2)', transition: 'all 0.3s' }}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* 기능 소개 */}
       <section id="features" className="py-16 sm:py-28 px-4 sm:px-6 bg-[#111827]">
         <div className="max-w-6xl mx-auto">
@@ -263,6 +462,10 @@ export default function LandingPage() {
       </footer>
 
       <style jsx>{`
+        @keyframes promoIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
         @keyframes float {
           0%, 100% { transform: translateY(0) rotate(-5deg); }
           50% { transform: translateY(-18px) rotate(5deg); }
