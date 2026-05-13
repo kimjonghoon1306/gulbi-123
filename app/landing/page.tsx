@@ -188,7 +188,6 @@ export default function LandingPage() {
                   className="flex-1 py-3.5 text-xs sm:text-sm font-semibold transition-all duration-200"
                   style={{
                     color: promoStep === i ? '#22d3ee' : 'rgba(255,255,255,0.35)',
-                    borderBottom: `2px solid ${promoStep === i ? '#22d3ee' : 'transparent'}`,
                     fontWeight: promoStep === i ? 700 : 500,
                     background: 'transparent', border: 'none',
                     borderBottom: `2px solid ${promoStep === i ? '#22d3ee' : 'transparent'}`,
