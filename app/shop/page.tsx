@@ -727,7 +727,7 @@ export default function ShopPage() {
 
             {/* STEP 0: 상품 선택 */}
             {gulbiStep === 0 && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', padding: '40px 48px', alignItems: 'center', textAlign: 'left', animation: 'promoIn 0.4s ease'`} }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', padding: '40px 48px', alignItems: 'center', textAlign: 'left', animation: 'promoIn 0.4s ease' }}>
                 <div>
                   <div style={{ fontSize: '56px', fontWeight: 900, color: dark ? 'rgba(15,118,110,0.1)' : 'rgba(15,118,110,0.07)', lineHeight: 1, marginBottom: '12px', letterSpacing: '-2px' }}>01</div>
                   <h3 style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-0.5px', marginBottom: '12px', color: text }}>원하는 수산물 고르기</h3>
@@ -762,7 +762,7 @@ export default function ShopPage() {
 
             {/* STEP 1: 신선 보장 */}
             {gulbiStep === 1 && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', padding: '40px 48px', alignItems: 'center', textAlign: 'left', animation: 'promoIn 0.4s ease'`} }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', padding: '40px 48px', alignItems: 'center', textAlign: 'left', animation: 'promoIn 0.4s ease' }}>
                 <div>
                   <div style={{ fontSize: '56px', fontWeight: 900, color: dark ? 'rgba(15,118,110,0.1)' : 'rgba(15,118,110,0.07)', lineHeight: 1, marginBottom: '12px', letterSpacing: '-2px' }}>02</div>
                   <h3 style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-0.5px', marginBottom: '12px', color: text }}>100% 신선함 보장</h3>
@@ -790,7 +790,7 @@ export default function ShopPage() {
 
             {/* STEP 2: 주문하기 */}
             {gulbiStep === 2 && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', padding: '40px 48px', alignItems: 'center', textAlign: 'left', animation: 'promoIn 0.4s ease'`} }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', padding: '40px 48px', alignItems: 'center', textAlign: 'left', animation: 'promoIn 0.4s ease' }}>
                 <div>
                   <div style={{ fontSize: '56px', fontWeight: 900, color: dark ? 'rgba(15,118,110,0.1)' : 'rgba(15,118,110,0.07)', lineHeight: 1, marginBottom: '12px', letterSpacing: '-2px' }}>03</div>
                   <h3 style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-0.5px', marginBottom: '12px', color: text }}>간편하게 주문하기</h3>
@@ -827,7 +827,7 @@ export default function ShopPage() {
 
             {/* STEP 3: 문앞 배송 */}
             {gulbiStep === 3 && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', padding: '40px 48px', alignItems: 'center', textAlign: 'left', animation: 'promoIn 0.4s ease'`} }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', padding: '40px 48px', alignItems: 'center', textAlign: 'left', animation: 'promoIn 0.4s ease' }}>
                 <div>
                   <div style={{ fontSize: '56px', fontWeight: 900, color: dark ? 'rgba(15,118,110,0.1)' : 'rgba(15,118,110,0.07)', lineHeight: 1, marginBottom: '12px', letterSpacing: '-2px' }}>04</div>
                   <h3 style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-0.5px', marginBottom: '12px', color: text }}>문 앞까지 신선 배송</h3>
