@@ -76,7 +76,7 @@ export default function LandingPage() {
 
   const features = [
     { icon: '📋', title: '도매·소매 주문관리', desc: '거래처별 도매주문과 개인 소매주문을 한 곳에서 관리. 주문 상태를 실시간으로 추적하세요.', gradient: 'from-green-600 to-blue-600', shadow: 'shadow-green-600/20' },
-    { icon: '🐟', title: '농축수산물 전문 상품관리', desc: 'kg, 박스, 마리 등 수산물 특성에 맞는 단위 관리. 도매가·소매가 분리 설정 가능.', gradient: 'from-green-500 to-teal-600', shadow: 'shadow-green-500/20' },
+    { icon: '🧺', title: '농축농축수산물 전문 상품관리', desc: 'kg, 박스, 마리 등 농축농축수산물 특성에 맞는 단위 관리. 도매가·소매가 분리 설정 가능.', gradient: 'from-green-500 to-teal-600', shadow: 'shadow-green-500/20' },
     { icon: '📦', title: '재고관리·부족 알림', desc: '입출고 이력 자동 기록. 최소 재고 설정 시 부족 알림으로 재고 부족 사태 예방.', gradient: 'from-amber-500 to-orange-600', shadow: 'shadow-amber-500/20' },
     { icon: '👥', title: '거래처·회원 관리', desc: '도매 거래처와 소매 고객을 분리 관리. 사업자번호, 담당자, 거래이력 한눈에 확인.', gradient: 'from-violet-500 to-purple-600', shadow: 'shadow-violet-500/20' },
     { icon: '🧾', title: '세금계산서·현금영수증', desc: '발행 내역 등록 및 미발행 알림. 부가세 자동 계산으로 세무처리 편리하게.', gradient: 'from-emerald-500 to-green-600', shadow: 'shadow-emerald-500/20' },
@@ -84,9 +84,9 @@ export default function LandingPage() {
   ]
 
   const cases = [
-    { name: '온종일팜 거래처', location: '산지직송', desc: '농축수산물 도매 거래처 20곳 관리. 월 주문 300건 처리 중.', emoji: '🐟', color: 'from-green-600/20 to-blue-600/20', border: 'border-green-600/30' },
-    { name: '온종일팜 거래처', location: '전남 목포', desc: '냉동·냉장·생물 재고 통합 관리. 세금계산서 발행 자동화.', emoji: '🦀', color: 'from-red-500/20 to-orange-600/20', border: 'border-red-500/30' },
-    { name: '여수 해산물', location: '전남 여수', desc: '전복·굴·홍합 소매 온라인 주문 관리. 배송지 자동 저장.', emoji: '🦪', color: 'from-emerald-500/20 to-teal-600/20', border: 'border-emerald-500/30' },
+    { name: '온종일팜 거래처', location: '산지직송', desc: '농축농축수산물 도매 거래처 20곳 관리. 월 주문 300건 처리 중.', emoji: '🌾', color: 'from-green-600/20 to-blue-600/20', border: 'border-green-600/30' },
+    { name: '온종일팜 거래처', location: '경기 이천', desc: '냉동·냉장·생물 재고 통합 관리. 세금계산서 발행 자동화.', emoji: '🥩', color: 'from-red-500/20 to-orange-600/20', border: 'border-red-500/30' },
+    { name: '온종일팜 거래처', location: '충남 당진', desc: '한우·돼지고기·채소 소매 온라인 주문 관리. 배송지 자동 저장.', emoji: '🥬', color: 'from-emerald-500/20 to-teal-600/20', border: 'border-emerald-500/30' },
   ]
 
   return (
@@ -131,7 +131,7 @@ export default function LandingPage() {
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-[#0a0f1e]/95 backdrop-blur-xl shadow-xl shadow-black/30 border-b border-white/5' : 'bg-transparent'}`}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-xl sm:text-2xl">🐟</span>
+            <span className="text-xl sm:text-2xl">🧺</span>
             <span className="font-bold text-base sm:text-lg tracking-tight">온종일팜</span>
           </div>
           <div className="flex items-center gap-2 sm:gap-6">
@@ -169,17 +169,17 @@ export default function LandingPage() {
 
         <div className={`relative z-10 text-center max-w-4xl mx-auto w-full transition-all duration-1000 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <div className="inline-flex items-center gap-2 bg-green-600/10 border border-green-600/20 text-green-500 text-xs font-semibold px-4 sm:px-5 py-2 sm:py-2.5 rounded-full mb-6 sm:mb-8 backdrop-blur">
-            🧺 농축수산물 도매업체를 위한 전문 관리 솔루션
+            🧺 농축농축수산물 도매업체를 위한 전문 관리 솔루션
           </div>
           <h1 className="text-5xl sm:text-6xl md:text-8xl font-black mb-4 sm:mb-6 leading-[1.1] tracking-tight">
-            농축수산물 도매
+            농축농축수산물 도매
             <span className="block bg-gradient-to-r from-green-500 via-green-300 to-green-500 bg-clip-text text-transparent">
               이제 쉽게
             </span>
           </h1>
           <p className="text-slate-400 text-base sm:text-lg md:text-xl mb-8 sm:mb-12 leading-relaxed max-w-2xl mx-auto">
             주문부터 재고, 세금계산서까지<br className="hidden sm:block" />
-            농축수산물 도매에 필요한 모든 것을 한 곳에서
+            농축농축수산물 도매에 필요한 모든 것을 한 곳에서
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
             <Link href="/shop"
@@ -207,12 +207,12 @@ export default function LandingPage() {
         </div>
 
         {[
-          { e: '🐟', x: 8, y: 20, s: 4 },
-          { e: '🦀', x: 85, y: 30, s: 5 },
-          { e: '🦪', x: 15, y: 65, s: 6 },
-          { e: '🐙', x: 90, y: 65, s: 4.5 },
-          { e: '🦐', x: 50, y: 15, s: 5.5 },
-          { e: '🐡', x: 70, y: 75, s: 4 },
+          { e: '🌾', x: 8, y: 20, s: 4 },
+          { e: '🥩', x: 85, y: 30, s: 5 },
+          { e: '🧺', x: 15, y: 65, s: 6 },
+          { e: '🥬', x: 90, y: 65, s: 4.5 },
+          { e: '🍎', x: 50, y: 15, s: 5.5 },
+          { e: '🌽', x: 70, y: 75, s: 4 },
         ].map((item, i) => (
           <div key={i} className="absolute text-4xl opacity-25 select-none pointer-events-none hidden sm:block"
             style={{ left: `${item.x}%`, top: `${item.y}%`, animation: `float ${item.s}s ease-in-out infinite`, animationDelay: `${i * 0.7}s` }}>
@@ -227,7 +227,7 @@ export default function LandingPage() {
 
           <p className="text-green-400 text-xs font-bold mb-4 tracking-widest uppercase">✦ 이렇게 작동해요</p>
           <h2 className="text-3xl md:text-5xl font-black mb-12 leading-tight">
-            농축수산물 도매를<br />
+            농축농축수산물 도매를<br />
             <span className="bg-gradient-to-r from-green-400 to-green-600 bg-clip-text text-transparent">이제 스마트하게</span>
           </h2>
 
@@ -265,15 +265,15 @@ export default function LandingPage() {
                     <p className="text-slate-400 text-sm sm:text-base leading-relaxed">도매업체 고객이 앱이나 웹에서 직접 주문합니다. 전화 없이도 24시간 주문 접수.</p>
                     <div className="flex gap-2 mt-5 flex-wrap">
                       {['📱 모바일 주문','💬 카카오 연동','📧 이메일 알림'].map((t,i) => (
-                        <span key={i} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: 'rgba(34,211,238,0.1)', border: '1px solid rgba(34,211,238,0.25)', color: '#22c55e' }}>{t}</span>
+                        <span key={i} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', color: '#22c55e' }}>{t}</span>
                       ))}
                     </div>
                   </div>
-                  <div className="rounded-2xl p-5 space-y-3" style={{ background: 'rgba(34,211,238,0.06)', border: '1px solid rgba(34,211,238,0.15)' }}>
+                  <div className="rounded-2xl p-5 space-y-3" style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)' }}>
                     {[
                       { buyer: '㈜온종일유통', product: '한우 갈비 5kg × 4박스', status: '접수완료', time: '방금 전', dot: '#22c55e' },
-                      { buyer: '해진식품', product: '갈치 5kg × 10박스', status: '처리중', time: '2분 전', dot: '#4ade80' },
-                      { buyer: '동해수산㈜', product: '새우 3kg × 20박스', status: '출고완료', time: '15분 전', dot: '#34d399' },
+                      { buyer: '해진식품', product: '한우 갈비 5kg × 10박스', status: '처리중', time: '2분 전', dot: '#4ade80' },
+                      { buyer: '온종일유통㈜', product: '유기농 채소 3kg × 20박스', status: '출고완료', time: '15분 전', dot: '#34d399' },
                     ].map((o, i) => (
                       <div key={i} className="flex items-center gap-3 p-3 rounded-xl" style={{
                         background: 'rgba(255,255,255,0.04)',
@@ -305,16 +305,16 @@ export default function LandingPage() {
                     <p className="text-slate-400 text-sm sm:text-base leading-relaxed">주문이 들어오면 재고가 자동으로 차감됩니다. 부족 시 즉시 알림.</p>
                     <div className="flex gap-2 mt-5 flex-wrap">
                       {['📦 자동 차감','⚠️ 부족 알림','📊 입출고 기록'].map((t,i) => (
-                        <span key={i} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: 'rgba(34,211,238,0.1)', border: '1px solid rgba(34,211,238,0.25)', color: '#22c55e' }}>{t}</span>
+                        <span key={i} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', color: '#22c55e' }}>{t}</span>
                       ))}
                     </div>
                   </div>
                   <div className="space-y-3">
                     {[
-                      { name: '제주 갈치', warn: false, emoji: '🐟' },
-                      { name: '제주 갈치', warn: true,  emoji: '🐠' },
-                      { name: '동해 새우', warn: false, emoji: '🦐' },
-                      { name: '완도 전복', warn: true,  emoji: '🦪' },
+                      { name: '한우 갈비', warn: false, emoji: '🥩' },
+                      { name: '돼지 삼겹살', warn: true,  emoji: '🥓' },
+                      { name: '유기농 채소', warn: false, emoji: '🥬' },
+                      { name: '제주 감귤', warn: true,  emoji: '🍎' },
                     ].map((item, i) => (
                       <div key={i} className="flex items-center gap-3 p-3 rounded-xl" style={{
                         background: 'rgba(255,255,255,0.04)',
@@ -354,11 +354,11 @@ export default function LandingPage() {
                     <p className="text-slate-400 text-sm sm:text-base leading-relaxed">주문 완료 시 세금계산서가 자동 발행됩니다. 정산이 이렇게 쉬워집니다.</p>
                     <div className="flex gap-2 mt-5 flex-wrap">
                       {['🧾 자동 발행','💳 카드·계좌','📑 정산 리포트'].map((t,i) => (
-                        <span key={i} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: 'rgba(34,211,238,0.1)', border: '1px solid rgba(34,211,238,0.25)', color: '#22c55e' }}>{t}</span>
+                        <span key={i} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', color: '#22c55e' }}>{t}</span>
                       ))}
                     </div>
                   </div>
-                  <div className="rounded-2xl p-5" style={{ background: 'rgba(34,211,238,0.06)', border: '1px solid rgba(34,211,238,0.15)' }}>
+                  <div className="rounded-2xl p-5" style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)' }}>
                     <div className="text-xs font-bold text-slate-400 mb-3">📊 이번 달 정산 현황</div>
                     {/* 카운트업 금액 */}
                     <div className="text-3xl font-black text-white mb-1">
@@ -400,18 +400,18 @@ export default function LandingPage() {
                     <p className="text-slate-400 text-sm sm:text-base leading-relaxed">매출·재고·고객 데이터를 한눈에. 어떤 상품이 잘 팔리는지 바로 확인.</p>
                     <div className="flex gap-2 mt-5 flex-wrap">
                       {['📈 매출 분석','👥 고객 통계','🏆 베스트 상품'].map((t,i) => (
-                        <span key={i} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: 'rgba(34,211,238,0.1)', border: '1px solid rgba(34,211,238,0.25)', color: '#22c55e' }}>{t}</span>
+                        <span key={i} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', color: '#22c55e' }}>{t}</span>
                       ))}
                     </div>
                   </div>
-                  <div className="rounded-2xl p-5" style={{ background: 'rgba(34,211,238,0.06)', border: '1px solid rgba(34,211,238,0.15)' }}>
+                  <div className="rounded-2xl p-5" style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)' }}>
                     <div className="text-xs font-bold text-slate-400 mb-3">🏆 이번 달 베스트 상품</div>
                     <div className="space-y-2.5">
                       {[
-                        { rank: '1', name: '온종일팜 신선상품', sales: '₩19,500,000', change: '+32%', emoji: '🐟' },
-                        { rank: '2', name: '제주 은갈치 특대', sales: '₩8,400,000', change: '+18%', emoji: '🐠' },
-                        { rank: '3', name: '동해 홍게 살아있음', sales: '₩6,200,000', change: '+41%', emoji: '🦀' },
-                        { rank: '4', name: '완도 전복 1kg', sales: '₩4,800,000', change: '-5%', emoji: '🦪' },
+                        { rank: '1', name: '온종일팜 신선상품', sales: '₩19,500,000', change: '+32%', emoji: '🌾' },
+                        { rank: '2', name: '한우 갈비 특대', sales: '₩8,400,000', change: '+18%', emoji: '🥩' },
+                        { rank: '3', name: '유기농 채소 세트', sales: '₩6,200,000', change: '+41%', emoji: '🥬' },
+                        { rank: '4', name: '제주 감귤 1kg', sales: '₩4,800,000', change: '-5%', emoji: '🍎' },
                       ].map((p, i) => (
                         <div key={i} className="flex items-center gap-3 py-2" style={{
                           borderBottom: '1px solid rgba(255,255,255,0.06)',
@@ -452,7 +452,7 @@ export default function LandingPage() {
           <div className="text-center mb-12 sm:mb-16">
             <p className="text-green-500 text-sm font-bold mb-3 tracking-widest uppercase">✨ 핵심 기능</p>
             <h2 className="text-3xl md:text-5xl font-black mb-4">필요한 건 다 있어요</h2>
-            <p className="text-slate-400 text-base sm:text-lg">농축수산물 도매업에 최적화된 6가지 핵심 기능</p>
+            <p className="text-slate-400 text-base sm:text-lg">농축농축수산물 도매업에 최적화된 6가지 핵심 기능</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {features.map((f, i) => (
@@ -478,7 +478,7 @@ export default function LandingPage() {
           <div className="text-center mb-12 sm:mb-16">
             <p className="text-amber-400 text-sm font-bold mb-3 tracking-widest uppercase">🏆 도입 사례</p>
             <h2 className="text-3xl md:text-5xl font-black mb-4">이미 쓰고 있어요</h2>
-            <p className="text-slate-400 text-base sm:text-lg">전국 농축수산물 업체들이 먼저 경험했습니다</p>
+            <p className="text-slate-400 text-base sm:text-lg">전국 농축농축수산물 업체들이 먼저 경험했습니다</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-6">
             {cases.map((c, i) => (
@@ -525,7 +525,7 @@ export default function LandingPage() {
                 className="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 sm:py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all resize-none" />
             </div>
             <button className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-500 hover:to-blue-500 text-white font-bold py-3.5 sm:py-4 rounded-xl transition-all duration-200 hover:scale-[1.02] active:scale-95 shadow-lg shadow-green-600/20 hover:shadow-green-600/40 text-sm sm:text-base">
-              상담 신청하기 🐟
+              상담 신청하기 🧺
             </button>
             <p className="text-center text-slate-500 text-xs">빠른 시일 내에 연락드릴게요</p>
           </div>
@@ -536,7 +536,7 @@ export default function LandingPage() {
       <footer className="py-8 sm:py-10 px-4 sm:px-6 border-t border-slate-800 bg-[#0a0f1e]">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-xl">🐟</span>
+            <span className="text-xl">🧺</span>
             <span className="font-bold text-slate-400 text-sm sm:text-base">온종일팜 도매 관리 시스템</span>
           </div>
           <a href="https://yuanfnb.com" target="_blank" rel="noopener noreferrer"

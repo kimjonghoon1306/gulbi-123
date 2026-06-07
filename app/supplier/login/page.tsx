@@ -328,15 +328,15 @@ export default function SupplierLoginPage() {
 
         .brand-logo {
           width: 80px; height: 80px; border-radius: 24px;
-          background: linear-gradient(135deg, #f59e0b, #d97706);
+          background: linear-gradient(135deg, #16a34a, #15803d);
           display: flex; align-items: center; justify-content: center;
           font-size: 40px; margin-bottom: 28px;
-          box-shadow: 0 12px 40px rgba(245,158,11,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+          box-shadow: 0 12px 40px rgba(22,163,74,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
           animation: logoPulse 3s ease-in-out infinite;
         }
         @keyframes logoPulse {
-          0%,100%{box-shadow:0 12px 40px rgba(245,158,11,0.4)}
-          50%{box-shadow:0 12px 60px rgba(245,158,11,0.7), 0 0 0 12px rgba(245,158,11,0.06)}
+          0%,100%{box-shadow:0 12px 40px rgba(22,163,74,0.4)}
+          50%{box-shadow:0 12px 60px rgba(22,163,74,0.7), 0 0 0 12px rgba(22,163,74,0.06)}
         }
 
         .brand-title {
@@ -346,7 +346,7 @@ export default function SupplierLoginPage() {
         .root.dark .brand-title { color: white; }
         .root.light .brand-title { color: #1a1030; }
         .brand-title span {
-          background: linear-gradient(135deg, #f59e0b, #fbbf24);
+          background: linear-gradient(135deg, #16a34a, #4ade80);
           -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
 
@@ -359,14 +359,14 @@ export default function SupplierLoginPage() {
         .feature-item {
           display: flex; align-items: center; gap: 12px;
           padding: 12px 16px; border-radius: 14px;
-          background: rgba(124,58,237,0.08);
-          border: 1px solid rgba(124,58,237,0.12);
+          background: rgba(22,163,74,0.08);
+          border: 1px solid rgba(22,163,74,0.12);
           font-size: 14px; font-weight: 500;
           animation: fadeInLeft 0.6s ease both;
           transition: all 0.2s;
         }
-        .root.light .feature-item { background: rgba(124,58,237,0.06); }
-        .feature-item:hover { background: rgba(124,58,237,0.14); transform: translateX(4px); }
+        .root.light .feature-item { background: rgba(22,163,74,0.06); }
+        .feature-item:hover { background: rgba(22,163,74,0.14); transform: translateX(4px); }
         .feature-item span:first-child { font-size: 20px; }
 
         /* 카드 */
