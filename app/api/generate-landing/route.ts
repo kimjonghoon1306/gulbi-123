@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { renderLanding, type LandingData } from '@/lib/landing-templates'
-import { getAuthAndOpenAIKey } from '@/lib/supabase-server'
+import { getAuthAndGeminiKey } from '@/lib/supabase-server'
 
 // 페르소나별 카피 톤 지침
 const PERSONA_TONES: Record<string, string> = {
@@ -155,7 +155,7 @@ function mergeData(
 
 export async function POST(req: NextRequest) {
   try {
-    const auth = await getAuthAndOpenAIKey()
+    const auth = await getAuthAndGeminiKey()
     if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status })
 
     const body = await req.json()
@@ -172,7 +172,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: '[v2] 이미지를 먼저 올려주세요. (업로드하신 이미지가 서버에 전달되지 않았습니다)' }, { status: 400 })
     }
 
-    const openaiKey = auth.openaiKey
+    const geminiKey = auth.geminiKey
 
     const toneText = PERSONA_TONES[persona] || PERSONA_TONES.shohost
 
@@ -277,30 +277,62 @@ unusedIndices: 어느 섹션에도 안 어울리는 이미지 인덱스들.
 섹션에 어울리는 사진이 없으면 null. 억지로 채우면 안 됩니다.
 ★ 모든 텍스트 필드는 충분히 길고 구체적으로 작성. 단답형·단문 절대 금지.`
 
-    const content: any[] = imageList.map((img) => ({
-      type: 'image_url',
-      image_url: { url: `data:${img.mimeType};base64,${img.base64}` },
+    // Gemini 멀티모달 parts 구성 (이미지 + 텍스트)
+    const parts: any[] = imageList.map((img) => ({
+      inlineData: { mimeType: img.mimeType, data: img.base64 },
     }))
-    content.push({ type: 'text', text: `위 이미지들은 [0번]부터 [${imageList.length - 1}번]까지입니다.\n\n${userPrompt}` })
+    parts.push({ text: `위 이미지들은 [0번]부터 [${imageList.length - 1}번]까지입니다.\n\n${userPrompt}` })
 
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${openaiKey.trim()}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        max_tokens: 10000,
-        response_format: { type: 'json_object' },
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content },
-        ],
-      }),
-    })
+    const GEMINI_MODELS = ['gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-2.5-flash-lite']
+    let rawText = ''
+    let lastError = ''
 
-    const data = await res.json()
-    if (data.error) return NextResponse.json({ error: `API 오류: ${data.error.message}` }, { status: 500 })
+    for (const model of GEMINI_MODELS) {
+      try {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              system_instruction: { parts: [{ text: systemPrompt }] },
+              contents: [{ parts }],
+              generationConfig: { maxOutputTokens: 8192 },
+            }),
+          }
+        )
 
-    const rawText = data.choices?.[0]?.message?.content || ''
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          const msg = (err.error?.message || '').toLowerCase()
+          if (res.status === 400 && msg.includes('api key')) {
+            return NextResponse.json({ error: 'Gemini API 키가 잘못되었습니다. 설정에서 확인해주세요.' }, { status: 400 })
+          }
+          if (res.status === 403) {
+            return NextResponse.json({ error: 'Gemini API 키 권한이 없습니다.' }, { status: 403 })
+          }
+          if ([429, 503, 404].includes(res.status) || msg.includes('quota') || msg.includes('resource_exhausted') || msg.includes('rate') || msg.includes('overloaded')) {
+            lastError = `${model} 한도초과`
+            continue
+          }
+          lastError = `${model} 오류 (${res.status})`
+          continue
+        }
+
+        const data = await res.json()
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
+        if (!text) { lastError = `${model} 빈 응답`; continue }
+        rawText = text
+        break
+      } catch (e: any) {
+        lastError = `${model} 네트워크 오류: ${e.message}`
+        continue
+      }
+    }
+
+    if (!rawText) {
+      return NextResponse.json({ error: `모든 모델 실패: ${lastError}` }, { status: 500 })
+    }
     const aiJson = extractJson(rawText)
 
     // 섹션 배치 매핑 — 중복 제거 안전장치

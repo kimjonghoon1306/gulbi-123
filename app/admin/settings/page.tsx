@@ -20,6 +20,10 @@ export default function SettingsPage() {
   const [openaiKeyMsg, setOpenaiKeyMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [openaiKeyLoading, setOpenaiKeyLoading] = useState(false)
   const [showOpenaiKey, setShowOpenaiKey] = useState(false)
+  const [geminiKey, setGeminiKey] = useState('')
+  const [geminiKeyMsg, setGeminiKeyMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [geminiKeyLoading, setGeminiKeyLoading] = useState(false)
+  const [showGeminiKey, setShowGeminiKey] = useState(false)
   const supabase = createClient()
   const router = useRouter()
 
@@ -36,6 +40,7 @@ export default function SettingsPage() {
       if (res.ok) {
         const data = await res.json()
         if (data.keyHint) setOpenaiKey(data.keyHint)
+        if (data.geminiKeyHint) setGeminiKey(data.geminiKeyHint)
       }
     } catch {}
   }
@@ -65,6 +70,33 @@ export default function SettingsPage() {
       setOpenaiKeyMsg({ type: 'error', text: e.message })
     }
     setOpenaiKeyLoading(false)
+  }
+
+  const saveGeminiKey = async () => {
+    if (!geminiKey.trim()) return setGeminiKeyMsg({ type: 'error', text: 'API 키를 입력해주세요.' })
+    if (geminiKey.includes('...')) {
+      return setGeminiKeyMsg({ type: 'error', text: '새 키를 입력해주세요. (현재 표시된 것은 마스킹된 힌트입니다)' })
+    }
+    setGeminiKeyLoading(true)
+    setGeminiKeyMsg(null)
+    try {
+      const res = await fetch('/api/user-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ geminiKey: geminiKey.trim() }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setGeminiKeyMsg({ type: 'error', text: data.error || '저장 실패' })
+      } else {
+        setGeminiKeyMsg({ type: 'success', text: '✅ Gemini API 키가 저장됐어요!' })
+        setGeminiKey(data.geminiKeyHint || '')
+        setTimeout(() => setGeminiKeyMsg(null), 3000)
+      }
+    } catch (e: any) {
+      setGeminiKeyMsg({ type: 'error', text: e.message })
+    }
+    setGeminiKeyLoading(false)
   }
 
   const handleChangePw = async () => {
@@ -286,7 +318,6 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {/* AI API 키 관리 */}
           {activeSection === 'apikey' && (
             <div className="animate-fadeIn">
               <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-100 dark:border-gray-700 shadow-sm overflow-hidden">
@@ -294,45 +325,95 @@ export default function SettingsPage() {
                   <span className="text-2xl">🤖</span>
                   <div>
                     <h2 className="font-bold text-slate-800 dark:text-white">AI API 키 관리</h2>
-                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">상품 자동생성에 사용할 OpenAI API 키를 입력하세요</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">상품 자동생성에 사용할 API 키를 입력하세요</p>
                   </div>
                 </div>
-                <div className="p-6 space-y-4">
-                  <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
-                    <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">💡 아래 버튼에서 키를 발급받을 수 있어요</p>
-                    <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer"
-                      className="mt-2 flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-xs font-bold"
-                      style={{ background: 'linear-gradient(135deg, rgba(245,158,11,0.15), rgba(217,119,6,0.15))', border: '1px solid rgba(245,158,11,0.3)', color: '#d97706', textDecoration: 'none' }}>
-                      🔑 OpenAI API 키 발급받기 →
-                    </a>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">OpenAI API 키</label>
-                    <div className="relative">
-                      <input
-                        type={showOpenaiKey ? 'text' : 'password'}
-                        value={openaiKey}
-                        onChange={e => setOpenaiKey(e.target.value)}
-                        placeholder="sk-..."
-                        className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 pr-12 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
-                      />
-                      <button type="button" onClick={() => setShowOpenaiKey(!showOpenaiKey)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-xl hover:scale-110 transition-transform">
-                        {showOpenaiKey ? '🙈' : '👁️'}
-                      </button>
+                <div className="p-6 space-y-6">
+
+                  {/* OpenAI 키 */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-slate-700 dark:text-slate-200">OpenAI API 키</span>
+                      <span className="text-xs bg-slate-100 dark:bg-gray-700 text-slate-400 dark:text-slate-500 px-2 py-0.5 rounded-full">선택</span>
                     </div>
+                    <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-3">
+                      <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">💡 OpenAI 키 발급</p>
+                      <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer"
+                        className="mt-2 flex items-center justify-center gap-2 w-full py-2 rounded-xl text-xs font-bold"
+                        style={{ background: 'linear-gradient(135deg, rgba(245,158,11,0.15), rgba(217,119,6,0.15))', border: '1px solid rgba(245,158,11,0.3)', color: '#d97706', textDecoration: 'none' }}>
+                        🔑 OpenAI API 키 발급받기 →
+                      </a>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">OpenAI API 키</label>
+                      <div className="relative">
+                        <input
+                          type={showOpenaiKey ? 'text' : 'password'}
+                          value={openaiKey}
+                          onChange={e => setOpenaiKey(e.target.value)}
+                          placeholder="sk-..."
+                          className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 pr-12 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        />
+                        <button type="button" onClick={() => setShowOpenaiKey(!showOpenaiKey)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-xl hover:scale-110 transition-transform">
+                          {showOpenaiKey ? '🙈' : '👁️'}
+                        </button>
+                      </div>
+                    </div>
+                    {openaiKeyMsg && (
+                      <div className={`rounded-xl px-4 py-3 text-sm font-medium ${openaiKeyMsg.type === 'success' ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800' : 'bg-red-50 dark:bg-red-900/20 text-red-500 border border-red-200 dark:border-red-800'}`}>
+                        {openaiKeyMsg.text}
+                      </div>
+                    )}
+                    <button onClick={saveOpenaiKey} disabled={openaiKeyLoading}
+                      className="w-full py-3 rounded-xl bg-slate-600 hover:bg-slate-500 text-white text-sm font-bold transition-colors active:scale-95 disabled:opacity-50">
+                      {openaiKeyLoading ? '저장 중...' : '💾 OpenAI 키 저장'}
+                    </button>
                   </div>
 
-                  {openaiKeyMsg && (
-                    <div className={`rounded-xl px-4 py-3 text-sm font-medium ${openaiKeyMsg.type === 'success' ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800' : 'bg-red-50 dark:bg-red-900/20 text-red-500 border border-red-200 dark:border-red-800'}`}>
-                      {openaiKeyMsg.text}
-                    </div>
-                  )}
+                  <div className="border-t border-slate-100 dark:border-gray-700" />
 
-                  <button onClick={saveOpenaiKey} disabled={openaiKeyLoading}
-                    className="w-full py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-white text-sm font-bold transition-colors active:scale-95 disabled:opacity-50 shadow-md shadow-sky-500/20">
-                    {openaiKeyLoading ? '저장 중...' : '🤖 API 키 저장'}
-                  </button>
+                  {/* Gemini 키 */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-slate-700 dark:text-slate-200">Gemini API 키</span>
+                      <span className="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full font-medium">AI 상세페이지 생성에 사용</span>
+                    </div>
+                    <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-3">
+                      <p className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">💡 Google AI Studio에서 무료 발급</p>
+                      <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer"
+                        className="mt-2 flex items-center justify-center gap-2 w-full py-2 rounded-xl text-xs font-bold"
+                        style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.15))', border: '1px solid rgba(16,185,129,0.3)', color: '#059669', textDecoration: 'none' }}>
+                        🔑 Gemini API 키 발급받기 (무료) →
+                      </a>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Gemini API 키</label>
+                      <div className="relative">
+                        <input
+                          type={showGeminiKey ? 'text' : 'password'}
+                          value={geminiKey}
+                          onChange={e => setGeminiKey(e.target.value)}
+                          placeholder="AIza..."
+                          className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 pr-12 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        />
+                        <button type="button" onClick={() => setShowGeminiKey(!showGeminiKey)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-xl hover:scale-110 transition-transform">
+                          {showGeminiKey ? '🙈' : '👁️'}
+                        </button>
+                      </div>
+                    </div>
+                    {geminiKeyMsg && (
+                      <div className={`rounded-xl px-4 py-3 text-sm font-medium ${geminiKeyMsg.type === 'success' ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800' : 'bg-red-50 dark:bg-red-900/20 text-red-500 border border-red-200 dark:border-red-800'}`}>
+                        {geminiKeyMsg.text}
+                      </div>
+                    )}
+                    <button onClick={saveGeminiKey} disabled={geminiKeyLoading}
+                      className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-bold transition-colors active:scale-95 disabled:opacity-50 shadow-md shadow-emerald-500/20">
+                      {geminiKeyLoading ? '저장 중...' : '🤖 Gemini 키 저장'}
+                    </button>
+                  </div>
+
                 </div>
               </div>
             </div>
