@@ -169,21 +169,21 @@ export default function RetailPage() {
   return (
     <div className="animate-fadeIn">
 
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-white">소매주문 관리</h1>
-          <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">소매 고객 주문 접수 및 관리</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white">소매주문 관리</h1>
+          <p className="text-slate-400 dark:text-slate-500 text-xs sm:text-sm mt-0.5">소매 고객 주문 접수 및 관리</p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={downloadExcel}
-            className="text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-all duration-200 active:scale-95 shadow-lg flex items-center gap-2"
-            style={{ background: 'linear-gradient(135deg,#059669,#10b981)', boxShadow: '0 4px 15px rgba(5,150,105,0.35)' }}>
-            📥 엑셀 다운로드
+            className="text-white text-sm font-bold px-3 sm:px-4 py-2.5 rounded-xl transition-all duration-200 active:scale-95 shadow-lg flex items-center gap-2"
+            style={{ background: 'linear-gradient(135deg,#059669,#10b981)' }}>
+            📥 <span className="hidden sm:inline">엑셀 다운로드</span><span className="sm:hidden">엑셀</span>
           </button>
           <button onClick={() => { resetForm(); setShowForm(true) }}
-            className="text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95 shadow-lg"
-            style={{ background: 'linear-gradient(135deg,#14532d,#15803d)', boxShadow: '0 4px 15px rgba(22,163,74,0.35)' }}>
-            + 주문 등록
+            className="text-white text-sm font-bold px-4 sm:px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95 shadow-lg"
+            style={{ background: 'linear-gradient(135deg,#14532d,#15803d)' }}>
+            + <span className="hidden sm:inline">주문 등록</span><span className="sm:hidden">등록</span>
           </button>
         </div>
       </div>
@@ -269,13 +269,13 @@ export default function RetailPage() {
                     <p className="font-bold text-lg text-teal-600 dark:text-teal-400">{o.total_amount.toLocaleString()}원</p>
                     <p className="text-xs text-slate-400 dark:text-slate-500">{o.payment_method} · {new Date(o.created_at).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}</p>
                   </div>
-                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
+                  <div className="flex flex-col sm:flex-row gap-1.5 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
                     <button onClick={() => openEdit(o)} className="text-xs text-teal-500 hover:text-teal-600 font-medium px-3 py-1.5 rounded-lg border border-teal-200 dark:border-teal-800 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-colors">수정</button>
                     <button onClick={() => deleteOrder(o.id)} className="text-xs text-red-400 hover:text-red-500 font-medium px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">삭제</button>
                   </div>
                 </div>
               </div>
-              <div className="flex gap-2 mt-4 pt-4 border-t border-slate-50 dark:border-gray-700" onClick={e => e.stopPropagation()}>
+              <div className="overflow-x-auto mt-3 pt-3 border-t border-slate-50 dark:border-gray-700" onClick={e => e.stopPropagation()}>
                 {STATUS_LIST.map(s => (
                   <button key={s} onClick={() => updateStatus(o.id, s)}
                     className={'flex-1 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 '

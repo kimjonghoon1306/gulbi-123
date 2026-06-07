@@ -164,21 +164,21 @@ export default function WholesalePage() {
   return (
     <div className="animate-fadeIn">
 
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-white">도매주문 관리</h1>
-          <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">도매 거래처 주문 접수 및 관리</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white">도매주문 관리</h1>
+          <p className="text-slate-400 dark:text-slate-500 text-xs sm:text-sm mt-0.5">도매 거래처 주문 접수 및 관리</p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={downloadExcel}
-            className="text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-all duration-200 active:scale-95 shadow-lg flex items-center gap-2"
-            style={{ background: 'linear-gradient(135deg,#059669,#10b981)', boxShadow: '0 4px 15px rgba(5,150,105,0.35)' }}>
-            📥 엑셀 다운로드
+            className="text-white text-sm font-bold px-3 sm:px-4 py-2.5 rounded-xl transition-all duration-200 active:scale-95 shadow-lg flex items-center gap-2"
+            style={{ background: 'linear-gradient(135deg,#059669,#10b981)' }}>
+            📥 <span className="hidden sm:inline">엑셀 다운로드</span><span className="sm:hidden">엑셀</span>
           </button>
           <button onClick={() => { resetForm(); setShowForm(true) }}
-            className="text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95 shadow-lg"
-            style={{ background: 'linear-gradient(135deg,#7c3aed,#6366f1)', boxShadow: '0 4px 15px rgba(124,58,237,0.35)' }}>
-            + 주문 등록
+            className="text-white text-sm font-bold px-4 sm:px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95 shadow-lg"
+            style={{ background: 'linear-gradient(135deg,#7c3aed,#6366f1)' }}>
+            + <span className="hidden sm:inline">주문 등록</span><span className="sm:hidden">등록</span>
           </button>
         </div>
       </div>
@@ -242,35 +242,35 @@ export default function WholesalePage() {
           const sc = STATUS_CONFIG[o.status] || STATUS_CONFIG['접수']
           return (
             <div key={o.id} onClick={() => openView(o)}
-              className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-100 dark:border-gray-700 p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border ${sc.bg} ${sc.color}`}>
+              className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-100 dark:border-gray-700 p-4 sm:p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group">
+              <div className="flex items-start sm:items-center justify-between gap-2">
+                <div className="flex items-start sm:items-center gap-3 min-w-0">
+                  <div className={`flex items-center gap-1 text-xs font-bold px-2.5 py-1.5 rounded-full border flex-shrink-0 ${sc.bg} ${sc.color}`}>
                     <span>{sc.icon}</span> {o.status}
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="font-bold text-slate-800 dark:text-white">{o.company_name}</p>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <p className="font-bold text-slate-800 dark:text-white text-sm">{o.company_name}</p>
                       <span className="text-xs text-slate-300 dark:text-slate-600">{o.order_number}</span>
                     </div>
-                    <div className="flex items-center gap-3 mt-0.5">
+                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                       {o.contact && <p className="text-xs text-slate-400 dark:text-slate-500">📞 {o.contact}</p>}
-                      {o.address && <p className="text-xs text-slate-400 dark:text-slate-500 truncate max-w-xs">📍 {o.address}</p>}
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 flex-shrink-0">
                   <div className="text-right">
-                    <p className="font-bold text-lg text-violet-600 dark:text-violet-400">{o.total_amount.toLocaleString()}원</p>
-                    <p className="text-xs text-slate-400 dark:text-slate-500">{o.payment_method} · {new Date(o.created_at).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}</p>
+                    <p className="font-bold text-base text-violet-600 dark:text-violet-400">{o.total_amount.toLocaleString()}원</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500">{new Date(o.created_at).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}</p>
                   </div>
-                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
-                    <button onClick={() => openEdit(o)} className="text-xs text-violet-500 hover:text-violet-600 font-medium px-3 py-1.5 rounded-lg border border-violet-200 dark:border-violet-800 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-colors">수정</button>
-                    <button onClick={() => deleteOrder(o.id)} className="text-xs text-red-400 hover:text-red-500 font-medium px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">삭제</button>
+                  <div className="flex flex-col sm:flex-row gap-1.5 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
+                    <button onClick={() => openEdit(o)} className="text-xs text-violet-500 font-medium px-2.5 py-1.5 rounded-lg border border-violet-200 dark:border-violet-800 bg-violet-50 dark:bg-violet-900/20">수정</button>
+                    <button onClick={() => deleteOrder(o.id)} className="text-xs text-red-400 font-medium px-2.5 py-1.5 rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-900/20">삭제</button>
                   </div>
                 </div>
               </div>
-              <div className="flex gap-2 mt-4 pt-4 border-t border-slate-50 dark:border-gray-700" onClick={e => e.stopPropagation()}>
+              <div className="overflow-x-auto -mx-1 px-1 mt-3 pt-3 border-t border-slate-50 dark:border-gray-700" onClick={e => e.stopPropagation()}>
+              <div className="flex gap-1.5 min-w-max">
                 {STATUS_LIST.map(s => (
                   <button key={s} onClick={() => updateStatus(o.id, s)}
                     className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all duration-150
@@ -279,6 +279,7 @@ export default function WholesalePage() {
                     {STATUS_CONFIG[s].icon} {s}
                   </button>
                 ))}
+              </div>
               </div>
             </div>
           )
