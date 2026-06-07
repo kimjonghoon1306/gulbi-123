@@ -174,7 +174,7 @@ export default function GeneralOrdersPage() {
   }
 
   return (
-    <div className="animate-fadeIn">
+    <div className="animate-fadeIn overflow-x-hidden">
 
       {/* 헤더 */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5">
@@ -197,7 +197,7 @@ export default function GeneralOrdersPage() {
       </div>
 
       {/* 통계 카드 */}
-      <div className="overflow-x-auto -mx-4 px-4 pb-2 mb-4">
+      <div className="overflow-x-auto pb-2 mb-4">
       <div className="grid grid-cols-4 gap-3 min-w-[480px]">
         {[
           { label: '전체 주문', value: stats.total + '건', icon: '📋', color: 'from-slate-500 to-slate-600' },
@@ -218,7 +218,7 @@ export default function GeneralOrdersPage() {
 
       {/* 필터 + 검색 */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-5">
-        <div className="overflow-x-auto pb-1"><div className="flex gap-2 flex-nowrap">
+        <div className="overflow-x-auto pb-1 min-w-0 flex-1"><div className="flex gap-2 flex-nowrap">
           {['전체', ...STATUS_LIST].map(s => (
             <button key={s} onClick={() => setFilterStatus(s)}
               className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-1.5
@@ -284,7 +284,7 @@ export default function GeneralOrdersPage() {
               </div>
 
               {/* 상태 변경 바 */}
-              <div className="overflow-x-auto -mx-1 px-1 mt-3 pt-3 border-t border-slate-50 dark:border-gray-700" onClick={e => e.stopPropagation()}>
+              <div className="overflow-x-auto mt-3 pt-3 border-t border-slate-50 dark:border-gray-700" onClick={e => e.stopPropagation()}>
               <div className="flex gap-1.5 min-w-max">
                 {STATUS_LIST.map(s => (
                   <button key={s} onClick={() => updateStatus(o.id, s)}
