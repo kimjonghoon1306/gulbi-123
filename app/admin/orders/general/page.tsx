@@ -257,54 +257,44 @@ export default function GeneralOrdersPage() {
           const sc = STATUS_CONFIG[o.status] || STATUS_CONFIG['접수']
           return (
             <div key={o.id} onClick={() => openView(o)}
-              className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-100 dark:border-gray-700 p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  {/* 상태 뱃지 */}
-                  <div className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border ${sc.bg} ${sc.color}`}>
+              className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-100 dark:border-gray-700 p-4 sm:p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-start gap-2 min-w-0">
+                  <div className={`flex items-center gap-1 text-xs font-bold px-2.5 py-1.5 rounded-full border flex-shrink-0 ${sc.bg} ${sc.color}`}>
                     <span>{sc.icon}</span> {o.status}
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="font-bold text-slate-800 dark:text-white">{o.customer_name}</p>
-                      <span className="text-xs text-slate-300 dark:text-slate-600">{o.order_number}</span>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <p className="font-bold text-slate-800 dark:text-white text-sm truncate">{o.customer_name}</p>
+                      <span className="text-xs text-slate-300 dark:text-slate-600 flex-shrink-0">{o.order_number}</span>
                     </div>
-                    <div className="flex items-center gap-3 mt-0.5">
-                      {o.contact && <p className="text-xs text-slate-400 dark:text-slate-500">📞 {o.contact}</p>}
-                      {o.address && <p className="text-xs text-slate-400 dark:text-slate-500 truncate max-w-xs">📍 {o.address}</p>}
-                    </div>
+                    {o.contact && <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">📞 {o.contact}</p>}
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1.5 flex-shrink-0">
                   <div className="text-right">
-                    <p className="font-bold text-lg text-indigo-600 dark:text-indigo-400">{o.total_amount.toLocaleString()}원</p>
-                    <p className="text-xs text-slate-400 dark:text-slate-500">{o.payment_method} · {new Date(o.created_at).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}</p>
+                    <p className="font-bold text-base text-indigo-600 dark:text-indigo-400 whitespace-nowrap">{o.total_amount.toLocaleString()}원</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap">{new Date(o.created_at).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}</p>
                   </div>
-                  <div className="flex flex-col sm:flex-row gap-1.5 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
-                    <button onClick={() => openEdit(o)}
-                      className="text-xs text-indigo-500 hover:text-indigo-600 font-medium px-3 py-1.5 rounded-lg border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors">
-                      수정
-                    </button>
-                    <button onClick={() => deleteOrder(o.id)}
-                      className="text-xs text-red-400 hover:text-red-500 font-medium px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-                      삭제
-                    </button>
+                  <div className="flex flex-col gap-1.5" onClick={e => e.stopPropagation()}>
+                    <button onClick={() => openEdit(o)} className="text-xs text-indigo-500 font-medium px-2.5 py-1.5 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20">수정</button>
+                    <button onClick={() => deleteOrder(o.id)} className="text-xs text-red-400 font-medium px-2.5 py-1.5 rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-900/20">삭제</button>
                   </div>
                 </div>
               </div>
 
               {/* 상태 변경 바 */}
-              <div className="overflow-x-auto mt-3 pt-3 border-t border-slate-50 dark:border-gray-700" onClick={e => e.stopPropagation()}>
+              <div className="overflow-x-auto -mx-1 px-1 mt-3 pt-3 border-t border-slate-50 dark:border-gray-700" onClick={e => e.stopPropagation()}>
+              <div className="flex gap-1.5 min-w-max">
                 {STATUS_LIST.map(s => (
                   <button key={s} onClick={() => updateStatus(o.id, s)}
-                    className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all duration-150
-                      ${o.status === s
-                        ? 'text-white shadow-md'
-                        : 'bg-slate-50 dark:bg-gray-700 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-gray-600'}`}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 whitespace-nowrap
+                      ${o.status === s ? 'text-white shadow-md' : 'bg-slate-50 dark:bg-gray-700 text-slate-400 dark:text-slate-500'}`}
                     style={o.status === s ? { background: 'linear-gradient(135deg,#6366f1,#8b5cf6)' } : {}}>
                     {STATUS_CONFIG[s].icon} {s}
                   </button>
                 ))}
+              </div>
               </div>
             </div>
           )

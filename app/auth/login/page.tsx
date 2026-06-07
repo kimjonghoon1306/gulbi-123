@@ -125,13 +125,13 @@ export default function AdminLoginPage() {
             </div>
             <h1 className="text-2xl font-black tracking-tight" style={{ color: dark ? 'white' : '#111827' }}>온종일팜</h1>
             <div className="flex items-center gap-1.5 mt-1.5">
-              <span className="text-xs font-medium text-green-300">🌾 농산</span>
-              <span className="text-green-600">·</span>
-              <span className="text-xs font-medium text-green-300">🥩 축산</span>
-              <span className="text-green-600">·</span>
-              <span className="text-xs font-medium text-green-300">🧺 농축수산물</span>
+              <span className="text-xs font-medium" style={{ color: dark ? '#86efac' : '#15803d' }}>🌾 농산</span>
+              <span style={{ color: dark ? '#4ade80' : '#16a34a' }}>·</span>
+              <span className="text-xs font-medium" style={{ color: dark ? '#86efac' : '#15803d' }}>🥩 축산</span>
+              <span style={{ color: dark ? '#4ade80' : '#16a34a' }}>·</span>
+              <span className="text-xs font-medium" style={{ color: dark ? '#86efac' : '#15803d' }}>🧺 농축수산물</span>
             </div>
-            <p className="text-green-400/70 text-xs mt-2">관리자 로그인</p>
+            <p className="text-xs mt-2" style={{ color: dark ? 'rgba(134,239,172,0.7)' : '#15803d' }}>관리자 로그인</p>
           </div>
 
           {/* 폼 */}
