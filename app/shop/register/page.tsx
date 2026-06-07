@@ -105,7 +105,7 @@ export default function ShopRegisterPage() {
       {/* 헤더 */}
       <header className="flex items-center justify-between px-6 py-4 border-b border-white/5">
         <Link href="/landing" className="flex items-center gap-2">
-          <span className="text-2xl">🐟</span>
+          <span className="text-2xl">🧺</span>
           <span className="font-bold text-lg">온종일팜</span>
         </Link>
         <Link href="/shop/login" className="text-sm text-slate-400 hover:text-white transition-colors">

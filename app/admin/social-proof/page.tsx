@@ -191,7 +191,7 @@ export default function SocialProofPage() {
                     {/* 상품 태그 */}
                     {c.product_id ? (
                       <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-pink-50 dark:bg-pink-900/20 text-pink-500 border border-pink-100 dark:border-pink-800">
-                        🐟 {getProductName(c.product_id)}
+                        🧺 {getProductName(c.product_id)}
                       </span>
                     ) : (
                       <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-50 dark:bg-gray-700 text-slate-400">

@@ -172,7 +172,7 @@ function DashboardContent() {
         ) : products.map(p => (
           <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 20px', borderBottom: `1px solid ${t.border}` }}>
             <div style={{ width: '40px', height: '40px', borderRadius: '10px', flexShrink: 0, overflow: 'hidden', background: t.input, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {p.image_url ? <img src={p.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: '18px' }}>🐟</span>}
+              {p.image_url ? <img src={p.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: '18px' }}>🧺</span>}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ fontSize: '13px', fontWeight: 600, color: t.text, margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</p>

@@ -268,7 +268,7 @@ export default function ProductsPage() {
                 <div key={p.id} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-4 hover:border-amber-400/50 transition-colors cursor-pointer"
                   onClick={() => openReview(p)}>
                   <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 flex-shrink-0 flex items-center justify-center">
-                    {p.image_url ? <img src={p.image_url} alt="" className="w-full h-full object-cover" /> : <span className="text-2xl">🐟</span>}
+                    {p.image_url ? <img src={p.image_url} alt="" className="w-full h-full object-cover" /> : <span className="text-2xl">🧺</span>}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">

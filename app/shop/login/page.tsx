@@ -80,13 +80,13 @@ export default function ShopLoginPage() {
       {/* 헤더 */}
       <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', height: '64px', borderBottom: '1px solid rgba(0,0,0,0.06)', background: 'rgba(250,250,248,0.97)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 50 }}>
         <Link href="/landing" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
-          <span style={{ fontSize: '22px' }}>🐟</span>
+          <span style={{ fontSize: '22px' }}>🧺</span>
           <div>
             <p style={{ fontSize: '15px', fontWeight: 800, color: '#1a1a18', letterSpacing: '-0.5px', lineHeight: 1 }}>온종일팜</p>
             <p style={{ fontSize: '9px', color: '#9ca3af', letterSpacing: '2px', textTransform: 'uppercase' }}>Fresh Seafood</p>
           </div>
         </Link>
-        <Link href="/shop/register" style={{ fontSize: '13px', fontWeight: 600, color: '#14532d', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1.5px solid rgba(15,118,110,0.2)', background: 'rgba(15,118,110,0.05)' }}>
+        <Link href="/shop/register" style={{ fontSize: '13px', fontWeight: 600, color: '#14532d', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1.5px solid rgba(22,163,74,0.2)', background: 'rgba(22,163,74,0.05)' }}>
           회원가입 →
         </Link>
       </header>
@@ -96,7 +96,7 @@ export default function ShopLoginPage() {
 
           {/* 로고 */}
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <div style={{ fontSize: '52px', marginBottom: '14px', lineHeight: 1 }}>🐟</div>
+            <div style={{ fontSize: '52px', marginBottom: '14px', lineHeight: 1 }}>🧺</div>
             <h1 style={{ fontSize: '26px', fontWeight: 900, color: '#1a1a18', letterSpacing: '-1px', marginBottom: '6px' }}>{titles[mode]}</h1>
             <p style={{ fontSize: '13px', color: '#9ca3af' }}>온종일팜 쇼핑몰</p>
           </div>
@@ -112,7 +112,7 @@ export default function ShopLoginPage() {
                 style={{ flex: 1, padding: '9px 4px', borderRadius: '12px', border: 'none', fontSize: '12px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s',
                   background: mode === t.k ? 'linear-gradient(135deg,#14532d,#15803d)' : 'transparent',
                   color: mode === t.k ? 'white' : '#9ca3af',
-                  boxShadow: mode === t.k ? '0 4px 12px rgba(15,118,110,0.25)' : 'none',
+                  boxShadow: mode === t.k ? '0 4px 12px rgba(22,163,74,0.25)' : 'none',
                 }}>
                 {t.label}
               </button>
@@ -174,7 +174,7 @@ export default function ShopLoginPage() {
                 </div>
               ))}
               {findEmailResult && (
-                <div style={{ background: 'rgba(15,118,110,0.06)', border: '1px solid rgba(15,118,110,0.2)', borderRadius: '12px', padding: '16px', textAlign: 'center', marginBottom: '14px' }}>
+                <div style={{ background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.2)', borderRadius: '12px', padding: '16px', textAlign: 'center', marginBottom: '14px' }}>
                   <p style={{ fontSize: '11px', color: '#6b7280', marginBottom: '6px' }}>찾은 이메일</p>
                   <p style={{ fontSize: '18px', fontWeight: 800, color: '#14532d', margin: 0 }}>{findEmailResult}</p>
                 </div>
@@ -198,7 +198,7 @@ export default function ShopLoginPage() {
                   onBlur={e => e.target.style.borderColor = 'transparent'} />
               </div>
               {findPwMsg && (
-                <div style={{ background: findPwMsg.startsWith('✅') ? 'rgba(15,118,110,0.06)' : '#fef2f2', border: `1px solid ${findPwMsg.startsWith('✅') ? 'rgba(15,118,110,0.2)' : '#fecaca'}`, borderRadius: '10px', padding: '10px 14px', marginBottom: '14px' }}>
+                <div style={{ background: findPwMsg.startsWith('✅') ? 'rgba(22,163,74,0.06)' : '#fef2f2', border: `1px solid ${findPwMsg.startsWith('✅') ? 'rgba(22,163,74,0.2)' : '#fecaca'}`, borderRadius: '10px', padding: '10px 14px', marginBottom: '14px' }}>
                   <p style={{ color: findPwMsg.startsWith('✅') ? '#14532d' : '#ef4444', fontSize: '13px', margin: 0, lineHeight: 1.6 }}>{findPwMsg}</p>
                 </div>
               )}
@@ -215,10 +215,10 @@ export default function ShopLoginPage() {
           width: 100%; padding: 14px; border-radius: 14px;
           background: linear-gradient(135deg, #14532d, #15803d);
           color: white; font-size: 15px; font-weight: 700; border: none;
-          cursor: pointer; box-shadow: 0 8px 24px rgba(15,118,110,0.3);
+          cursor: pointer; box-shadow: 0 8px 24px rgba(22,163,74,0.3);
           transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
         }
-        .login-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 14px 32px rgba(15,118,110,0.4); }
+        .login-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 14px 32px rgba(22,163,74,0.4); }
         .login-btn:active:not(:disabled) { transform: translateY(1px); }
         .login-btn:disabled { background: #9ca3af; cursor: not-allowed; box-shadow: none; }
       `}</style>

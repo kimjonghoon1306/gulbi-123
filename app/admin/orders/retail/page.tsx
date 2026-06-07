@@ -182,7 +182,7 @@ export default function RetailPage() {
           </button>
           <button onClick={() => { resetForm(); setShowForm(true) }}
             className="text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95 shadow-lg"
-            style={{ background: 'linear-gradient(135deg,#14532d,#15803d)', boxShadow: '0 4px 15px rgba(15,118,110,0.35)' }}>
+            style={{ background: 'linear-gradient(135deg,#14532d,#15803d)', boxShadow: '0 4px 15px rgba(22,163,74,0.35)' }}>
             + 주문 등록
           </button>
         </div>
@@ -337,7 +337,7 @@ export default function RetailPage() {
                     </div>
                   ))}
                 </div>
-                <div className="flex justify-between items-center mt-4 px-4 py-3 rounded-xl" style={{ background: 'linear-gradient(135deg,rgba(15,118,110,0.08),rgba(21,128,61,0.08))' }}>
+                <div className="flex justify-between items-center mt-4 px-4 py-3 rounded-xl" style={{ background: 'linear-gradient(135deg,rgba(22,163,74,0.08),rgba(21,128,61,0.08))' }}>
                   <span className="font-bold text-slate-800 dark:text-white">합계</span>
                   <span className="text-xl font-bold text-teal-600 dark:text-teal-400">{viewOrder.total_amount.toLocaleString()}원</span>
                 </div>
@@ -447,7 +447,7 @@ export default function RetailPage() {
                     </div>
                   ))}
                 </div>
-                <div className="flex justify-between items-center mt-4 px-4 py-3 rounded-xl" style={{ background: 'linear-gradient(135deg,rgba(15,118,110,0.08),rgba(21,128,61,0.08))' }}>
+                <div className="flex justify-between items-center mt-4 px-4 py-3 rounded-xl" style={{ background: 'linear-gradient(135deg,rgba(22,163,74,0.08),rgba(21,128,61,0.08))' }}>
                   <span className="font-bold text-slate-800 dark:text-white">합계</span>
                   <span className="text-2xl font-bold text-teal-600 dark:text-teal-400">{totalAmount.toLocaleString()}원</span>
                 </div>
@@ -457,7 +457,7 @@ export default function RetailPage() {
               <button onClick={resetForm} className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-gray-600 text-slate-500 dark:text-slate-400 text-sm font-medium hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors">취소</button>
               <button onClick={saveOrder}
                 className="flex-1 py-3 rounded-xl text-white text-sm font-bold transition-all active:scale-95 shadow-lg"
-                style={{ background: 'linear-gradient(135deg,#14532d,#15803d)', boxShadow: '0 4px 15px rgba(15,118,110,0.35)' }}>
+                style={{ background: 'linear-gradient(135deg,#14532d,#15803d)', boxShadow: '0 4px 15px rgba(22,163,74,0.35)' }}>
                 {editOrder ? '✅ 수정 완료' : '✨ 주문 등록'}
               </button>
             </div>

@@ -216,7 +216,7 @@ export default function SettingsPage() {
                 <div className="p-6">
                   <div className="flex items-center gap-5 p-4 bg-slate-50 dark:bg-gray-700/50 rounded-2xl mb-6">
                     <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center text-3xl shadow-lg">
-                      🐟
+                      🧺
                     </div>
                     <div>
                       <p className="font-bold text-slate-800 dark:text-white text-lg">관리자</p>
@@ -429,7 +429,7 @@ export default function SettingsPage() {
                 <div className="p-6">
                   <div className="grid grid-cols-2 gap-3 mb-4">
                     {[
-                      { label: '시스템', value: '온종일팜 관리 시스템', icon: '🐟' },
+                      { label: '시스템', value: '온종일팜 관리 시스템', icon: '🧺' },
                       { label: '버전', value: 'v1.0.0', icon: '🚀' },
                       { label: '프레임워크', value: 'Next.js 14', icon: '⚡' },
                       { label: '데이터베이스', value: 'Supabase', icon: '🗄️' },
@@ -448,9 +448,9 @@ export default function SettingsPage() {
 
               {/* 하단 브랜드 카드 */}
               <div className="relative bg-gradient-to-br from-slate-800 to-slate-900 dark:from-gray-900 dark:to-gray-950 rounded-2xl p-6 overflow-hidden shadow-xl">
-                <div className="absolute top-0 right-0 text-[120px] opacity-10 leading-none">🐟</div>
+                <div className="absolute top-0 right-0 text-[120px] opacity-10 leading-none">🧺</div>
                 <div className="relative z-10">
-                  <p className="text-4xl mb-3">🐟</p>
+                  <p className="text-4xl mb-3">🧺</p>
                   <p className="text-white font-bold text-xl">온종일팜</p>
                   <p className="text-slate-400 text-sm mt-1">농축수산물 도매 관리 플랫폼</p>
                   <div className="flex gap-2 mt-4">

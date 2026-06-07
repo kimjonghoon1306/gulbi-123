@@ -477,7 +477,7 @@ function MyPageInner() {
                       <div style={{ width:'100%', paddingTop:'100%', position:'relative', background:dark?'#1e2530':'#f8fafc' }}>
                         {p.image_url
                           ? <img src={p.image_url} alt={p.name} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} />
-                          : <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'40px' }}>🐟</div>
+                          : <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'40px' }}>🧺</div>
                         }
                         {p.stock === 0 && (
                           <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.45)', display:'flex', alignItems:'center', justifyContent:'center' }}>

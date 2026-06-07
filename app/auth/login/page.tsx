@@ -66,7 +66,7 @@ export default function AdminLoginPage() {
       <BgPattern />
 
       {/* 플로팅 이모지 배경 */}
-      {['🌾','🥩','🐟','🥬','🍎','🧺'].map((em, i) => (
+      {['🌾','🥩','🧺','🥬','🍎','🧺'].map((em, i) => (
         <div
           key={i}
           className="absolute text-2xl opacity-10 select-none pointer-events-none"
@@ -96,7 +96,7 @@ export default function AdminLoginPage() {
               <span className="text-green-600">·</span>
               <span className="text-xs font-medium text-green-300">🥩 축산</span>
               <span className="text-green-600">·</span>
-              <span className="text-xs font-medium text-green-300">🐟 수산</span>
+              <span className="text-xs font-medium text-green-300">🧺 농축수산물</span>
             </div>
             <p className="text-green-400/70 text-xs mt-2">관리자 로그인</p>
           </div>
@@ -180,7 +180,7 @@ export default function AdminLoginPage() {
           </form>
         </div>
 
-        <p className="text-center text-white/20 text-xs mt-6">© 2026 온종일팜 · 농축농축수산물 도매 플랫폼</p>
+        <p className="text-center text-white/20 text-xs mt-6">© 2026 온종일팜 · 농축수산물 도매 플랫폼</p>
       </div>
 
       <style>{`

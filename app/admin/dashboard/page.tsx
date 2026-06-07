@@ -154,7 +154,7 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 dark:text-white">{greeting}</h1>
-          <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">오늘도 온종일팜 화이팅! 🐟</p>
+          <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">오늘도 온종일팜 화이팅! 🧺</p>
         </div>
         <Link href="/admin/suppliers"
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all active:scale-95 hover:-translate-y-0.5"
@@ -292,7 +292,7 @@ export default function DashboardPage() {
             <div className="h-32 flex items-center justify-center text-slate-400 text-sm">불러오는 중...</div>
           ) : orderStatusStats.length === 0 ? (
             <div className="h-32 flex flex-col items-center justify-center gap-2">
-              <p className="text-3xl">🐟</p>
+              <p className="text-3xl">🧺</p>
               <p className="text-sm text-slate-400 dark:text-slate-500">주문 데이터가 없어요</p>
             </div>
           ) : (
@@ -371,7 +371,7 @@ export default function DashboardPage() {
           <div className="p-12 text-center text-slate-400">불러오는 중...</div>
         ) : recentOrders.length === 0 ? (
           <div className="p-12 text-center">
-            <p className="text-4xl mb-3">🐟</p>
+            <p className="text-4xl mb-3">🧺</p>
             <p className="text-sm text-slate-400 dark:text-slate-500">아직 주문이 없어요</p>
           </div>
         ) : recentOrders.map((o, i) => (

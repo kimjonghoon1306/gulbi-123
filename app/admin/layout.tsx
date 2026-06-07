@@ -133,7 +133,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {!collapsed && (
             <div className="overflow-hidden">
               <p className={`font-black text-sm leading-tight ${dark ? 'text-white' : 'text-slate-800'}`}>온종일팜</p>
-              <p className={`text-[10px] font-medium ${dark ? 'text-green-400' : 'text-green-600'}`}>농축농축수산물 도매</p>
+              <p className={`text-[10px] font-medium ${dark ? 'text-green-400' : 'text-green-600'}`}>농축수산물 도매</p>
             </div>
           )}
           <button
@@ -231,7 +231,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <FarmLogo size={28} uid="mobile" />
             <div>
               <p className={`font-black text-sm ${dark ? 'text-white' : 'text-slate-800'}`}>온종일팜</p>
-              <p className={`text-[9px] ${dark ? 'text-green-400' : 'text-green-600'}`}>농축농축수산물 도매</p>
+              <p className={`text-[9px] ${dark ? 'text-green-400' : 'text-green-600'}`}>농축수산물 도매</p>
             </div>
           </div>
           <div className="flex items-center gap-2">

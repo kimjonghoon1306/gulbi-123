@@ -29,7 +29,7 @@ export default function ProductList({
   return (
     <>
       <div className="flex gap-2 mb-6">
-        {[{ key: 'products', label: '🐟 상품 목록' }, { key: 'categories', label: '📂 카테고리 관리' }].map(t => (
+        {[{ key: 'products', label: '🧺 상품 목록' }, { key: 'categories', label: '📂 카테고리 관리' }].map(t => (
           <button key={t.key} onClick={() => setTab(t.key as any)}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200
               ${tab === t.key ? 'bg-green-600 text-white shadow-md' : 'bg-white dark:bg-gray-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-gray-700 border border-slate-100 dark:border-gray-700'}`}>
@@ -44,7 +44,7 @@ export default function ProductList({
             <div className="p-12 text-center text-slate-400 dark:text-slate-500">불러오는 중...</div>
           ) : products.length === 0 ? (
             <div className="p-12 text-center text-slate-400 dark:text-slate-500">
-              <p className="text-4xl mb-3">🐟</p>
+              <p className="text-4xl mb-3">🧺</p>
               <p className="text-sm">등록된 상품이 없습니다</p>
             </div>
           ) : (

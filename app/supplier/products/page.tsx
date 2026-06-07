@@ -170,7 +170,7 @@ function ProductsContent() {
             return (
               <div key={p.id} style={{ background: t.card, border: `1px solid ${t.border}`, borderRadius: '16px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ width: '52px', height: '52px', borderRadius: '12px', flexShrink: 0, overflow: 'hidden', background: t.input, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {p.image_url ? <img src={p.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: '22px' }}>🐟</span>}
+                  {p.image_url ? <img src={p.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: '22px' }}>🧺</span>}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>

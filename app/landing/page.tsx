@@ -76,7 +76,7 @@ export default function LandingPage() {
 
   const features = [
     { icon: '📋', title: '도매·소매 주문관리', desc: '거래처별 도매주문과 개인 소매주문을 한 곳에서 관리. 주문 상태를 실시간으로 추적하세요.', gradient: 'from-green-600 to-blue-600', shadow: 'shadow-green-600/20' },
-    { icon: '🧺', title: '농축농축수산물 전문 상품관리', desc: 'kg, 박스, 마리 등 농축농축수산물 특성에 맞는 단위 관리. 도매가·소매가 분리 설정 가능.', gradient: 'from-green-500 to-teal-600', shadow: 'shadow-green-500/20' },
+    { icon: '🧺', title: '농축수산물 전문 상품관리', desc: 'kg, 박스, 마리 등 농축수산물 특성에 맞는 단위 관리. 도매가·소매가 분리 설정 가능.', gradient: 'from-green-500 to-teal-600', shadow: 'shadow-green-500/20' },
     { icon: '📦', title: '재고관리·부족 알림', desc: '입출고 이력 자동 기록. 최소 재고 설정 시 부족 알림으로 재고 부족 사태 예방.', gradient: 'from-amber-500 to-orange-600', shadow: 'shadow-amber-500/20' },
     { icon: '👥', title: '거래처·회원 관리', desc: '도매 거래처와 소매 고객을 분리 관리. 사업자번호, 담당자, 거래이력 한눈에 확인.', gradient: 'from-violet-500 to-purple-600', shadow: 'shadow-violet-500/20' },
     { icon: '🧾', title: '세금계산서·현금영수증', desc: '발행 내역 등록 및 미발행 알림. 부가세 자동 계산으로 세무처리 편리하게.', gradient: 'from-emerald-500 to-green-600', shadow: 'shadow-emerald-500/20' },
@@ -84,7 +84,7 @@ export default function LandingPage() {
   ]
 
   const cases = [
-    { name: '온종일팜 거래처', location: '산지직송', desc: '농축농축수산물 도매 거래처 20곳 관리. 월 주문 300건 처리 중.', emoji: '🌾', color: 'from-green-600/20 to-blue-600/20', border: 'border-green-600/30' },
+    { name: '온종일팜 거래처', location: '산지직송', desc: '농축수산물 도매 거래처 20곳 관리. 월 주문 300건 처리 중.', emoji: '🌾', color: 'from-green-600/20 to-blue-600/20', border: 'border-green-600/30' },
     { name: '온종일팜 거래처', location: '경기 이천', desc: '냉동·냉장·생물 재고 통합 관리. 세금계산서 발행 자동화.', emoji: '🥩', color: 'from-red-500/20 to-orange-600/20', border: 'border-red-500/30' },
     { name: '온종일팜 거래처', location: '충남 당진', desc: '한우·돼지고기·채소 소매 온라인 주문 관리. 배송지 자동 저장.', emoji: '🥬', color: 'from-emerald-500/20 to-teal-600/20', border: 'border-emerald-500/30' },
   ]
@@ -169,17 +169,17 @@ export default function LandingPage() {
 
         <div className={`relative z-10 text-center max-w-4xl mx-auto w-full transition-all duration-1000 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <div className="inline-flex items-center gap-2 bg-green-600/10 border border-green-600/20 text-green-500 text-xs font-semibold px-4 sm:px-5 py-2 sm:py-2.5 rounded-full mb-6 sm:mb-8 backdrop-blur">
-            🧺 농축농축수산물 도매업체를 위한 전문 관리 솔루션
+            🧺 농축수산물 도매업체를 위한 전문 관리 솔루션
           </div>
           <h1 className="text-5xl sm:text-6xl md:text-8xl font-black mb-4 sm:mb-6 leading-[1.1] tracking-tight">
-            농축농축수산물 도매
+            농축수산물 도매
             <span className="block bg-gradient-to-r from-green-500 via-green-300 to-green-500 bg-clip-text text-transparent">
               이제 쉽게
             </span>
           </h1>
           <p className="text-slate-400 text-base sm:text-lg md:text-xl mb-8 sm:mb-12 leading-relaxed max-w-2xl mx-auto">
             주문부터 재고, 세금계산서까지<br className="hidden sm:block" />
-            농축농축수산물 도매에 필요한 모든 것을 한 곳에서
+            농축수산물 도매에 필요한 모든 것을 한 곳에서
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
             <Link href="/shop"
@@ -227,7 +227,7 @@ export default function LandingPage() {
 
           <p className="text-green-400 text-xs font-bold mb-4 tracking-widest uppercase">✦ 이렇게 작동해요</p>
           <h2 className="text-3xl md:text-5xl font-black mb-12 leading-tight">
-            농축농축수산물 도매를<br />
+            농축수산물 도매를<br />
             <span className="bg-gradient-to-r from-green-400 to-green-600 bg-clip-text text-transparent">이제 스마트하게</span>
           </h2>
 
@@ -452,7 +452,7 @@ export default function LandingPage() {
           <div className="text-center mb-12 sm:mb-16">
             <p className="text-green-500 text-sm font-bold mb-3 tracking-widest uppercase">✨ 핵심 기능</p>
             <h2 className="text-3xl md:text-5xl font-black mb-4">필요한 건 다 있어요</h2>
-            <p className="text-slate-400 text-base sm:text-lg">농축농축수산물 도매업에 최적화된 6가지 핵심 기능</p>
+            <p className="text-slate-400 text-base sm:text-lg">농축수산물 도매업에 최적화된 6가지 핵심 기능</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {features.map((f, i) => (
@@ -478,7 +478,7 @@ export default function LandingPage() {
           <div className="text-center mb-12 sm:mb-16">
             <p className="text-amber-400 text-sm font-bold mb-3 tracking-widest uppercase">🏆 도입 사례</p>
             <h2 className="text-3xl md:text-5xl font-black mb-4">이미 쓰고 있어요</h2>
-            <p className="text-slate-400 text-base sm:text-lg">전국 농축농축수산물 업체들이 먼저 경험했습니다</p>
+            <p className="text-slate-400 text-base sm:text-lg">전국 농축수산물 업체들이 먼저 경험했습니다</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-6">
             {cases.map((c, i) => (

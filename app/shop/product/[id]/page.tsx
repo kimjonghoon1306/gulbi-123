@@ -168,7 +168,7 @@ export default function ProductDetailPage() {
 
   if (!product) return (
     <div style={{minHeight:'100vh',background:D.bg,display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:'16px'}}>
-      <p style={{fontSize:'48px'}}>🐟</p>
+      <p style={{fontSize:'48px'}}>🧺</p>
       <p style={{color:D.sub,fontSize:'14px'}}>상품을 찾을 수 없어요</p>
       <Link href="/shop" style={{color:D.accent,fontSize:'13px',fontWeight:600,textDecoration:'none'}}>← 쇼핑몰로</Link>
     </div>
@@ -200,7 +200,7 @@ export default function ProductDetailPage() {
           <div style={{display:'flex',alignItems:'center',gap:'14px'}}>
             <button onClick={() => router.back()} style={{background:D.input,border:'none',borderRadius:'10px',width:'36px',height:'36px',cursor:'pointer',fontSize:'16px',display:'flex',alignItems:'center',justifyContent:'center',color:D.text}}>←</button>
             <Link href="/landing" style={{display:'flex',alignItems:'center',gap:'8px',textDecoration:'none'}}>
-              <span style={{fontSize:'20px'}}>🐟</span>
+              <span style={{fontSize:'20px'}}>🧺</span>
               <div>
                 <p style={{fontSize:'14px',fontWeight:800,color:D.text,letterSpacing:'-0.5px',lineHeight:1}}>온종일팜</p>
                 <p style={{fontSize:'9px',color:D.sub,letterSpacing:'2px',textTransform:'uppercase'}}>Fresh Market</p>
@@ -232,7 +232,7 @@ export default function ProductDetailPage() {
               {product.image_url ? (
                 <img src={product.image_url} alt={product.name} style={{width:'100%',height:'auto',maxHeight:'520px',objectFit:'contain',display:'block'}} />
               ) : (
-                <div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'80px'}}>🐟</div>
+                <div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'80px'}}>🧺</div>
               )}
               {product.stock === 0 && (
                 <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.5)',display:'flex',alignItems:'center',justifyContent:'center'}}>
@@ -424,7 +424,7 @@ export default function ProductDetailPage() {
                 <p style={{fontSize:'14px',color:D.sub,margin:'0 0 4px'}}>빠르게 연락드릴게요 😊</p>
                 <p style={{fontSize:'12px',color:D.sub,margin:'0 0 32px'}}>마이페이지에서 주문 현황을 확인하세요</p>
                 {/* 주문 유형 뱃지 */}
-                <div style={{display:'inline-flex',alignItems:'center',gap:'6px',background:memberType==='도매업'?'rgba(124,58,237,0.1)':memberType==='소매업'?'rgba(15,118,110,0.1)':'rgba(99,102,241,0.1)',borderRadius:'20px',padding:'6px 16px',marginBottom:'28px'}}>
+                <div style={{display:'inline-flex',alignItems:'center',gap:'6px',background:memberType==='도매업'?'rgba(124,58,237,0.1)':memberType==='소매업'?'rgba(22,163,74,0.1)':'rgba(99,102,241,0.1)',borderRadius:'20px',padding:'6px 16px',marginBottom:'28px'}}>
                   <span style={{fontSize:'14px'}}>{memberType==='도매업'?'🏭':memberType==='소매업'?'🏪':'🛒'}</span>
                   <span style={{fontSize:'12px',fontWeight:700,color:memberType==='도매업'?'#7c3aed':memberType==='소매업'?'#14532d':'#6366f1'}}>{memberType} 주문 접수됨</span>
                 </div>
@@ -482,7 +482,7 @@ export default function ProductDetailPage() {
                       <div>
                         <div style={{display:'flex',alignItems:'center',gap:'6px'}}>
                           <p style={{fontSize:'14px',fontWeight:800,color:D.text,margin:0}}>{memberInfo.name}</p>
-                          <span style={{fontSize:'10px',fontWeight:700,padding:'2px 8px',borderRadius:'20px',background:memberType==='도매업'?'rgba(124,58,237,0.12)':memberType==='소매업'?'rgba(15,118,110,0.12)':'rgba(99,102,241,0.12)',color:memberType==='도매업'?'#7c3aed':memberType==='소매업'?'#14532d':'#6366f1'}}>{memberType}</span>
+                          <span style={{fontSize:'10px',fontWeight:700,padding:'2px 8px',borderRadius:'20px',background:memberType==='도매업'?'rgba(124,58,237,0.12)':memberType==='소매업'?'rgba(22,163,74,0.12)':'rgba(99,102,241,0.12)',color:memberType==='도매업'?'#7c3aed':memberType==='소매업'?'#14532d':'#6366f1'}}>{memberType}</span>
                         </div>
                         <p style={{fontSize:'11px',color:D.sub,margin:'2px 0 0'}}>{memberInfo.contact || memberInfo.email}</p>
                       </div>

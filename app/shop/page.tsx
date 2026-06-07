@@ -12,7 +12,7 @@ type Product = {
 type Category = { id: string; name: string }
 
 const CAT_ICONS: Record<string, string> = {
-  '농산물': '🥬', '과일': '🍎', '축산물': '🥩', '농축수산물': '🐟', '해조류': '🌿', '어류': '🐟', '갑각류': '🦀', '패류': '🦪',
+  '농산물': '🥬', '과일': '🍎', '축산물': '🥩', '농축수산물': '🧺', '해조류': '🌿', '어류': '🧺', '갑각류': '🦀', '패류': '🦪',
   '건어물/염장류': '🐠', '기타': '🐙', '전체': '🛒'
 }
 
@@ -234,7 +234,7 @@ export default function ShopPage() {
               }}>🧺</div>
               <div>
                 <p style={{ fontSize: '16px', fontWeight: 900, color: text, letterSpacing: '-0.5px', lineHeight: 1, margin: 0 }}>온종일팜</p>
-                <p style={{ fontSize: '9px', color: '#14532d', letterSpacing: '2px', textTransform: 'uppercase', lineHeight: 1.5, margin: 0, fontWeight: 700 }}>FRESH SEAFOOD</p>
+                <p style={{ fontSize: '9px', color: '#14532d', letterSpacing: '2px', textTransform: 'uppercase', lineHeight: 1.5, margin: 0, fontWeight: 700 }}>FRESH FARM</p>
               </div>
             </Link>
 
@@ -362,7 +362,7 @@ export default function ShopPage() {
         </div>
 
         {/* 떠다니는 이모지 */}
-        {['🌾','🥩','🐟','🥬','🍎','🧺'].map((em, i) => (
+        {['🌾','🥩','🧺','🥬','🍎','🧺'].map((em, i) => (
           <div key={i} style={{
             position: 'absolute', fontSize: '32px', opacity: 0.15,
             left: `${8 + i * 16}%`, top: `${15 + (i % 3) * 25}%`,
@@ -398,7 +398,7 @@ export default function ShopPage() {
               <span style={{
                 background: 'linear-gradient(135deg,#14532d,#15803d)',
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
-              }}>농축농축수산물 직거래</span>
+              }}>농축수산물 직거래</span>
             </h1>
             <p style={{ fontSize: '16px', color: sub, marginBottom: '32px', lineHeight: 1.7, wordBreak: 'keep-all', overflowWrap: 'break-word' }}>
               중간 유통 없이 어민에서 바로<br />더 신선하게, 더 저렴하게
@@ -694,7 +694,7 @@ export default function ShopPage() {
             fontSize: 'clamp(28px,4.5vw,48px)', fontWeight: 900,
             letterSpacing: '-1.5px', lineHeight: 1.1, marginBottom: '48px', color: text
           }}>
-            신선한 농축농축수산물을<br />
+            신선한 농축수산물을<br />
             <span style={{ background: 'linear-gradient(135deg,#14532d,#15803d)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>집 앞까지 직배송</span>
           </h2>
 
@@ -733,7 +733,7 @@ export default function ShopPage() {
                   <h3 style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-0.5px', marginBottom: '12px', color: text }}>원하는 농축수산물 고르기</h3>
                   <p style={{ fontSize: '15px', color: sub, lineHeight: 1.7 }}>카테고리별로 농산물, 축산물, 농축수산물 등<br />다양한 신선 상품을 직접 고르세요.</p>
                   <div style={{ display: 'flex', gap: '8px', marginTop: '20px', flexWrap: 'wrap' as const }}>
-                    {['🥬 채소','🍎 과일','🥩 한우','🐟 농축수산물','🌾 곡물'].map((item, i) => (
+                    {['🥬 채소','🍎 과일','🥩 한우','🧺 농축수산물','🌾 곡물'].map((item, i) => (
                       <span key={i} style={{ padding: '6px 14px', borderRadius: '100px', fontSize: '13px', fontWeight: 600, background: dark ? 'rgba(22,163,74,0.15)' : 'rgba(22,163,74,0.08)', border: '1px solid rgba(22,163,74,0.25)', color: '#14532d' }}>{item}</span>
                     ))}
                   </div>
@@ -766,7 +766,7 @@ export default function ShopPage() {
                 <div>
                   <div style={{ fontSize: '56px', fontWeight: 900, color: dark ? 'rgba(22,163,74,0.1)' : 'rgba(22,163,74,0.07)', lineHeight: 1, marginBottom: '12px', letterSpacing: '-2px' }}>02</div>
                   <h3 style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-0.5px', marginBottom: '12px', color: text }}>100% 신선함 보장</h3>
-                  <p style={{ fontSize: '15px', color: sub, lineHeight: 1.7 }}>매일 아침 어민에서 직접 수령한<br />신선한 농축농축수산물만 취급합니다.</p>
+                  <p style={{ fontSize: '15px', color: sub, lineHeight: 1.7 }}>매일 아침 어민에서 직접 수령한<br />신선한 농축수산물만 취급합니다.</p>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '10px' }}>
                   {[
@@ -927,7 +927,7 @@ export default function ShopPage() {
           <div style={{ textAlign: 'center', padding: '100px 0' }}>
             <div style={{ fontSize: '72px', marginBottom: '20px', animation: 'floatItem 3s ease-in-out infinite' }}>🧺</div>
             <p style={{ fontSize: '20px', fontWeight: 800, color: text, marginBottom: '8px' }}>아직 상품이 없어요</p>
-            <p style={{ color: sub, fontSize: '14px' }}>곧 신선한 농축농축수산물이 올라올 예정이에요!</p>
+            <p style={{ color: sub, fontSize: '14px' }}>곧 신선한 농축수산물이 올라올 예정이에요!</p>
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: '20px' }}>

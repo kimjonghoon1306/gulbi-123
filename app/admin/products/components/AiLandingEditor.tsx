@@ -270,7 +270,7 @@ export default function AiLandingEditor({ show, onClose, products, onDone }: Pro
                     <button key={p.id} onClick={() => selectProductForAI(p)}
                       style={{ padding: '10px 12px', borderRadius: '12px', textAlign: 'left', cursor: 'pointer', border: '2px solid ' + (selectedProduct?.id === p.id ? '#c8a96e' : 'rgba(255,255,255,0.08)'), background: selectedProduct?.id === p.id ? 'rgba(200,169,110,0.12)' : 'rgba(255,255,255,0.03)', transition: 'all 0.15s' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        {p.image_url ? <img src={p.image_url} alt="" style={{ width: '36px', height: '36px', borderRadius: '6px', objectFit: 'cover', flexShrink: 0 }} /> : <div style={{ width: '36px', height: '36px', borderRadius: '6px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>🐟</div>}
+                        {p.image_url ? <img src={p.image_url} alt="" style={{ width: '36px', height: '36px', borderRadius: '6px', objectFit: 'cover', flexShrink: 0 }} /> : <div style={{ width: '36px', height: '36px', borderRadius: '6px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>🧺</div>}
                         <div style={{ minWidth: 0 }}>
                           <p style={{ color: aiDark ? 'white' : '#111', fontSize: '12px', fontWeight: 700, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</p>
                           <p style={{ color: aiDark ? 'rgba(255,255,255,0.4)' : '#666', fontSize: '10px', margin: '2px 0 0' }}>{p.retail_price?.toLocaleString()}원</p>
