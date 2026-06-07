@@ -160,7 +160,7 @@ export default function LandingPage() {
             </button>
             <Link href="/shop"
               className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl transition-all duration-200 hover:scale-105"
-              style={{ background: dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)', border: dark ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.1)', color: landingText }}>
+              style={{ background: dark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.9)', border: dark ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.12)', color: dark ? '#ffffff' : '#111827', boxShadow: dark ? 'none' : '0 2px 8px rgba(0,0,0,0.08)' }}>
               🛒 <span className="hidden sm:inline">쇼핑몰</span>
             </Link>
             <Link href="/admin/dashboard"
@@ -174,7 +174,7 @@ export default function LandingPage() {
       {/* 히어로 섹션 */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 sm:px-6">
         <div className="absolute inset-0">
-          <div className="absolute top-0 left-0 right-0 h-full bg-gradient-to-b from-green-950/40 via-transparent to-transparent" />
+          <div className="absolute top-0 left-0 right-0 h-full bg-gradient-to-b via-transparent to-transparent" style={{ background: dark ? 'linear-gradient(to bottom, rgba(2,44,10,0.4), transparent)' : 'none' }} />
           <div className="absolute top-1/3 left-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-green-700/15 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-1/3 right-1/4 w-56 sm:w-80 h-56 sm:h-80 bg-blue-700/15 rounded-full blur-3xl animate-pulse" style={{animationDelay:'1.5s'}} />
           <div className="absolute top-1/2 right-1/3 w-48 sm:w-64 h-48 sm:h-64 bg-green-600/10 rounded-full blur-3xl animate-pulse" style={{animationDelay:'3s'}} />
