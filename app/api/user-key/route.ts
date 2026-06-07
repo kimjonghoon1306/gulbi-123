@@ -74,14 +74,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `암호화 실패: ${e.message}` }, { status: 500 })
     }
 
-    const { error } = await supabase.from('user_api_keys').upsert({
-      user_id: user.id,
+    const { data: existing } = await supabase.from('user_api_keys').select('user_id').eq('user_id', user.id).maybeSingle()
+    const openaiData = {
       openai_key_enc: encrypted,
       key_hint: makeKeyHint(trimmed),
       is_valid: true,
       validated_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    })
+    }
+    const { error } = existing
+      ? await supabase.from('user_api_keys').update(openaiData).eq('user_id', user.id)
+      : await supabase.from('user_api_keys').insert({ user_id: user.id, ...openaiData })
     if (error) return NextResponse.json({ error: `저장 실패: ${error.message}` }, { status: 500 })
 
     return NextResponse.json({ ok: true, keyHint: makeKeyHint(trimmed), isValid: true })
@@ -128,12 +131,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `암호화 실패: ${e.message}` }, { status: 500 })
     }
 
-    const { error } = await supabase.from('user_api_keys').upsert({
-      user_id: user.id,
+    const { data: existingG } = await supabase.from('user_api_keys').select('user_id').eq('user_id', user.id).maybeSingle()
+    const geminiData = {
       gemini_key_enc: encrypted,
       gemini_key_hint: makeKeyHint(trimmed),
       updated_at: new Date().toISOString(),
-    })
+    }
+    const { error } = existingG
+      ? await supabase.from('user_api_keys').update(geminiData).eq('user_id', user.id)
+      : await supabase.from('user_api_keys').insert({ user_id: user.id, ...geminiData })
     if (error) return NextResponse.json({ error: `저장 실패: ${error.message}` }, { status: 500 })
 
     return NextResponse.json({ ok: true, geminiKeyHint: makeKeyHint(trimmed) })
