@@ -250,18 +250,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <p className={`text-[9px] ${dark ? 'text-green-400' : 'text-green-600'}`}>농축수산물 도매</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {lowStockCount > 0 && (
               <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">
-                재고부족 {lowStockCount}
+                {lowStockCount}
               </span>
             )}
+            <Link href="/shop"
+              className={`p-2 rounded-xl text-sm transition-colors ${dark ? 'text-green-300 hover:bg-green-900/40' : 'text-green-700 hover:bg-green-50'}`}
+              title="쇼핑몰">🛒</Link>
+            <Link href="/landing"
+              className={`p-2 rounded-xl text-sm transition-colors ${dark ? 'text-green-300/60 hover:bg-green-900/30' : 'text-slate-400 hover:bg-slate-50'}`}
+              title="대문">🏡</Link>
             <button
               onClick={() => setDark(!dark)}
               className={`p-2 rounded-xl transition-colors ${dark ? 'text-green-300/70 hover:bg-green-900/40' : 'text-slate-400 hover:bg-green-50'}`}
             >
               {dark ? '☀️' : '🌙'}
             </button>
+            <button
+              onClick={handleLogout}
+              className={`p-2 rounded-xl text-sm transition-colors ${dark ? 'text-red-400 hover:bg-red-900/20' : 'text-red-400 hover:bg-red-50'}`}
+              title="로그아웃">🚪</button>
           </div>
         </header>
 

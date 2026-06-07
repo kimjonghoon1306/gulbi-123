@@ -189,7 +189,8 @@ export default function RetailPage() {
       </div>
 
       {/* 통계 카드 */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="overflow-x-auto -mx-4 px-4 pb-2 mb-4">
+      <div className="grid grid-cols-4 gap-3 min-w-[480px]">
         {[
           { label: '전체 주문', value: stats.total + '건', icon: '📋', color: 'from-slate-500 to-slate-600' },
           { label: '오늘 접수', value: stats.today + '건', icon: '🌅', color: 'from-green-600 to-blue-600' },
@@ -205,10 +206,11 @@ export default function RetailPage() {
           </div>
         ))}
       </div>
+      </div>
 
       {/* 필터 + 검색 */}
-      <div className="flex items-center gap-3 mb-5 flex-wrap">
-        <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-5">
+        <div className="overflow-x-auto pb-1"><div className="flex gap-2 flex-nowrap">
           {['전체', ...STATUS_LIST].map(s => (
             <button key={s} onClick={() => setFilterStatus(s)}
               className={'px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-1.5 '
@@ -222,10 +224,10 @@ export default function RetailPage() {
               )}
             </button>
           ))}
-        </div>
+        </div></div>
         <input type="text" value={search} onChange={e => setSearch(e.target.value)}
           placeholder="🔍 고객명 / 연락처 / 주문번호"
-          className="flex-1 min-w-48 border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-2 text-sm bg-white dark:bg-gray-800 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-400" />
+          className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-2 text-sm bg-white dark:bg-gray-800 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-400" />
       </div>
 
       {/* 주문 목록 */}
@@ -426,7 +428,7 @@ export default function RetailPage() {
                           onChange={e => updateItem(i, 'product_name', e.target.value)}
                           className="w-full border border-slate-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-400" />
                       )}
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className="grid grid-cols-3 gap-2 min-w-max">
                         {[
                           { label: '수량', key: 'quantity', type: 'number' },
                           { label: '단가(원)', key: 'unit_price', type: 'number' },
