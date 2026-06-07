@@ -243,11 +243,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           ${dark ? 'bg-[#0a1f10] border-b border-green-900/30' : 'bg-white border-b border-green-50'}
           shadow-sm
         `}>
-          <div className="flex items-center gap-2.5">
-            <span className="text-4xl">🧺</span>
+          <div className="flex items-center gap-2">
+            <FarmLogo size={32} uid="mobile" />
             <div>
-              <p className={`font-black text-base leading-tight ${dark ? 'text-white' : 'text-slate-800'}`}>온종일팜</p>
-              <p className={`text-[10px] ${dark ? 'text-green-400' : 'text-green-600'}`}>농축수산물 도매</p>
+              <p className={`font-black text-sm ${dark ? 'text-white' : 'text-slate-800'}`}>온종일팜</p>
+              <p className={`text-[9px] ${dark ? 'text-green-400' : 'text-green-600'}`}>농축수산물 도매</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5">
@@ -257,21 +257,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </span>
             )}
             <Link href="/shop"
-              className={`p-2 rounded-xl text-sm transition-colors ${dark ? 'text-green-300 hover:bg-green-900/40' : 'text-green-700 hover:bg-green-50'}`}
-              title="쇼핑몰">🛒</Link>
+              className={`p-2 rounded-xl transition-colors ${dark ? 'text-green-300 hover:bg-green-900/40' : 'text-green-700 hover:bg-green-50'}`}
+              style={{ fontSize: '24px' }} title="쇼핑몰">🛒</Link>
             <Link href="/landing"
-              className={`p-2 rounded-xl text-sm transition-colors ${dark ? 'text-green-300/60 hover:bg-green-900/30' : 'text-slate-400 hover:bg-slate-50'}`}
-              title="대문">🏡</Link>
+              className={`p-2 rounded-xl transition-colors ${dark ? 'text-green-300/60 hover:bg-green-900/30' : 'text-slate-400 hover:bg-slate-50'}`}
+              style={{ fontSize: '24px' }} title="대문">🏡</Link>
             <button
               onClick={() => setDark(!dark)}
               className={`p-2 rounded-xl transition-colors ${dark ? 'text-green-300/70 hover:bg-green-900/40' : 'text-slate-400 hover:bg-green-50'}`}
-            >
+              style={{ fontSize: '24px' }}>
               {dark ? '☀️' : '🌙'}
             </button>
             <button
               onClick={handleLogout}
-              className={`p-2 rounded-xl text-sm transition-colors ${dark ? 'text-red-400 hover:bg-red-900/20' : 'text-red-400 hover:bg-red-50'}`}
-              title="로그아웃">🚪</button>
+              className={`p-2 rounded-xl transition-colors ${dark ? 'text-red-400 hover:bg-red-900/20' : 'text-red-400 hover:bg-red-50'}`}
+              style={{ fontSize: '24px' }} title="로그아웃">🚪</button>
           </div>
         </header>
 
