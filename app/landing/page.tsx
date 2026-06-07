@@ -12,6 +12,7 @@ export default function LandingPage() {
   const [barWidths, setBarWidths] = useState([0, 0, 0, 0]) // 재고 바 너비
   const [countVal, setCountVal] = useState(0) // 정산 카운트업
   const [rankIdx, setRankIdx] = useState(-1) // 베스트 순차 등장
+  const [dark, setDark] = useState(true)
   const promoTimer = useRef<any>(null)
   const animTimer = useRef<any>(null)
 
@@ -24,6 +25,9 @@ export default function LandingPage() {
 
   useEffect(() => {
     setVisible(true)
+    const saved = localStorage.getItem('app-theme')
+    if (saved === 'light') setDark(false)
+    else setDark(true)
     const handleScroll = () => setScrolled(window.scrollY > 50)
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
@@ -89,8 +93,11 @@ export default function LandingPage() {
     { name: '온종일팜 거래처', location: '충남 당진', desc: '한우·돼지고기·채소 소매 온라인 주문 관리. 배송지 자동 저장.', emoji: '🥬', color: 'from-emerald-500/20 to-teal-600/20', border: 'border-emerald-500/30' },
   ]
 
+  const landingBg = dark ? '#071a0e' : '#f0fdf4'
+  const landingText = dark ? '#ffffff' : '#111827'
+
   return (
-    <div className="min-h-screen bg-[#0a0f1e] text-white overflow-x-hidden">
+    <div className="min-h-screen overflow-x-hidden" style={{ background: landingBg, color: landingText }}>
 
       {/* ── 공급업체 플로팅 버튼 ── */}
       <a
@@ -128,18 +135,32 @@ export default function LandingPage() {
       </a>
 
       {/* 네비게이션 */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-[#0a0f1e]/95 backdrop-blur-xl shadow-xl shadow-black/30 border-b border-white/5' : 'bg-transparent'}`}>
+      <nav className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+        style={{
+          background: scrolled ? (dark ? 'rgba(7,26,14,0.95)' : 'rgba(240,253,244,0.95)') : 'transparent',
+          backdropFilter: scrolled ? 'blur(20px)' : 'none',
+          boxShadow: scrolled ? '0 4px 24px rgba(0,0,0,0.15)' : 'none',
+          borderBottom: scrolled ? (dark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.06)') : 'none',
+        }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-xl sm:text-2xl">🧺</span>
-            <span className="font-bold text-base sm:text-lg tracking-tight">온종일팜</span>
+            <span className="font-bold text-base sm:text-lg tracking-tight" style={{ color: landingText }}>온종일팜</span>
           </div>
           <div className="flex items-center gap-2 sm:gap-6">
-            <a href="#features" className="text-sm text-slate-400 hover:text-white transition-colors hidden md:block">기능소개</a>
-            <a href="#cases" className="text-sm text-slate-400 hover:text-white transition-colors hidden md:block">도입사례</a>
-            <a href="#contact" className="text-sm text-slate-400 hover:text-white transition-colors hidden md:block">문의</a>
+            <a href="#features" className="text-sm transition-colors hidden md:block" style={{ color: dark ? '#94a3b8' : '#4b5563' }}>기능소개</a>
+            <a href="#cases" className="text-sm transition-colors hidden md:block" style={{ color: dark ? '#94a3b8' : '#4b5563' }}>도입사례</a>
+            <a href="#contact" className="text-sm transition-colors hidden md:block" style={{ color: dark ? '#94a3b8' : '#4b5563' }}>문의</a>
+            <button onClick={() => { const n = !dark; setDark(n); localStorage.setItem('app-theme', n ? 'dark' : 'light') }}
+              style={{ width:'44px', height:'44px', borderRadius:'12px', border:'none', cursor:'pointer',
+                background: dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.07)',
+                fontSize:'22px', display:'flex', alignItems:'center', justifyContent:'center',
+                transition:'all 0.2s', flexShrink:0 }}>
+              {dark ? '☀️' : '🌙'}
+            </button>
             <Link href="/shop"
-              className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl transition-all duration-200 hover:scale-105">
+              className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl transition-all duration-200 hover:scale-105"
+              style={{ background: dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)', border: dark ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.1)', color: landingText }}>
               🛒 <span className="hidden sm:inline">쇼핑몰</span>
             </Link>
             <Link href="/admin/dashboard"
@@ -162,8 +183,8 @@ export default function LandingPage() {
 
         <div className="absolute bottom-0 left-0 right-0">
           <svg viewBox="0 0 1440 100" className="w-full" fill="none">
-            <path d="M0,50 C240,90 480,10 720,50 C960,90 1200,10 1440,50 L1440,100 L0,100 Z" fill="#111827" opacity="0.8"/>
-            <path d="M0,70 C300,30 600,90 900,50 C1100,25 1300,70 1440,60 L1440,100 L0,100 Z" fill="#0a0f1e" opacity="0.6"/>
+            <path d="M0,50 C240,90 480,10 720,50 C960,90 1200,10 1440,50 L1440,100 L0,100 Z" fill={dark ? '#0d2a0f' : '#dcfce7'} opacity="0.8"/>
+            <path d="M0,70 C300,30 600,90 900,50 C1100,25 1300,70 1440,60 L1440,100 L0,100 Z" fill={dark ? '#071a0e' : '#f0fdf4'} opacity="0.6"/>
           </svg>
         </div>
 
@@ -171,13 +192,13 @@ export default function LandingPage() {
           <div className="inline-flex items-center gap-2 bg-green-600/10 border border-green-600/20 text-green-500 text-xs font-semibold px-4 sm:px-5 py-2 sm:py-2.5 rounded-full mb-6 sm:mb-8 backdrop-blur">
             🧺 농축수산물 도매업체를 위한 전문 관리 솔루션
           </div>
-          <h1 className="text-5xl sm:text-6xl md:text-8xl font-black mb-4 sm:mb-6 leading-[1.1] tracking-tight">
+          <h1 className="text-5xl sm:text-6xl md:text-8xl font-black mb-4 sm:mb-6 leading-[1.1] tracking-tight" style={{ color: landingText }}>
             농축수산물 도매
             <span className="block bg-gradient-to-r from-green-500 via-green-300 to-green-500 bg-clip-text text-transparent">
               이제 쉽게
             </span>
           </h1>
-          <p className="text-slate-400 text-base sm:text-lg md:text-xl mb-8 sm:mb-12 leading-relaxed max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl mb-8 sm:mb-12 leading-relaxed max-w-2xl mx-auto" style={{ color: dark ? '#94a3b8' : '#4b5563' }}>
             주문부터 재고, 세금계산서까지<br className="hidden sm:block" />
             농축수산물 도매에 필요한 모든 것을 한 곳에서
           </p>
@@ -200,7 +221,7 @@ export default function LandingPage() {
             ].map(s => (
               <div key={s.label} className="text-center">
                 <p className="text-3xl sm:text-4xl font-black bg-gradient-to-r from-green-500 to-green-300 bg-clip-text text-transparent">{s.num}</p>
-                <p className="text-slate-500 text-xs sm:text-sm mt-1.5 font-medium">{s.label}</p>
+                <p className="text-xs sm:text-sm mt-1.5 font-medium" style={{ color: dark ? '#6b7280' : '#9ca3af' }}>{s.label}</p>
               </div>
             ))}
           </div>
@@ -222,25 +243,25 @@ export default function LandingPage() {
       </section>
 
       {/* ── 프로모션 애니메이션 ── */}
-      <section className="py-20 px-4 sm:px-6 bg-[#0a0f1e]">
+      <section className="py-20 px-4 sm:px-6" style={{ background: dark ? '#071a0e' : '#f0fdf4' }}>
         <div className="max-w-5xl mx-auto text-center">
 
           <p className="text-green-400 text-xs font-bold mb-4 tracking-widest uppercase">✦ 이렇게 작동해요</p>
-          <h2 className="text-3xl md:text-5xl font-black mb-12 leading-tight">
+          <h2 className="text-3xl md:text-5xl font-black mb-12 leading-tight" style={{ color: landingText }}>
             농축수산물 도매를<br />
             <span className="bg-gradient-to-r from-green-400 to-green-600 bg-clip-text text-transparent">이제 스마트하게</span>
           </h2>
 
-          <div className="bg-slate-800/60 border border-slate-700/50 rounded-3xl overflow-hidden shadow-2xl">
+          <div className="rounded-3xl overflow-hidden shadow-2xl" style={{ background: dark ? 'rgba(10,42,16,0.8)' : 'rgba(220,252,231,0.8)', border: dark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.07)' }}>
 
             {/* 탭 */}
-            <div className="flex border-b border-slate-700/50 bg-slate-900/60">
+            <div className="flex" style={{ borderBottom: dark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.07)', background: dark ? 'rgba(7,26,14,0.7)' : 'rgba(240,253,244,0.7)' }}>
               {['주문 접수','재고 관리','정산 처리','분석 리포트'].map((label, i) => (
                 <button key={i}
                   onClick={() => goStep(i)}
                   className="flex-1 py-3.5 text-xs sm:text-sm font-semibold transition-all duration-200"
                   style={{
-                    color: promoStep === i ? '#22c55e' : 'rgba(255,255,255,0.35)',
+                    color: promoStep === i ? '#22c55e' : (dark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)'),
                     fontWeight: promoStep === i ? 700 : 500,
                     background: 'transparent', border: 'none',
                     borderBottom: `2px solid ${promoStep === i ? '#22c55e' : 'transparent'}`,
@@ -261,8 +282,8 @@ export default function LandingPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center text-left" style={{ animation: 'promoIn 0.4s ease' }}>
                   <div>
                     <div className="text-7xl font-black text-green-400/10 leading-none mb-3 tracking-tighter">01</div>
-                    <h3 className="text-xl sm:text-2xl font-black mb-3 text-white">모바일로 간편 주문 접수</h3>
-                    <p className="text-slate-400 text-sm sm:text-base leading-relaxed">도매업체 고객이 앱이나 웹에서 직접 주문합니다. 전화 없이도 24시간 주문 접수.</p>
+                    <h3 className="text-xl sm:text-2xl font-black mb-3" style={{ color: landingText }}>모바일로 간편 주문 접수</h3>
+                    <p className="text-sm sm:text-base leading-relaxed" style={{ color: dark ? '#94a3b8' : '#4b5563' }}>도매업체 고객이 앱이나 웹에서 직접 주문합니다. 전화 없이도 24시간 주문 접수.</p>
                     <div className="flex gap-2 mt-5 flex-wrap">
                       {['📱 모바일 주문','💬 카카오 연동','📧 이메일 알림'].map((t,i) => (
                         <span key={i} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', color: '#22c55e' }}>{t}</span>
@@ -301,8 +322,8 @@ export default function LandingPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center text-left" style={{ animation: 'promoIn 0.4s ease' }}>
                   <div>
                     <div className="text-7xl font-black text-green-400/10 leading-none mb-3 tracking-tighter">02</div>
-                    <h3 className="text-xl sm:text-2xl font-black mb-3 text-white">실시간 재고 자동 관리</h3>
-                    <p className="text-slate-400 text-sm sm:text-base leading-relaxed">주문이 들어오면 재고가 자동으로 차감됩니다. 부족 시 즉시 알림.</p>
+                    <h3 className="text-xl sm:text-2xl font-black mb-3" style={{ color: landingText }}>실시간 재고 자동 관리</h3>
+                    <p className="text-sm sm:text-base leading-relaxed" style={{ color: dark ? '#94a3b8' : '#4b5563' }}>주문이 들어오면 재고가 자동으로 차감됩니다. 부족 시 즉시 알림.</p>
                     <div className="flex gap-2 mt-5 flex-wrap">
                       {['📦 자동 차감','⚠️ 부족 알림','📊 입출고 기록'].map((t,i) => (
                         <span key={i} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', color: '#22c55e' }}>{t}</span>
@@ -350,8 +371,8 @@ export default function LandingPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center text-left" style={{ animation: 'promoIn 0.4s ease' }}>
                   <div>
                     <div className="text-7xl font-black text-green-400/10 leading-none mb-3 tracking-tighter">03</div>
-                    <h3 className="text-xl sm:text-2xl font-black mb-3 text-white">세금계산서 자동 발행</h3>
-                    <p className="text-slate-400 text-sm sm:text-base leading-relaxed">주문 완료 시 세금계산서가 자동 발행됩니다. 정산이 이렇게 쉬워집니다.</p>
+                    <h3 className="text-xl sm:text-2xl font-black mb-3" style={{ color: landingText }}>세금계산서 자동 발행</h3>
+                    <p className="text-sm sm:text-base leading-relaxed" style={{ color: dark ? '#94a3b8' : '#4b5563' }}>주문 완료 시 세금계산서가 자동 발행됩니다. 정산이 이렇게 쉬워집니다.</p>
                     <div className="flex gap-2 mt-5 flex-wrap">
                       {['🧾 자동 발행','💳 카드·계좌','📑 정산 리포트'].map((t,i) => (
                         <span key={i} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', color: '#22c55e' }}>{t}</span>
@@ -396,8 +417,8 @@ export default function LandingPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center text-left" style={{ animation: 'promoIn 0.4s ease' }}>
                   <div>
                     <div className="text-7xl font-black text-green-400/10 leading-none mb-3 tracking-tighter">04</div>
-                    <h3 className="text-xl sm:text-2xl font-black mb-3 text-white">데이터 기반 의사결정</h3>
-                    <p className="text-slate-400 text-sm sm:text-base leading-relaxed">매출·재고·고객 데이터를 한눈에. 어떤 상품이 잘 팔리는지 바로 확인.</p>
+                    <h3 className="text-xl sm:text-2xl font-black mb-3" style={{ color: landingText }}>데이터 기반 의사결정</h3>
+                    <p className="text-sm sm:text-base leading-relaxed" style={{ color: dark ? '#94a3b8' : '#4b5563' }}>매출·재고·고객 데이터를 한눈에. 어떤 상품이 잘 팔리는지 바로 확인.</p>
                     <div className="flex gap-2 mt-5 flex-wrap">
                       {['📈 매출 분석','👥 고객 통계','🏆 베스트 상품'].map((t,i) => (
                         <span key={i} className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', color: '#22c55e' }}>{t}</span>
@@ -447,23 +468,24 @@ export default function LandingPage() {
       </section>
 
       {/* 기능 소개 */}
-      <section id="features" className="py-16 sm:py-28 px-4 sm:px-6 bg-[#111827]">
+      <section id="features" className="py-16 sm:py-28 px-4 sm:px-6" style={{ background: dark ? '#0a2a10' : '#dcfce7' }}>
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
             <p className="text-green-500 text-sm font-bold mb-3 tracking-widest uppercase">✨ 핵심 기능</p>
-            <h2 className="text-3xl md:text-5xl font-black mb-4">필요한 건 다 있어요</h2>
-            <p className="text-slate-400 text-base sm:text-lg">농축수산물 도매업에 최적화된 6가지 핵심 기능</p>
+            <h2 className="text-3xl md:text-5xl font-black mb-4" style={{ color: landingText }}>필요한 건 다 있어요</h2>
+            <p className="text-base sm:text-lg" style={{ color: dark ? '#94a3b8' : '#4b5563' }}>농축수산물 도매업에 최적화된 6가지 핵심 기능</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {features.map((f, i) => (
               <div key={f.title}
-                className={`group relative bg-slate-800/60 border border-slate-700/50 rounded-2xl p-6 sm:p-7 hover:border-transparent hover:-translate-y-2 hover:shadow-2xl ${f.shadow} transition-all duration-300 overflow-hidden`}>
+                className={`group relative rounded-2xl p-6 sm:p-7 hover:border-transparent hover:-translate-y-2 hover:shadow-2xl ${f.shadow} transition-all duration-300 overflow-hidden`}
+                style={{ background: dark ? 'rgba(10,42,16,0.7)' : 'rgba(255,255,255,0.85)', border: dark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.08)' }}>
                 <div className={`absolute inset-0 bg-gradient-to-br ${f.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300 rounded-2xl`} />
                 <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br ${f.gradient} flex items-center justify-center text-xl sm:text-2xl mb-4 sm:mb-5 shadow-lg ${f.shadow} group-hover:scale-110 transition-transform duration-300`}>
                   {f.icon}
                 </div>
-                <h3 className="font-bold text-base sm:text-lg mb-2 sm:mb-2.5 text-white">{f.title}</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">{f.desc}</p>
+                <h3 className="font-bold text-base sm:text-lg mb-2 sm:mb-2.5" style={{ color: landingText }}>{f.title}</h3>
+                <p className="text-sm leading-relaxed" style={{ color: dark ? '#94a3b8' : '#4b5563' }}>{f.desc}</p>
               </div>
             ))}
           </div>
@@ -473,12 +495,12 @@ export default function LandingPage() {
       <div className="h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
 
       {/* 도입 사례 */}
-      <section id="cases" className="py-16 sm:py-28 px-4 sm:px-6 bg-[#0a0f1e]">
+      <section id="cases" className="py-16 sm:py-28 px-4 sm:px-6" style={{ background: dark ? '#071a0e' : '#f0fdf4' }}>
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
             <p className="text-amber-400 text-sm font-bold mb-3 tracking-widest uppercase">🏆 도입 사례</p>
-            <h2 className="text-3xl md:text-5xl font-black mb-4">이미 쓰고 있어요</h2>
-            <p className="text-slate-400 text-base sm:text-lg">전국 농축수산물 업체들이 먼저 경험했습니다</p>
+            <h2 className="text-3xl md:text-5xl font-black mb-4" style={{ color: landingText }}>이미 쓰고 있어요</h2>
+            <p className="text-base sm:text-lg" style={{ color: dark ? '#94a3b8' : '#4b5563' }}>전국 농축수산물 업체들이 먼저 경험했습니다</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-6">
             {cases.map((c, i) => (
@@ -500,29 +522,31 @@ export default function LandingPage() {
       <div className="h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
 
       {/* 문의 섹션 */}
-      <section id="contact" className="py-16 sm:py-28 px-4 sm:px-6 bg-[#111827]">
+      <section id="contact" className="py-16 sm:py-28 px-4 sm:px-6" style={{ background: dark ? '#0a2a10' : '#dcfce7' }}>
         <div className="max-w-xl mx-auto">
           <div className="text-center mb-10 sm:mb-12">
             <p className="text-emerald-400 text-sm font-bold mb-3 tracking-widest uppercase">📞 무료 상담</p>
-            <h2 className="text-3xl md:text-5xl font-black mb-4">지금 바로 시작하세요</h2>
-            <p className="text-slate-400 text-base sm:text-lg">도입 문의 및 데모 신청을 받고 있어요</p>
+            <h2 className="text-3xl md:text-5xl font-black mb-4" style={{ color: landingText }}>지금 바로 시작하세요</h2>
+            <p className="text-base sm:text-lg" style={{ color: dark ? '#94a3b8' : '#4b5563' }}>도입 문의 및 데모 신청을 받고 있어요</p>
           </div>
-          <div className="bg-slate-800/60 border border-slate-700/50 rounded-3xl p-6 sm:p-8 space-y-4 backdrop-blur">
+          <div className="rounded-3xl p-6 sm:p-8 space-y-4 backdrop-blur" style={{ background: dark ? 'rgba(10,42,16,0.8)' : 'rgba(255,255,255,0.85)', border: dark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.08)' }}>
             {[
               { label: '업체명', placeholder: '예) 온종일팜 거래처' },
               { label: '연락처', placeholder: '010-0000-0000' },
               { label: '지역', placeholder: '예) 산지직송' },
             ].map(f => (
               <div key={f.label}>
-                <label className="block text-xs font-bold text-slate-400 mb-1.5 tracking-wide uppercase">{f.label}</label>
+                <label className="block text-xs font-bold mb-1.5 tracking-wide uppercase" style={{ color: dark ? '#94a3b8' : '#4b5563' }}>{f.label}</label>
                 <input type="text" placeholder={f.placeholder}
-                  className="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 sm:py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all" />
+                  className="w-full rounded-xl px-4 py-3 sm:py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all"
+                  style={{ background: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', border: dark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)', color: landingText }} />
               </div>
             ))}
             <div>
-              <label className="block text-xs font-bold text-slate-400 mb-1.5 tracking-wide uppercase">문의 내용</label>
+              <label className="block text-xs font-bold mb-1.5 tracking-wide uppercase" style={{ color: dark ? '#94a3b8' : '#4b5563' }}>문의 내용</label>
               <textarea rows={4} placeholder="궁금한 점이나 요청사항을 입력해주세요"
-                className="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 sm:py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all resize-none" />
+                className="w-full rounded-xl px-4 py-3 sm:py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all resize-none"
+                style={{ background: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', border: dark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)', color: landingText }} />
             </div>
             <button className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-500 hover:to-blue-500 text-white font-bold py-3.5 sm:py-4 rounded-xl transition-all duration-200 hover:scale-[1.02] active:scale-95 shadow-lg shadow-green-600/20 hover:shadow-green-600/40 text-sm sm:text-base">
               상담 신청하기 🧺
@@ -533,17 +557,17 @@ export default function LandingPage() {
       </section>
 
       {/* 푸터 */}
-      <footer className="py-8 sm:py-10 px-4 sm:px-6 border-t border-slate-800 bg-[#0a0f1e]">
+      <footer className="py-8 sm:py-10 px-4 sm:px-6" style={{ background: dark ? '#071a0e' : '#f0fdf4', borderTop: dark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.08)' }}>
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-2">
             <span className="text-xl">🧺</span>
-            <span className="font-bold text-slate-400 text-sm sm:text-base">온종일팜 도매 관리 시스템</span>
+            <span className="font-bold text-sm sm:text-base" style={{ color: dark ? '#94a3b8' : '#4b5563' }}>온종일팜 도매 관리 시스템</span>
           </div>
           <a href="https://yuanfnb.com" target="_blank" rel="noopener noreferrer"
             className="text-pink-400 hover:text-pink-300 text-sm font-semibold transition-colors">
             유안 F&B →
           </a>
-          <p className="text-slate-600 text-xs sm:text-sm">© 2026 All rights reserved</p>
+          <p className="text-xs sm:text-sm" style={{ color: dark ? '#475569' : '#9ca3af' }}>© 2026 All rights reserved</p>
         </div>
       </footer>
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -17,8 +17,14 @@ export default function ShopRegisterPage() {
   const [showPw, setShowPw] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [dark, setDark] = useState(false)
   const router = useRouter()
   const supabase = createClient()
+
+  useEffect(() => {
+    const saved = localStorage.getItem('shop-theme')
+    if (saved === 'dark') setDark(true)
+  }, [])
 
   const typeInfo = {
     '일반': { icon: '🛒', title: '일반 구매자', desc: '수산물을 직접 구매하고 싶어요', color: 'from-green-600 to-blue-600', border: 'border-green-600', bg: 'bg-green-600/10' },
@@ -100,17 +106,36 @@ export default function ShopRegisterPage() {
     }
   }
 
+  const D = {
+    bg: dark ? '#0a0f1e' : '#f0fdf4',
+    text: dark ? '#ffffff' : '#111827',
+    sub: dark ? '#94a3b8' : '#4b5563',
+    border: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.08)',
+    card: dark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.85)',
+    inputBg: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+    inputBorder: dark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.10)',
+  }
+
   return (
-    <div className="min-h-screen bg-[#0a0f1e] text-white flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ background: D.bg, color: D.text }}>
       {/* 헤더 */}
-      <header className="flex items-center justify-between px-6 py-4 border-b border-white/5">
-        <Link href="/landing" className="flex items-center gap-2">
+      <header className="flex items-center justify-between px-6 py-4" style={{ borderBottom: `1px solid ${D.border}` }}>
+        <Link href="/landing" className="flex items-center gap-2" style={{ textDecoration: 'none', color: D.text }}>
           <span className="text-2xl">🧺</span>
           <span className="font-bold text-lg">온종일팜</span>
         </Link>
-        <Link href="/shop/login" className="text-sm text-slate-400 hover:text-white transition-colors">
-          이미 계정이 있어요 →
-        </Link>
+        <div className="flex items-center gap-2">
+          <button onClick={() => { const n = !dark; setDark(n); localStorage.setItem('shop-theme', n ? 'dark' : 'light') }}
+            style={{ width: '44px', height: '44px', borderRadius: '12px', border: 'none', cursor: 'pointer',
+              background: dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.07)',
+              fontSize: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'all 0.2s', flexShrink: 0 }}>
+            {dark ? '☀️' : '🌙'}
+          </button>
+          <Link href="/shop/login" className="text-sm transition-colors" style={{ color: D.sub, textDecoration: 'none' }}>
+            이미 계정이 있어요 →
+          </Link>
+        </div>
       </header>
 
       <div className="flex-1 flex items-center justify-center px-4 py-12">
@@ -122,10 +147,10 @@ export default function ShopRegisterPage() {
               <div className="text-7xl mb-6 inline-block" style={{animation:'bounce 1s ease infinite'}}>
                 {memberType === '일반' ? '🎉' : '⏳'}
               </div>
-              <h2 className="text-3xl font-black mb-4">
+              <h2 className="text-3xl font-black mb-4" style={{ color: D.text }}>
                 {memberType === '일반' ? '가입 완료!' : '신청 완료!'}
               </h2>
-              <p className="text-slate-400 mb-2">
+              <p className="mb-2" style={{ color: D.sub }}>
                 {memberType === '일반'
                   ? '온종일팜 회원이 되신 걸 환영해요!'
                   : `${memberType} 신청이 접수됐어요.\n관리자 승인 후 이용 가능합니다.`}
@@ -146,8 +171,8 @@ export default function ShopRegisterPage() {
           {step === 1 && (
             <div className="animate-fadeIn">
               <div className="text-center mb-10">
-                <h1 className="text-3xl font-black mb-2">회원가입</h1>
-                <p className="text-slate-400">어떤 목적으로 이용하실 건가요?</p>
+                <h1 className="text-3xl font-black mb-2" style={{ color: D.text }}>회원가입</h1>
+                <p style={{ color: D.sub }}>어떤 목적으로 이용하실 건가요?</p>
               </div>
 
               <div className="space-y-3 mb-8">
@@ -156,13 +181,14 @@ export default function ShopRegisterPage() {
                     className={`w-full flex items-center gap-4 p-5 rounded-2xl border-2 transition-all duration-200 hover:scale-[1.01] text-left
                       ${memberType === type
                         ? `${typeInfo[type].border} ${typeInfo[type].bg}`
-                        : 'border-white/10 bg-white/5 hover:bg-white/10'}`}>
+                        : ''}`}
+                    style={memberType !== type ? { border: `2px solid ${D.border}`, background: D.card } : {}}>
                     <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${typeInfo[type].color} flex items-center justify-center text-2xl flex-shrink-0 shadow-lg`}>
                       {typeInfo[type].icon}
                     </div>
                     <div>
-                      <p className="font-bold text-white text-lg">{typeInfo[type].title}</p>
-                      <p className="text-slate-400 text-sm mt-0.5">{typeInfo[type].desc}</p>
+                      <p className="font-bold text-lg" style={{ color: D.text }}>{typeInfo[type].title}</p>
+                      <p className="text-sm mt-0.5" style={{ color: D.sub }}>{typeInfo[type].desc}</p>
                     </div>
                     {memberType === type && <span className="ml-auto text-xl">✅</span>}
                   </button>
@@ -186,10 +212,10 @@ export default function ShopRegisterPage() {
           {step === 2 && (
             <div className="animate-fadeIn">
               <div className="flex items-center gap-3 mb-8">
-                <button onClick={() => setStep(1)} className="text-slate-400 hover:text-white transition-colors">← 뒤로</button>
+                <button onClick={() => setStep(1)} className="transition-colors" style={{ color: D.sub, background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px' }}>← 뒤로</button>
                 <div>
-                  <h1 className="text-2xl font-black">정보 입력</h1>
-                  <p className="text-slate-400 text-sm">{typeInfo[memberType].icon} {typeInfo[memberType].title}로 가입</p>
+                  <h1 className="text-2xl font-black" style={{ color: D.text }}>정보 입력</h1>
+                  <p className="text-sm" style={{ color: D.sub }}>{typeInfo[memberType].icon} {typeInfo[memberType].title}로 가입</p>
                 </div>
               </div>
 
@@ -202,11 +228,12 @@ export default function ShopRegisterPage() {
                   { label: '연락처 *', key: 'contact', type: 'text', placeholder: '010-0000-0000' },
                 ].map(f => (
                   <div key={f.key}>
-                    <label className="block text-xs font-bold text-slate-400 mb-1.5 tracking-wide">{f.label}</label>
+                    <label className="block text-xs font-bold mb-1.5 tracking-wide" style={{ color: D.sub }}>{f.label}</label>
                     <div className="relative">
                       <input type={f.type} placeholder={f.placeholder} value={(form as any)[f.key]}
                         onChange={e => setForm({ ...form, [f.key]: e.target.value })}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all" />
+                        className="w-full rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all"
+                        style={{ background: D.inputBg, border: `1px solid ${D.inputBorder}`, color: D.text }} />
                       {(f.key === 'password') && (
                         <button type="button" onClick={() => setShowPw(!showPw)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-lg">
@@ -219,17 +246,18 @@ export default function ShopRegisterPage() {
 
                 {(memberType === '소매업' || memberType === '도매업') && (
                   <>
-                    <div className="h-px bg-white/5 my-2" />
-                    <p className="text-xs font-bold text-slate-400 tracking-wide">사업자 정보</p>
+                    <div className="h-px my-2" style={{ background: D.border }} />
+                    <p className="text-xs font-bold tracking-wide" style={{ color: D.sub }}>사업자 정보</p>
                     {[
                       { label: '업체명 *', key: 'businessName', placeholder: '예) 온종일팜 거래처' },
                       { label: '사업자번호 *', key: 'businessNumber', placeholder: '000-00-00000' },
                     ].map(f => (
                       <div key={f.key}>
-                        <label className="block text-xs font-bold text-slate-400 mb-1.5 tracking-wide">{f.label}</label>
+                        <label className="block text-xs font-bold mb-1.5 tracking-wide" style={{ color: D.sub }}>{f.label}</label>
                         <input type="text" placeholder={f.placeholder} value={(form as any)[f.key]}
                           onChange={e => setForm({ ...form, [f.key]: e.target.value })}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all" />
+                          className="w-full rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all"
+                          style={{ background: D.inputBg, border: `1px solid ${D.inputBorder}`, color: D.text }} />
                       </div>
                     ))}
                   </>

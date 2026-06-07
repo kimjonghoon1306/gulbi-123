@@ -203,8 +203,11 @@ function MyPageInner() {
           </div>
           <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
             <div style={{ background:tc.gradient, color:'white', fontSize:'10px', fontWeight:700, padding:'4px 10px', borderRadius:'20px' }}>{tc.badge}</div>
-            <button onClick={toggleDark} style={{ width:'36px', height:'36px', borderRadius:'10px', background:D.input, border:'none', cursor:'pointer', fontSize:'16px', display:'flex', alignItems:'center', justifyContent:'center' }}>
-              {dark ? '🌙' : '☀️'}
+            <button onClick={toggleDark} style={{ width:'44px', height:'44px', borderRadius:'12px',
+              background: dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.07)',
+              border:'none', cursor:'pointer', fontSize:'22px', display:'flex', alignItems:'center', justifyContent:'center',
+              transition:'all 0.2s', flexShrink:0 }}>
+              {dark ? '☀️' : '🌙'}
             </button>
           </div>
         </div>

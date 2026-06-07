@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 function FarmLogoSVG() {
   return (
@@ -45,7 +46,14 @@ export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showPw, setShowPw] = useState(false)
+  const [dark, setDark] = useState(true)
   const router = useRouter()
+
+  useEffect(() => {
+    const saved = localStorage.getItem('app-theme')
+    if (saved === 'light') setDark(false)
+    else setDark(true)
+  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -62,8 +70,32 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-green-950 via-green-900 to-slate-900">
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      style={{ background: dark ? 'linear-gradient(135deg,#071a0e,#0a2a10,#0f172a)' : 'linear-gradient(135deg,#f0fdf4,#dcfce7,#f1f5f9)' }}>
       <BgPattern />
+
+      {/* 좌상단: 대문 버튼 */}
+      <Link href="/landing" style={{
+        position: 'fixed', top: '16px', left: '16px', zIndex: 60,
+        display: 'flex', alignItems: 'center', gap: '6px',
+        background: dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.07)',
+        border: 'none', borderRadius: '12px', padding: '10px 14px',
+        fontSize: '13px', fontWeight: 700,
+        color: dark ? 'rgba(255,255,255,0.85)' : '#1a1a18',
+        textDecoration: 'none', cursor: 'pointer',
+      }}>← 대문</Link>
+
+      {/* 우상단: 토글 버튼 */}
+      <button onClick={() => { const n = !dark; setDark(n); localStorage.setItem('app-theme', n ? 'dark' : 'light') }}
+        style={{
+          position: 'fixed', top: '16px', right: '16px', zIndex: 60,
+          width: '44px', height: '44px', borderRadius: '12px', border: 'none', cursor: 'pointer',
+          background: dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.07)',
+          fontSize: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          transition: 'all 0.2s', flexShrink: 0,
+        }}>
+        {dark ? '☀️' : '🌙'}
+      </button>
 
       {/* 플로팅 이모지 배경 */}
       {['🌾','🥩','🧺','🥬','🍎','🧺'].map((em, i) => (
@@ -83,14 +115,15 @@ export default function AdminLoginPage() {
 
       <div className="relative z-10 w-full max-w-sm mx-4 animate-fadeIn">
         {/* 카드 */}
-        <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 shadow-2xl">
+        <div className="backdrop-blur-xl rounded-3xl p-8 shadow-2xl"
+          style={{ background: dark ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.85)', border: dark ? '1px solid rgba(255,255,255,0.20)' : '1px solid rgba(0,0,0,0.10)' }}>
 
           {/* 로고 영역 */}
           <div className="flex flex-col items-center mb-8">
             <div className="mb-4" style={{ animation: 'float 3s ease-in-out infinite' }}>
               <FarmLogoSVG />
             </div>
-            <h1 className="text-2xl font-black text-white tracking-tight">온종일팜</h1>
+            <h1 className="text-2xl font-black tracking-tight" style={{ color: dark ? 'white' : '#111827' }}>온종일팜</h1>
             <div className="flex items-center gap-1.5 mt-1.5">
               <span className="text-xs font-medium text-green-300">🌾 농산</span>
               <span className="text-green-600">·</span>
@@ -104,7 +137,7 @@ export default function AdminLoginPage() {
           {/* 폼 */}
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-green-200/80 mb-1.5">이메일</label>
+              <label className="block text-xs font-semibold mb-1.5" style={{ color: dark ? 'rgba(187,247,208,0.8)' : '#15803d' }}>이메일</label>
               <div className="relative">
                 <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-green-400/60" width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path d="M2 4l6 5 6-5M2 4h12v9a1 1 0 01-1 1H3a1 1 0 01-1-1V4z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
@@ -115,13 +148,14 @@ export default function AdminLoginPage() {
                   onChange={e => setEmail(e.target.value)}
                   placeholder="admin@example.com"
                   required
-                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-green-400/50 focus:border-green-400/50 transition-all"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400/50 focus:border-green-400/50 transition-all"
+                  style={{ background: dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)', border: dark ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.15)', color: dark ? 'white' : '#111827' }}
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-green-200/80 mb-1.5">비밀번호</label>
+              <label className="block text-xs font-semibold mb-1.5" style={{ color: dark ? 'rgba(187,247,208,0.8)' : '#15803d' }}>비밀번호</label>
               <div className="relative">
                 <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-green-400/60" width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <rect x="2" y="7" width="12" height="8" rx="2" stroke="currentColor" strokeWidth="1.4"/>
@@ -133,7 +167,8 @@ export default function AdminLoginPage() {
                   onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full pl-10 pr-12 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-green-400/50 focus:border-green-400/50 transition-all"
+                  className="w-full pl-10 pr-12 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400/50 focus:border-green-400/50 transition-all"
+                  style={{ background: dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)', border: dark ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.15)', color: dark ? 'white' : '#111827' }}
                 />
                 <button type="button" onClick={() => setShowPw(!showPw)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors">
@@ -180,7 +215,7 @@ export default function AdminLoginPage() {
           </form>
         </div>
 
-        <p className="text-center text-white/20 text-xs mt-6">© 2026 온종일팜 · 농축수산물 도매 플랫폼</p>
+        <p className="text-center text-xs mt-6" style={{ color: dark ? 'rgba(255,255,255,0.20)' : 'rgba(0,0,0,0.25)' }}>© 2026 온종일팜 · 농축수산물 도매 플랫폼</p>
       </div>
 
       <style>{`

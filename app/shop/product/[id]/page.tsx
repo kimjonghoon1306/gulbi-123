@@ -214,8 +214,12 @@ export default function ProductDetailPage() {
                 <span style={{fontSize:'11px',fontWeight:700,color:'#ec4899'}}>{visitorCount}명 방문중</span>
               </div>
             )}
-            <button onClick={() => setDark(!dark)} style={{width:'36px',height:'36px',borderRadius:'10px',background:D.input,border:'none',cursor:'pointer',fontSize:'16px',display:'flex',alignItems:'center',justifyContent:'center'}}>
-              {dark ? '🌙' : '☀️'}
+            <button onClick={() => { const n = !dark; setDark(n); localStorage.setItem('shop-theme', n ? 'dark' : 'light') }}
+              style={{width:'44px',height:'44px',borderRadius:'12px',border:'none',cursor:'pointer',
+                background: dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.07)',
+                fontSize:'22px',display:'flex',alignItems:'center',justifyContent:'center',
+                transition:'all 0.2s',flexShrink:0}}>
+              {dark ? '☀️' : '🌙'}
             </button>
           </div>
         </div>
