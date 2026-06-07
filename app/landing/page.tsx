@@ -208,7 +208,8 @@ export default function LandingPage() {
               🛒 쇼핑몰 바로가기
             </Link>
             <a href="#contact"
-              className="bg-white/5 hover:bg-white/10 backdrop-blur border border-white/10 hover:border-white/20 text-white font-semibold px-8 sm:px-10 py-3.5 sm:py-4 rounded-2xl transition-all duration-200 hover:scale-105 text-sm sm:text-base">
+              className="backdrop-blur font-semibold px-8 sm:px-10 py-3.5 sm:py-4 rounded-2xl transition-all duration-200 hover:scale-105 text-sm sm:text-base"
+              style={{ background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', border: dark ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.15)', color: landingText }}>
               무료 상담 신청
             </a>
           </div>
@@ -478,8 +479,10 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {features.map((f, i) => (
               <div key={f.title}
-                className={`group relative rounded-2xl p-6 sm:p-7 hover:border-transparent hover:-translate-y-2 hover:shadow-2xl ${f.shadow} transition-all duration-300 overflow-hidden`}
-                style={{ background: dark ? 'rgba(10,42,16,0.7)' : 'rgba(255,255,255,0.85)', border: dark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.08)' }}>
+                className={`group relative rounded-2xl p-6 sm:p-7 hover:-translate-y-2 hover:shadow-2xl ${f.shadow} transition-all duration-300 overflow-hidden`}
+                style={{ background: dark ? 'rgba(10,42,16,0.7)' : 'rgba(255,255,255,0.85)', border: dark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.08)' }}
+                onMouseEnter={e => (e.currentTarget.style.border = '1.5px solid #16a34a')}
+                onMouseLeave={e => (e.currentTarget.style.border = dark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.08)')}>
                 <div className={`absolute inset-0 bg-gradient-to-br ${f.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300 rounded-2xl`} />
                 <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br ${f.gradient} flex items-center justify-center text-xl sm:text-2xl mb-4 sm:mb-5 shadow-lg ${f.shadow} group-hover:scale-110 transition-transform duration-300`}>
                   {f.icon}
@@ -505,13 +508,16 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-6">
             {cases.map((c, i) => (
               <div key={c.name}
-                className={`relative bg-gradient-to-br ${c.color} border ${c.border} rounded-2xl p-6 sm:p-7 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 overflow-hidden backdrop-blur`}>
+                className={`relative bg-gradient-to-br ${c.color} rounded-2xl p-6 sm:p-7 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 overflow-hidden backdrop-blur`}
+                style={{ border: `1.5px solid ${dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}` }}
+                onMouseEnter={e => (e.currentTarget.style.border = '1.5px solid #16a34a')}
+                onMouseLeave={e => (e.currentTarget.style.border = `1.5px solid ${dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`)}>
                 <div className="absolute top-0 right-0 text-7xl sm:text-8xl opacity-10 leading-none pt-4 pr-4">{c.emoji}</div>
                 <div className="relative z-10">
                   <span className="text-4xl sm:text-5xl mb-4 sm:mb-5 block">{c.emoji}</span>
-                  <h3 className="font-bold text-lg sm:text-xl text-white mb-1">{c.name}</h3>
-                  <p className="text-green-500 text-xs font-semibold mb-3 sm:mb-4">📍 {c.location}</p>
-                  <p className="text-slate-300 text-sm leading-relaxed">{c.desc}</p>
+                  <h3 className="font-bold text-lg sm:text-xl mb-1" style={{ color: dark ? 'white' : '#111827' }}>{c.name}</h3>
+                  <p className="text-green-600 text-xs font-semibold mb-3 sm:mb-4">📍 {c.location}</p>
+                  <p className="text-sm leading-relaxed" style={{ color: dark ? '#cbd5e1' : '#374151' }}>{c.desc}</p>
                 </div>
               </div>
             ))}
