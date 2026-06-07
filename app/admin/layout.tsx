@@ -243,11 +243,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           ${dark ? 'bg-[#0a1f10] border-b border-green-900/30' : 'bg-white border-b border-green-50'}
           shadow-sm
         `}>
-          <div className="flex items-center gap-2">
-            <FarmLogo size={28} uid="mobile" />
+          <div className="flex items-center gap-2.5">
+            <span className="text-4xl">🧺</span>
             <div>
-              <p className={`font-black text-sm ${dark ? 'text-white' : 'text-slate-800'}`}>온종일팜</p>
-              <p className={`text-[9px] ${dark ? 'text-green-400' : 'text-green-600'}`}>농축수산물 도매</p>
+              <p className={`font-black text-base leading-tight ${dark ? 'text-white' : 'text-slate-800'}`}>온종일팜</p>
+              <p className={`text-[10px] ${dark ? 'text-green-400' : 'text-green-600'}`}>농축수산물 도매</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5">

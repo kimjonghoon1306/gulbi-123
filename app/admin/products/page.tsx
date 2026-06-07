@@ -189,28 +189,29 @@ export default function ProductsPage() {
 
   return (
     <div className="animate-fadeIn">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-white">상품관리</h1>
-          <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">상품 · 공급업체 승인 · 카테고리 관리</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white">상품관리</h1>
+          <p className="text-slate-400 dark:text-slate-500 text-xs sm:text-sm mt-0.5">상품 · 공급업체 승인 · 카테고리 관리</p>
         </div>
         {tab === 'products' && (
           <div className="flex gap-2">
             <button onClick={() => setShowAiForm(true)}
-              className="text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95 hover:-translate-y-0.5"
+              className="text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-all duration-200 active:scale-95"
               style={{ background: 'linear-gradient(135deg,#ec4899,#f43f5e)', boxShadow: '0 4px 15px rgba(236,72,153,0.35)' }}>
-              ✨ AI 상세페이지
+              ✨ AI 상세
             </button>
             <button onClick={() => { setEditProduct(null); setForm(EMPTY_FORM); setShowForm(true) }}
-              className="bg-green-600 hover:bg-green-500 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95 shadow-md shadow-green-600/20">
-              + 상품 등록
+              className="bg-green-600 hover:bg-green-500 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-all duration-200 active:scale-95 shadow-md shadow-green-600/20">
+              + 등록
             </button>
           </div>
         )}
       </div>
 
       {/* 탭 */}
-      <div className="flex gap-1 mb-6 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl w-fit">
+      <div className="overflow-x-auto -mx-4 px-4 pb-1 mb-5">
+      <div className="flex gap-1 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl w-max">
         {[
           { key: 'products',  label: '📦 상품 목록' },
           { key: 'supplier',  label: `🏭 공급업체 승인 ${supplierProducts.filter(p => p.approval_status === '대기중').length > 0 ? `(${supplierProducts.filter(p => p.approval_status === '대기중').length})` : ''}` },
@@ -221,6 +222,7 @@ export default function ProductsPage() {
             {t.label}
           </button>
         ))}
+      </div>
       </div>
 
       {/* 상품 목록 탭 */}
