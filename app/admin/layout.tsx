@@ -233,7 +233,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* ── 메인 콘텐츠 ── */}
       <main className={`
-        flex-1 min-h-screen
+        flex-1 min-h-screen overflow-x-hidden
         transition-all duration-300
         ${isMobile ? 'ml-0 pb-20' : collapsed ? 'md:ml-16' : 'md:ml-56'}
       `}>
