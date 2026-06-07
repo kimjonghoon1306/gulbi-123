@@ -44,21 +44,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className={`flex min-h-screen transition-colors duration-300 ${dark ? 'bg-gray-950 text-gray-100' : 'bg-slate-50 text-slate-800'}`}>
+    <div className={`flex min-h-screen transition-colors duration-300 ${dark ? 'text-gray-100' : 'bg-slate-50 text-slate-800'}`} style={dark ? { background: '#071a0e' } : {}}>
 
       {/* 사이드바 */}
       <aside
         className={`fixed top-0 left-0 h-full z-40 flex flex-col transition-all duration-300 ease-in-out shadow-2xl
           ${collapsed ? 'w-16' : 'w-56'}
-          ${dark ? 'bg-gray-900 border-r border-gray-800' : 'bg-white border-r border-slate-100'}`}
+          ${dark ? 'bg-[#0a1f10] border-r border-green-900/30' : 'bg-white border-r border-slate-100'}`}
       >
         {/* 로고 */}
-        <div className={`flex items-center gap-3 px-4 py-5 border-b ${dark ? 'border-gray-800' : 'border-slate-100'}`}>
+        <div className={`flex items-center gap-3 px-4 py-5 border-b ${dark ? 'border-green-900/30' : 'border-slate-100'}`}>
           <span className="text-2xl">🧺</span>
           {!collapsed && (
             <div className="overflow-hidden transition-all duration-300">
               <p className={`font-bold text-sm leading-tight ${dark ? 'text-white' : 'text-slate-800'}`}>온종일팜</p>
-              <p className={`text-xs ${dark ? 'text-gray-400' : 'text-slate-400'}`}>도매 관리 시스템</p>
+              <p className={`text-xs ${dark ? 'text-green-400/60' : 'text-slate-400'}`}>도매 관리 시스템</p>
             </div>
           )}
         </div>
@@ -75,7 +75,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   ${active
                     ? 'bg-green-600 text-white shadow-md shadow-green-200'
                     : dark
-                      ? 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                      ? 'text-green-300/70 hover:bg-green-900/40 hover:text-white'
                       : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
                   }`}
               >
@@ -93,12 +93,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         {/* 하단 버튼들 */}
-        <div className={`p-3 border-t ${dark ? 'border-gray-800' : 'border-slate-100'} space-y-2`}>
+        <div className={`p-3 border-t ${dark ? 'border-green-900/30' : 'border-slate-100'} space-y-2`}>
+          {/* 쇼핑몰 가기 */}
+          <Link href="/shop"
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200
+              ${dark ? 'bg-green-700/20 hover:bg-green-700/40 text-green-300' : 'bg-green-50 hover:bg-green-100 text-green-700'}`}
+          >
+            <span className="text-lg">🛒</span>
+            {!collapsed && <span className="text-xs font-bold">쇼핑몰 바로가기</span>}
+          </Link>
+          {/* 대문으로 */}
+          <Link href="/landing"
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200
+              ${dark ? 'hover:bg-green-900/30 text-green-300/60' : 'hover:bg-slate-100 text-slate-400'}`}
+          >
+            <span className="text-lg">🏡</span>
+            {!collapsed && <span className="text-xs font-medium">대문으로</span>}
+          </Link>
           {/* 테마 토글 */}
           <button
             onClick={() => setDark(!dark)}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200
-              ${dark ? 'bg-gray-800 hover:bg-gray-700 text-yellow-400' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}`}
+              ${dark ? 'bg-green-900/20 hover:bg-green-900/40 text-yellow-400' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}`}
           >
             <span className="text-lg transition-transform duration-300" style={{ transform: dark ? 'rotate(0deg)' : 'rotate(180deg)' }}>
               {dark ? '🌙' : '☀️'}
@@ -125,11 +141,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* 상단 헤더 */}
         <header className={`sticky top-0 z-30 flex items-center justify-between px-6 py-4 border-b transition-colors duration-300
-          ${dark ? 'bg-gray-950 border-gray-800' : 'bg-slate-50 border-slate-200'}`}>
+          ${dark ? 'bg-[#071a0e] border-green-900/30' : 'bg-slate-50 border-slate-200'}`}>
           <button
             onClick={() => setCollapsed(!collapsed)}
             className={`p-2 rounded-lg transition-all duration-200 hover:scale-110
-              ${dark ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-slate-200 text-slate-500'}`}
+              ${dark ? 'hover:bg-green-900/40 text-green-300/70' : 'hover:bg-slate-200 text-slate-500'}`}
           >
             <span className="text-lg">{collapsed ? '▶' : '◀'}</span>
           </button>

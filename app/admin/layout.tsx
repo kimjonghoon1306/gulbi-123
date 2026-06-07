@@ -113,19 +113,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!mounted) return null
 
   return (
-    <div className={`flex min-h-screen ${dark ? 'dark bg-gray-950 text-gray-100' : 'bg-slate-50 text-slate-800'}`}>
+    <div className={`flex min-h-screen ${dark ? 'dark text-gray-100' : 'bg-slate-50 text-slate-800'}`} style={dark ? { background: '#071a0e' } : {}}>
 
       {/* ── 사이드바 (데스크탑) ── */}
       <aside className={`
         hidden md:flex fixed top-0 left-0 h-full z-40 flex-col
         transition-all duration-300 ease-in-out
         ${collapsed ? 'w-16' : 'w-56'}
-        ${dark ? 'bg-gray-900 border-r border-gray-800' : 'bg-white border-r border-green-50'}
+        ${dark ? 'bg-[#0a1f10] border-r border-green-900/30' : 'bg-white border-r border-green-50'}
         shadow-lg shadow-green-900/5
       `}>
 
         {/* 로고 */}
-        <div className={`flex items-center gap-3 px-4 py-5 border-b ${dark ? 'border-gray-800' : 'border-green-50'}`}>
+        <div className={`flex items-center gap-3 px-4 py-5 border-b ${dark ? 'border-green-900/30' : 'border-green-50'}`}>
           <div className="relative flex-shrink-0">
             <FarmLogo size={34} uid="sidebar" />
             <span className="absolute -bottom-1 -right-1 text-xs">🌾</span>
@@ -139,7 +139,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <button
             onClick={() => setCollapsed(!collapsed)}
             className={`ml-auto p-1.5 rounded-lg transition-all duration-200 hover:scale-110
-              ${dark ? 'text-gray-400 hover:bg-gray-800' : 'text-slate-400 hover:bg-green-50'}`}
+              ${dark ? 'text-green-300/70 hover:bg-green-900/40' : 'text-slate-400 hover:bg-green-50'}`}
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d={collapsed ? 'M5 2l4 5-4 5' : 'M9 2L5 7l4 5'} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
@@ -153,7 +153,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div key={group.label}>
               {!collapsed && (
                 <p className={`text-[10px] font-bold uppercase tracking-widest px-3 mb-1.5
-                  ${dark ? 'text-gray-600' : 'text-slate-300'}`}>
+                  ${dark ? 'text-green-700/60' : 'text-slate-300'}`}>
                   {group.label}
                 </p>
               )}
@@ -168,7 +168,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         ${active
                           ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-md shadow-green-500/20'
                           : dark
-                            ? 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                            ? 'text-green-300/70 hover:bg-green-900/40 hover:text-white'
                             : 'text-slate-500 hover:bg-green-50 hover:text-green-700'}
                       `}>
                         {active && (
@@ -193,11 +193,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         {/* 하단 */}
-        <div className={`p-3 border-t ${dark ? 'border-gray-800' : 'border-green-50'} space-y-1`}>
+        <div className={`p-3 border-t ${dark ? 'border-green-900/30' : 'border-green-50'} space-y-1`}>
+          {/* 쇼핑몰 가기 */}
+          <Link href="/shop"
+            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-bold transition-all duration-200
+              ${dark ? 'bg-green-700/20 hover:bg-green-700/40 text-green-300' : 'bg-green-50 hover:bg-green-100 text-green-700'}`}
+          >
+            <span className="text-base">🛒</span>
+            {!collapsed && <span>쇼핑몰 바로가기</span>}
+          </Link>
+          {/* 대문으로 */}
+          <Link href="/landing"
+            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
+              ${dark ? 'text-green-300/50 hover:bg-green-900/30 hover:text-green-300/80' : 'text-slate-400 hover:bg-green-50'}`}
+          >
+            <span className="text-base">🏡</span>
+            {!collapsed && <span>대문으로</span>}
+          </Link>
           <button
             onClick={() => setDark(!dark)}
             className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
-              ${dark ? 'text-gray-400 hover:bg-gray-800' : 'text-slate-500 hover:bg-green-50'}`}
+              ${dark ? 'text-green-300/70 hover:bg-green-900/40' : 'text-slate-500 hover:bg-green-50'}`}
           >
             <span className="text-base">{dark ? '☀️' : '🌙'}</span>
             {!collapsed && <span>{dark ? '라이트 모드' : '다크 모드'}</span>}
@@ -224,7 +240,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* 상단 헤더 (모바일) */}
         <header className={`
           md:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3
-          ${dark ? 'bg-gray-900 border-b border-gray-800' : 'bg-white border-b border-green-50'}
+          ${dark ? 'bg-[#0a1f10] border-b border-green-900/30' : 'bg-white border-b border-green-50'}
           shadow-sm
         `}>
           <div className="flex items-center gap-2">
@@ -242,7 +258,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             )}
             <button
               onClick={() => setDark(!dark)}
-              className={`p-2 rounded-xl transition-colors ${dark ? 'text-gray-400 hover:bg-gray-800' : 'text-slate-400 hover:bg-green-50'}`}
+              className={`p-2 rounded-xl transition-colors ${dark ? 'text-green-300/70 hover:bg-green-900/40' : 'text-slate-400 hover:bg-green-50'}`}
             >
               {dark ? '☀️' : '🌙'}
             </button>
@@ -258,7 +274,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* ── 모바일 하단 탭바 ── */}
       <nav className={`
         md:hidden fixed bottom-0 left-0 right-0 z-50
-        ${dark ? 'bg-gray-900 border-t border-gray-800' : 'bg-white border-t border-green-100'}
+        ${dark ? 'bg-[#0a1f10] border-t border-green-900/30' : 'bg-white border-t border-green-100'}
         pb-safe shadow-2xl shadow-green-900/10
       `}>
         <div className="flex items-center justify-around px-2 py-2">
@@ -271,7 +287,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   transition-all duration-200
                   ${active
                     ? 'bg-green-600 text-white scale-105 shadow-md shadow-green-500/30'
-                    : dark ? 'text-gray-500' : 'text-slate-400'}
+                    : dark ? 'text-green-300/50' : 'text-slate-400'}
                 `}>
                   <span className="text-lg leading-none">{item.icon}</span>
                   <span className={`text-[9px] font-bold leading-none ${active ? 'text-white' : ''}`}>
