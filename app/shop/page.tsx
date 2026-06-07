@@ -411,7 +411,7 @@ export default function ShopPage() {
             <p style={{ fontSize: '16px', color: sub, marginBottom: '32px', lineHeight: 1.7, wordBreak: 'keep-all', overflowWrap: 'break-word' }}>
               중간 유통 없이 어민에서 바로<br />더 신선하게, 더 저렴하게
             </p>
-            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+            <div className="hero-stats" style={{ display: 'flex', gap: '12px', flexWrap: 'nowrap' }}>
               {[
                 { num: products.length + '+', label: '등록 상품', icon: '📦' },
                 { num: visitorCount + '명', label: '지금 쇼핑중', icon: '👥' },
@@ -419,14 +419,14 @@ export default function ShopPage() {
               ].map(s => (
                 <div key={s.label} style={{
                   background: dark ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.8)',
-                  borderRadius: '18px', padding: '16px 20px',
+                  borderRadius: '14px', padding: '12px 14px',
                   border: `1.5px solid ${border}`, backdropFilter: 'blur(10px)',
-                  display: 'flex', alignItems: 'center', gap: '10px'
+                  display: 'flex', alignItems: 'center', gap: '8px', flex: 1
                 }}>
-                  <span style={{ fontSize: '24px' }}>{s.icon}</span>
-                  <div>
-                    <p style={{ fontSize: '22px', fontWeight: 900, color: '#14532d', margin: 0, letterSpacing: '-1px' }}>{s.num}</p>
-                    <p style={{ fontSize: '11px', color: sub, margin: '2px 0 0', fontWeight: 600 }}>{s.label}</p>
+                  <span style={{ fontSize: '20px', flexShrink: 0 }}>{s.icon}</span>
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ fontSize: '18px', fontWeight: 900, color: '#14532d', margin: 0, letterSpacing: '-1px' }}>{s.num}</p>
+                    <p style={{ fontSize: '10px', color: sub, margin: '1px 0 0', fontWeight: 600, whiteSpace: 'nowrap' }}>{s.label}</p>
                   </div>
                 </div>
               ))}
@@ -735,7 +735,7 @@ export default function ShopPage() {
 
             {/* STEP 0: 상품 선택 */}
             {gulbiStep === 0 && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', padding: '40px 48px', alignItems: 'center', textAlign: 'left', animation: 'promoIn 0.4s ease' }}>
+              <div className="promo-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', padding: '40px 48px', alignItems: 'center', textAlign: 'left', animation: 'promoIn 0.4s ease' }}>
                 <div>
                   <div style={{ fontSize: '56px', fontWeight: 900, color: dark ? 'rgba(22,163,74,0.1)' : 'rgba(22,163,74,0.07)', lineHeight: 1, marginBottom: '12px', letterSpacing: '-2px' }}>01</div>
                   <h3 style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-0.5px', marginBottom: '12px', color: text }}>원하는 농축수산물 고르기</h3>
@@ -770,7 +770,7 @@ export default function ShopPage() {
 
             {/* STEP 1: 신선 보장 */}
             {gulbiStep === 1 && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', padding: '40px 48px', alignItems: 'center', textAlign: 'left', animation: 'promoIn 0.4s ease' }}>
+              <div className="promo-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', padding: '40px 48px', alignItems: 'center', textAlign: 'left', animation: 'promoIn 0.4s ease' }}>
                 <div>
                   <div style={{ fontSize: '56px', fontWeight: 900, color: dark ? 'rgba(22,163,74,0.1)' : 'rgba(22,163,74,0.07)', lineHeight: 1, marginBottom: '12px', letterSpacing: '-2px' }}>02</div>
                   <h3 style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-0.5px', marginBottom: '12px', color: text }}>100% 신선함 보장</h3>
@@ -798,7 +798,7 @@ export default function ShopPage() {
 
             {/* STEP 2: 주문하기 */}
             {gulbiStep === 2 && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', padding: '40px 48px', alignItems: 'center', textAlign: 'left', animation: 'promoIn 0.4s ease' }}>
+              <div className="promo-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', padding: '40px 48px', alignItems: 'center', textAlign: 'left', animation: 'promoIn 0.4s ease' }}>
                 <div>
                   <div style={{ fontSize: '56px', fontWeight: 900, color: dark ? 'rgba(22,163,74,0.1)' : 'rgba(22,163,74,0.07)', lineHeight: 1, marginBottom: '12px', letterSpacing: '-2px' }}>03</div>
                   <h3 style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-0.5px', marginBottom: '12px', color: text }}>간편하게 주문하기</h3>
@@ -835,7 +835,7 @@ export default function ShopPage() {
 
             {/* STEP 3: 문앞 배송 */}
             {gulbiStep === 3 && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', padding: '40px 48px', alignItems: 'center', textAlign: 'left', animation: 'promoIn 0.4s ease' }}>
+              <div className="promo-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', padding: '40px 48px', alignItems: 'center', textAlign: 'left', animation: 'promoIn 0.4s ease' }}>
                 <div>
                   <div style={{ fontSize: '56px', fontWeight: 900, color: dark ? 'rgba(22,163,74,0.1)' : 'rgba(22,163,74,0.07)', lineHeight: 1, marginBottom: '12px', letterSpacing: '-2px' }}>04</div>
                   <h3 style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-0.5px', marginBottom: '12px', color: text }}>문 앞까지 신선 배송</h3>
@@ -1179,6 +1179,11 @@ export default function ShopPage() {
         @keyframes promoIn {
           from { opacity: 0; transform: translateY(10px); }
           to   { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 640px) {
+          .promo-grid { grid-template-columns: 1fr !important; gap: 20px !important; padding: 20px 16px !important; }
+          .hero-stats { gap: 8px !important; }
+          .hero-stats > div { padding: 10px 10px !important; border-radius: 12px !important; }
         }
         @media (max-width: 768px) {
           .promo-grid { grid-template-columns: 1fr !important; gap: 24px !important; padding: 24px 16px !important; }
