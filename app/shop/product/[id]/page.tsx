@@ -139,7 +139,7 @@ export default function ProductDetailPage() {
 
   const getPriceColor = () => {
     if (memberType === '도매업') return '#ec4899'
-    if (memberType === '소매업') return '#0f766e'
+    if (memberType === '소매업') return '#14532d'
     return '#6366f1'
   }
 
@@ -202,7 +202,7 @@ export default function ProductDetailPage() {
             <Link href="/landing" style={{display:'flex',alignItems:'center',gap:'8px',textDecoration:'none'}}>
               <span style={{fontSize:'20px'}}>🐟</span>
               <div>
-                <p style={{fontSize:'14px',fontWeight:800,color:D.text,letterSpacing:'-0.5px',lineHeight:1}}>굴비가게</p>
+                <p style={{fontSize:'14px',fontWeight:800,color:D.text,letterSpacing:'-0.5px',lineHeight:1}}>온종일팜</p>
                 <p style={{fontSize:'9px',color:D.sub,letterSpacing:'2px',textTransform:'uppercase'}}>Fresh Market</p>
               </div>
             </Link>
@@ -262,7 +262,7 @@ export default function ProductDetailPage() {
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'6px',marginBottom:'14px'}}>
               {([
                 {type:'일반',   label:'일반 소매가', emoji:'🛒', color:'#6366f1'},
-                {type:'소매업', label:'소매 유통가',  emoji:'🏪', color:'#0f766e'},
+                {type:'소매업', label:'소매 유통가',  emoji:'🏪', color:'#14532d'},
                 {type:'도매업', label:'도매 유통가',  emoji:'🏭', color:'#ec4899'},
               ] as const).map(t => (
                 isAdmin ? (
@@ -299,7 +299,7 @@ export default function ProductDetailPage() {
               <p style={{fontSize:'12px',color:D.sub}}>/{product.unit}</p>
               {memberType === '일반' && (
                 <div style={{marginTop:'10px',padding:'8px 12px',background:dark?'rgba(255,255,255,0.04)':'#f8fafc',borderRadius:'10px',display:'flex',flexDirection:'column',gap:'4px'}}>
-                  <p style={{fontSize:'11px',color:'#0f766e',fontWeight:600,margin:0}}>🏪 소매 유통가 {product.member_price.toLocaleString()}원 — 소매회원 전용</p>
+                  <p style={{fontSize:'11px',color:'#14532d',fontWeight:600,margin:0}}>🏪 소매 유통가 {product.member_price.toLocaleString()}원 — 소매회원 전용</p>
                   <p style={{fontSize:'11px',color:'#ec4899',fontWeight:600,margin:0}}>🏭 도매 유통가 {product.wholesale_price.toLocaleString()}원 — 도매회원 전용</p>
                 </div>
               )}
@@ -426,7 +426,7 @@ export default function ProductDetailPage() {
                 {/* 주문 유형 뱃지 */}
                 <div style={{display:'inline-flex',alignItems:'center',gap:'6px',background:memberType==='도매업'?'rgba(124,58,237,0.1)':memberType==='소매업'?'rgba(15,118,110,0.1)':'rgba(99,102,241,0.1)',borderRadius:'20px',padding:'6px 16px',marginBottom:'28px'}}>
                   <span style={{fontSize:'14px'}}>{memberType==='도매업'?'🏭':memberType==='소매업'?'🏪':'🛒'}</span>
-                  <span style={{fontSize:'12px',fontWeight:700,color:memberType==='도매업'?'#7c3aed':memberType==='소매업'?'#0f766e':'#6366f1'}}>{memberType} 주문 접수됨</span>
+                  <span style={{fontSize:'12px',fontWeight:700,color:memberType==='도매업'?'#7c3aed':memberType==='소매업'?'#14532d':'#6366f1'}}>{memberType} 주문 접수됨</span>
                 </div>
                 <div style={{display:'flex',gap:'10px'}}>
                   <button onClick={() => setShowOrderForm(false)}
@@ -476,13 +476,13 @@ export default function ProductDetailPage() {
                   {/* 회원 정보 뱃지 */}
                   {memberInfo && (
                     <div style={{display:'flex',alignItems:'center',gap:'12px',background:D.input,borderRadius:'14px',padding:'12px 16px'}}>
-                      <div style={{width:'40px',height:'40px',borderRadius:'12px',background:memberType==='도매업'?'linear-gradient(135deg,#7c3aed,#db2777)':memberType==='소매업'?'linear-gradient(135deg,#0f766e,#0891b2)':'linear-gradient(135deg,#6366f1,#8b5cf6)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'18px',flexShrink:0}}>
+                      <div style={{width:'40px',height:'40px',borderRadius:'12px',background:memberType==='도매업'?'linear-gradient(135deg,#7c3aed,#db2777)':memberType==='소매업'?'linear-gradient(135deg,#14532d,#15803d)':'linear-gradient(135deg,#6366f1,#8b5cf6)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'18px',flexShrink:0}}>
                         {memberType==='도매업'?'🏭':memberType==='소매업'?'🏪':'🛒'}
                       </div>
                       <div>
                         <div style={{display:'flex',alignItems:'center',gap:'6px'}}>
                           <p style={{fontSize:'14px',fontWeight:800,color:D.text,margin:0}}>{memberInfo.name}</p>
-                          <span style={{fontSize:'10px',fontWeight:700,padding:'2px 8px',borderRadius:'20px',background:memberType==='도매업'?'rgba(124,58,237,0.12)':memberType==='소매업'?'rgba(15,118,110,0.12)':'rgba(99,102,241,0.12)',color:memberType==='도매업'?'#7c3aed':memberType==='소매업'?'#0f766e':'#6366f1'}}>{memberType}</span>
+                          <span style={{fontSize:'10px',fontWeight:700,padding:'2px 8px',borderRadius:'20px',background:memberType==='도매업'?'rgba(124,58,237,0.12)':memberType==='소매업'?'rgba(15,118,110,0.12)':'rgba(99,102,241,0.12)',color:memberType==='도매업'?'#7c3aed':memberType==='소매업'?'#14532d':'#6366f1'}}>{memberType}</span>
                         </div>
                         <p style={{fontSize:'11px',color:D.sub,margin:'2px 0 0'}}>{memberInfo.contact || memberInfo.email}</p>
                       </div>

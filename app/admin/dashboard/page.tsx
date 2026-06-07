@@ -72,7 +72,7 @@ export default function DashboardPage() {
 
     // 주문 상태별
     const statusMap: Record<string, { count: number; color: string }> = {
-      '접수':  { count: 0, color: '#0ea5e9' },
+      '접수':  { count: 0, color: '#16a34a' },
       '준비중': { count: 0, color: '#f59e0b' },
       '출고':  { count: 0, color: '#8b5cf6' },
       '완료':  { count: 0, color: '#10b981' },
@@ -98,7 +98,7 @@ export default function DashboardPage() {
   }
 
   const STATUS_COLOR: Record<string, string> = {
-    '접수': 'bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400',
+    '접수': 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-500',
     '준비중': 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
     '출고': 'bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400',
     '완료': 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400',
@@ -115,7 +115,7 @@ export default function DashboardPage() {
   const totalChannel = channelStats.general + channelStats.retail + channelStats.wholesale || 1
   const totalStatusCount = orderStatusStats.reduce((s, o) => s + o.count, 0) || 1
 
-  const LineChart = ({ data, color = '#0f766e' }: { data: { revenue: number }[]; color?: string }) => {
+  const LineChart = ({ data, color = '#14532d' }: { data: { revenue: number }[]; color?: string }) => {
     if (data.length < 2) return null
     const W = 500; const H = 110; const PAD = 8
     const maxVal = Math.max(...data.map(d => d.revenue), 1)
@@ -154,7 +154,7 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 dark:text-white">{greeting}</h1>
-          <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">오늘도 굴비가게 화이팅! 🐟</p>
+          <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">오늘도 온종일팜 화이팅! 🐟</p>
         </div>
         <Link href="/admin/suppliers"
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all active:scale-95 hover:-translate-y-0.5"
@@ -184,7 +184,7 @@ export default function DashboardPage() {
       {/* 통계 카드 4개 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: '오늘 주문', value: `${stats.todayOrders}건`, icon: '📋', color: 'text-sky-600 dark:text-sky-400', bg: 'bg-sky-50 dark:bg-sky-900/20', border: 'border-sky-100 dark:border-sky-800' },
+          { label: '오늘 주문', value: `${stats.todayOrders}건`, icon: '📋', color: 'text-green-700 dark:text-green-500', bg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-100 dark:border-green-800' },
           { label: '미출고', value: `${stats.unshipped}건`, icon: '📦', color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-900/20', border: 'border-amber-100 dark:border-amber-800' },
           { label: '재고 부족', value: `${stats.lowStock}개`, icon: '⚠️', color: 'text-red-600 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-900/20', border: 'border-red-100 dark:border-red-800' },
           { label: '이번달 매출', value: loading ? '-' : `${(stats.monthRevenue / 10000).toFixed(0)}만원`, icon: '💰', color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/20', border: 'border-emerald-100 dark:border-emerald-800' },
@@ -192,7 +192,7 @@ export default function DashboardPage() {
           <div key={card.label} className={`${card.bg} border ${card.border} rounded-2xl p-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300`}>
             <div className="flex items-center justify-between mb-3">
               <span className="text-2xl">{card.icon}</span>
-              {loading && <div className="w-4 h-4 border-2 border-slate-300 border-t-sky-500 rounded-full animate-spin" />}
+              {loading && <div className="w-4 h-4 border-2 border-slate-300 border-t-green-600 rounded-full animate-spin" />}
             </div>
             <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{card.label}</p>
             <p className={`text-2xl font-bold mt-1 ${card.color}`}>{loading ? '-' : card.value}</p>
@@ -235,7 +235,7 @@ export default function DashboardPage() {
               <div key={i} className="flex-1 flex flex-col items-center gap-1">
                 <p className="text-xs text-slate-400 font-medium">{d.revenue > 0 ? `${(d.revenue / 10000).toFixed(0)}만` : ''}</p>
                 <div className="w-full rounded-t-lg transition-all duration-500 relative group"
-                  style={{ height: `${Math.max((d.revenue / maxMonthly) * 120, d.revenue > 0 ? 8 : 2)}px`, background: i === 5 ? 'linear-gradient(180deg,#0f766e,#0891b2)' : 'linear-gradient(180deg,#cbd5e1,#e2e8f0)' }}>
+                  style={{ height: `${Math.max((d.revenue / maxMonthly) * 120, d.revenue > 0 ? 8 : 2)}px`, background: i === 5 ? 'linear-gradient(180deg,#14532d,#15803d)' : 'linear-gradient(180deg,#cbd5e1,#e2e8f0)' }}>
                   <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 whitespace-nowrap z-10">
                     {d.revenue.toLocaleString()}원
                   </div>

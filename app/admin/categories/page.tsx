@@ -76,7 +76,7 @@ export default function CategoriesPage() {
           </p>
         </div>
         <button onClick={openAdd}
-          className="bg-sky-500 hover:bg-sky-400 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all active:scale-95 shadow-md shadow-sky-500/20 flex items-center gap-2">
+          className="bg-green-600 hover:bg-green-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all active:scale-95 shadow-md shadow-green-600/20 flex items-center gap-2">
           <span>＋</span> 카테고리 추가
         </button>
       </div>
@@ -84,7 +84,7 @@ export default function CategoriesPage() {
       {/* 통계 */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
         {[
-          { label: '전체 카테고리', value: categories.length, color: 'text-sky-500', bg: 'bg-sky-50 dark:bg-sky-900/20', icon: '🏷️' },
+          { label: '전체 카테고리', value: categories.length, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20', icon: '🏷️' },
           { label: '상품 있음', value: categories.filter(c => (c.product_count || 0) > 0).length, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20', icon: '✅' },
           { label: '비어있음', value: categories.filter(c => (c.product_count || 0) === 0).length, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20', icon: '📭' },
         ].map(s => (
@@ -104,7 +104,7 @@ export default function CategoriesPage() {
           <div className="p-12 text-center">
             <p className="text-4xl mb-3">🏷️</p>
             <p className="text-sm text-slate-400 dark:text-slate-500 mb-4">등록된 카테고리가 없습니다</p>
-            <button onClick={openAdd} className="bg-sky-500 hover:bg-sky-400 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all active:scale-95">
+            <button onClick={openAdd} className="bg-green-600 hover:bg-green-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all active:scale-95">
               첫 카테고리 추가하기
             </button>
           </div>
@@ -128,7 +128,7 @@ export default function CategoriesPage() {
 
                 {/* 이름 */}
                 <div className="flex-1 sm:col-span-5 flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
                     🏷️
                   </div>
                   <div>
@@ -158,7 +158,7 @@ export default function CategoriesPage() {
                     ▼
                   </button>
                   <button onClick={() => openEdit(cat)}
-                    className="text-xs font-semibold px-3 py-1.5 rounded-lg text-sky-500 hover:text-sky-600 border border-sky-200 dark:border-sky-800 hover:bg-sky-50 dark:hover:bg-sky-900/20 transition-colors">
+                    className="text-xs font-semibold px-3 py-1.5 rounded-lg text-green-600 hover:text-green-700 border border-green-200 dark:border-green-800 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors">
                     수정
                   </button>
                   <button onClick={() => setConfirmDelete(cat)}
@@ -192,7 +192,7 @@ export default function CategoriesPage() {
                 onKeyDown={e => e.key === 'Enter' && handleSave()}
                 placeholder="예: 고등어, 갈치, 새우..."
                 autoFocus
-                className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500" />
+                className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-600" />
               {error && <p className="text-red-500 text-xs mt-2">{error}</p>}
             </div>
             <div className="flex gap-3 p-6 border-t border-slate-100 dark:border-gray-700">
@@ -201,7 +201,7 @@ export default function CategoriesPage() {
                 취소
               </button>
               <button onClick={handleSave} disabled={saving}
-                className="flex-1 py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-white text-sm font-bold transition-colors active:scale-95 disabled:opacity-50 shadow-md shadow-sky-500/20">
+                className="flex-1 py-3 rounded-xl bg-green-600 hover:bg-green-500 text-white text-sm font-bold transition-colors active:scale-95 disabled:opacity-50 shadow-md shadow-green-600/20">
                 {saving ? '저장 중...' : editTarget ? '수정 완료' : '추가'}
               </button>
             </div>

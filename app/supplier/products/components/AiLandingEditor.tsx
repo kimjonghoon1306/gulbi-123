@@ -360,7 +360,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
                 {/* 메타 정보 */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                   {[
-                    { label: '상품명', key: 'name', placeholder: '예) 영광 법성포 굴비', full: true },
+                    { label: '상품명', key: 'name', placeholder: '예) 온종일팜 신선상품', full: true },
                     { label: '도매 제안가', key: 'suggested_wholesale_price', placeholder: '원' },
                     { label: '소매 제안가', key: 'suggested_retail_price', placeholder: '원' },
                     { label: '재고', key: 'stock', placeholder: '수량' },

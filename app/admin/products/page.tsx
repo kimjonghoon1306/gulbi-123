@@ -202,7 +202,7 @@ export default function ProductsPage() {
               ✨ AI 상세페이지
             </button>
             <button onClick={() => { setEditProduct(null); setForm(EMPTY_FORM); setShowForm(true) }}
-              className="bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95 shadow-md shadow-sky-500/20">
+              className="bg-green-600 hover:bg-green-500 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95 shadow-md shadow-green-600/20">
               + 상품 등록
             </button>
           </div>

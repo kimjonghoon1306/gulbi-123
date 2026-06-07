@@ -156,8 +156,8 @@ export default function SettingsPage() {
 
         {/* 왼쪽 캐릭터 + 메뉴 */}
         <div className="lg:col-span-1 lg:row-start-1 space-y-4 order-1 lg:order-none">
-          {/* 굴비 캐릭터 */}
-          <div className="relative bg-gradient-to-br from-sky-400 via-sky-500 to-blue-600 rounded-3xl p-6 overflow-hidden shadow-xl shadow-sky-500/30">
+          {/* 팜이 캐릭터 */}
+          <div className="relative bg-gradient-to-br from-green-500 via-green-600 to-blue-600 rounded-3xl p-6 overflow-hidden shadow-xl shadow-green-600/30">
             {/* 물방울 애니메이션 */}
             {bubbles.map(b => (
               <div key={b.id} className="absolute rounded-full bg-white/10"
@@ -169,12 +169,12 @@ export default function SettingsPage() {
                 }} />
             ))}
             <div className="relative z-10 text-center">
-              <div className="text-7xl mb-3 fish-bounce inline-block">{fishMood}</div>
-              <p className="text-white font-bold text-lg">굴비씨</p>
-              <p className="text-sky-100 text-xs mt-1">시스템 마스코트</p>
+              <div className="text-7xl mb-3 farm-bounce inline-block">{fishMood}</div>
+              <p className="text-white font-bold text-lg">팜이</p>
+              <p className="text-green-100 text-xs mt-1">시스템 마스코트</p>
               <div className="mt-4 bg-white/20 rounded-2xl px-4 py-2">
                 <p className="text-white text-xs font-medium">
-                  {fishMood === '😄' && '오늘도 화이팅! 🐟'}
+                  {fishMood === '😄' && '오늘도 화이팅! 🌾'}
                   {fishMood === '😤' && '다 입력해주세요!'}
                   {fishMood === '😵' && '비번이 달라요!'}
                   {fishMood === '😬' && '6자 이상 써주세요!'}
@@ -193,7 +193,7 @@ export default function SettingsPage() {
               <button key={s.key} onClick={() => setActiveSection(s.key)}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 mb-1
                   ${activeSection === s.key
-                    ? 'bg-sky-500 text-white shadow-md scale-[1.02]'
+                    ? 'bg-green-600 text-white shadow-md scale-[1.02]'
                     : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-gray-700'}`}>
                 <span className="text-lg">{s.icon}</span>
                 {s.label}
@@ -215,13 +215,13 @@ export default function SettingsPage() {
                 </div>
                 <div className="p-6">
                   <div className="flex items-center gap-5 p-4 bg-slate-50 dark:bg-gray-700/50 rounded-2xl mb-6">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-sky-400 to-sky-600 flex items-center justify-center text-3xl shadow-lg">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center text-3xl shadow-lg">
                       🐟
                     </div>
                     <div>
                       <p className="font-bold text-slate-800 dark:text-white text-lg">관리자</p>
-                      <p className="text-sm text-slate-400 dark:text-slate-500">굴비가게 도매 관리 시스템</p>
-                      <span className="text-xs bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 px-2.5 py-1 rounded-full font-medium mt-1 inline-block">ADMIN</span>
+                      <p className="text-sm text-slate-400 dark:text-slate-500">온종일팜 도매 관리 시스템</p>
+                      <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-500 px-2.5 py-1 rounded-full font-medium mt-1 inline-block">ADMIN</span>
                     </div>
                   </div>
 
@@ -267,7 +267,7 @@ export default function SettingsPage() {
                         <input type={f.show ? 'text' : 'password'} value={f.value}
                           onChange={e => { f.set(e.target.value); setFishMood('😄') }}
                           placeholder="••••••••"
-                          className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 pr-12 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all" />
+                          className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 pr-12 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-600 transition-all" />
                         <button type="button" onClick={f.toggle}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-lg hover:scale-110 transition-transform">
                           {f.show ? '🙈' : '👁️'}
@@ -284,7 +284,7 @@ export default function SettingsPage() {
                         {[1,2,3,4].map(i => (
                           <div key={i} className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
                             newPw.length >= i * 3
-                              ? i <= 1 ? 'bg-red-400' : i <= 2 ? 'bg-amber-400' : i <= 3 ? 'bg-sky-400' : 'bg-emerald-400'
+                              ? i <= 1 ? 'bg-red-400' : i <= 2 ? 'bg-amber-400' : i <= 3 ? 'bg-green-500' : 'bg-emerald-400'
                               : 'bg-slate-200 dark:bg-gray-700'
                           }`} />
                         ))}
@@ -305,7 +305,7 @@ export default function SettingsPage() {
                   )}
 
                   <button onClick={handleChangePw} disabled={pwLoading}
-                    className="w-full py-4 rounded-xl bg-sky-500 hover:bg-sky-400 text-white text-sm font-bold transition-all duration-200 active:scale-95 disabled:opacity-50 shadow-lg shadow-sky-500/20 hover:shadow-sky-500/40">
+                    className="w-full py-4 rounded-xl bg-green-600 hover:bg-green-500 text-white text-sm font-bold transition-all duration-200 active:scale-95 disabled:opacity-50 shadow-lg shadow-green-600/20 hover:shadow-green-600/40">
                     {pwLoading ? (
                       <span className="flex items-center justify-center gap-2">
                         <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
@@ -352,7 +352,7 @@ export default function SettingsPage() {
                           value={openaiKey}
                           onChange={e => setOpenaiKey(e.target.value)}
                           placeholder="sk-..."
-                          className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 pr-12 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                          className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 pr-12 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-600"
                         />
                         <button type="button" onClick={() => setShowOpenaiKey(!showOpenaiKey)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-xl hover:scale-110 transition-transform">
@@ -429,7 +429,7 @@ export default function SettingsPage() {
                 <div className="p-6">
                   <div className="grid grid-cols-2 gap-3 mb-4">
                     {[
-                      { label: '시스템', value: '굴비가게 관리 시스템', icon: '🐟' },
+                      { label: '시스템', value: '온종일팜 관리 시스템', icon: '🐟' },
                       { label: '버전', value: 'v1.0.0', icon: '🚀' },
                       { label: '프레임워크', value: 'Next.js 14', icon: '⚡' },
                       { label: '데이터베이스', value: 'Supabase', icon: '🗄️' },
@@ -451,10 +451,10 @@ export default function SettingsPage() {
                 <div className="absolute top-0 right-0 text-[120px] opacity-10 leading-none">🐟</div>
                 <div className="relative z-10">
                   <p className="text-4xl mb-3">🐟</p>
-                  <p className="text-white font-bold text-xl">굴비가게</p>
-                  <p className="text-slate-400 text-sm mt-1">영광 수산물 도매 관리 플랫폼</p>
+                  <p className="text-white font-bold text-xl">온종일팜</p>
+                  <p className="text-slate-400 text-sm mt-1">농축수산물 도매 관리 플랫폼</p>
                   <div className="flex gap-2 mt-4">
-                    <span className="text-xs bg-sky-500/20 text-sky-400 px-3 py-1.5 rounded-full border border-sky-500/20">Next.js</span>
+                    <span className="text-xs bg-green-600/20 text-green-500 px-3 py-1.5 rounded-full border border-green-600/20">Next.js</span>
                     <span className="text-xs bg-emerald-500/20 text-emerald-400 px-3 py-1.5 rounded-full border border-emerald-500/20">Supabase</span>
                     <span className="text-xs bg-slate-500/20 text-slate-400 px-3 py-1.5 rounded-full border border-slate-500/20">Vercel</span>
                   </div>
@@ -492,7 +492,7 @@ export default function SettingsPage() {
           50% { transform: translateY(-60px) scale(1.1); opacity: 0.08; }
           100% { transform: translateY(-120px) scale(0.8); opacity: 0; }
         }
-        .fish-bounce {
+        .farm-bounce {
           animation: fishBounce 2s ease-in-out infinite;
           display: inline-block;
         }

@@ -126,7 +126,7 @@ ${rows.map(r => `<Row>${r.map(c => `<Cell><Data ss:Type="String">${String(c).rep
           {['전체', '대기중', '승인', '거절'].map(s => (
             <button key={s} onClick={() => setFilterStatus(s)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200
-                ${filterStatus === s ? 'bg-sky-500 text-white' : 'bg-white dark:bg-gray-800 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-gray-700'}`}>
+                ${filterStatus === s ? 'bg-green-600 text-white' : 'bg-white dark:bg-gray-800 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-gray-700'}`}>
               {s} {s !== '전체' && <span className="ml-1 opacity-70">{members.filter(m => m.status === s).length}</span>}
             </button>
           ))}
@@ -146,7 +146,7 @@ ${rows.map(r => `<Row>${r.map(c => `<Cell><Data ss:Type="String">${String(c).rep
         </div>
         <input type="text" value={search} onChange={e => setSearch(e.target.value)}
           placeholder="🔍 이름 / 이메일 / 연락처 / 업체명"
-          className="flex-1 min-w-48 border border-slate-200 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-800 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500" />
+          className="flex-1 min-w-48 border border-slate-200 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-800 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-600" />
       </div>
 
       {/* 회원 목록 */}
@@ -184,7 +184,7 @@ ${rows.map(r => `<Row>${r.map(c => `<Cell><Data ss:Type="String">${String(c).rep
               <p className="text-xs text-slate-300 dark:text-slate-600 hidden md:block">{new Date(m.created_at).toLocaleDateString('ko-KR')}</p>
               {(m.member_type === '소매업' || m.member_type === '도매업') && (
                 <button onClick={() => { setSelected(m); setNote(m.note || '') }}
-                  className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${m.status === '대기중' ? 'bg-sky-500 hover:bg-sky-400 text-white' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 border border-slate-200 dark:border-gray-600'}`}>
+                  className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${m.status === '대기중' ? 'bg-green-600 hover:bg-green-500 text-white' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 border border-slate-200 dark:border-gray-600'}`}>
                   {m.status === '대기중' ? '심사하기' : '수정'}
                 </button>
               )}
@@ -220,7 +220,7 @@ ${rows.map(r => `<Row>${r.map(c => `<Cell><Data ss:Type="String">${String(c).rep
                 <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">메모 (선택)</label>
                 <textarea value={note} onChange={e => setNote(e.target.value)} rows={2}
                   placeholder="거절 사유 등 메모를 입력하세요"
-                  className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none" />
+                  className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-600 resize-none" />
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <button onClick={() => updateStatus(selected.id, '거절')}

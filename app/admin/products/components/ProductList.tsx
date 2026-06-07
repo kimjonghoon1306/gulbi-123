@@ -32,7 +32,7 @@ export default function ProductList({
         {[{ key: 'products', label: '🐟 상품 목록' }, { key: 'categories', label: '📂 카테고리 관리' }].map(t => (
           <button key={t.key} onClick={() => setTab(t.key as any)}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200
-              ${tab === t.key ? 'bg-sky-500 text-white shadow-md' : 'bg-white dark:bg-gray-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-gray-700 border border-slate-100 dark:border-gray-700'}`}>
+              ${tab === t.key ? 'bg-green-600 text-white shadow-md' : 'bg-white dark:bg-gray-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-gray-700 border border-slate-100 dark:border-gray-700'}`}>
             {t.label}
           </button>
         ))}
@@ -72,7 +72,7 @@ export default function ProductList({
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex gap-2">
-                        <button onClick={() => onEdit(p)} className="text-xs text-sky-500 hover:text-sky-600 font-medium">수정</button>
+                        <button onClick={() => onEdit(p)} className="text-xs text-green-600 hover:text-green-700 font-medium">수정</button>
                         <button onClick={() => onDelete(p.id)} className="text-xs text-red-400 hover:text-red-500 font-medium">삭제</button>
                       </div>
                     </td>
@@ -88,7 +88,7 @@ export default function ProductList({
         <div>
           <div className="flex justify-end mb-4">
             <button onClick={onAddCat}
-              className="bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95">
+              className="bg-green-600 hover:bg-green-500 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95">
               + 카테고리 추가
             </button>
           </div>
@@ -101,7 +101,7 @@ export default function ProductList({
               <div key={c.id} className="flex items-center justify-between px-6 py-4 border-b border-slate-50 dark:border-gray-700/50 hover:bg-slate-50 dark:hover:bg-gray-700/30 transition-colors">
                 <span className="text-sm font-medium text-slate-800 dark:text-white">📂 {c.name}</span>
                 <div className="flex gap-3">
-                  <button onClick={() => onEditCat(c)} className="text-xs text-sky-500 hover:text-sky-600 font-medium">수정</button>
+                  <button onClick={() => onEditCat(c)} className="text-xs text-green-600 hover:text-green-700 font-medium">수정</button>
                   <button onClick={() => onDeleteCat(c.id)} className="text-xs text-red-400 hover:text-red-500 font-medium">삭제</button>
                 </div>
               </div>

@@ -16,7 +16,7 @@ type Product = { id: string; name: string; retail_price: number; unit: string }
 
 const STATUS_LIST = ['접수', '준비중', '출고', '완료']
 const STATUS_CONFIG: Record<string, { color: string; bg: string; icon: string }> = {
-  '접수':  { color: 'text-sky-600 dark:text-sky-400',      bg: 'bg-sky-50 dark:bg-sky-900/20 border-sky-100 dark:border-sky-800',      icon: '📋' },
+  '접수':  { color: 'text-green-700 dark:text-green-500',      bg: 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800',      icon: '📋' },
   '준비중':{ color: 'text-amber-600 dark:text-amber-400',  bg: 'bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800',  icon: '📦' },
   '출고':  { color: 'text-violet-600 dark:text-violet-400',bg: 'bg-violet-50 dark:bg-violet-900/20 border-violet-100 dark:border-violet-800',icon: '🚚' },
   '완료':  { color: 'text-emerald-600 dark:text-emerald-400',bg: 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-800',icon: '✅' },
@@ -182,7 +182,7 @@ export default function RetailPage() {
           </button>
           <button onClick={() => { resetForm(); setShowForm(true) }}
             className="text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95 shadow-lg"
-            style={{ background: 'linear-gradient(135deg,#0f766e,#0891b2)', boxShadow: '0 4px 15px rgba(15,118,110,0.35)' }}>
+            style={{ background: 'linear-gradient(135deg,#14532d,#15803d)', boxShadow: '0 4px 15px rgba(15,118,110,0.35)' }}>
             + 주문 등록
           </button>
         </div>
@@ -192,7 +192,7 @@ export default function RetailPage() {
       <div className="grid grid-cols-4 gap-4 mb-6">
         {[
           { label: '전체 주문', value: stats.total + '건', icon: '📋', color: 'from-slate-500 to-slate-600' },
-          { label: '오늘 접수', value: stats.today + '건', icon: '🌅', color: 'from-sky-500 to-blue-600' },
+          { label: '오늘 접수', value: stats.today + '건', icon: '🌅', color: 'from-green-600 to-blue-600' },
           { label: '처리 대기', value: stats.pending + '건', icon: '⏳', color: 'from-amber-500 to-orange-500' },
           { label: '완료 매출', value: (stats.revenue / 10000).toFixed(0) + '만원', icon: '💰', color: 'from-emerald-500 to-teal-500' },
         ].map((s, i) => (
@@ -213,7 +213,7 @@ export default function RetailPage() {
             <button key={s} onClick={() => setFilterStatus(s)}
               className={'px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-1.5 '
                 + (filterStatus === s ? 'text-white shadow-md' : 'bg-white dark:bg-gray-800 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-gray-700')}
-              style={filterStatus === s ? { background: 'linear-gradient(135deg,#0f766e,#0891b2)' } : {}}>
+              style={filterStatus === s ? { background: 'linear-gradient(135deg,#14532d,#15803d)' } : {}}>
               {s !== '전체' && STATUS_CONFIG[s]?.icon} {s}
               {s !== '전체' && (
                 <span className={'text-xs px-1.5 py-0.5 rounded-full ' + (filterStatus === s ? 'bg-white/20' : 'bg-slate-100 dark:bg-gray-700')}>
@@ -278,7 +278,7 @@ export default function RetailPage() {
                   <button key={s} onClick={() => updateStatus(o.id, s)}
                     className={'flex-1 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 '
                       + (o.status === s ? 'text-white shadow-md' : 'bg-slate-50 dark:bg-gray-700 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-gray-600')}
-                    style={o.status === s ? { background: 'linear-gradient(135deg,#0f766e,#0891b2)' } : {}}>
+                    style={o.status === s ? { background: 'linear-gradient(135deg,#14532d,#15803d)' } : {}}>
                     {STATUS_CONFIG[s].icon} {s}
                   </button>
                 ))}
@@ -292,7 +292,7 @@ export default function RetailPage() {
       {viewOrder && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setViewOrder(null)}>
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-fadeIn" onClick={e => e.stopPropagation()}>
-            <div className="p-6 border-b border-slate-100 dark:border-gray-700" style={{ background: 'linear-gradient(135deg,#0f766e,#0891b2)' }}>
+            <div className="p-6 border-b border-slate-100 dark:border-gray-700" style={{ background: 'linear-gradient(135deg,#14532d,#15803d)' }}>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-white/70 text-xs mb-1">{viewOrder.order_number}</p>
@@ -337,7 +337,7 @@ export default function RetailPage() {
                     </div>
                   ))}
                 </div>
-                <div className="flex justify-between items-center mt-4 px-4 py-3 rounded-xl" style={{ background: 'linear-gradient(135deg,rgba(15,118,110,0.08),rgba(8,145,178,0.08))' }}>
+                <div className="flex justify-between items-center mt-4 px-4 py-3 rounded-xl" style={{ background: 'linear-gradient(135deg,rgba(15,118,110,0.08),rgba(21,128,61,0.08))' }}>
                   <span className="font-bold text-slate-800 dark:text-white">합계</span>
                   <span className="text-xl font-bold text-teal-600 dark:text-teal-400">{viewOrder.total_amount.toLocaleString()}원</span>
                 </div>
@@ -447,7 +447,7 @@ export default function RetailPage() {
                     </div>
                   ))}
                 </div>
-                <div className="flex justify-between items-center mt-4 px-4 py-3 rounded-xl" style={{ background: 'linear-gradient(135deg,rgba(15,118,110,0.08),rgba(8,145,178,0.08))' }}>
+                <div className="flex justify-between items-center mt-4 px-4 py-3 rounded-xl" style={{ background: 'linear-gradient(135deg,rgba(15,118,110,0.08),rgba(21,128,61,0.08))' }}>
                   <span className="font-bold text-slate-800 dark:text-white">합계</span>
                   <span className="text-2xl font-bold text-teal-600 dark:text-teal-400">{totalAmount.toLocaleString()}원</span>
                 </div>
@@ -457,7 +457,7 @@ export default function RetailPage() {
               <button onClick={resetForm} className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-gray-600 text-slate-500 dark:text-slate-400 text-sm font-medium hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors">취소</button>
               <button onClick={saveOrder}
                 className="flex-1 py-3 rounded-xl text-white text-sm font-bold transition-all active:scale-95 shadow-lg"
-                style={{ background: 'linear-gradient(135deg,#0f766e,#0891b2)', boxShadow: '0 4px 15px rgba(15,118,110,0.35)' }}>
+                style={{ background: 'linear-gradient(135deg,#14532d,#15803d)', boxShadow: '0 4px 15px rgba(15,118,110,0.35)' }}>
                 {editOrder ? '✅ 수정 완료' : '✨ 주문 등록'}
               </button>
             </div>

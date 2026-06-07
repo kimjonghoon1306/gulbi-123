@@ -344,7 +344,7 @@ export default function AiLandingEditor({ show, onClose, products, onDone }: Pro
                 <div>
                   <h3 style={{ color: aiDark ? 'white' : '#111', fontSize: '18px', fontWeight: 900, margin: '0 0 12px' }}>📋 상품 정보</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <input value={aiMeta.name} onChange={e => setAiMeta(p => ({ ...p, name: e.target.value }))} placeholder="상품명 (예: 영광 법성포 보리굴비)"
+                    <input value={aiMeta.name} onChange={e => setAiMeta(p => ({ ...p, name: e.target.value }))} placeholder="상품명 (예: 산지직송 보리굴비)"
                       style={{ padding: '15px 16px', borderRadius: '12px', border: '2px solid ' + (aiDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)'), background: aiDark ? 'rgba(255,255,255,0.07)' : 'white', color: aiDark ? 'white' : '#111', fontSize: '15px', fontWeight: 600, outline: 'none' }}
                       onFocus={e => { e.target.style.borderColor = '#c8a96e' }} onBlur={e => { e.target.style.borderColor = aiDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)' }} />
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>

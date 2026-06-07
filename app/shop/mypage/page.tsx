@@ -29,7 +29,7 @@ const STATUS_ICON = ['📋', '📦', '🚚', '✅']
 
 const TYPE_CONFIG = {
   '일반':  { color: '#6366f1', gradient: 'linear-gradient(135deg,#6366f1,#8b5cf6)', label: '일반 구매자', icon: '🛒', badge: '일반회원' },
-  '소매업': { color: '#0f766e', gradient: 'linear-gradient(135deg,#0f766e,#0891b2)', label: '소매 유통',   icon: '🏪', badge: '소매회원' },
+  '소매업': { color: '#14532d', gradient: 'linear-gradient(135deg,#14532d,#15803d)', label: '소매 유통',   icon: '🏪', badge: '소매회원' },
   '도매업': { color: '#7c3aed', gradient: 'linear-gradient(135deg,#7c3aed,#db2777)', label: '도매 유통',   icon: '🏭', badge: '도매회원' },
 }
 
@@ -42,7 +42,7 @@ const GRADE_INFO = [
 
 export default function MyPage() {
   return (
-    <Suspense fallback={<div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center' }}><div style={{ width:'44px', height:'44px', borderRadius:'50%', border:'3px solid #0f766e', borderTopColor:'transparent', animation:'spin 0.8s linear infinite' }} /><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style></div>}>
+    <Suspense fallback={<div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center' }}><div style={{ width:'44px', height:'44px', borderRadius:'50%', border:'3px solid #14532d', borderTopColor:'transparent', animation:'spin 0.8s linear infinite' }} /><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style></div>}>
       <MyPageInner />
     </Suspense>
   )

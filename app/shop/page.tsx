@@ -12,12 +12,12 @@ type Product = {
 type Category = { id: string; name: string }
 
 const CAT_ICONS: Record<string, string> = {
-  '어류': '🐟', '갑각류': '🦀', '패류': '🦪', '해조류': '🌿',
+  '농산물': '🥬', '과일': '🍎', '축산물': '🥩', '수산물': '🐟', '해조류': '🌿', '어류': '🐟', '갑각류': '🦀', '패류': '🦪',
   '건어물/염장류': '🐠', '기타': '🐙', '전체': '🛒'
 }
 
 const CAT_COLORS: Record<string, { bg: string; border: string; shadow: string }> = {
-  '전체':           { bg: 'linear-gradient(135deg,#0f766e,#0891b2)', border: '#0f766e', shadow: 'rgba(15,118,110,0.4)' },
+  '전체':           { bg: 'linear-gradient(135deg,#14532d,#15803d)', border: '#14532d', shadow: 'rgba(15,118,110,0.4)' },
   '어류':           { bg: 'linear-gradient(135deg,#3b82f6,#6366f1)', border: '#3b82f6', shadow: 'rgba(59,130,246,0.4)' },
   '갑각류':         { bg: 'linear-gradient(135deg,#f97316,#ef4444)', border: '#f97316', shadow: 'rgba(249,115,22,0.4)' },
   '패류':           { bg: 'linear-gradient(135deg,#ec4899,#f43f5e)', border: '#ec4899', shadow: 'rgba(236,72,153,0.4)' },
@@ -197,14 +197,14 @@ export default function ShopPage() {
       }}>
         <div style={{
           width: '44px', height: '44px', borderRadius: '14px', flexShrink: 0,
-          background: 'linear-gradient(135deg,#0f766e,#0891b2)',
+          background: 'linear-gradient(135deg,#14532d,#15803d)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px'
         }}>🐟</div>
         <div>
           <p style={{ fontSize: '13px', fontWeight: 800, color: text, margin: 0, lineHeight: 1.3 }}>
             {popup.name}님이
           </p>
-          <p style={{ fontSize: '11px', color: '#0f766e', fontWeight: 700, margin: '2px 0' }}>
+          <p style={{ fontSize: '11px', color: '#14532d', fontWeight: 700, margin: '2px 0' }}>
             {popup.action}
           </p>
           <p style={{ fontSize: '11px', color: sub, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '160px' }}>
@@ -228,13 +228,13 @@ export default function ShopPage() {
             <Link href="/landing" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', flexShrink: 0 }}>
               <div style={{
                 width: '42px', height: '42px', borderRadius: '14px',
-                background: 'linear-gradient(135deg,#0f766e,#0891b2)',
+                background: 'linear-gradient(135deg,#14532d,#15803d)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '22px', boxShadow: '0 6px 16px rgba(15,118,110,0.35)'
               }}>🐟</div>
               <div>
-                <p style={{ fontSize: '16px', fontWeight: 900, color: text, letterSpacing: '-0.5px', lineHeight: 1, margin: 0 }}>굴비가게</p>
-                <p style={{ fontSize: '9px', color: '#0f766e', letterSpacing: '2px', textTransform: 'uppercase', lineHeight: 1.5, margin: 0, fontWeight: 700 }}>FRESH SEAFOOD</p>
+                <p style={{ fontSize: '16px', fontWeight: 900, color: text, letterSpacing: '-0.5px', lineHeight: 1, margin: 0 }}>온종일팜</p>
+                <p style={{ fontSize: '9px', color: '#14532d', letterSpacing: '2px', textTransform: 'uppercase', lineHeight: 1.5, margin: 0, fontWeight: 700 }}>FRESH SEAFOOD</p>
               </div>
             </Link>
 
@@ -244,7 +244,7 @@ export default function ShopPage() {
                 <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', fontSize: '16px' }}>🔍</span>
                 <input
                   type="text" value={search} onChange={e => setSearch(e.target.value)}
-                  placeholder="어떤 수산물을 찾으세요?"
+                  placeholder="어떤 상품을 찾으세요?"
                   style={{
                     width: '100%', background: inputBg,
                     border: `2px solid transparent`,
@@ -253,7 +253,7 @@ export default function ShopPage() {
                     transition: 'all 0.2s', boxSizing: 'border-box',
                     fontWeight: 500
                   }}
-                  onFocus={e => { e.target.style.borderColor = '#0f766e'; e.target.style.boxShadow = '0 0 0 4px rgba(15,118,110,0.12)' }}
+                  onFocus={e => { e.target.style.borderColor = '#14532d'; e.target.style.boxShadow = '0 0 0 4px rgba(15,118,110,0.12)' }}
                   onBlur={e => { e.target.style.borderColor = 'transparent'; e.target.style.boxShadow = 'none' }}
                 />
               </div>
@@ -269,7 +269,7 @@ export default function ShopPage() {
                   padding: '5px 12px', border: '1px solid rgba(15,118,110,0.2)'
                 }}>
                   <span style={{ fontSize: '8px', color: '#22c55e' }}>●</span>
-                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#0f766e' }}>{visitorCount}명 쇼핑중</span>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#14532d' }}>{visitorCount}명 쇼핑중</span>
                 </div>
               )}
 
@@ -283,7 +283,7 @@ export default function ShopPage() {
                       fontSize: '12px', fontWeight: 700, padding: '5px 12px',
                       borderRadius: '20px',
                       background: memberType === '도매업' ? 'rgba(124,58,237,0.12)' : memberType === '소매업' ? 'rgba(15,118,110,0.12)' : 'rgba(0,0,0,0.06)',
-                      color: memberType === '도매업' ? '#7c3aed' : memberType === '소매업' ? '#0f766e' : sub
+                      color: memberType === '도매업' ? '#7c3aed' : memberType === '소매업' ? '#14532d' : sub
                     }}>{memberType}</span>
                     <Link href="/shop/cart" className="header-btn" style={{
                       position: 'relative', width: '40px', height: '40px', borderRadius: '12px',
@@ -320,7 +320,7 @@ export default function ShopPage() {
                     }}>로그인</Link>
                     <Link href="/shop/register" className="header-btn" style={{
                       fontSize: '13px', fontWeight: 800, padding: '10px 20px',
-                      borderRadius: '12px', background: 'linear-gradient(135deg,#0f766e,#0891b2)',
+                      borderRadius: '12px', background: 'linear-gradient(135deg,#14532d,#15803d)',
                       color: 'white', textDecoration: 'none',
                       boxShadow: '0 6px 20px rgba(15,118,110,0.35)'
                     }}>무료 가입 🎉</Link>
@@ -337,7 +337,7 @@ export default function ShopPage() {
         <div style={{
           background: memberType === '도매업'
             ? 'linear-gradient(90deg,#7c3aed,#6366f1)'
-            : 'linear-gradient(90deg,#0f766e,#0891b2)',
+            : 'linear-gradient(90deg,#14532d,#15803d)',
           padding: '10px 24px', textAlign: 'center',
           fontSize: '13px', fontWeight: 700, color: 'white',
           letterSpacing: '0.3px'
@@ -362,7 +362,7 @@ export default function ShopPage() {
         </div>
 
         {/* 떠다니는 이모지 */}
-        {['🐟','🦀','🦪','🐙','🦐','🌊'].map((em, i) => (
+        {['🌾','🥩','🐟','🥬','🍎','🧺'].map((em, i) => (
           <div key={i} style={{
             position: 'absolute', fontSize: '32px', opacity: 0.15,
             left: `${8 + i * 16}%`, top: `${15 + (i % 3) * 25}%`,
@@ -388,7 +388,7 @@ export default function ShopPage() {
               borderRadius: '100px', padding: '6px 16px', marginBottom: '20px'
             }}>
               <span style={{ fontSize: '12px' }}>🌊</span>
-              <span style={{ fontSize: '12px', fontWeight: 700, color: '#0f766e' }}>매일 아침 영광 앞바다에서 직송</span>
+              <span style={{ fontSize: '12px', fontWeight: 700, color: '#14532d' }}>산지에서 매일 직송</span>
             </div>
             <h1 style={{
               fontSize: 'clamp(32px,4vw,60px)', fontWeight: 900,
@@ -396,9 +396,9 @@ export default function ShopPage() {
             }}>
               신선함이 다른<br />
               <span style={{
-                background: 'linear-gradient(135deg,#0f766e,#0891b2)',
+                background: 'linear-gradient(135deg,#14532d,#15803d)',
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
-              }}>수산물 직거래</span>
+              }}>농축수산물 직거래</span>
             </h1>
             <p style={{ fontSize: '16px', color: sub, marginBottom: '32px', lineHeight: 1.7, wordBreak: 'keep-all', overflowWrap: 'break-word' }}>
               중간 유통 없이 어민에서 바로<br />더 신선하게, 더 저렴하게
@@ -417,7 +417,7 @@ export default function ShopPage() {
                 }}>
                   <span style={{ fontSize: '24px' }}>{s.icon}</span>
                   <div>
-                    <p style={{ fontSize: '22px', fontWeight: 900, color: '#0f766e', margin: 0, letterSpacing: '-1px' }}>{s.num}</p>
+                    <p style={{ fontSize: '22px', fontWeight: 900, color: '#14532d', margin: 0, letterSpacing: '-1px' }}>{s.num}</p>
                     <p style={{ fontSize: '11px', color: sub, margin: '2px 0 0', fontWeight: 600 }}>{s.label}</p>
                   </div>
                 </div>
@@ -436,7 +436,7 @@ export default function ShopPage() {
             <div style={{ fontSize:'32px', animation:'floatFish 3.5s ease-in-out infinite', animationDelay:'1.5s' }}>🐙</div>
             <div style={{
               background:'white', borderRadius:'12px', padding:'5px 8px',
-              fontSize:'9px', fontWeight:800, color:'#0f766e',
+              fontSize:'9px', fontWeight:800, color:'#14532d',
               boxShadow:'0 4px 12px rgba(0,0,0,0.12)',
               animation:'bounce 2s ease-in-out infinite', whiteSpace:'nowrap',
               textAlign:'center'
@@ -539,11 +539,11 @@ export default function ShopPage() {
               {/* 간판 */}
               <div style={{
                 position:'absolute', top:'10px', left:'50%', transform:'translateX(-50%)',
-                background:'linear-gradient(135deg,#0f766e,#0891b2)',
+                background:'linear-gradient(135deg,#14532d,#15803d)',
                 borderRadius:'8px', padding:'4px 10px',
                 fontSize:'9px', fontWeight:900, color:'white', whiteSpace:'nowrap',
                 boxShadow:'0 3px 8px rgba(15,118,110,0.4)'
-              }}>🐟 신선 수산시장</div>
+              }}>🧺 신선 농축수산</div>
               {/* 창문 */}
               <div style={{display:'flex',gap:'8px',position:'absolute',top:'30px',left:'10px'}}>
                 {[0,1].map(i=>(
@@ -626,11 +626,11 @@ export default function ShopPage() {
             <div style={{
               position:'absolute', bottom:'56%', left:'16%',
               background:'white', borderRadius:'12px 12px 12px 2px',
-              padding:'5px 10px', fontSize:'9px', fontWeight:800, color:'#0f766e',
+              padding:'5px 10px', fontSize:'9px', fontWeight:800, color:'#14532d',
               boxShadow:'0 4px 16px rgba(0,0,0,0.15)',
               animation:'bounce 2.2s ease-in-out infinite', animationDelay:'0.4s',
               whiteSpace:'nowrap'
-            }}>오늘 굴비 신선해요! 🐟</div>
+            }}>오늘도 신선 직송! 🌾</div>
 
             <div style={{
               position:'absolute', bottom:'56%', right:'8%',
@@ -687,15 +687,15 @@ export default function ShopPage() {
             background: dark ? 'rgba(15,118,110,0.12)' : 'rgba(15,118,110,0.08)',
             border: '1px solid rgba(15,118,110,0.25)',
             borderRadius: '100px', padding: '6px 16px', marginBottom: '16px',
-            fontSize: '12px', fontWeight: 700, color: '#0f766e', letterSpacing: '1px',
+            fontSize: '12px', fontWeight: 700, color: '#14532d', letterSpacing: '1px',
           }}>✦ 이렇게 이용하세요</div>
 
           <h2 style={{
             fontSize: 'clamp(28px,4.5vw,48px)', fontWeight: 900,
             letterSpacing: '-1.5px', lineHeight: 1.1, marginBottom: '48px', color: text
           }}>
-            신선한 수산물을<br />
-            <span style={{ background: 'linear-gradient(135deg,#0f766e,#0891b2)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>집 앞까지 직배송</span>
+            신선한 농축수산물을<br />
+            <span style={{ background: 'linear-gradient(135deg,#14532d,#15803d)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>집 앞까지 직배송</span>
           </h2>
 
           <div style={{
@@ -712,9 +712,9 @@ export default function ShopPage() {
                   style={{
                     flex: 1, padding: '14px 8px', fontSize: '13px', fontFamily: 'inherit',
                     fontWeight: gulbiStep === i ? 700 : 500, cursor: 'pointer',
-                    color: gulbiStep === i ? '#0f766e' : (dark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)'),
+                    color: gulbiStep === i ? '#14532d' : (dark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)'),
                     background: 'transparent', border: 'none',
-                    borderBottom: `2px solid ${gulbiStep === i ? '#0f766e' : 'transparent'}`,
+                    borderBottom: `2px solid ${gulbiStep === i ? '#14532d' : 'transparent'}`,
                     transition: 'all 0.2s',
                   }}>{label}</button>
               ))}
@@ -722,7 +722,7 @@ export default function ShopPage() {
 
             {/* 진행 바 */}
             <div style={{ height: '2px', background: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }}>
-              <div style={{ height: '100%', background: 'linear-gradient(90deg,#0f766e,#0891b2)', width: `${(gulbiStep + 1) * 25}%`, transition: 'width 0.4s ease', borderRadius: '0 2px 2px 0' }} />
+              <div style={{ height: '100%', background: 'linear-gradient(90deg,#14532d,#15803d)', width: `${(gulbiStep + 1) * 25}%`, transition: 'width 0.4s ease', borderRadius: '0 2px 2px 0' }} />
             </div>
 
             {/* STEP 0: 상품 선택 */}
@@ -731,16 +731,16 @@ export default function ShopPage() {
                 <div>
                   <div style={{ fontSize: '56px', fontWeight: 900, color: dark ? 'rgba(15,118,110,0.1)' : 'rgba(15,118,110,0.07)', lineHeight: 1, marginBottom: '12px', letterSpacing: '-2px' }}>01</div>
                   <h3 style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-0.5px', marginBottom: '12px', color: text }}>원하는 수산물 고르기</h3>
-                  <p style={{ fontSize: '15px', color: sub, lineHeight: 1.7 }}>카테고리별로 굴비, 갈치, 새우 등<br />다양한 수산물을 직접 고르세요.</p>
+                  <p style={{ fontSize: '15px', color: sub, lineHeight: 1.7 }}>카테고리별로 농산물, 축산물, 수산물 등<br />다양한 신선 상품을 직접 고르세요.</p>
                   <div style={{ display: 'flex', gap: '8px', marginTop: '20px', flexWrap: 'wrap' as const }}>
-                    {['🐟 굴비','🦀 꽃게','🦐 새우','🐙 낙지','🦑 오징어'].map((item, i) => (
-                      <span key={i} style={{ padding: '6px 14px', borderRadius: '100px', fontSize: '13px', fontWeight: 600, background: dark ? 'rgba(15,118,110,0.15)' : 'rgba(15,118,110,0.08)', border: '1px solid rgba(15,118,110,0.25)', color: '#0f766e' }}>{item}</span>
+                    {['🥬 채소','🍎 과일','🥩 한우','🐟 수산물','🌾 곡물'].map((item, i) => (
+                      <span key={i} style={{ padding: '6px 14px', borderRadius: '100px', fontSize: '13px', fontWeight: 600, background: dark ? 'rgba(15,118,110,0.15)' : 'rgba(15,118,110,0.08)', border: '1px solid rgba(15,118,110,0.25)', color: '#14532d' }}>{item}</span>
                     ))}
                   </div>
                 </div>
                 <div style={{ background: dark ? 'rgba(15,118,110,0.08)' : 'rgba(15,118,110,0.05)', border: `1px solid ${dark ? 'rgba(15,118,110,0.2)' : 'rgba(15,118,110,0.15)'}`, borderRadius: '20px', padding: '24px' }}>
                   {[
-                    { name: '영광 법성포 굴비', price: '₩125,000', unit: '1kg', fresh: '오늘 입고', icon: '🐟' },
+                    { name: '온종일팜 신선상품', price: '₩125,000', unit: '1kg', fresh: '오늘 입고', icon: '🐟' },
                     { name: '제주 갈치 특대', price: '₩68,000', unit: '1마리', fresh: '새벽 직송', icon: '🐠' },
                     { name: '동해 홍게', price: '₩45,000', unit: '1kg', fresh: '살아있음', icon: '🦀' },
                   ].map((p, i) => (
@@ -748,10 +748,10 @@ export default function ShopPage() {
                       <span style={{ fontSize: '28px' }}>{p.icon}</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: '13px', fontWeight: 700, color: text }}>{p.name}</div>
-                        <div style={{ fontSize: '11px', color: '#0f766e', fontWeight: 600, marginTop: '2px' }}>✅ {p.fresh}</div>
+                        <div style={{ fontSize: '11px', color: '#14532d', fontWeight: 600, marginTop: '2px' }}>✅ {p.fresh}</div>
                       </div>
                       <div style={{ textAlign: 'right' as const }}>
-                        <div style={{ fontSize: '15px', fontWeight: 900, color: '#0f766e' }}>{p.price}</div>
+                        <div style={{ fontSize: '15px', fontWeight: 900, color: '#14532d' }}>{p.price}</div>
                         <div style={{ fontSize: '11px', color: sub }}>{p.unit}</div>
                       </div>
                     </div>
@@ -766,11 +766,11 @@ export default function ShopPage() {
                 <div>
                   <div style={{ fontSize: '56px', fontWeight: 900, color: dark ? 'rgba(15,118,110,0.1)' : 'rgba(15,118,110,0.07)', lineHeight: 1, marginBottom: '12px', letterSpacing: '-2px' }}>02</div>
                   <h3 style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-0.5px', marginBottom: '12px', color: text }}>100% 신선함 보장</h3>
-                  <p style={{ fontSize: '15px', color: sub, lineHeight: 1.7 }}>매일 아침 어민에서 직접 수령한<br />신선한 수산물만 취급합니다.</p>
+                  <p style={{ fontSize: '15px', color: sub, lineHeight: 1.7 }}>매일 아침 어민에서 직접 수령한<br />신선한 농축수산물만 취급합니다.</p>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '10px' }}>
                   {[
-                    { icon: '🌊', title: '산지 직송', desc: '영광·완도·제주 산지에서 당일 출발' },
+                    { icon: '🌊', title: '산지 직송', desc: '전국 산지에서 당일 출발' },
                     { icon: '❄️', title: '냉장 포장', desc: '아이스팩 + 스티로폼 이중 보냉 포장' },
                     { icon: '✅', title: '품질 검수', desc: '출고 전 100% 신선도 검수 완료' },
                     { icon: '💯', title: '환불 보장', desc: '신선하지 않으면 100% 전액 환불' },
@@ -781,7 +781,7 @@ export default function ShopPage() {
                         <div style={{ fontSize: '14px', fontWeight: 700, color: text, marginBottom: '2px' }}>{item.title}</div>
                         <div style={{ fontSize: '12px', color: sub }}>{item.desc}</div>
                       </div>
-                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#0f766e', flexShrink: 0 }} />
+                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#14532d', flexShrink: 0 }} />
                     </div>
                   ))}
                 </div>
@@ -798,8 +798,8 @@ export default function ShopPage() {
                   <div style={{ display: 'flex', gap: '8px', marginTop: '20px', flexWrap: 'wrap' as const }}>
                     {[
                       { label: '도매가', color: '#7c3aed', bg: dark ? 'rgba(124,58,237,0.12)' : 'rgba(124,58,237,0.08)' },
-                      { label: '소매가', color: '#0891b2', bg: dark ? 'rgba(8,145,178,0.12)' : 'rgba(8,145,178,0.08)' },
-                      { label: '일반구매', color: '#0f766e', bg: dark ? 'rgba(15,118,110,0.12)' : 'rgba(15,118,110,0.08)' },
+                      { label: '소매가', color: '#15803d', bg: dark ? 'rgba(21,128,61,0.12)' : 'rgba(21,128,61,0.08)' },
+                      { label: '일반구매', color: '#14532d', bg: dark ? 'rgba(15,118,110,0.12)' : 'rgba(15,118,110,0.08)' },
                     ].map((p, i) => (
                       <span key={i} style={{ padding: '7px 14px', borderRadius: '10px', fontSize: '12px', fontWeight: 700, background: p.bg, color: p.color, border: `1px solid ${p.color}40` }}>{p.label}</span>
                     ))}
@@ -808,19 +808,19 @@ export default function ShopPage() {
                 <div style={{ background: dark ? 'rgba(15,118,110,0.08)' : 'rgba(15,118,110,0.05)', border: `1px solid ${dark ? 'rgba(15,118,110,0.2)' : 'rgba(15,118,110,0.15)'}`, borderRadius: '20px', padding: '24px' }}>
                   <div style={{ fontSize: '13px', fontWeight: 700, color: text, marginBottom: '16px' }}>🛒 주문 요약</div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '13px' }}>
-                    <span style={{ color: sub }}>영광 법성포 굴비 1kg</span>
+                    <span style={{ color: sub }}>온종일팜 신선상품 1kg</span>
                     <span style={{ color: text, fontWeight: 600 }}>₩125,000</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '13px' }}>
                     <span style={{ color: sub }}>배송비</span>
-                    <span style={{ color: '#0f766e', fontWeight: 700 }}>무료</span>
+                    <span style={{ color: '#14532d', fontWeight: 700 }}>무료</span>
                   </div>
                   <div style={{ height: '1px', background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)', margin: '12px 0' }} />
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '16px', fontWeight: 900 }}>
                     <span style={{ color: text }}>합계</span>
-                    <span style={{ color: '#0f766e' }}>₩125,000</span>
+                    <span style={{ color: '#14532d' }}>₩125,000</span>
                   </div>
-                  <div style={{ marginTop: '16px', padding: '12px', borderRadius: '12px', textAlign: 'center' as const, background: 'linear-gradient(135deg,#0f766e,#0891b2)', color: 'white', fontSize: '14px', fontWeight: 800, cursor: 'pointer' }}>결제하기 →</div>
+                  <div style={{ marginTop: '16px', padding: '12px', borderRadius: '12px', textAlign: 'center' as const, background: 'linear-gradient(135deg,#14532d,#15803d)', color: 'white', fontSize: '14px', fontWeight: 800, cursor: 'pointer' }}>결제하기 →</div>
                 </div>
               </div>
             )}
@@ -842,13 +842,13 @@ export default function ShopPage() {
                     { time: '당일 도착', label: '문 앞 배달', icon: '🏠', done: false },
                   ].map((step, i, arr) => (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '10px 0', position: 'relative' as const }}>
-                      {i < arr.length - 1 && <div style={{ position: 'absolute', left: '15px', top: '40px', width: '2px', height: '28px', background: step.done ? '#0f766e' : (dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)') }} />}
-                      <div style={{ width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: step.done ? 'linear-gradient(135deg,#0f766e,#0891b2)' : (dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'), border: `2px solid ${step.done ? '#0f766e' : (dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')}`, fontSize: '14px', zIndex: 1 }}>{step.icon}</div>
+                      {i < arr.length - 1 && <div style={{ position: 'absolute', left: '15px', top: '40px', width: '2px', height: '28px', background: step.done ? '#14532d' : (dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)') }} />}
+                      <div style={{ width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: step.done ? 'linear-gradient(135deg,#14532d,#15803d)' : (dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'), border: `2px solid ${step.done ? '#14532d' : (dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')}`, fontSize: '14px', zIndex: 1 }}>{step.icon}</div>
                       <div>
                         <div style={{ fontSize: '13px', fontWeight: 700, color: step.done ? text : sub }}>{step.label}</div>
-                        <div style={{ fontSize: '11px', color: step.done ? '#0f766e' : sub }}>{step.time}</div>
+                        <div style={{ fontSize: '11px', color: step.done ? '#14532d' : sub }}>{step.time}</div>
                       </div>
-                      {step.done && <div style={{ marginLeft: 'auto', fontSize: '11px', fontWeight: 700, color: '#0f766e', background: dark ? 'rgba(15,118,110,0.15)' : 'rgba(15,118,110,0.08)', padding: '3px 8px', borderRadius: '20px' }}>완료 ✓</div>}
+                      {step.done && <div style={{ marginLeft: 'auto', fontSize: '11px', fontWeight: 700, color: '#14532d', background: dark ? 'rgba(15,118,110,0.15)' : 'rgba(15,118,110,0.08)', padding: '3px 8px', borderRadius: '20px' }}>완료 ✓</div>}
                     </div>
                   ))}
                 </div>
@@ -859,7 +859,7 @@ export default function ShopPage() {
             <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', padding: '20px', borderTop: `1px solid ${dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)'}` }}>
               {[0,1,2,3].map(i => (
                 <div key={i} onClick={() => { setGulbiStep(i); clearInterval(gulbiTimer.current); gulbiTimer.current = setInterval(() => setGulbiStep(p => (p+1)%4), 4000) }}
-                  style={{ width: gulbiStep === i ? '22px' : '7px', height: '7px', borderRadius: '4px', cursor: 'pointer', background: gulbiStep === i ? '#0f766e' : (dark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'), transition: 'all 0.3s' }} />
+                  style={{ width: gulbiStep === i ? '22px' : '7px', height: '7px', borderRadius: '4px', cursor: 'pointer', background: gulbiStep === i ? '#14532d' : (dark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'), transition: 'all 0.3s' }} />
               ))}
             </div>
           </div>
@@ -906,7 +906,7 @@ export default function ShopPage() {
             <span style={{
               fontSize: '12px', fontWeight: 800, padding: '6px 14px',
               borderRadius: '100px',
-              background: 'linear-gradient(135deg,#0f766e,#0891b2)',
+              background: 'linear-gradient(135deg,#14532d,#15803d)',
               color: 'white'
             }}>{getPriceLabel()} 기준 💰</span>
           )}
@@ -927,7 +927,7 @@ export default function ShopPage() {
           <div style={{ textAlign: 'center', padding: '100px 0' }}>
             <div style={{ fontSize: '72px', marginBottom: '20px', animation: 'floatFish 3s ease-in-out infinite' }}>🐟</div>
             <p style={{ fontSize: '20px', fontWeight: 800, color: text, marginBottom: '8px' }}>아직 상품이 없어요</p>
-            <p style={{ color: sub, fontSize: '14px' }}>곧 신선한 수산물이 올라올 예정이에요!</p>
+            <p style={{ color: sub, fontSize: '14px' }}>곧 신선한 농축수산물이 올라올 예정이에요!</p>
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: '20px' }}>
@@ -991,7 +991,7 @@ export default function ShopPage() {
                       )}
                       {i < 3 && p.stock > 0 && (
                         <span style={{
-                          background: 'linear-gradient(135deg,#0f766e,#0891b2)',
+                          background: 'linear-gradient(135deg,#14532d,#15803d)',
                           color: 'white', fontSize: '10px', fontWeight: 800,
                           padding: '4px 10px', borderRadius: '100px',
                           boxShadow: '0 4px 12px rgba(15,118,110,0.4)'
@@ -1008,7 +1008,7 @@ export default function ShopPage() {
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div>
                         <p style={{
-                          fontSize: '22px', fontWeight: 900, color: '#0f766e',
+                          fontSize: '22px', fontWeight: 900, color: '#14532d',
                           letterSpacing: '-1px', margin: 0
                         }}>{getPrice(p).toLocaleString()}원</p>
                         {memberType === '도매업' && (
@@ -1019,7 +1019,7 @@ export default function ShopPage() {
                       </div>
                       <div style={{
                         width: '40px', height: '40px', borderRadius: '14px',
-                        background: 'linear-gradient(135deg,#0f766e,#0891b2)',
+                        background: 'linear-gradient(135deg,#14532d,#15803d)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: '18px', boxShadow: '0 6px 16px rgba(15,118,110,0.35)',
                         transition: 'all 0.2s'
@@ -1044,7 +1044,7 @@ export default function ShopPage() {
       }} className="mobile-nav">
 
         {/* 홈 */}
-        <Link href="/shop" className="nav-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', textDecoration: 'none', color: '#0f766e', flex: 1 }}>
+        <Link href="/shop" className="nav-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', textDecoration: 'none', color: '#14532d', flex: 1 }}>
           <span style={{ fontSize: '24px' }}>🏠</span>
           <span style={{ fontSize: '10px', fontWeight: 800 }}>홈</span>
         </Link>
@@ -1056,7 +1056,7 @@ export default function ShopPage() {
             background: memberType === '도매업'
               ? 'linear-gradient(135deg,#7c3aed,#6366f1)'
               : memberType === '소매업'
-              ? 'linear-gradient(135deg,#0f766e,#0891b2)'
+              ? 'linear-gradient(135deg,#14532d,#15803d)'
               : 'rgba(0,0,0,0.08)',
             color: memberType !== '일반' ? 'white' : sub,
             boxShadow: memberType !== '일반' ? '0 3px 10px rgba(0,0,0,0.2)' : 'none',
@@ -1075,7 +1075,7 @@ export default function ShopPage() {
 
         {/* 마이페이지 / 로그인 */}
         {user ? (
-          <Link href="/shop/mypage" className="nav-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', textDecoration: 'none', color: '#0f766e', flex: 1 }}>
+          <Link href="/shop/mypage" className="nav-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', textDecoration: 'none', color: '#14532d', flex: 1 }}>
             <span style={{ fontSize: '24px' }}>👤</span>
             <span style={{ fontSize: '10px', fontWeight: 800 }}>마이</span>
           </Link>
@@ -1109,8 +1109,8 @@ export default function ShopPage() {
         .header-btn:hover {
           transform: translateY(-2px) !important;
           box-shadow: 0 6px 20px rgba(15,118,110,0.25) !important;
-          border-color: #0f766e !important;
-          color: #0f766e !important;
+          border-color: #14532d !important;
+          color: #14532d !important;
         }
         .header-mypage-btn:hover {
           background: rgba(15,118,110,0.08) !important;

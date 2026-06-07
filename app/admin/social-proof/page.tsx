@@ -19,7 +19,7 @@ type Comment = {
 type Product = { id: string; name: string; image_url: string }
 
 const AVATAR_PRESETS = [
-  ['#ec4899','#f43f5e'],['#3b82f6','#6366f1'],['#059669','#0f766e'],
+  ['#ec4899','#f43f5e'],['#3b82f6','#6366f1'],['#059669','#14532d'],
   ['#f59e0b','#f97316'],['#8b5cf6','#7c3aed'],['#06b6d4','#0284c7'],
 ]
 
@@ -118,7 +118,7 @@ export default function SocialProofPage() {
           <h1 className="text-2xl font-bold text-slate-800 dark:text-white">소셜 프루프 관리</h1>
           <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">구매 후기 · 방문자 수 · 팝업 설정</p>
         </div>
-        <button onClick={openNew} className="bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95">
+        <button onClick={openNew} className="bg-green-600 hover:bg-green-500 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95">
           + 후기 추가
         </button>
       </div>
@@ -151,7 +151,7 @@ export default function SocialProofPage() {
       {/* 상품별 필터 */}
       <div className="flex gap-2 mb-4 flex-wrap">
         <button onClick={() => setProductFilter('all')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${productFilter === 'all' ? 'bg-sky-500 text-white' : 'bg-white dark:bg-gray-800 text-slate-400 border border-slate-200 dark:border-gray-700'}`}>
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${productFilter === 'all' ? 'bg-green-600 text-white' : 'bg-white dark:bg-gray-800 text-slate-400 border border-slate-200 dark:border-gray-700'}`}>
           전체 ({comments.length})
         </button>
         <button onClick={() => setProductFilter('global')}
@@ -205,7 +205,7 @@ export default function SocialProofPage() {
                   <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2">{c.content}</p>
                 </div>
                 <div className="flex gap-2 flex-shrink-0">
-                  <button onClick={() => toggleActive(c)} className="text-xs font-medium text-sky-500 hover:text-sky-600">
+                  <button onClick={() => toggleActive(c)} className="text-xs font-medium text-green-600 hover:text-green-700">
                     {c.is_active ? '숨기기' : '표시'}
                   </button>
                   <button onClick={() => openEdit(c)} className="text-xs font-medium text-slate-400 hover:text-slate-600">수정</button>
@@ -288,7 +288,7 @@ export default function SocialProofPage() {
               <div className="flex items-center gap-3">
                 <label className="text-xs font-semibold text-slate-500">표시 여부</label>
                 <button onClick={() => setForm({...form,is_active:!form.is_active})}
-                  className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${form.is_active ? 'bg-sky-500' : 'bg-slate-300 dark:bg-gray-600'}`}>
+                  className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${form.is_active ? 'bg-green-600' : 'bg-slate-300 dark:bg-gray-600'}`}>
                   <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all duration-200 ${form.is_active ? 'left-7' : 'left-1'}`} />
                 </button>
               </div>

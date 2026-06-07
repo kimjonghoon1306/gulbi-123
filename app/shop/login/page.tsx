@@ -82,11 +82,11 @@ export default function ShopLoginPage() {
         <Link href="/landing" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
           <span style={{ fontSize: '22px' }}>🐟</span>
           <div>
-            <p style={{ fontSize: '15px', fontWeight: 800, color: '#1a1a18', letterSpacing: '-0.5px', lineHeight: 1 }}>굴비가게</p>
+            <p style={{ fontSize: '15px', fontWeight: 800, color: '#1a1a18', letterSpacing: '-0.5px', lineHeight: 1 }}>온종일팜</p>
             <p style={{ fontSize: '9px', color: '#9ca3af', letterSpacing: '2px', textTransform: 'uppercase' }}>Fresh Seafood</p>
           </div>
         </Link>
-        <Link href="/shop/register" style={{ fontSize: '13px', fontWeight: 600, color: '#0f766e', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1.5px solid rgba(15,118,110,0.2)', background: 'rgba(15,118,110,0.05)' }}>
+        <Link href="/shop/register" style={{ fontSize: '13px', fontWeight: 600, color: '#14532d', textDecoration: 'none', padding: '8px 16px', borderRadius: '10px', border: '1.5px solid rgba(15,118,110,0.2)', background: 'rgba(15,118,110,0.05)' }}>
           회원가입 →
         </Link>
       </header>
@@ -98,7 +98,7 @@ export default function ShopLoginPage() {
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
             <div style={{ fontSize: '52px', marginBottom: '14px', lineHeight: 1 }}>🐟</div>
             <h1 style={{ fontSize: '26px', fontWeight: 900, color: '#1a1a18', letterSpacing: '-1px', marginBottom: '6px' }}>{titles[mode]}</h1>
-            <p style={{ fontSize: '13px', color: '#9ca3af' }}>굴비가게 쇼핑몰</p>
+            <p style={{ fontSize: '13px', color: '#9ca3af' }}>온종일팜 쇼핑몰</p>
           </div>
 
           {/* 탭 */}
@@ -110,7 +110,7 @@ export default function ShopLoginPage() {
             ].map(t => (
               <button key={t.k} onClick={() => resetMode(t.k as Mode)}
                 style={{ flex: 1, padding: '9px 4px', borderRadius: '12px', border: 'none', fontSize: '12px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s',
-                  background: mode === t.k ? 'linear-gradient(135deg,#0f766e,#0891b2)' : 'transparent',
+                  background: mode === t.k ? 'linear-gradient(135deg,#14532d,#15803d)' : 'transparent',
                   color: mode === t.k ? 'white' : '#9ca3af',
                   boxShadow: mode === t.k ? '0 4px 12px rgba(15,118,110,0.25)' : 'none',
                 }}>
@@ -128,7 +128,7 @@ export default function ShopLoginPage() {
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#6b7280', marginBottom: '8px' }}>이메일</label>
                 <input type="email" value={email} onChange={e => setEmail(e.target.value)}
                   placeholder="example@email.com" style={inputStyle}
-                  onFocus={e => e.target.style.borderColor = '#0f766e'}
+                  onFocus={e => e.target.style.borderColor = '#14532d'}
                   onBlur={e => e.target.style.borderColor = 'transparent'} />
               </div>
               <div style={{ marginBottom: '18px' }}>
@@ -139,7 +139,7 @@ export default function ShopLoginPage() {
                     onKeyDown={e => e.key === 'Enter' && handleLogin()}
                     placeholder="••••••••"
                     style={{ ...inputStyle, paddingRight: '48px' }}
-                    onFocus={e => e.target.style.borderColor = '#0f766e'}
+                    onFocus={e => e.target.style.borderColor = '#14532d'}
                     onBlur={e => e.target.style.borderColor = 'transparent'} />
                   <button onClick={() => setShowPw(!showPw)} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px' }}>
                     {showPw ? '🙈' : '👁️'}
@@ -152,7 +152,7 @@ export default function ShopLoginPage() {
               </button>
               <div style={{ textAlign: 'center', marginTop: '18px' }}>
                 <Link href="/shop/register" style={{ fontSize: '13px', color: '#9ca3af', textDecoration: 'none' }}>
-                  아직 계정이 없어요? <span style={{ color: '#0f766e', fontWeight: 700 }}>회원가입</span>
+                  아직 계정이 없어요? <span style={{ color: '#14532d', fontWeight: 700 }}>회원가입</span>
                 </Link>
               </div>
             </>)}
@@ -169,14 +169,14 @@ export default function ShopLoginPage() {
                 <div key={f.label} style={{ marginBottom: '14px' }}>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#6b7280', marginBottom: '8px' }}>{f.label}</label>
                   <input type="text" value={f.val} onChange={e => f.set(e.target.value)} placeholder={f.ph} style={inputStyle}
-                    onFocus={e => e.target.style.borderColor = '#0f766e'}
+                    onFocus={e => e.target.style.borderColor = '#14532d'}
                     onBlur={e => e.target.style.borderColor = 'transparent'} />
                 </div>
               ))}
               {findEmailResult && (
                 <div style={{ background: 'rgba(15,118,110,0.06)', border: '1px solid rgba(15,118,110,0.2)', borderRadius: '12px', padding: '16px', textAlign: 'center', marginBottom: '14px' }}>
                   <p style={{ fontSize: '11px', color: '#6b7280', marginBottom: '6px' }}>찾은 이메일</p>
-                  <p style={{ fontSize: '18px', fontWeight: 800, color: '#0f766e', margin: 0 }}>{findEmailResult}</p>
+                  <p style={{ fontSize: '18px', fontWeight: 800, color: '#14532d', margin: 0 }}>{findEmailResult}</p>
                 </div>
               )}
               {findEmailMsg && <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '10px', padding: '10px 14px', marginBottom: '14px' }}><p style={{ color: '#ef4444', fontSize: '13px', margin: 0 }}>{findEmailMsg}</p></div>}
@@ -194,12 +194,12 @@ export default function ShopLoginPage() {
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#6b7280', marginBottom: '8px' }}>이메일</label>
                 <input type="email" value={findPwEmail} onChange={e => setFindPwEmail(e.target.value)}
                   placeholder="가입한 이메일 주소" style={inputStyle}
-                  onFocus={e => e.target.style.borderColor = '#0f766e'}
+                  onFocus={e => e.target.style.borderColor = '#14532d'}
                   onBlur={e => e.target.style.borderColor = 'transparent'} />
               </div>
               {findPwMsg && (
                 <div style={{ background: findPwMsg.startsWith('✅') ? 'rgba(15,118,110,0.06)' : '#fef2f2', border: `1px solid ${findPwMsg.startsWith('✅') ? 'rgba(15,118,110,0.2)' : '#fecaca'}`, borderRadius: '10px', padding: '10px 14px', marginBottom: '14px' }}>
-                  <p style={{ color: findPwMsg.startsWith('✅') ? '#0f766e' : '#ef4444', fontSize: '13px', margin: 0, lineHeight: 1.6 }}>{findPwMsg}</p>
+                  <p style={{ color: findPwMsg.startsWith('✅') ? '#14532d' : '#ef4444', fontSize: '13px', margin: 0, lineHeight: 1.6 }}>{findPwMsg}</p>
                 </div>
               )}
               <button onClick={handleFindPw} disabled={findPwLoading} className="login-btn">
@@ -213,7 +213,7 @@ export default function ShopLoginPage() {
       <style>{`
         .login-btn {
           width: 100%; padding: 14px; border-radius: 14px;
-          background: linear-gradient(135deg, #0f766e, #0891b2);
+          background: linear-gradient(135deg, #14532d, #15803d);
           color: white; font-size: 15px; font-weight: 700; border: none;
           cursor: pointer; box-shadow: 0 8px 24px rgba(15,118,110,0.3);
           transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);

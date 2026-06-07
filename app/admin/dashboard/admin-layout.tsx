@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase'
 
 const menus = [
   { href: '/admin/dashboard', icon: '🏠', label: '대시보드' },
-  { href: '/admin/products', icon: '🐟', label: '상품관리' },
+  { href: '/admin/products', icon: '🧺', label: '상품관리' },
   { href: '/admin/orders/wholesale', icon: '📋', label: '도매주문' },
   { href: '/admin/orders/retail', icon: '🛒', label: '소매주문' },
   { href: '/admin/orders/general', icon: '🧑‍💼', label: '일반구매' },
@@ -54,10 +54,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       >
         {/* 로고 */}
         <div className={`flex items-center gap-3 px-4 py-5 border-b ${dark ? 'border-gray-800' : 'border-slate-100'}`}>
-          <span className="text-2xl">🐟</span>
+          <span className="text-2xl">🧺</span>
           {!collapsed && (
             <div className="overflow-hidden transition-all duration-300">
-              <p className={`font-bold text-sm leading-tight ${dark ? 'text-white' : 'text-slate-800'}`}>굴비가게</p>
+              <p className={`font-bold text-sm leading-tight ${dark ? 'text-white' : 'text-slate-800'}`}>온종일팜</p>
               <p className={`text-xs ${dark ? 'text-gray-400' : 'text-slate-400'}`}>도매 관리 시스템</p>
             </div>
           )}
@@ -73,7 +73,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 href={menu.href}
                 className={`flex items-center gap-3 px-4 py-2 mx-2 rounded-xl mb-0.5 transition-all duration-200 group
                   ${active
-                    ? 'bg-sky-500 text-white shadow-md shadow-sky-200'
+                    ? 'bg-green-600 text-white shadow-md shadow-green-200'
                     : dark
                       ? 'text-gray-400 hover:bg-gray-800 hover:text-white'
                       : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
@@ -136,7 +136,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           <div className="flex items-center gap-3">
             <span className={`text-xs px-3 py-1 rounded-full font-medium
-              ${dark ? 'bg-sky-900 text-sky-300' : 'bg-sky-100 text-sky-600'}`}>
+              ${dark ? 'bg-green-900 text-green-300' : 'bg-green-100 text-green-700'}`}>
               관리자
             </span>
           </div>

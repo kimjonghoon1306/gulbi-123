@@ -7,11 +7,37 @@ import { createClient } from '@/lib/supabase'
 import { ThemeContext, darkTheme, lightTheme } from './theme-context'
 
 const menus = [
-  { href: '/supplier/dashboard', icon: '⚡', label: '대시보드' },
-  { href: '/supplier/products',  icon: '📦', label: '상품 관리' },
+  { href: '/supplier/dashboard', icon: '🏠', label: '대시보드' },
+  { href: '/supplier/products',  icon: '🧺', label: '상품 관리' },
   { href: '/supplier/sales',     icon: '📊', label: '매출 현황' },
   { href: '/supplier/settings',  icon: '⚙️', label: '설정' },
 ]
+
+const mobileMenus = [
+  { href: '/supplier/dashboard', icon: '🏠', label: '홈' },
+  { href: '/supplier/products',  icon: '🧺', label: '상품' },
+  { href: '/supplier/sales',     icon: '📊', label: '매출' },
+  { href: '/supplier/settings',  icon: '⚙️', label: '설정' },
+]
+
+function SupplierLogoSVG({ size = 30, uid = 'sup' }: { size?: number; uid?: string }) {
+  const gid = `supGrad_${uid}`
+  return (
+    <svg width={size} height={size} viewBox="0 0 30 30" fill="none">
+      <defs>
+        <linearGradient id={gid} x1="0" y1="0" x2="30" y2="30">
+          <stop offset="0%" stopColor="#22c55e"/>
+          <stop offset="100%" stopColor="#15803d"/>
+        </linearGradient>
+      </defs>
+      <rect width="30" height="30" rx="8" fill={`url(#${gid})`}/>
+      <path d="M8 20 Q15 10 22 20" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round"/>
+      <circle cx="15" cy="13" r="4" fill="white" fillOpacity="0.9"/>
+      <path d="M11 22 h8" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+      <circle cx="15" cy="13" r="1.5" fill={`url(#${gid})`}/>
+    </svg>
+  )
+}
 
 export default function SupplierLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -53,206 +79,201 @@ export default function SupplierLayout({ children }: { children: React.ReactNode
     router.push('/supplier/login')
   }
 
-  const t = {
-    bg:        isDark ? '#0d1117' : '#f4f6f9',
-    sidebar:   isDark ? '#161b22' : '#ffffff',
-    border:    isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)',
-    text:      isDark ? 'white' : '#1a1a2e',
-    textMuted: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-    textRed:   isDark ? 'rgba(239,68,68,0.7)' : '#ef4444',
-  }
+  const t = isDark ? darkTheme : lightTheme
 
-  const ThemeBtn = () => (
-    <button onClick={toggleTheme} title="테마 전환" style={{
-      width: '34px', height: '34px', borderRadius: '10px', border: `1px solid ${t.border}`,
-      background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)',
-      cursor: 'pointer', fontSize: '17px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      flexShrink: 0,
-    }}>
-      {isDark ? '☀️' : '🌙'}
-    </button>
-  )
+  const statusColor = status === '승인' ? '#22c55e' : status === '대기중' ? '#f59e0b' : '#ef4444'
+  const statusBg    = status === '승인' ? 'rgba(34,197,94,0.12)' : status === '대기중' ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.12)'
 
-  const badgeStyle: Record<string, React.CSSProperties> = {
-    '승인':   { background: 'rgba(16,185,129,0.15)', color: '#34d399', border: '1px solid rgba(16,185,129,0.3)' },
-    '대기중': { background: 'rgba(245,158,11,0.15)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.3)' },
-    '거절':   { background: 'rgba(239,68,68,0.15)',  color: '#f87171', border: '1px solid rgba(239,68,68,0.3)' },
-  }
-  const badgeLabel: Record<string, string> = { '승인': '승인됨', '대기중': '심사중', '거절': '거절됨' }
-
-  // ── 모바일: 상단 헤더 + 하단 탭바 ──────────────────────────────
-  if (isMobile) {
-    return (
-      <ThemeContext.Provider value={isDark ? darkTheme : lightTheme}>
-      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: t.bg, color: t.text }}>
-
-        {/* 모바일 상단 헤더 */}
-        <header style={{
-          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
-          height: '56px',
-          background: isDark ? 'rgba(22,27,34,0.95)' : 'rgba(255,255,255,0.95)',
-          backdropFilter: 'blur(12px)',
-          borderBottom: `1px solid ${t.border}`,
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '0 16px',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{
-              width: '32px', height: '32px', borderRadius: '8px', flexShrink: 0,
-              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '16px', boxShadow: '0 4px 12px rgba(245,158,11,0.3)',
-            }}>🏭</div>
-            <div>
-              <p style={{ fontSize: '13px', fontWeight: 700, color: t.text, margin: 0, maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {companyName || '공급업체'}
-              </p>
-              {status && (
-                <span style={{ fontSize: '9px', fontWeight: 600, padding: '1px 7px', borderRadius: '20px', display: 'inline-block', ...(badgeStyle[status] || {}) }}>
-                  {badgeLabel[status] || status}
-                </span>
-              )}
-            </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <ThemeBtn />
-            <button onClick={handleLogout} style={{
-              padding: '8px 14px', borderRadius: '10px', border: '1px solid rgba(239,68,68,0.25)',
-              background: 'rgba(239,68,68,0.08)', color: '#f87171', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
-            }}>로그아웃</button>
-          </div>
-        </header>
-
-        {/* 컨텐츠 */}
-        <main style={{ flex: 1, paddingTop: '56px', paddingBottom: '72px', minHeight: '100vh' }}>
-          {children}
-        </main>
-
-        {/* 모바일 하단 탭바 */}
-        <nav style={{
-          position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
-          height: '64px',
-          background: isDark ? 'rgba(22,27,34,0.97)' : 'rgba(255,255,255,0.97)',
-          backdropFilter: 'blur(16px)',
-          borderTop: `1px solid ${t.border}`,
-          display: 'flex', alignItems: 'stretch',
-          paddingBottom: 'env(safe-area-inset-bottom)',
-        }}>
-          {menus.map(menu => {
-            const active = pathname === menu.href
-            return (
-              <Link key={menu.href} href={menu.href} style={{
-                flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                gap: '3px', textDecoration: 'none',
-                color: active ? '#f59e0b' : t.textMuted,
-                position: 'relative',
-                transition: 'color 0.2s',
-              }}>
-                {active && (
-                  <div style={{
-                    position: 'absolute', top: 0, left: '20%', right: '20%', height: '2px',
-                    background: 'linear-gradient(90deg, #f59e0b, #d97706)',
-                    borderRadius: '0 0 4px 4px',
-                  }} />
-                )}
-                <span style={{ fontSize: '22px', lineHeight: 1 }}>{menu.icon}</span>
-                <span style={{ fontSize: '10px', fontWeight: active ? 700 : 500 }}>{menu.label}</span>
-              </Link>
-            )
-          })}
-        </nav>
-      </div>
-      </ThemeContext.Provider>
-    )
-  }
-
-  // ── 데스크톱/태블릿: 사이드바 ──────────────────────────────────
   return (
     <ThemeContext.Provider value={isDark ? darkTheme : lightTheme}>
-    <div style={{ display: 'flex', minHeight: '100vh', background: t.bg, color: t.text }}>
+      <div style={{ display: 'flex', minHeight: '100vh', background: t.bg, color: t.text, fontFamily: 'Noto Sans KR, sans-serif' }}>
 
-      <aside style={{
-        position: 'fixed', top: 0, left: 0, height: '100%', zIndex: 40,
-        width: collapsed ? '72px' : '220px',
-        background: t.sidebar,
-        borderRight: `1px solid ${t.border}`,
-        display: 'flex', flexDirection: 'column',
-        transition: 'width 0.3s ease',
-        boxShadow: isDark ? '4px 0 24px rgba(0,0,0,0.4)' : '4px 0 24px rgba(0,0,0,0.08)',
-      }}>
+        {/* ── 사이드바 (데스크탑) ── */}
+        {!isMobile && (
+          <aside style={{
+            width: collapsed ? 60 : 220,
+            minHeight: '100vh',
+            background: isDark ? '#111827' : '#ffffff',
+            borderRight: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(22,163,74,0.1)'}`,
+            display: 'flex', flexDirection: 'column',
+            transition: 'width 0.3s cubic-bezier(0.4,0,0.2,1)',
+            position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 40,
+            boxShadow: isDark ? '4px 0 20px rgba(0,0,0,0.3)' : '4px 0 20px rgba(22,163,74,0.06)',
+          }}>
 
-        <div style={{ padding: '20px 16px', borderBottom: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{
-            width: '36px', height: '36px', borderRadius: '10px', flexShrink: 0,
-            background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '18px', boxShadow: '0 4px 12px rgba(245,158,11,0.3)',
-          }}>🏭</div>
-          {!collapsed && (
-            <div style={{ overflow: 'hidden', minWidth: 0 }}>
-              <p style={{ fontWeight: 700, fontSize: '13px', color: t.text, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {companyName || '공급업체'}
-              </p>
-              {status && (
-                <span style={{ fontSize: '10px', fontWeight: 600, padding: '2px 8px', borderRadius: '20px', marginTop: '4px', display: 'inline-block', ...(badgeStyle[status] || {}) }}>
-                  {badgeLabel[status] || status}
-                </span>
+            {/* 로고 */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 10, padding: '18px 14px',
+              borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(22,163,74,0.1)'}`,
+            }}>
+              <div style={{ position: 'relative', flexShrink: 0 }}>
+                <SupplierLogoSVG size={32} uid="sidebar" />
+                <span style={{ position: 'absolute', bottom: -2, right: -4, fontSize: 10 }}>🌾</span>
+              </div>
+              {!collapsed && (
+                <div style={{ overflow: 'hidden', flex: 1, minWidth: 0 }}>
+                  <p style={{ fontWeight: 900, fontSize: 13, color: t.text, margin: 0, whiteSpace: 'nowrap' }}>온종일팜</p>
+                  <p style={{ fontSize: 10, color: '#22c55e', margin: 0 }}>공급업체 포털</p>
+                </div>
               )}
-            </div>
-          )}
-        </div>
-
-        <nav style={{ flex: 1, padding: '12px 8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          {menus.map(menu => {
-            const active = pathname === menu.href
-            return (
-              <Link key={menu.href} href={menu.href} style={{
-                display: 'flex', alignItems: 'center', gap: '12px',
-                padding: '10px 12px', borderRadius: '10px',
-                textDecoration: 'none', transition: 'all 0.2s',
-                background: active ? 'rgba(245,158,11,0.15)' : 'transparent',
-                border: `1px solid ${active ? 'rgba(245,158,11,0.25)' : 'transparent'}`,
-                color: active ? '#f59e0b' : t.textMuted,
+              <button onClick={() => setCollapsed(!collapsed)} style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
+                padding: 4, borderRadius: 6, flexShrink: 0,
+                transition: 'color 0.2s, transform 0.2s',
               }}>
-                <span style={{ fontSize: '18px', flexShrink: 0 }}>{menu.icon}</span>
-                {!collapsed && <span style={{ fontSize: '13px', fontWeight: 500, whiteSpace: 'nowrap' }}>{menu.label}</span>}
-              </Link>
-            )
-          })}
-        </nav>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d={collapsed ? 'M4 2l4 4-4 4' : 'M8 2L4 6l4 4'} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            </div>
 
-        <div style={{ padding: '12px 8px', borderTop: `1px solid ${t.border}`, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <button onClick={toggleTheme} style={{
-            width: '100%', display: 'flex', alignItems: 'center', gap: '12px',
-            padding: '10px 12px', borderRadius: '10px', border: 'none',
-            background: 'transparent', color: t.textMuted, cursor: 'pointer', fontSize: '13px',
-          }}>
-            <span style={{ fontSize: '16px', flexShrink: 0 }}>{isDark ? '☀️' : '🌙'}</span>
-            {!collapsed && <span style={{ fontWeight: 500 }}>{isDark ? '라이트 모드' : '다크 모드'}</span>}
-          </button>
-          <button onClick={() => setCollapsed(v => !v)} style={{
-            width: '100%', display: 'flex', alignItems: 'center', gap: '12px',
-            padding: '10px 12px', borderRadius: '10px', border: 'none',
-            background: 'transparent', color: t.textMuted, cursor: 'pointer', fontSize: '13px',
-          }}>
-            <span style={{ fontSize: '14px', flexShrink: 0 }}>{collapsed ? '▶' : '◀'}</span>
-            {!collapsed && <span style={{ fontWeight: 500 }}>접기</span>}
-          </button>
-          <button onClick={handleLogout} style={{
-            width: '100%', display: 'flex', alignItems: 'center', gap: '12px',
-            padding: '10px 12px', borderRadius: '10px', border: 'none',
-            background: 'transparent', color: t.textRed, cursor: 'pointer', fontSize: '13px',
-          }}>
-            <span style={{ fontSize: '16px', flexShrink: 0 }}>🚪</span>
-            {!collapsed && <span style={{ fontWeight: 500 }}>로그아웃</span>}
-          </button>
-        </div>
-      </aside>
+            {/* 업체 정보 */}
+            {!collapsed && companyName && (
+              <div style={{
+                margin: '12px', padding: '12px',
+                background: 'rgba(22,163,74,0.08)',
+                borderRadius: 12,
+                border: '1px solid rgba(22,163,74,0.15)',
+              }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: t.text, margin: '0 0 4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {companyName}
+                </p>
+                <span style={{
+                  fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20,
+                  background: statusBg, color: statusColor,
+                }}>
+                  {status === '승인' ? '✅ 승인됨' : status === '대기중' ? '⏳ 심사중' : '❌ 거절'}
+                </span>
+              </div>
+            )}
 
-      <main style={{ flex: 1, marginLeft: collapsed ? '72px' : '220px', minHeight: '100vh', transition: 'margin-left 0.3s ease' }}>
-        {children}
-      </main>
-    </div>
+            {/* 메뉴 */}
+            <nav style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
+              {menus.map((item) => {
+                const active = pathname === item.href || pathname.startsWith(item.href + '/')
+                return (
+                  <Link key={item.href} href={item.href} style={{ textDecoration: 'none' }}>
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      padding: collapsed ? '10px' : '10px 12px',
+                      borderRadius: 12, marginBottom: 3,
+                      justifyContent: collapsed ? 'center' : 'flex-start',
+                      background: active ? 'linear-gradient(135deg, #16a34a, #15803d)' : 'transparent',
+                      color: active ? 'white' : isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
+                      fontWeight: active ? 700 : 500, fontSize: 13,
+                      transition: 'all 0.2s',
+                      boxShadow: active ? '0 3px 10px rgba(22,163,74,0.3)' : 'none',
+                      cursor: 'pointer',
+                    }}>
+                      <span style={{ fontSize: 16, flexShrink: 0 }}>{item.icon}</span>
+                      {!collapsed && <span>{item.label}</span>}
+                    </div>
+                  </Link>
+                )
+              })}
+            </nav>
+
+            {/* 하단 버튼 */}
+            <div style={{ padding: 8, borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(22,163,74,0.1)'}` }}>
+              <button onClick={toggleTheme} style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                padding: collapsed ? '10px' : '10px 12px',
+                justifyContent: collapsed ? 'center' : 'flex-start',
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+                borderRadius: 12, fontSize: 13, fontWeight: 500,
+                transition: 'all 0.2s',
+              }}>
+                <span style={{ fontSize: 16 }}>{isDark ? '☀️' : '🌙'}</span>
+                {!collapsed && <span>{isDark ? '라이트' : '다크'}</span>}
+              </button>
+              <button onClick={handleLogout} style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                padding: collapsed ? '10px' : '10px 12px',
+                justifyContent: collapsed ? 'center' : 'flex-start',
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: '#f87171', borderRadius: 12, fontSize: 13, fontWeight: 500,
+                transition: 'all 0.2s',
+              }}>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M6 14H3a1 1 0 01-1-1V3a1 1 0 011-1h3M11 11l3-3-3-3M14 8H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                {!collapsed && <span>로그아웃</span>}
+              </button>
+            </div>
+          </aside>
+        )}
+
+        {/* ── 메인 ── */}
+        <main style={{
+          flex: 1,
+          marginLeft: isMobile ? 0 : (collapsed ? 60 : 220),
+          paddingBottom: isMobile ? 80 : 0,
+          transition: 'margin-left 0.3s',
+          minHeight: '100vh',
+        }}>
+          {/* 모바일 헤더 */}
+          {isMobile && (
+            <header style={{
+              position: 'sticky', top: 0, zIndex: 30,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '12px 16px',
+              background: isDark ? '#111827' : '#ffffff',
+              borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(22,163,74,0.1)'}`,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <SupplierLogoSVG size={28} uid="mobile" />
+                <div>
+                  <p style={{ fontWeight: 900, fontSize: 13, color: t.text, margin: 0 }}>온종일팜</p>
+                  <p style={{ fontSize: 9, color: '#22c55e', margin: 0 }}>{companyName || '공급업체 포털'}</p>
+                </div>
+              </div>
+              <button onClick={toggleTheme} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18 }}>
+                {isDark ? '☀️' : '🌙'}
+              </button>
+            </header>
+          )}
+          <div style={{ padding: isMobile ? '16px' : '24px' }}>
+            {children}
+          </div>
+        </main>
+
+        {/* ── 모바일 하단 탭 ── */}
+        {isMobile && (
+          <nav style={{
+            position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
+            background: isDark ? '#111827' : '#ffffff',
+            borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(22,163,74,0.1)'}`,
+            display: 'flex', paddingBottom: 'env(safe-area-inset-bottom, 8px)',
+            boxShadow: '0 -4px 20px rgba(0,0,0,0.1)',
+          }}>
+            {mobileMenus.map((item) => {
+              const active = pathname === item.href || pathname.startsWith(item.href + '/')
+              return (
+                <Link key={item.href} href={item.href} style={{ flex: 1, textDecoration: 'none' }}>
+                  <div style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center',
+                    padding: '8px 4px 6px',
+                    background: active ? 'linear-gradient(135deg,#16a34a,#15803d)' : 'transparent',
+                    margin: '4px 3px',
+                    borderRadius: 12,
+                    transition: 'all 0.2s',
+                    transform: active ? 'scale(1.05)' : 'scale(1)',
+                  }}>
+                    <span style={{ fontSize: 18, lineHeight: 1 }}>{item.icon}</span>
+                    <span style={{ fontSize: 9, fontWeight: 700, marginTop: 2, color: active ? 'white' : isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)' }}>
+                      {item.label}
+                    </span>
+                  </div>
+                </Link>
+              )
+            })}
+          </nav>
+        )}
+
+      </div>
     </ThemeContext.Provider>
   )
 }

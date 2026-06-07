@@ -16,7 +16,7 @@ type Product = { id: string; name: string; wholesale_price: number; unit: string
 
 const STATUS_LIST = ['접수', '준비중', '출고', '완료']
 const STATUS_CONFIG: Record<string, { color: string; bg: string; icon: string }> = {
-  '접수':  { color: 'text-sky-600 dark:text-sky-400',      bg: 'bg-sky-50 dark:bg-sky-900/20 border-sky-100 dark:border-sky-800',      icon: '📋' },
+  '접수':  { color: 'text-green-700 dark:text-green-500',      bg: 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800',      icon: '📋' },
   '준비중':{ color: 'text-amber-600 dark:text-amber-400',  bg: 'bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800',  icon: '📦' },
   '출고':  { color: 'text-violet-600 dark:text-violet-400',bg: 'bg-violet-50 dark:bg-violet-900/20 border-violet-100 dark:border-violet-800',icon: '🚚' },
   '완료':  { color: 'text-emerald-600 dark:text-emerald-400',bg: 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-800',icon: '✅' },
@@ -187,7 +187,7 @@ export default function WholesalePage() {
       <div className="grid grid-cols-4 gap-4 mb-6">
         {[
           { label: '전체 주문', value: stats.total + '건', icon: '📋', color: 'from-slate-500 to-slate-600' },
-          { label: '오늘 접수', value: stats.today + '건', icon: '🌅', color: 'from-sky-500 to-blue-600' },
+          { label: '오늘 접수', value: stats.today + '건', icon: '🌅', color: 'from-green-600 to-blue-600' },
           { label: '처리 대기', value: stats.pending + '건', icon: '⏳', color: 'from-amber-500 to-orange-500' },
           { label: '완료 매출', value: (stats.revenue / 10000).toFixed(0) + '만원', icon: '💰', color: 'from-violet-500 to-purple-600' },
         ].map((s, i) => (

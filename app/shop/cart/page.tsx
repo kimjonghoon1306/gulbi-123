@@ -149,11 +149,11 @@ export default function CartPage() {
     input:  dark ? '#1e2530' : '#f1f5f9',
   }
 
-  const priceColor = memberType === '도매업' ? '#ec4899' : memberType === '소매업' ? '#0f766e' : '#6366f1'
+  const priceColor = memberType === '도매업' ? '#ec4899' : memberType === '소매업' ? '#14532d' : '#6366f1'
 
   if (loading) return (
     <div style={{ minHeight:'100vh', background:D.bg, display:'flex', alignItems:'center', justifyContent:'center' }}>
-      <div style={{ width:'36px', height:'36px', border:'3px solid #0f766e33', borderTop:'3px solid #0f766e', borderRadius:'50%', animation:'spin 0.8s linear infinite' }} />
+      <div style={{ width:'36px', height:'36px', border:'3px solid #14532d33', borderTop:'3px solid #14532d', borderRadius:'50%', animation:'spin 0.8s linear infinite' }} />
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   )
@@ -166,7 +166,7 @@ export default function CartPage() {
         <div style={{ maxWidth:'720px', margin:'0 auto', padding:'0 20px', height:'60px', display:'flex', alignItems:'center', gap:'12px' }}>
           <button onClick={() => router.back()} style={{ width:'36px', height:'36px', borderRadius:'10px', background:D.input, border:'none', cursor:'pointer', fontSize:'16px', color:D.text, display:'flex', alignItems:'center', justifyContent:'center' }}>←</button>
           <p style={{ fontWeight:800, fontSize:'16px', margin:0, flex:1 }}>장바구니 🛒</p>
-          <span style={{ background:'linear-gradient(135deg,#0f766e,#0891b2)', color:'white', fontSize:'11px', fontWeight:700, padding:'3px 10px', borderRadius:'20px' }}>
+          <span style={{ background:'linear-gradient(135deg,#14532d,#15803d)', color:'white', fontSize:'11px', fontWeight:700, padding:'3px 10px', borderRadius:'20px' }}>
             {memberType}
           </span>
           <button onClick={() => setDark(!dark)} style={{ width:'36px', height:'36px', borderRadius:'10px', background:D.input, border:'none', cursor:'pointer', fontSize:'16px' }}>
@@ -182,7 +182,7 @@ export default function CartPage() {
             <p style={{ fontSize:'56px', marginBottom:'16px' }}>🛒</p>
             <p style={{ fontWeight:800, fontSize:'18px', color:D.text, marginBottom:'8px' }}>장바구니가 비어있어요</p>
             <p style={{ fontSize:'13px', color:D.sub, marginBottom:'28px' }}>마음에 드는 상품을 담아보세요</p>
-            <Link href="/shop" style={{ background:'linear-gradient(135deg,#0f766e,#0891b2)', color:'white', fontWeight:700, fontSize:'14px', padding:'13px 28px', borderRadius:'14px', textDecoration:'none', boxShadow:'0 8px 20px rgba(15,118,110,0.3)' }}>
+            <Link href="/shop" style={{ background:'linear-gradient(135deg,#14532d,#15803d)', color:'white', fontWeight:700, fontSize:'14px', padding:'13px 28px', borderRadius:'14px', textDecoration:'none', boxShadow:'0 8px 20px rgba(15,118,110,0.3)' }}>
               쇼핑 계속하기 →
             </Link>
           </div>
@@ -241,7 +241,7 @@ export default function CartPage() {
               </div>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'4px' }}>
                 <p style={{ fontSize:'13px', color:D.sub, margin:0 }}>배송비</p>
-                <p style={{ fontSize:'13px', color:'#0f766e', fontWeight:700, margin:0 }}>무료</p>
+                <p style={{ fontSize:'13px', color:'#14532d', fontWeight:700, margin:0 }}>무료</p>
               </div>
               <div style={{ height:'1px', background:D.border, margin:'14px 0' }} />
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
@@ -252,7 +252,7 @@ export default function CartPage() {
 
             {/* 주문하기 버튼 */}
             <button onClick={() => { setOrderDone(false); setOrderForm({ address:'', note:'', payment_method:'계좌이체' }); setShowOrder(true) }}
-              style={{ width:'100%', padding:'18px', borderRadius:'16px', background:'linear-gradient(135deg,#0f766e,#0891b2)', color:'white', fontSize:'17px', fontWeight:900, border:'none', cursor:'pointer', boxShadow:'0 10px 28px rgba(15,118,110,0.35)' }}>
+              style={{ width:'100%', padding:'18px', borderRadius:'16px', background:'linear-gradient(135deg,#14532d,#15803d)', color:'white', fontSize:'17px', fontWeight:900, border:'none', cursor:'pointer', boxShadow:'0 10px 28px rgba(15,118,110,0.35)' }}>
               🛒 {totalAmount.toLocaleString()}원 주문하기
             </button>
           </>
@@ -272,7 +272,7 @@ export default function CartPage() {
             {orderDone ? (
               <div style={{ padding:'48px 28px', textAlign:'center' }}>
                 {/* 성공 아이콘 */}
-                <div style={{ width:'80px', height:'80px', borderRadius:'50%', background:'linear-gradient(135deg,#0f766e,#0891b2)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'36px', margin:'0 auto 20px', boxShadow:'0 12px 32px rgba(15,118,110,0.35)' }}>🎉</div>
+                <div style={{ width:'80px', height:'80px', borderRadius:'50%', background:'linear-gradient(135deg,#14532d,#15803d)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'36px', margin:'0 auto 20px', boxShadow:'0 12px 32px rgba(15,118,110,0.35)' }}>🎉</div>
                 <p style={{ fontSize:'22px', fontWeight:900, color:D.text, margin:'0 0 8px' }}>주문 완료!</p>
                 <p style={{ fontSize:'14px', color:D.sub, margin:'0 0 24px' }}>주문이 정상 접수됐어요</p>
 
@@ -280,12 +280,12 @@ export default function CartPage() {
                 <div style={{ position:'relative', width:'64px', height:'64px', margin:'0 auto 20px' }}>
                   <svg width="64" height="64" style={{ transform:'rotate(-90deg)' }}>
                     <circle cx="32" cy="32" r="28" fill="none" stroke={D.border} strokeWidth="4" />
-                    <circle cx="32" cy="32" r="28" fill="none" stroke="#0f766e" strokeWidth="4"
+                    <circle cx="32" cy="32" r="28" fill="none" stroke="#14532d" strokeWidth="4"
                       strokeDasharray={`${2 * Math.PI * 28}`}
                       strokeDashoffset={`${2 * Math.PI * 28 * (1 - redirectCount / 3)}`}
                       style={{ transition:'stroke-dashoffset 1s linear' }} />
                   </svg>
-                  <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'20px', fontWeight:900, color:'#0f766e' }}>{redirectCount}</div>
+                  <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'20px', fontWeight:900, color:'#14532d' }}>{redirectCount}</div>
                 </div>
 
                 <p style={{ fontSize:'13px', color:D.sub, margin:'0 0 24px' }}>{redirectCount}초 후 주문내역으로 이동해요</p>
@@ -296,7 +296,7 @@ export default function CartPage() {
                     쇼핑 계속
                   </button>
                   <button onClick={() => { setShowOrder(false); router.push('/shop/mypage?tab=orders') }}
-                    style={{ flex:2, padding:'14px', borderRadius:'14px', background:'linear-gradient(135deg,#0f766e,#0891b2)', color:'white', fontSize:'14px', fontWeight:900, border:'none', cursor:'pointer', boxShadow:'0 8px 20px rgba(15,118,110,0.3)' }}>
+                    style={{ flex:2, padding:'14px', borderRadius:'14px', background:'linear-gradient(135deg,#14532d,#15803d)', color:'white', fontSize:'14px', fontWeight:900, border:'none', cursor:'pointer', boxShadow:'0 8px 20px rgba(15,118,110,0.3)' }}>
                     📦 주문내역 바로가기 →
                   </button>
                 </div>
@@ -323,11 +323,11 @@ export default function CartPage() {
                 {/* 배송지 */}
                 <div>
                   <label style={{ display:'flex', alignItems:'center', gap:'6px', fontSize:'13px', fontWeight:800, color:D.text, marginBottom:'10px' }}>
-                    📍 배송지 <span style={{ fontSize:'10px', color:'#0f766e', background:'rgba(15,118,110,0.1)', padding:'2px 7px', borderRadius:'20px', fontWeight:700 }}>필수</span>
+                    📍 배송지 <span style={{ fontSize:'10px', color:'#14532d', background:'rgba(15,118,110,0.1)', padding:'2px 7px', borderRadius:'20px', fontWeight:700 }}>필수</span>
                   </label>
                   <input type="text" value={orderForm.address} onChange={e => setOrderForm(p => ({...p, address: e.target.value}))}
                     placeholder="배송 받으실 주소를 입력해주세요"
-                    style={{ width:'100%', padding:'14px 16px', borderRadius:'14px', border:`2px solid ${orderForm.address ? '#0f766e' : D.border}`, background:D.input, color:D.text, fontSize:'14px', outline:'none', boxSizing:'border-box' }} />
+                    style={{ width:'100%', padding:'14px 16px', borderRadius:'14px', border:`2px solid ${orderForm.address ? '#14532d' : D.border}`, background:D.input, color:D.text, fontSize:'14px', outline:'none', boxSizing:'border-box' }} />
                 </div>
 
                 {/* 결제방법 */}
@@ -336,7 +336,7 @@ export default function CartPage() {
                   <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px' }}>
                     {[{label:'계좌이체',icon:'🏦'},{label:'카드',icon:'💳'}].map(pm => (
                       <button key={pm.label} onClick={() => setOrderForm(p => ({...p, payment_method: pm.label}))}
-                        style={{ padding:'12px', borderRadius:'12px', border:`2px solid ${orderForm.payment_method===pm.label ? '#0f766e' : D.border}`, background:orderForm.payment_method===pm.label ? 'rgba(15,118,110,0.08)' : D.input, color:orderForm.payment_method===pm.label ? '#0f766e' : D.sub, fontSize:'13px', fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'6px' }}>
+                        style={{ padding:'12px', borderRadius:'12px', border:`2px solid ${orderForm.payment_method===pm.label ? '#14532d' : D.border}`, background:orderForm.payment_method===pm.label ? 'rgba(15,118,110,0.08)' : D.input, color:orderForm.payment_method===pm.label ? '#14532d' : D.sub, fontSize:'13px', fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'6px' }}>
                         {pm.icon} {pm.label}
                       </button>
                     ))}
@@ -352,7 +352,7 @@ export default function CartPage() {
                 </div>
 
                 <button onClick={handleOrder} disabled={orderLoading}
-                  style={{ width:'100%', padding:'18px', borderRadius:'16px', background:orderLoading ? D.input : 'linear-gradient(135deg,#0f766e,#0891b2)', color:orderLoading ? D.sub : 'white', fontSize:'17px', fontWeight:900, border:'none', cursor:orderLoading ? 'not-allowed' : 'pointer', boxShadow:orderLoading ? 'none' : '0 10px 28px rgba(15,118,110,0.35)' }}>
+                  style={{ width:'100%', padding:'18px', borderRadius:'16px', background:orderLoading ? D.input : 'linear-gradient(135deg,#14532d,#15803d)', color:orderLoading ? D.sub : 'white', fontSize:'17px', fontWeight:900, border:'none', cursor:orderLoading ? 'not-allowed' : 'pointer', boxShadow:orderLoading ? 'none' : '0 10px 28px rgba(15,118,110,0.35)' }}>
                   {orderLoading ? '⏳ 처리 중...' : `🛒 ${totalAmount.toLocaleString()}원 주문하기`}
                 </button>
               </div>

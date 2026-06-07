@@ -16,8 +16,8 @@ const menuGroups = [
   {
     label: '상품/재고',
     items: [
-      { href: '/admin/products',   icon: '🐟', label: '상품관리' },
-      { href: '/admin/inventory',  icon: '📦', label: '재고관리', badge: true },
+      { href: '/admin/products',  icon: '🧺', label: '상품관리' },
+      { href: '/admin/inventory', icon: '📦', label: '재고관리', badge: true },
     ],
   },
   {
@@ -25,7 +25,7 @@ const menuGroups = [
     items: [
       { href: '/admin/orders/wholesale', icon: '📋', label: '도매주문' },
       { href: '/admin/orders/retail',    icon: '🛒', label: '소매주문' },
-      { href: '/admin/orders/general',   icon: '🧺', label: '일반주문' },
+      { href: '/admin/orders/general',   icon: '📝', label: '일반주문' },
     ],
   },
   {
@@ -40,18 +40,37 @@ const menuGroups = [
     items: [
       { href: '/admin/tax',          icon: '🧾', label: '세금계산서' },
       { href: '/admin/social-proof', icon: '⭐', label: '소셜프루프' },
+      { href: '/admin/settings',     icon: '⚙️', label: '설정' },
     ],
   },
 ]
 
-// 모바일 하단 탭 (핵심 메뉴만)
 const mobileMenus = [
   { href: '/admin/dashboard',        icon: '🏠', label: '홈' },
-  { href: '/admin/products',         icon: '🐟', label: '상품' },
-  { href: '/admin/orders/general',   icon: '🧺', label: '주문' },
+  { href: '/admin/products',         icon: '🧺', label: '상품' },
+  { href: '/admin/orders/general',   icon: '📝', label: '주문' },
   { href: '/admin/members',          icon: '👥', label: '회원' },
   { href: '/admin/settings',         icon: '⚙️', label: '설정' },
 ]
+
+// SVG 로고 컴포넌트
+function FarmLogo({ size = 32, uid = 'a' }: { size?: number; uid?: string }) {
+  const gid = `farmGrad_${uid}`
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
+      <defs>
+        <linearGradient id={gid} x1="0" y1="0" x2="32" y2="32">
+          <stop offset="0%" stopColor="#22c55e"/>
+          <stop offset="100%" stopColor="#15803d"/>
+        </linearGradient>
+      </defs>
+      <rect width="32" height="32" rx="8" fill={`url(#${gid})`}/>
+      <path d="M10 20 Q16 10 22 20" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round"/>
+      <circle cx="16" cy="14" r="3" fill="white" fillOpacity="0.9"/>
+      <path d="M13 22 h6" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  )
+}
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -64,7 +83,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     setMounted(true)
-    localStorage.setItem('gulbi_admin', '1')  // 관리자 식별 플래그
+    localStorage.setItem('farm_admin', '1')
     const saved = localStorage.getItem('theme')
     if (saved === 'dark') setDark(true)
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
@@ -87,212 +106,184 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const handleLogout = async () => {
     const supabase = createClient()
-    localStorage.removeItem('gulbi_admin')
     await supabase.auth.signOut()
     router.push('/auth/login')
   }
 
-  // ── 모바일 레이아웃 ──────────────────────────────────────────
-  if (isMobile) {
-    return (
-      <div className={`flex flex-col min-h-screen ${dark ? 'bg-gray-950 text-gray-100' : 'bg-slate-50 text-slate-800'}`}>
+  if (!mounted) return null
 
-        {/* 모바일 상단 헤더 */}
-        <header className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 h-14 border-b
-          ${dark ? 'bg-gray-900 border-gray-800' : 'bg-white border-slate-100'}`}
-          style={{ backdropFilter: 'blur(12px)' }}>
-          <div className="flex items-center gap-2">
-            <span className="text-xl">🐟</span>
-            <div>
-              <p className={`text-sm font-bold leading-tight ${dark ? 'text-white' : 'text-slate-800'}`}>굴비가게</p>
-              <p className={`text-[9px] tracking-widest uppercase ${dark ? 'text-gray-400' : 'text-slate-400'}`}>Admin</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {lowStockCount > 0 && (
-              <Link href="/admin/inventory" className="flex items-center gap-1 px-2 py-1 rounded-lg bg-red-500 text-white text-xs font-bold">
-                📦 {lowStockCount}
-              </Link>
-            )}
-            <button onClick={() => setDark(v => !v)}
-              className={`w-9 h-9 rounded-xl flex items-center justify-center text-base ${dark ? 'bg-gray-800' : 'bg-slate-100'}`}>
-              {dark ? '🌙' : '☀️'}
-            </button>
-            <button onClick={handleLogout}
-              className={`w-9 h-9 rounded-xl flex items-center justify-center text-base ${dark ? 'bg-gray-800 text-red-400' : 'bg-slate-100 text-red-500'}`}>
-              🚪
-            </button>
-          </div>
-        </header>
-
-        {/* 컨텐츠 */}
-        <main className="flex-1 pt-14 pb-20 px-4 py-4" style={{ paddingTop: '72px' }}>
-          {children}
-        </main>
-
-        {/* 모바일 하단 탭바 */}
-        <nav className={`fixed bottom-0 left-0 right-0 z-50 flex border-t
-          ${dark ? 'bg-gray-900 border-gray-800' : 'bg-white border-slate-100'}`}
-          style={{ paddingBottom: 'env(safe-area-inset-bottom)', backdropFilter: 'blur(16px)' }}>
-          {mobileMenus.map(menu => {
-            const active = pathname === menu.href || pathname.startsWith(menu.href + '/')
-            return (
-              <Link key={menu.href} href={menu.href}
-                className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 relative"
-                style={{ color: active ? '#0ea5e9' : dark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)' }}>
-                {active && (
-                  <div className="absolute top-0 left-1/4 right-1/4 h-0.5 rounded-b bg-sky-500" />
-                )}
-                <span className="text-xl leading-none">{menu.icon}</span>
-                <span className="text-[10px] font-semibold">{menu.label}</span>
-              </Link>
-            )
-          })}
-        </nav>
-      </div>
-    )
-  }
-
-  // ── 데스크톱/태블릿 레이아웃 ────────────────────────────────
   return (
-    <div className={`flex min-h-screen transition-colors duration-300 ${dark ? 'bg-gray-950 text-gray-100' : 'bg-slate-50 text-slate-800'}`}>
+    <div className={`flex min-h-screen ${dark ? 'dark bg-gray-950 text-gray-100' : 'bg-slate-50 text-slate-800'}`}>
 
-      {/* 사이드바 */}
-      <aside className={`fixed top-0 left-0 h-full z-40 flex flex-col transition-all duration-300 ease-in-out shadow-2xl
+      {/* ── 사이드바 (데스크탑) ── */}
+      <aside className={`
+        hidden md:flex fixed top-0 left-0 h-full z-40 flex-col
+        transition-all duration-300 ease-in-out
         ${collapsed ? 'w-16' : 'w-56'}
-        ${dark ? 'bg-gray-900 border-r border-gray-800' : 'bg-white border-r border-slate-100'}`}>
+        ${dark ? 'bg-gray-900 border-r border-gray-800' : 'bg-white border-r border-green-50'}
+        shadow-lg shadow-green-900/5
+      `}>
 
         {/* 로고 */}
-        <div className={`flex items-center gap-3 px-4 py-5 border-b ${dark ? 'border-gray-800' : 'border-slate-100'}`}>
-          <span className="text-2xl flex-shrink-0">🐟</span>
+        <div className={`flex items-center gap-3 px-4 py-5 border-b ${dark ? 'border-gray-800' : 'border-green-50'}`}>
+          <div className="relative flex-shrink-0">
+            <FarmLogo size={34} uid="sidebar" />
+            <span className="absolute -bottom-1 -right-1 text-xs">🌾</span>
+          </div>
           {!collapsed && (
             <div className="overflow-hidden">
-              <p className={`font-bold text-sm leading-tight ${dark ? 'text-white' : 'text-slate-800'}`}>굴비가게</p>
-              <p className={`text-xs ${dark ? 'text-gray-400' : 'text-slate-400'}`}>도매 관리 시스템</p>
+              <p className={`font-black text-sm leading-tight ${dark ? 'text-white' : 'text-slate-800'}`}>온종일팜</p>
+              <p className={`text-[10px] font-medium ${dark ? 'text-green-400' : 'text-green-600'}`}>농축농축수산물 도매</p>
             </div>
           )}
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className={`ml-auto p-1.5 rounded-lg transition-all duration-200 hover:scale-110
+              ${dark ? 'text-gray-400 hover:bg-gray-800' : 'text-slate-400 hover:bg-green-50'}`}
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d={collapsed ? 'M5 2l4 5-4 5' : 'M9 2L5 7l4 5'} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
         </div>
 
-        {/* 메뉴 그룹 */}
-        <nav className="flex-1 py-3 overflow-y-auto">
-          {menuGroups.map(group => (
-            <div key={group.label} className="mb-1">
-              {/* 그룹 라벨 */}
+        {/* 메뉴 */}
+        <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-4">
+          {menuGroups.map((group) => (
+            <div key={group.label}>
               {!collapsed && (
-                <p className={`px-4 py-1.5 text-[10px] font-bold tracking-widest uppercase
+                <p className={`text-[10px] font-bold uppercase tracking-widest px-3 mb-1.5
                   ${dark ? 'text-gray-600' : 'text-slate-300'}`}>
                   {group.label}
                 </p>
               )}
-              {collapsed && <div className={`mx-3 my-1.5 h-px ${dark ? 'bg-gray-800' : 'bg-slate-100'}`} />}
-
-              {group.items.map(menu => {
-                const active = pathname === menu.href || pathname.startsWith(menu.href + '/')
-                return (
-                  <Link key={menu.href} href={menu.href}
-                    className={`flex items-center gap-3 px-4 py-2.5 mx-2 rounded-xl mb-0.5 transition-all duration-200 group
-                      ${active
-                        ? 'bg-sky-500 text-white shadow-md shadow-sky-200 dark:shadow-sky-900'
-                        : dark
-                          ? 'text-gray-400 hover:bg-gray-800 hover:text-white'
-                          : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
-                      }`}>
-                    <span className={`text-base flex-shrink-0 transition-transform duration-200 group-hover:scale-110 ${active ? 'scale-110' : ''}`}>
-                      {menu.icon}
-                    </span>
-                    {!collapsed && (
-                      <span className="text-sm font-medium whitespace-nowrap flex-1">{menu.label}</span>
-                    )}
-                    {!collapsed && (menu as any).badge && lowStockCount > 0 && (
-                      <span className="text-xs font-bold bg-red-500 text-white px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
-                        {lowStockCount}
-                      </span>
-                    )}
-                  </Link>
-                )
-              })}
+              <div className="space-y-0.5">
+                {group.items.map((item) => {
+                  const active = pathname === item.href || pathname.startsWith(item.href + '/')
+                  return (
+                    <Link key={item.href} href={item.href}>
+                      <div className={`
+                        relative flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium
+                        transition-all duration-200 cursor-pointer group
+                        ${active
+                          ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-md shadow-green-500/20'
+                          : dark
+                            ? 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                            : 'text-slate-500 hover:bg-green-50 hover:text-green-700'}
+                      `}>
+                        {active && (
+                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-green-300 rounded-r-full"/>
+                        )}
+                        <span className="text-base flex-shrink-0">{item.icon}</span>
+                        {!collapsed && (
+                          <span className="truncate">{item.label}</span>
+                        )}
+                        {!collapsed && item.badge && lowStockCount > 0 && (
+                          <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center animate-pulse">
+                            {lowStockCount}
+                          </span>
+                        )}
+                      </div>
+                    </Link>
+                  )
+                })}
+              </div>
             </div>
           ))}
         </nav>
 
-        {/* 설정 — 단독 하단 고정 */}
-        <div className={`border-t ${dark ? 'border-gray-800' : 'border-slate-100'}`}>
-          <Link href="/admin/settings"
-            className={`flex items-center gap-3 px-4 py-3 mx-2 my-1.5 rounded-xl transition-all duration-200 group
-              ${pathname === '/admin/settings'
-                ? 'bg-sky-500 text-white shadow-md'
-                : dark ? 'text-gray-400 hover:bg-gray-800 hover:text-white' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
-              }`}>
-            <span className="text-base flex-shrink-0 group-hover:scale-110 transition-transform">⚙️</span>
-            {!collapsed && <span className="text-sm font-medium">설정</span>}
-          </Link>
-        </div>
-
-        {/* 하단 액션 버튼들 */}
-        <div className={`p-3 border-t ${dark ? 'border-gray-800' : 'border-slate-100'} space-y-2`}>
-          <button onClick={() => setDark(!dark)}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200
-              ${dark ? 'bg-gray-800 hover:bg-gray-700 text-yellow-400' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}`}>
-            <span className="text-base flex-shrink-0" style={{ transform: dark ? 'rotate(0deg)' : 'rotate(180deg)', transition: 'transform 0.3s' }}>
-              {dark ? '🌙' : '☀️'}
-            </span>
-            {!collapsed && <span className="text-xs font-medium">{dark ? '다크모드' : '라이트모드'}</span>}
+        {/* 하단 */}
+        <div className={`p-3 border-t ${dark ? 'border-gray-800' : 'border-green-50'} space-y-1`}>
+          <button
+            onClick={() => setDark(!dark)}
+            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
+              ${dark ? 'text-gray-400 hover:bg-gray-800' : 'text-slate-500 hover:bg-green-50'}`}
+          >
+            <span className="text-base">{dark ? '☀️' : '🌙'}</span>
+            {!collapsed && <span>{dark ? '라이트 모드' : '다크 모드'}</span>}
           </button>
-
-          <a href="/shop"
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 hover:scale-[1.02] active:scale-95 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white shadow-md shadow-emerald-500/20">
-            <span className="text-base flex-shrink-0">🛒</span>
-            {!collapsed && <span className="text-xs font-bold">쇼핑몰 가기</span>}
-          </a>
-
-          <a href="/landing"
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 hover:scale-[1.02] active:scale-95 bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-400 hover:to-purple-400 text-white shadow-md shadow-violet-500/20">
-            <span className="text-base flex-shrink-0">🏠</span>
-            {!collapsed && <span className="text-xs font-bold">대문으로</span>}
-          </a>
-
-          <button onClick={handleLogout}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200
-              ${dark ? 'hover:bg-red-900/40 text-red-400' : 'hover:bg-red-50 text-red-500'}`}>
-            <span className="text-base flex-shrink-0">🚪</span>
-            {!collapsed && <span className="text-xs font-medium">로그아웃</span>}
-          </button>
-
-          {/* 접기 버튼 */}
-          <button onClick={() => setCollapsed(v => !v)}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200
-              ${dark ? 'text-gray-600 hover:text-gray-400 hover:bg-gray-800' : 'text-slate-300 hover:text-slate-500 hover:bg-slate-100'}`}>
-            <span className="text-sm flex-shrink-0">{collapsed ? '▶' : '◀'}</span>
-            {!collapsed && <span className="text-xs">접기</span>}
+          <button
+            onClick={handleLogout}
+            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
+              ${dark ? 'text-red-400 hover:bg-red-900/20' : 'text-red-400 hover:bg-red-50'}`}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="flex-shrink-0">
+              <path d="M6 14H3a1 1 0 01-1-1V3a1 1 0 011-1h3M11 11l3-3-3-3M14 8H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            {!collapsed && <span>로그아웃</span>}
           </button>
         </div>
       </aside>
 
-      {/* 메인 콘텐츠 */}
-      <div className={`flex-1 flex flex-col transition-all duration-300 ${collapsed ? 'ml-16' : 'ml-56'}`}>
-        <header className={`sticky top-0 z-30 flex items-center justify-between px-6 py-4 border-b transition-colors duration-300
-          ${dark ? 'bg-gray-950 border-gray-800' : 'bg-slate-50 border-slate-200'}`}>
-          <button onClick={() => setCollapsed(!collapsed)}
-            className={`p-2 rounded-lg transition-all duration-200 hover:scale-110
-              ${dark ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-slate-200 text-slate-500'}`}>
-            <span className="text-lg">{collapsed ? '▶' : '◀'}</span>
-          </button>
-          <div className="flex items-center gap-3">
+      {/* ── 메인 콘텐츠 ── */}
+      <main className={`
+        flex-1 min-h-screen
+        transition-all duration-300
+        ${isMobile ? 'ml-0 pb-20' : collapsed ? 'md:ml-16' : 'md:ml-56'}
+      `}>
+        {/* 상단 헤더 (모바일) */}
+        <header className={`
+          md:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3
+          ${dark ? 'bg-gray-900 border-b border-gray-800' : 'bg-white border-b border-green-50'}
+          shadow-sm
+        `}>
+          <div className="flex items-center gap-2">
+            <FarmLogo size={28} uid="mobile" />
+            <div>
+              <p className={`font-black text-sm ${dark ? 'text-white' : 'text-slate-800'}`}>온종일팜</p>
+              <p className={`text-[9px] ${dark ? 'text-green-400' : 'text-green-600'}`}>농축농축수산물 도매</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
             {lowStockCount > 0 && (
-              <Link href="/admin/inventory"
-                className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-red-500 text-white animate-pulse">
-                📦 재고 부족 {lowStockCount}건
-              </Link>
+              <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">
+                재고부족 {lowStockCount}
+              </span>
             )}
-            <span className={`text-xs px-3 py-1 rounded-full font-medium ${dark ? 'bg-sky-900 text-sky-300' : 'bg-sky-100 text-sky-600'}`}>
-              관리자
-            </span>
+            <button
+              onClick={() => setDark(!dark)}
+              className={`p-2 rounded-xl transition-colors ${dark ? 'text-gray-400 hover:bg-gray-800' : 'text-slate-400 hover:bg-green-50'}`}
+            >
+              {dark ? '☀️' : '🌙'}
+            </button>
           </div>
         </header>
-        <main className="flex-1 p-6 animate-fadeIn">
+
+        {/* 페이지 콘텐츠 */}
+        <div className="p-4 md:p-6 animate-fadeIn">
           {children}
-        </main>
-      </div>
+        </div>
+      </main>
+
+      {/* ── 모바일 하단 탭바 ── */}
+      <nav className={`
+        md:hidden fixed bottom-0 left-0 right-0 z-50
+        ${dark ? 'bg-gray-900 border-t border-gray-800' : 'bg-white border-t border-green-100'}
+        pb-safe shadow-2xl shadow-green-900/10
+      `}>
+        <div className="flex items-center justify-around px-2 py-2">
+          {mobileMenus.map((item) => {
+            const active = pathname === item.href || pathname.startsWith(item.href + '/')
+            return (
+              <Link key={item.href} href={item.href} className="flex-1">
+                <div className={`
+                  flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl mx-0.5
+                  transition-all duration-200
+                  ${active
+                    ? 'bg-green-600 text-white scale-105 shadow-md shadow-green-500/30'
+                    : dark ? 'text-gray-500' : 'text-slate-400'}
+                `}>
+                  <span className="text-lg leading-none">{item.icon}</span>
+                  <span className={`text-[9px] font-bold leading-none ${active ? 'text-white' : ''}`}>
+                    {item.label}
+                  </span>
+                </div>
+              </Link>
+            )
+          })}
+        </div>
+      </nav>
+
     </div>
   )
 }

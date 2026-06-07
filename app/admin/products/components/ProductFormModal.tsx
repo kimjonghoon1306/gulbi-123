@@ -66,7 +66,7 @@ export function ProductFormModal({ show, onClose, editProduct, form, setForm, on
             <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">상품명</label>
             <input type="text" placeholder="상품명 입력" value={form.name}
               onChange={e => setForm({ ...form, name: e.target.value })}
-              className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500" />
+              className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-600" />
           </div>
 
           <div>
@@ -84,7 +84,7 @@ export function ProductFormModal({ show, onClose, editProduct, form, setForm, on
           <div>
             <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">카테고리</label>
             <select value={form.category_id} onChange={e => setForm({ ...form, category_id: e.target.value })}
-              className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+              className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-600">
               <option value="">선택</option>
               {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
@@ -101,13 +101,13 @@ export function ProductFormModal({ show, onClose, editProduct, form, setForm, on
                 <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">{f.label}</label>
                 <input type="number" value={(form as any)[f.key]}
                   onChange={e => setForm({ ...form, [f.key]: e.target.value })}
-                  className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500" />
+                  className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-600" />
               </div>
             ))}
             <div>
               <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">단위</label>
               <select value={form.unit} onChange={e => setForm({ ...form, unit: e.target.value })}
-                className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-600">
                 {['kg', 'g', '박스', '마리', '개', '묶음'].map(u => <option key={u}>{u}</option>)}
               </select>
             </div>
@@ -117,13 +117,13 @@ export function ProductFormModal({ show, onClose, editProduct, form, setForm, on
             <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">설명</label>
             <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3}
               placeholder="상품 설명을 입력하세요"
-              className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none" />
+              className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-600 resize-none" />
           </div>
 
           <div className="flex items-center gap-3">
             <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">판매 상태</label>
             <button onClick={() => setForm({ ...form, is_active: !form.is_active })}
-              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${form.is_active ? 'bg-sky-500' : 'bg-slate-300 dark:bg-gray-600'}`}>
+              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${form.is_active ? 'bg-green-600' : 'bg-slate-300 dark:bg-gray-600'}`}>
               <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all duration-200 ${form.is_active ? 'left-7' : 'left-1'}`} />
             </button>
             <span className="text-xs text-slate-500 dark:text-slate-400">{form.is_active ? '판매중' : '숨김'}</span>
@@ -134,7 +134,7 @@ export function ProductFormModal({ show, onClose, editProduct, form, setForm, on
           <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-gray-600 text-slate-500 dark:text-slate-400 text-sm font-medium hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors">
             취소
           </button>
-          <button onClick={onSave} className="flex-1 py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-white text-sm font-bold transition-colors active:scale-95">
+          <button onClick={onSave} className="flex-1 py-3 rounded-xl bg-green-600 hover:bg-green-500 text-white text-sm font-bold transition-colors active:scale-95">
             {editProduct ? '수정 완료' : '등록 완료'}
           </button>
         </div>
@@ -158,13 +158,13 @@ export function CategoryFormModal({ show, onClose, editCat, catName, setCatName,
         <div className="p-6">
           <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">카테고리명</label>
           <input type="text" value={catName} onChange={e => setCatName(e.target.value)} placeholder="예) 어류"
-            className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500" />
+            className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-600" />
         </div>
         <div className="flex gap-3 p-6 border-t border-slate-100 dark:border-gray-700">
           <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-gray-600 text-slate-500 dark:text-slate-400 text-sm font-medium hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors">
             취소
           </button>
-          <button onClick={onSave} className="flex-1 py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-white text-sm font-bold transition-colors active:scale-95">
+          <button onClick={onSave} className="flex-1 py-3 rounded-xl bg-green-600 hover:bg-green-500 text-white text-sm font-bold transition-colors active:scale-95">
             저장
           </button>
         </div>

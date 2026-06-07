@@ -122,8 +122,8 @@ export default function SupplierLoginPage() {
         {/* 왼쪽 브랜드 패널 */}
         <div className="brand-panel">
           <div className="brand-logo">🏭</div>
-          <h1 className="brand-title">굴비가게<br/><span>공급업체 포털</span></h1>
-          <p className="brand-desc">신뢰할 수 있는 수산물 공급망<br/>파트너와 함께 성장하세요</p>
+          <h1 className="brand-title">온종일팜<br/><span>공급업체 포털</span></h1>
+          <p className="brand-desc">신뢰할 수 있는 농축수산물 공급망<br/>파트너와 함께 성장하세요</p>
           <div className="brand-features">
             {[
               { icon: '📦', text: '상품 등록 · 관리' },

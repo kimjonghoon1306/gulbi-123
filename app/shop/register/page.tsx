@@ -21,8 +21,8 @@ export default function ShopRegisterPage() {
   const supabase = createClient()
 
   const typeInfo = {
-    '일반': { icon: '🛒', title: '일반 구매자', desc: '수산물을 직접 구매하고 싶어요', color: 'from-sky-500 to-blue-600', border: 'border-sky-500', bg: 'bg-sky-500/10' },
-    '소매업': { icon: '🏪', title: '소매업 창업', desc: '굴비가게 제품을 소매로 판매하고 싶어요', color: 'from-emerald-500 to-teal-600', border: 'border-emerald-500', bg: 'bg-emerald-500/10' },
+    '일반': { icon: '🛒', title: '일반 구매자', desc: '수산물을 직접 구매하고 싶어요', color: 'from-green-600 to-blue-600', border: 'border-green-600', bg: 'bg-green-600/10' },
+    '소매업': { icon: '🏪', title: '소매업 창업', desc: '온종일팜 제품을 소매로 판매하고 싶어요', color: 'from-emerald-500 to-teal-600', border: 'border-emerald-500', bg: 'bg-emerald-500/10' },
     '도매업': { icon: '🏭', title: '도매업 거래', desc: '대량 구매 및 도매 거래를 원해요', color: 'from-violet-500 to-purple-600', border: 'border-violet-500', bg: 'bg-violet-500/10' },
   }
 
@@ -106,7 +106,7 @@ export default function ShopRegisterPage() {
       <header className="flex items-center justify-between px-6 py-4 border-b border-white/5">
         <Link href="/landing" className="flex items-center gap-2">
           <span className="text-2xl">🐟</span>
-          <span className="font-bold text-lg">굴비가게</span>
+          <span className="font-bold text-lg">온종일팜</span>
         </Link>
         <Link href="/shop/login" className="text-sm text-slate-400 hover:text-white transition-colors">
           이미 계정이 있어요 →
@@ -127,7 +127,7 @@ export default function ShopRegisterPage() {
               </h2>
               <p className="text-slate-400 mb-2">
                 {memberType === '일반'
-                  ? '굴비가게 회원이 되신 걸 환영해요!'
+                  ? '온종일팜 회원이 되신 걸 환영해요!'
                   : `${memberType} 신청이 접수됐어요.\n관리자 승인 후 이용 가능합니다.`}
               </p>
               {memberType !== '일반' && (
@@ -136,7 +136,7 @@ export default function ShopRegisterPage() {
                 </div>
               )}
               <Link href="/shop"
-                className="inline-block bg-sky-500 hover:bg-sky-400 text-white font-bold px-8 py-4 rounded-2xl transition-all duration-200 hover:scale-105 mt-4">
+                className="inline-block bg-green-600 hover:bg-green-500 text-white font-bold px-8 py-4 rounded-2xl transition-all duration-200 hover:scale-105 mt-4">
                 쇼핑몰 바로가기 →
               </Link>
             </div>
@@ -176,7 +176,7 @@ export default function ShopRegisterPage() {
               )}
 
               <button onClick={() => setStep(2)}
-                className="w-full bg-sky-500 hover:bg-sky-400 text-white font-bold py-4 rounded-2xl transition-all duration-200 hover:scale-[1.02] active:scale-95 shadow-lg shadow-sky-500/20">
+                className="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-4 rounded-2xl transition-all duration-200 hover:scale-[1.02] active:scale-95 shadow-lg shadow-green-600/20">
                 다음 단계 →
               </button>
             </div>
@@ -206,7 +206,7 @@ export default function ShopRegisterPage() {
                     <div className="relative">
                       <input type={f.type} placeholder={f.placeholder} value={(form as any)[f.key]}
                         onChange={e => setForm({ ...form, [f.key]: e.target.value })}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all" />
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all" />
                       {(f.key === 'password') && (
                         <button type="button" onClick={() => setShowPw(!showPw)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-lg">
@@ -222,14 +222,14 @@ export default function ShopRegisterPage() {
                     <div className="h-px bg-white/5 my-2" />
                     <p className="text-xs font-bold text-slate-400 tracking-wide">사업자 정보</p>
                     {[
-                      { label: '업체명 *', key: 'businessName', placeholder: '예) 목포 수산마트' },
+                      { label: '업체명 *', key: 'businessName', placeholder: '예) 온종일팜 거래처' },
                       { label: '사업자번호 *', key: 'businessNumber', placeholder: '000-00-00000' },
                     ].map(f => (
                       <div key={f.key}>
                         <label className="block text-xs font-bold text-slate-400 mb-1.5 tracking-wide">{f.label}</label>
                         <input type="text" placeholder={f.placeholder} value={(form as any)[f.key]}
                           onChange={e => setForm({ ...form, [f.key]: e.target.value })}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all" />
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all" />
                       </div>
                     ))}
                   </>
@@ -242,7 +242,7 @@ export default function ShopRegisterPage() {
                 )}
 
                 <button onClick={handleRegister} disabled={loading}
-                  className="w-full bg-sky-500 hover:bg-sky-400 text-white font-bold py-4 rounded-2xl transition-all duration-200 hover:scale-[1.02] active:scale-95 disabled:opacity-50 shadow-lg shadow-sky-500/20 mt-2">
+                  className="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-4 rounded-2xl transition-all duration-200 hover:scale-[1.02] active:scale-95 disabled:opacity-50 shadow-lg shadow-green-600/20 mt-2">
                   {loading ? '처리 중...' : '가입 완료'}
                 </button>
               </div>
