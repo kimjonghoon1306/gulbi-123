@@ -143,9 +143,9 @@ export default function LandingPage() {
           borderBottom: scrolled ? (dark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.06)') : 'none',
         }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-xl sm:text-2xl">🧺</span>
-            <span className="font-bold text-base sm:text-lg tracking-tight" style={{ color: landingText }}>온종일팜</span>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <span className="text-2xl sm:text-4xl">🧺</span>
+            <span className="font-black text-lg sm:text-2xl tracking-tight" style={{ color: landingText, letterSpacing: '-0.5px' }}>온종일팜</span>
           </div>
           <div className="flex items-center gap-2 sm:gap-6">
             <a href="#features" className="text-sm transition-colors hidden md:block" style={{ color: dark ? '#94a3b8' : '#4b5563' }}>기능소개</a>
