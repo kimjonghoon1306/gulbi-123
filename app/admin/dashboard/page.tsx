@@ -15,7 +15,24 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [greeting, setGreeting] = useState('')
   const [chartType, setChartType] = useState<'bar' | 'line'>('line')
+  const [brief, setBrief] = useState<{ headline: string; summary: string; actions: { label: string; why: string }[]; provider?: string } | null>(null)
+  const [briefLoading, setBriefLoading] = useState(false)
+  const [briefError, setBriefError] = useState('')
   const supabase = createClient()
+
+  const getBrief = async () => {
+    setBriefLoading(true); setBriefError(''); setBrief(null)
+    try {
+      const res = await fetch('/api/admin-brief')
+      const data = await res.json()
+      if (!res.ok) { setBriefError(data.error || 'AI 브리핑을 불러오지 못했어요.'); return }
+      setBrief(data)
+    } catch {
+      setBriefError('네트워크 오류로 브리핑을 불러오지 못했어요.')
+    } finally {
+      setBriefLoading(false)
+    }
+  }
 
   useEffect(() => {
     const h = new Date().getHours()
@@ -161,6 +178,56 @@ export default function DashboardPage() {
           style={{ background: 'linear-gradient(135deg,#7c3aed,#a855f7)', color: 'white', boxShadow: '0 4px 15px rgba(124,58,237,0.3)' }}>
           🏭 공급업체 관리
         </Link>
+      </div>
+
+      {/* AI 아침 브리핑 */}
+      <div className="rounded-2xl border border-violet-200 dark:border-violet-800/60 bg-gradient-to-br from-violet-50 to-indigo-50 dark:from-violet-900/20 dark:to-indigo-900/20 p-5">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">✨</span>
+            <h2 className="font-bold text-slate-800 dark:text-white">AI 아침 브리핑</h2>
+            {brief?.provider && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/70 dark:bg-gray-800/60 text-slate-500 dark:text-slate-400 font-medium">
+                {brief.provider === 'openai' ? 'GPT' : 'Gemini'}
+              </span>
+            )}
+          </div>
+          <button onClick={getBrief} disabled={briefLoading}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all active:scale-95 disabled:opacity-60"
+            style={{ background: 'linear-gradient(135deg,#7c3aed,#6366f1)' }}>
+            {briefLoading ? <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : '✨'}
+            {briefLoading ? '분석 중...' : brief ? '새로고침' : '브리핑 받기'}
+          </button>
+        </div>
+
+        {!brief && !briefLoading && !briefError && (
+          <p className="text-sm text-slate-500 dark:text-slate-400">버튼을 누르면 어제 매출·미출고·재고·승인대기를 AI가 한눈에 정리해 드려요. <span className="text-slate-400">(내 API 키 사용)</span></p>
+        )}
+        {briefError && (
+          <div className="text-sm text-red-600 dark:text-red-400 mt-1">
+            {briefError}
+            {briefError.includes('키') && <Link href="/admin/settings" className="ml-1 underline font-medium">설정에서 키 등록 →</Link>}
+          </div>
+        )}
+        {brief && (
+          <div className="mt-2 space-y-3">
+            <p className="text-base font-bold text-slate-800 dark:text-white">{brief.headline}</p>
+            {brief.summary && <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{brief.summary}</p>}
+            {brief.actions?.length > 0 && (
+              <div className="space-y-2 pt-1">
+                {brief.actions.map((a, i) => (
+                  <div key={i} className="flex items-start gap-2 bg-white/70 dark:bg-gray-800/50 rounded-xl px-3 py-2">
+                    <span className="text-xs font-bold text-violet-600 dark:text-violet-400 mt-0.5">{i + 1}</span>
+                    <div>
+                      <p className="text-sm font-semibold text-slate-800 dark:text-white">{a.label}</p>
+                      {a.why && <p className="text-xs text-slate-500 dark:text-slate-400">{a.why}</p>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* 재고 부족 알림 */}

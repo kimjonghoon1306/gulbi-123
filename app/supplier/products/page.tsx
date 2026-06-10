@@ -44,6 +44,8 @@ function ProductsContent() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [showAiEditor, setShowAiEditor] = useState(false)
+  const [aiFilling, setAiFilling] = useState(false)
+  const [aiMsg, setAiMsg] = useState('')
 
   useEffect(() => { init() }, [])
 
@@ -71,6 +73,56 @@ function ProductsContent() {
     if (!error) {
       const url = supabase.storage.from('products').getPublicUrl(fn).data.publicUrl
       setForm(p => ({ ...p, image_url: url }))
+    }
+  }
+
+  const fileToBase64 = (file: File): Promise<{ base64: string; mimeType: string }> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => {
+        const res = reader.result as string
+        resolve({ base64: res.split(',')[1] || '', mimeType: file.type || 'image/jpeg' })
+      }
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
+
+  // 📸 사진 한 장 → AI가 상품명·카테고리·제안가·단위·설명 자동완성 (공급사 본인 키 사용)
+  const handleAiFill = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]
+    if (!f) return
+    e.target.value = ''
+    setAiFilling(true); setAiMsg(''); setError('')
+    try {
+      const { base64, mimeType } = await fileToBase64(f)
+      // 1) 사진을 대표 이미지로도 업로드
+      let imageUrl = ''
+      const fn = Date.now() + '.' + (f.name.split('.').pop() || 'jpg')
+      const up = await supabase.storage.from('products').upload(fn, f, { upsert: true })
+      if (!up.error) imageUrl = supabase.storage.from('products').getPublicUrl(fn).data.publicUrl
+      // 2) AI 분석
+      const res = await fetch('/api/suggest-product', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ base64, mimeType, categories }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error || 'AI 분석에 실패했어요.'); return }
+      const cat = categories.find(c => c.name === data.categoryName)
+      setForm(p => ({
+        ...p,
+        name: data.name || p.name,
+        category_id: cat?.id || p.category_id,
+        suggested_wholesale_price: data.suggestedWholesale !== '' ? String(data.suggestedWholesale) : p.suggested_wholesale_price,
+        suggested_retail_price: data.suggestedRetail !== '' ? String(data.suggestedRetail) : p.suggested_retail_price,
+        unit: data.unit || p.unit,
+        description: data.description || p.description,
+        image_url: imageUrl || p.image_url,
+      }))
+      setAiMsg(`✨ ${data.provider === 'openai' ? 'GPT' : 'Gemini'}가 자동으로 채웠어요. 가격은 제안 초안이니 꼭 확인하세요.`)
+    } catch {
+      setError('사진 분석 중 오류가 발생했어요.')
+    } finally {
+      setAiFilling(false)
     }
   }
 
@@ -212,6 +264,22 @@ function ProductsContent() {
             </div>
 
             <div style={{ overflowY: 'auto', flex: 1, padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+              {/* 📸 사진으로 자동 채우기 (AI) */}
+              <div style={{ background: 'linear-gradient(135deg,rgba(124,58,237,0.1),rgba(99,102,241,0.08))', border: '1px solid rgba(124,58,237,0.25)', borderRadius: '14px', padding: '14px 16px' }}>
+                <input id="sup-ai-img" type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAiFill} />
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                  <div>
+                    <p style={{ fontSize: '13px', fontWeight: 800, color: '#a78bfa', margin: '0 0 2px' }}>✨ 사진으로 자동 채우기</p>
+                    <p style={{ fontSize: '11px', color: t.textMuted, margin: 0 }}>상품 사진 한 장이면 이름·카테고리·제안가·설명을 AI가 채워줘요</p>
+                  </div>
+                  <button onClick={() => document.getElementById('sup-ai-img')?.click()} disabled={aiFilling}
+                    style={{ flexShrink: 0, padding: '11px 16px', borderRadius: '12px', border: 'none', background: 'linear-gradient(135deg,#7c3aed,#6366f1)', color: 'white', fontSize: '13px', fontWeight: 700, cursor: aiFilling ? 'default' : 'pointer', opacity: aiFilling ? 0.6 : 1, whiteSpace: 'nowrap' }}>
+                    {aiFilling ? '분석 중...' : '📸 사진 선택'}
+                  </button>
+                </div>
+                {aiMsg && <p style={{ fontSize: '12px', color: '#34d399', margin: '10px 0 0', fontWeight: 600 }}>{aiMsg}</p>}
+              </div>
 
               {editProduct?.approval_status === '거절' && (
                 <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '12px', padding: '14px 16px' }}>
