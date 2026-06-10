@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import SupplierLayout from '../_layout/layout'
 import { useSupplierTheme } from '../_layout/theme-context'
 
-type KeyInfo = { hasKey: boolean; keyHint: string | null; isValid: boolean; updatedAt: string | null }
+type KeyInfo = { hasKey: boolean; keyHint: string | null; geminiKeyHint?: string | null; isValid: boolean; updatedAt: string | null }
 
 function SettingsContent() {
   const t = useSupplierTheme()
@@ -18,6 +18,11 @@ function SettingsContent() {
   const [showKey, setShowKey]       = useState(false)
   const [keyLoading, setKeyLoading] = useState(false)
   const [keyMsg, setKeyMsg]         = useState<{type:'success'|'error';text:string}|null>(null)
+
+  const [geminiInput, setGeminiInput]     = useState('')
+  const [showGemini, setShowGemini]       = useState(false)
+  const [geminiLoading, setGeminiLoading] = useState(false)
+  const [geminiMsg, setGeminiMsg]         = useState<{type:'success'|'error';text:string}|null>(null)
 
   const [curPw, setCurPw]         = useState('')
   const [newPw, setNewPw]         = useState('')
@@ -59,6 +64,30 @@ function SettingsContent() {
       setKeyMsg({ type: 'error', text: e.message })
     }
     setKeyLoading(false)
+  }
+
+  const saveGeminiKey = async () => {
+    if (!geminiInput.trim()) return setGeminiMsg({ type: 'error', text: 'Gemini API 키를 입력해주세요.' })
+    setGeminiLoading(true); setGeminiMsg(null)
+    try {
+      const res = await fetch('/api/user-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ geminiKey: geminiInput.trim() }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setGeminiMsg({ type: 'error', text: data.error || '저장 실패' })
+      } else {
+        setGeminiMsg({ type: 'success', text: '✅ Gemini 키가 저장됐어요!' })
+        setGeminiInput('')
+        fetchKeyInfo()
+        setTimeout(() => setGeminiMsg(null), 3000)
+      }
+    } catch (e: any) {
+      setGeminiMsg({ type: 'error', text: e.message })
+    }
+    setGeminiLoading(false)
   }
 
   const deleteKey = async () => {
@@ -161,7 +190,7 @@ function SettingsContent() {
           minHeight: 'calc(100vh - 104px)',
         }} className="settings-col">
           <p style={sectionTitle}>🤖 AI 키 관리</p>
-          <p style={sectionSub}>OpenAI API 키를 등록해야 AI 상세페이지를 만들 수 있어요</p>
+          <p style={sectionSub}>OpenAI 또는 Gemini 키 중 하나만 등록해도 AI 기능을 쓸 수 있어요</p>
 
           {/* 현재 등록 키 상태 */}
           <div style={{
@@ -268,9 +297,105 @@ function SettingsContent() {
             color: 'white', fontSize: '15px', fontWeight: 800,
             boxShadow: '0 6px 20px rgba(245,158,11,0.35)',
             opacity: keyLoading || !keyInput.trim() ? 0.5 : 1,
-            transition: 'all 0.2s', marginTop: 'auto',
+            transition: 'all 0.2s',
           }}>
             {keyLoading ? '⏳ 검증 중...' : keyInfo?.hasKey ? '🔄 키 변경하기' : '✅ 키 등록하기'}
+          </button>
+
+          {/* ─────────────── Gemini 키 ─────────────── */}
+          <div style={{ borderTop: `1px solid ${t.border}`, margin: '32px 0 24px' }} />
+          <p style={{ fontSize: '16px', fontWeight: 800, color: t.text, margin: '0 0 4px' }}>♊ Gemini API 키 (무료)</p>
+          <p style={{ ...sectionSub, marginBottom: '20px' }}>구글 계정만 있으면 무료로 발급돼요. 사진 자동완성 등에 사용됩니다.</p>
+
+          {/* Gemini 등록 상태 */}
+          <div style={{
+            background: keyInfo?.geminiKeyHint ? 'rgba(52,211,153,0.07)' : t.input,
+            border: `1px solid ${keyInfo?.geminiKeyHint ? 'rgba(52,211,153,0.25)' : t.border}`,
+            borderRadius: '18px', padding: '18px 22px',
+            display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '20px',
+          }}>
+            <div style={{
+              width: '44px', height: '44px', borderRadius: '13px', flexShrink: 0,
+              background: keyInfo?.geminiKeyHint ? 'rgba(52,211,153,0.15)' : t.input,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px',
+            }}>{keyInfo?.geminiKeyHint ? '🔑' : '🔓'}</div>
+            <div style={{ flex: 1 }}>
+              {keyInfo?.geminiKeyHint ? (
+                <>
+                  <p style={{ fontSize: '14px', fontWeight: 700, color: t.text, margin: '0 0 4px' }}>{keyInfo.geminiKeyHint}</p>
+                  <p style={{ fontSize: '12px', color: '#34d399', margin: 0 }}>✅ 등록됨</p>
+                </>
+              ) : (
+                <>
+                  <p style={{ fontSize: '14px', fontWeight: 700, color: t.textMuted, margin: '0 0 4px' }}>등록된 Gemini 키 없음</p>
+                  <p style={{ fontSize: '12px', color: t.textFaint, margin: 0 }}>아래에서 키를 등록해주세요</p>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Gemini 키 입력 */}
+          <div style={{ marginBottom: '20px' }}>
+            <label style={labelBase}>Gemini API 키</label>
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showGemini ? 'text' : 'password'}
+                value={geminiInput}
+                onChange={e => setGeminiInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && saveGeminiKey()}
+                placeholder="AIza..."
+                style={{ ...inputBase, paddingRight: '52px' }}
+              />
+              <button onClick={() => setShowGemini(v => !v)} style={{
+                position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)',
+                background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px',
+                color: t.textMuted, padding: '4px',
+              }}>{showGemini ? '🙈' : '👁'}</button>
+            </div>
+          </div>
+
+          {/* Gemini 발급 안내 */}
+          <div style={{
+            background: 'rgba(52,211,153,0.05)',
+            border: `1px solid rgba(52,211,153,0.2)`,
+            borderRadius: '14px', padding: '16px 20px', marginBottom: '20px',
+          }}>
+            <p style={{ fontSize: '13px', fontWeight: 700, color: '#34d399', margin: '0 0 10px' }}>💡 발급 방법 (무료)</p>
+            <p style={{ fontSize: '12px', color: t.textMuted, margin: '0 0 12px', lineHeight: 1.7 }}>
+              1. 아래 버튼으로 Google AI Studio 접속 (구글 로그인)<br />
+              2. "Create API key" → 키 생성<br />
+              3. 생성된 키(AIza...)를 위 입력란에 붙여넣기
+            </p>
+            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer" style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              padding: '11px 16px', borderRadius: '12px', textDecoration: 'none',
+              background: 'linear-gradient(135deg, rgba(52,211,153,0.15), rgba(16,185,129,0.15))',
+              border: '1px solid rgba(52,211,153,0.3)',
+              color: '#34d399', fontSize: '13px', fontWeight: 700,
+            }}>
+              🔑 Gemini API 키 발급받기 →
+            </a>
+          </div>
+
+          {geminiMsg && (
+            <div style={{
+              padding: '14px 18px', borderRadius: '14px', marginBottom: '16px',
+              background: geminiMsg.type === 'success' ? 'rgba(52,211,153,0.1)' : 'rgba(239,68,68,0.1)',
+              border: `1px solid ${geminiMsg.type === 'success' ? 'rgba(52,211,153,0.3)' : 'rgba(239,68,68,0.3)'}`,
+              color: geminiMsg.type === 'success' ? '#34d399' : '#f87171',
+              fontSize: '13px', fontWeight: 600,
+            }}>{geminiMsg.text}</div>
+          )}
+
+          <button onClick={saveGeminiKey} disabled={geminiLoading || !geminiInput.trim()} style={{
+            padding: '16px', borderRadius: '16px', border: 'none', cursor: 'pointer',
+            background: 'linear-gradient(135deg, #10b981, #059669)',
+            color: 'white', fontSize: '15px', fontWeight: 800,
+            boxShadow: '0 6px 20px rgba(16,185,129,0.35)',
+            opacity: geminiLoading || !geminiInput.trim() ? 0.5 : 1,
+            transition: 'all 0.2s',
+          }}>
+            {geminiLoading ? '⏳ 검증 중...' : keyInfo?.geminiKeyHint ? '🔄 Gemini 키 변경하기' : '✅ Gemini 키 등록하기'}
           </button>
         </div>
 
