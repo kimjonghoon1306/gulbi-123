@@ -194,7 +194,7 @@ function ProductsContent() {
           <div style={{ display: 'flex', gap: '8px' }}>
             <button onClick={() => setShowAiEditor(true)}
               style={{ padding: '12px 20px', borderRadius: '14px', background: 'linear-gradient(135deg, #ec4899, #f43f5e)', color: 'white', fontSize: '13px', fontWeight: 700, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 16px rgba(236,72,153,0.35)' }}>
-              ✨ AI 상세페이지
+              📄 상세페이지
             </button>
             <button onClick={() => { setEditProduct(null); setForm(EMPTY_FORM); setShowForm(true) }}
               style={{ padding: '12px 20px', borderRadius: '14px', background: 'linear-gradient(135deg, #7c3aed, #6d28d9)', color: 'white', fontSize: '13px', fontWeight: 700, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 16px rgba(124,58,237,0.35)' }}>
