@@ -27,7 +27,7 @@ const BG_PRESETS = {
 export default function AiLandingEditor({ show, onClose, products, onDone }: Props) {
   const supabase = createClient()
 
-  const [aiTab, setAiTab] = useState<'ai' | 'manual'>('ai')
+  const [aiTab, setAiTab] = useState<'ai' | 'manual' | 'html'>('ai')
   const [aiStep, setAiStep] = useState<1 | 2 | 3>(1)
   const [aiDark, setAiDark] = useState(true)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
@@ -48,6 +48,9 @@ export default function AiLandingEditor({ show, onClose, products, onDone }: Pro
   const [aiTemplateKey, setAiTemplateKey] = useState<TemplateKey>('premium')
   const [showBuyerPreview, setShowBuyerPreview] = useState<'mobile' | 'desktop' | false>(false)
   const [manualBlocks, setManualBlocks] = useState<{ id: number; type: 'image' | 'video' | 'text'; content: string; file: File | null }[]>([])
+  // HTML 붙여넣기 탭
+  const [htmlCode, setHtmlCode] = useState('')
+  const [htmlProduct, setHtmlProduct] = useState<Product | null>(null)
   const aiLoadingTimer = useRef<any>(null)
 
   if (!show) return null
@@ -205,6 +208,7 @@ export default function AiLandingEditor({ show, onClose, products, onDone }: Pro
     setAiImage(null); setAiImagePreview(''); setAiBgRemovedPreview(''); setAiBgRemovedBase64('')
     setAiLandingHtml(''); setAiError(''); setAiSelectedBg('dark'); setShowBuyerPreview(false)
     setSelectedProduct(null); setManualBlocks([])
+    setHtmlCode(''); setHtmlProduct(null)
   }
 
   const handleClose = () => { reset(); onClose() }
@@ -225,7 +229,7 @@ export default function AiLandingEditor({ show, onClose, products, onDone }: Pro
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '10px' }}>
         <p style={{ color: '#c8a96e', fontWeight: 900, fontSize: '14px', margin: 0, flexShrink: 0 }}>✨ 상세페이지 제작</p>
         <div style={{ display: 'flex', gap: '4px', background: aiDark ? 'rgba(255,255,255,0.06)' : '#fafafa', borderRadius: '8px', padding: '3px' }}>
-          {[{ k: 'ai', label: '✨ AI 생성' }, { k: 'manual', label: '✏️ 직접 만들기' }].map(t => (
+          {[{ k: 'ai', label: '✨ AI 생성' }, { k: 'manual', label: '✏️ 직접 만들기' }, { k: 'html', label: '</> HTML 붙여넣기' }].map(t => (
             <button key={t.k} onClick={() => setAiTab(t.k as any)}
               style={{ padding: '4px 12px', borderRadius: '6px', border: 'none', fontSize: '11px', fontWeight: 700, cursor: 'pointer', background: aiTab === t.k ? '#c8a96e' : 'transparent', color: aiTab === t.k ? '#111' : aiDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)' }}>
               {t.label}
@@ -579,6 +583,74 @@ export default function AiLandingEditor({ show, onClose, products, onDone }: Pro
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── HTML 붙여넣기 탭 ── */}
+      {aiTab === 'html' && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: aiDark ? 'rgba(0,0,0,0.95)' : 'rgba(240,240,240,0.97)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column' }}>
+          <Header />
+          <div style={{ flex: 1, display: 'flex', gap: 0, minHeight: 0, overflow: 'hidden' }}>
+            {/* 왼쪽 편집 */}
+            <div style={{ width: '420px', flexShrink: 0, background: aiDark ? '#111' : '#fafafa', borderRight: '1px solid rgba(200,169,110,0.15)', display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', overflowY: 'auto' }}>
+              <div>
+                <p style={{ color: aiDark ? 'rgba(255,255,255,0.5)' : '#555', fontSize: '11px', fontWeight: 700, margin: '0 0 8px', letterSpacing: '1px' }}>📦 상품 선택</p>
+                <select value={htmlProduct?.id || ''} onChange={e => { const p = products.find(p => p.id === e.target.value); setHtmlProduct(p || null) }}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: aiDark ? '#1a1a1a' : 'white', color: aiDark ? 'white' : '#111', fontSize: '13px', outline: 'none' }}>
+                  <option value="">상품 선택...</option>
+                  {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+              </div>
+
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <p style={{ color: aiDark ? 'rgba(255,255,255,0.5)' : '#555', fontSize: '11px', fontWeight: 700, margin: 0, letterSpacing: '1px' }}>{'</>'} HTML 코드 붙여넣기</p>
+                  <button onClick={() => { const el = document.getElementById('admin-html-preview'); if (el) el.innerHTML = htmlCode }} style={{ padding: '4px 10px', borderRadius: '6px', background: 'rgba(200,169,110,0.2)', border: 'none', color: '#c8a96e', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>미리보기 갱신</button>
+                </div>
+                <textarea
+                  value={htmlCode}
+                  onChange={e => setHtmlCode(e.target.value)}
+                  placeholder={'기존 상세페이지 HTML 코드를 붙여넣으세요\n\n예시:\n<div style="...">\n  <img src="..." />\n  <p>상품 설명</p>\n</div>'}
+                  style={{ flex: 1, minHeight: '320px', padding: '12px', borderRadius: '10px', border: '1px solid rgba(200,169,110,0.2)', background: aiDark ? '#0a0a0a' : 'white', color: aiDark ? '#c8a96e' : '#111', fontSize: '12px', fontFamily: "'Courier New', monospace", outline: 'none', resize: 'none', lineHeight: 1.6 }}
+                />
+              </div>
+
+              <div style={{ background: 'rgba(200,169,110,0.06)', border: '1px solid rgba(200,169,110,0.15)', borderRadius: '10px', padding: '10px 12px', fontSize: '11px', color: aiDark ? 'rgba(255,255,255,0.4)' : '#666', lineHeight: 1.6 }}>
+                💡 스마트스토어, 쿠팡, 자사몰 등 기존 상세페이지의 HTML 소스를 복사해서 붙여넣으면 됩니다
+              </div>
+
+              {aiError && <p style={{ color: '#f87171', fontSize: '12px', margin: 0 }}>{aiError}</p>}
+
+              <button
+                onClick={async () => {
+                  if (!htmlProduct) return setAiError('상품을 먼저 선택해주세요.')
+                  if (!htmlCode.trim()) return setAiError('HTML 코드를 입력해주세요.')
+                  setAiLoading(true); setAiError('')
+                  try {
+                    await supabase.from('products').update({ description: htmlCode }).eq('id', htmlProduct.id)
+                    reset(); onDone()
+                  } catch (e: any) { setAiError('저장 오류: ' + e.message) }
+                  finally { setAiLoading(false) }
+                }}
+                disabled={aiLoading || !htmlProduct || !htmlCode.trim()}
+                style={{ padding: '14px', borderRadius: '12px', background: aiLoading || !htmlProduct || !htmlCode.trim() ? 'rgba(200,169,110,0.2)' : 'linear-gradient(135deg,#c8a96e,#e8c878)', color: aiLoading || !htmlProduct || !htmlCode.trim() ? 'rgba(255,255,255,0.3)' : '#111', fontSize: '14px', fontWeight: 900, border: 'none', cursor: 'pointer' }}>
+                {aiLoading ? '저장 중...' : '💾 상세페이지 저장'}
+              </button>
+            </div>
+
+            {/* 오른쪽 미리보기 */}
+            <div style={{ flex: 1, overflowY: 'auto', background: '#d0d0d0', display: 'flex', justifyContent: 'center', padding: '16px' }}>
+              <div style={{ width: '100%', maxWidth: '390px', background: 'white', boxShadow: '0 24px 60px rgba(0,0,0,0.3)', borderRadius: '16px', overflow: 'hidden', marginBottom: '40px' }}>
+                {htmlProduct?.image_url && (
+                  <div style={{ width: '100%', aspectRatio: '1', background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                    <img src={htmlProduct.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                )}
+                <div id="admin-html-preview" dangerouslySetInnerHTML={{ __html: htmlCode }} style={{ fontSize: '13px' }} />
+                {!htmlCode && <div style={{ padding: '40px 24px', textAlign: 'center', color: '#999', fontSize: '13px' }}>HTML 코드를 붙여넣고 "미리보기 갱신"을 눌러보세요</div>}
+              </div>
+            </div>
           </div>
         </div>
       )}

@@ -35,7 +35,7 @@ function FloatingToolbar({ previewId }: { previewId: string }) {
 
   if (!pos) return null
   return (
-    <div onMouseDown={e => e.preventDefault()} style={{ position: 'fixed', left: pos.x, top: pos.y, transform: 'translate(-50%, -100%)', zIndex: 200000, display: 'flex', alignItems: 'center', gap: '2px', background: '#111', border: '1px solid rgba(200,169,110,0.4)', borderRadius: '10px', padding: '5px 6px', boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}>
+    <div onMouseDown={e => e.preventDefault()} style={{ position: 'fixed', left: pos.x, top: pos.y, transform: 'translate(-50%, -100%)', zIndex: 200000, display: 'flex', alignItems: 'center', gap: '2px', background: '#111', border: '1px solid rgba(34,197,94,0.4)', borderRadius: '10px', padding: '5px 6px', boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}>
       {[{ cmd: 'bold', label: <strong style={{ fontSize: '13px' }}>B</strong> }, { cmd: 'italic', label: <em style={{ fontSize: '13px' }}>I</em> }, { cmd: 'underline', label: <u style={{ fontSize: '12px' }}>U</u> }].map(({ cmd, label }) => (
         <button key={cmd} onClick={() => exec(cmd)} style={{ width: '28px', height: '28px', borderRadius: '6px', border: 'none', background: 'transparent', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{label}</button>
       ))}
@@ -266,13 +266,13 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
   }
 
   const Header = () => (
-    <div style={{ height: '52px', background: aiDark ? 'linear-gradient(135deg,#1a1a1a,#2d2d2d)' : 'linear-gradient(135deg,#f5f5f5,#e8e8e8)', borderBottom: '1px solid rgba(200,169,110,0.25)', display: 'flex', alignItems: 'center', padding: '0 16px', gap: '10px', flexShrink: 0 }}>
+    <div style={{ height: '52px', background: aiDark ? 'linear-gradient(135deg,#1a1a1a,#2d2d2d)' : 'linear-gradient(135deg,#f5f5f5,#e8e8e8)', borderBottom: '1px solid rgba(34,197,94,0.25)', display: 'flex', alignItems: 'center', padding: '0 16px', gap: '10px', flexShrink: 0 }}>
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <p style={{ color: '#c8a96e', fontWeight: 900, fontSize: '14px', margin: 0, flexShrink: 0 }}>✨ 상세페이지 제작</p>
+        <p style={{ color: '#22c55e', fontWeight: 900, fontSize: '14px', margin: 0, flexShrink: 0 }}>✨ 상세페이지 제작</p>
         <div style={{ display: 'flex', gap: '4px', background: aiDark ? 'rgba(255,255,255,0.06)' : '#fafafa', borderRadius: '8px', padding: '3px' }}>
           {[{ k: 'ai', label: '✨ AI 생성' }, { k: 'manual', label: '✏️ 직접 만들기' }, { k: 'html', label: '</> HTML 붙여넣기' }, { k: 'images', label: '🖼 이미지 올리기' }].map(t => (
             <button key={t.k} onClick={() => setAiTab(t.k as any)}
-              style={{ padding: '4px 12px', borderRadius: '6px', border: 'none', fontSize: '11px', fontWeight: 700, cursor: 'pointer', background: aiTab === t.k ? '#c8a96e' : 'transparent', color: aiTab === t.k ? '#111' : aiDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)', whiteSpace: 'nowrap' }}>
+              style={{ padding: '4px 12px', borderRadius: '6px', border: 'none', fontSize: '11px', fontWeight: 700, cursor: 'pointer', background: aiTab === t.k ? '#22c55e' : 'transparent', color: aiTab === t.k ? '#111' : aiDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)', whiteSpace: 'nowrap' }}>
               {t.label}
             </button>
           ))}
@@ -282,10 +282,10 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           {([1, 2, 3] as const).map((s, i) => (
             <div key={s} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <div style={{ width: '26px', height: '26px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 900, background: aiStep >= s ? '#c8a96e' : aiDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)', color: aiStep >= s ? '#111' : aiDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+              <div style={{ width: '26px', height: '26px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 900, background: aiStep >= s ? '#22c55e' : aiDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)', color: aiStep >= s ? '#111' : aiDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
                 {aiStep > s ? '✓' : s}
               </div>
-              {i < 2 && <div style={{ width: '16px', height: '1px', background: aiStep > s ? '#c8a96e' : aiDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)' }} />}
+              {i < 2 && <div style={{ width: '16px', height: '1px', background: aiStep > s ? '#22c55e' : aiDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)' }} />}
             </div>
           ))}
         </div>
@@ -313,7 +313,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
                 <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {products.map(p => (
                     <button key={p.id} onClick={() => selectProductForAI(p)}
-                      style={{ padding: '10px 12px', borderRadius: '12px', textAlign: 'left', cursor: 'pointer', border: '2px solid ' + (selectedProduct?.id === p.id ? '#c8a96e' : 'rgba(255,255,255,0.08)'), background: selectedProduct?.id === p.id ? 'rgba(200,169,110,0.12)' : 'rgba(255,255,255,0.03)', transition: 'all 0.15s' }}>
+                      style={{ padding: '10px 12px', borderRadius: '12px', textAlign: 'left', cursor: 'pointer', border: '2px solid ' + (selectedProduct?.id === p.id ? '#22c55e' : 'rgba(255,255,255,0.08)'), background: selectedProduct?.id === p.id ? 'rgba(34,197,94,0.12)' : 'rgba(255,255,255,0.03)', transition: 'all 0.15s' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         {p.image_url ? <img src={p.image_url} alt="" style={{ width: '36px', height: '36px', borderRadius: '6px', objectFit: 'cover', flexShrink: 0 }} /> : <div style={{ width: '36px', height: '36px', borderRadius: '6px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>🧺</div>}
                         <div style={{ minWidth: 0 }}>
@@ -333,9 +333,9 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
                 <input id="supplier-ai-img" type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f) }} />
                 {!aiImagePreview ? (
                   <div onClick={() => document.getElementById('supplier-ai-img')?.click()}
-                    style={{ height: '180px', border: '2px dashed rgba(200,169,110,0.4)', borderRadius: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'rgba(200,169,110,0.03)' }}>
+                    style={{ height: '180px', border: '2px dashed rgba(34,197,94,0.4)', borderRadius: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'rgba(34,197,94,0.03)' }}>
                     <div style={{ fontSize: '36px', marginBottom: '8px' }}>📸</div>
-                    <p style={{ color: '#c8a96e', fontSize: '14px', fontWeight: 700 }}>클릭해서 이미지 올리기</p>
+                    <p style={{ color: '#22c55e', fontSize: '14px', fontWeight: 700 }}>클릭해서 이미지 올리기</p>
                     <p style={{ color: aiDark ? 'rgba(255,255,255,0.3)' : '#888', fontSize: '11px' }}>JPG · PNG · WEBP</p>
                   </div>
                 ) : (
@@ -348,7 +348,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <p style={{ color: aiDark ? 'rgba(255,255,255,0.5)' : '#666', fontSize: '11px', fontWeight: 700, margin: 0 }}>배경색 선택</p>
                       {Object.entries(BG_PRESETS).map(([k, v]) => (
-                        <button key={k} onClick={() => setAiSelectedBg(k)} style={{ padding: '8px 12px', borderRadius: '8px', border: '2px solid ' + (aiSelectedBg === k ? '#c8a96e' : 'rgba(255,255,255,0.1)'), background: 'transparent', color: aiDark ? 'white' : '#111', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <button key={k} onClick={() => setAiSelectedBg(k)} style={{ padding: '8px 12px', borderRadius: '8px', border: '2px solid ' + (aiSelectedBg === k ? '#22c55e' : 'rgba(255,255,255,0.1)'), background: 'transparent', color: aiDark ? 'white' : '#111', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <div style={{ width: '16px', height: '16px', borderRadius: '4px', background: v.bg, flexShrink: 0 }} />
                           {v.label}
                         </button>
@@ -380,7 +380,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
                   <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                     {[{ k: 'shohost', l: '🎙 홈쇼핑' }, { k: 'grandma', l: '👵 정감있게' }, { k: 'expert', l: '🔬 전문가' }, { k: 'parent', l: '👨‍👩‍👧 가족건강' }].map(p => (
                       <button key={p.k} onClick={() => setAiPersona(p.k)}
-                        style={{ padding: '6px 12px', borderRadius: '20px', border: '1px solid ' + (aiPersona === p.k ? '#c8a96e' : 'rgba(255,255,255,0.1)'), background: aiPersona === p.k ? 'rgba(200,169,110,0.15)' : 'transparent', color: aiPersona === p.k ? '#c8a96e' : aiDark ? 'rgba(255,255,255,0.5)' : '#555', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
+                        style={{ padding: '6px 12px', borderRadius: '20px', border: '1px solid ' + (aiPersona === p.k ? '#22c55e' : 'rgba(255,255,255,0.1)'), background: aiPersona === p.k ? 'rgba(34,197,94,0.15)' : 'transparent', color: aiPersona === p.k ? '#22c55e' : aiDark ? 'rgba(255,255,255,0.5)' : '#555', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
                         {p.l}
                       </button>
                     ))}
@@ -391,7 +391,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
 
                 <button onClick={() => { if (!selectedProduct) return setAiError('상품을 먼저 선택해주세요.'); if (!aiImagePreview) return setAiError('이미지를 먼저 올려주세요.'); setAiStep(2); handleGenerateLanding() }}
                   disabled={aiLoading || !selectedProduct || !aiImagePreview}
-                  style={{ padding: '14px', borderRadius: '12px', background: aiLoading || !selectedProduct || !aiImagePreview ? 'rgba(200,169,110,0.2)' : 'linear-gradient(135deg,#c8a96e,#e8c878)', color: aiLoading || !selectedProduct || !aiImagePreview ? 'rgba(255,255,255,0.3)' : '#111', fontSize: '14px', fontWeight: 900, border: 'none', cursor: 'pointer' }}>
+                  style={{ padding: '14px', borderRadius: '12px', background: aiLoading || !selectedProduct || !aiImagePreview ? 'rgba(34,197,94,0.2)' : 'linear-gradient(135deg,#22c55e,#4ade80)', color: aiLoading || !selectedProduct || !aiImagePreview ? 'rgba(255,255,255,0.3)' : '#111', fontSize: '14px', fontWeight: 900, border: 'none', cursor: 'pointer' }}>
                   ✨ AI 상세페이지 생성하기
                 </button>
               </div>
@@ -401,8 +401,8 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
           {/* STEP 2: 생성 중 */}
           {aiStep === 2 && (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px' }}>
-              <div style={{ width: '60px', height: '60px', border: '4px solid rgba(200,169,110,0.2)', borderTop: '4px solid #c8a96e', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-              <p style={{ color: '#c8a96e', fontSize: '16px', fontWeight: 700 }}>{aiLoadingMsg || 'AI가 상세페이지를 만들고 있어요...'}</p>
+              <div style={{ width: '60px', height: '60px', border: '4px solid rgba(34,197,94,0.2)', borderTop: '4px solid #22c55e', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+              <p style={{ color: '#22c55e', fontSize: '16px', fontWeight: 700 }}>{aiLoadingMsg || 'AI가 상세페이지를 만들고 있어요...'}</p>
               {aiError && <p style={{ color: '#f87171', fontSize: '13px' }}>{aiError}</p>}
             </div>
           )}
@@ -415,7 +415,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
                 <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '9px', flexShrink: 0 }}>🖼️</span>
                 {TEMPLATES.map((t: any) => (
                   <button key={t.key} onClick={() => handleChangeTemplate(t.key as TemplateKey)}
-                    style={{ padding: '4px 8px', borderRadius: '6px', border: '1.5px solid', borderColor: aiTemplateKey === t.key ? '#c8a96e' : 'rgba(255,255,255,0.12)', background: aiTemplateKey === t.key ? 'rgba(200,169,110,0.2)' : 'transparent', color: aiTemplateKey === t.key ? '#e8c878' : 'rgba(255,255,255,0.45)', fontSize: '10px', fontWeight: aiTemplateKey === t.key ? 700 : 500, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                    style={{ padding: '4px 8px', borderRadius: '6px', border: '1.5px solid', borderColor: aiTemplateKey === t.key ? '#22c55e' : 'rgba(255,255,255,0.12)', background: aiTemplateKey === t.key ? 'rgba(34,197,94,0.2)' : 'transparent', color: aiTemplateKey === t.key ? '#4ade80' : 'rgba(255,255,255,0.45)', fontSize: '10px', fontWeight: aiTemplateKey === t.key ? 700 : 500, cursor: 'pointer', whiteSpace: 'nowrap' }}>
                     {t.emoji} {t.name}
                   </button>
                 ))}
@@ -434,10 +434,10 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
                 ))}
                 <div style={{ flex: 1 }} />
                 <button onClick={() => { setAiStep(1); setAiLandingHtml(''); setAiError('') }} style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: 'rgba(255,255,255,0.45)', fontSize: '10px', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>← 설정</button>
-                <button onClick={handleGenerateLanding} disabled={aiLoading} style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(200,169,110,0.5)', background: 'transparent', color: '#c8a96e', fontSize: '10px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>🔄 재생성</button>
+                <button onClick={handleGenerateLanding} disabled={aiLoading} style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(34,197,94,0.5)', background: 'transparent', color: '#22c55e', fontSize: '10px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>🔄 재생성</button>
                 <button onClick={() => setShowBuyerPreview('mobile')} style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(100,200,100,0.4)', background: 'rgba(100,200,100,0.07)', color: '#6ee7b7', fontSize: '10px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>📱 모바일</button>
                 <button onClick={() => setShowBuyerPreview('desktop')} style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(147,197,253,0.4)', background: 'rgba(147,197,253,0.07)', color: '#93c5fd', fontSize: '10px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>🖥️ PC</button>
-                <button onClick={handleAiRegister} disabled={aiLoading} style={{ padding: '5px 14px', borderRadius: '6px', background: 'linear-gradient(135deg,#c8a96e,#e8c878)', color: '#111', fontSize: '11px', fontWeight: 900, border: 'none', cursor: aiLoading ? 'not-allowed' : 'pointer', opacity: aiLoading ? 0.6 : 1, whiteSpace: 'nowrap' }}>
+                <button onClick={handleAiRegister} disabled={aiLoading} style={{ padding: '5px 14px', borderRadius: '6px', background: 'linear-gradient(135deg,#22c55e,#4ade80)', color: '#111', fontSize: '11px', fontWeight: 900, border: 'none', cursor: aiLoading ? 'not-allowed' : 'pointer', opacity: aiLoading ? 0.6 : 1, whiteSpace: 'nowrap' }}>
                   {aiLoading ? '저장 중...' : '💾 저장'}
                 </button>
               </div>
@@ -468,7 +468,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
           <Header />
           <div style={{ flex: 1, display: 'flex', gap: '0', minHeight: 0, overflow: 'hidden' }}>
             {/* 왼쪽 편집 */}
-            <div style={{ width: '320px', flexShrink: 0, background: aiDark ? '#111' : '#fafafa', borderRight: '1px solid rgba(200,169,110,0.15)', overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ width: '320px', flexShrink: 0, background: aiDark ? '#111' : '#fafafa', borderRight: '1px solid rgba(34,197,94,0.15)', overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
                 <p style={{ color: aiDark ? 'rgba(255,255,255,0.5)' : '#555', fontSize: '11px', fontWeight: 700, margin: '0 0 8px', letterSpacing: '1px' }}>📦 상품 선택</p>
                 <select value={selectedProduct?.id || ''} onChange={e => { const p = products.find(p => p.id === e.target.value); if (p) selectProductForAI(p) }}
@@ -481,20 +481,20 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
               <div style={{ display: 'flex', gap: '6px' }}>
                 {[{ t: 'image' as const, l: '🖼 이미지' }, { t: 'video' as const, l: '🎬 영상' }, { t: 'text' as const, l: '✍️ 텍스트' }].map(({ t, l }) => (
                   <button key={t} onClick={() => addBlock(t)}
-                    style={{ flex: 1, padding: '8px 4px', borderRadius: '8px', border: '1px solid rgba(200,169,110,0.3)', background: 'transparent', color: '#c8a96e', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>+ {l}</button>
+                    style={{ flex: 1, padding: '8px 4px', borderRadius: '8px', border: '1px solid rgba(34,197,94,0.3)', background: 'transparent', color: '#22c55e', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>+ {l}</button>
                 ))}
               </div>
 
               {manualBlocks.map((block, idx) => (
-                <div key={block.id} style={{ background: aiDark ? 'rgba(255,255,255,0.04)' : 'white', border: '1px solid rgba(200,169,110,0.15)', borderRadius: '10px', padding: '12px' }}>
+                <div key={block.id} style={{ background: aiDark ? 'rgba(255,255,255,0.04)' : 'white', border: '1px solid rgba(34,197,94,0.15)', borderRadius: '10px', padding: '12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <span style={{ color: '#c8a96e', fontSize: '11px', fontWeight: 700 }}>#{idx + 1} {block.type === 'image' ? '🖼 이미지' : block.type === 'video' ? '🎬 영상' : '✍️ 텍스트'}</span>
+                    <span style={{ color: '#22c55e', fontSize: '11px', fontWeight: 700 }}>#{idx + 1} {block.type === 'image' ? '🖼 이미지' : block.type === 'video' ? '🎬 영상' : '✍️ 텍스트'}</span>
                     <button onClick={() => removeBlock(block.id)} style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: '14px' }}>✕</button>
                   </div>
                   {block.type === 'image' && (
                     <label style={{ cursor: 'pointer', display: 'block' }}>
                       <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) uploadManualImage(block.id, f) }} />
-                      <div style={{ width: '100%', height: '40px', borderRadius: '6px', border: '2px dashed rgba(200,169,110,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(200,169,110,0.6)', fontSize: '12px' }}>
+                      <div style={{ width: '100%', height: '40px', borderRadius: '6px', border: '2px dashed rgba(34,197,94,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(34,197,94,0.6)', fontSize: '12px' }}>
                         {block.content ? '✅ 이미지 선택됨' : '클릭해서 이미지 선택'}
                       </div>
                     </label>
@@ -512,7 +512,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
 
               {aiError && <p style={{ color: '#f87171', fontSize: '12px' }}>{aiError}</p>}
               <button onClick={handleManualRegister} disabled={aiLoading || !selectedProduct}
-                style={{ padding: '14px', borderRadius: '12px', background: aiLoading || !selectedProduct ? 'rgba(200,169,110,0.2)' : 'linear-gradient(135deg,#c8a96e,#e8c878)', color: aiLoading || !selectedProduct ? 'rgba(255,255,255,0.3)' : '#111', fontSize: '14px', fontWeight: 900, border: 'none', cursor: 'pointer' }}>
+                style={{ padding: '14px', borderRadius: '12px', background: aiLoading || !selectedProduct ? 'rgba(34,197,94,0.2)' : 'linear-gradient(135deg,#22c55e,#4ade80)', color: aiLoading || !selectedProduct ? 'rgba(255,255,255,0.3)' : '#111', fontSize: '14px', fontWeight: 900, border: 'none', cursor: 'pointer' }}>
                 {aiLoading ? '저장 중...' : '💾 상세페이지 저장'}
               </button>
             </div>
@@ -577,7 +577,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
           <Header />
           <div style={{ flex: 1, display: 'flex', gap: 0, minHeight: 0, overflow: 'hidden' }}>
             {/* 왼쪽 편집 */}
-            <div style={{ width: '420px', flexShrink: 0, background: aiDark ? '#111' : '#fafafa', borderRight: '1px solid rgba(200,169,110,0.15)', display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', overflowY: 'auto' }}>
+            <div style={{ width: '420px', flexShrink: 0, background: aiDark ? '#111' : '#fafafa', borderRight: '1px solid rgba(34,197,94,0.15)', display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', overflowY: 'auto' }}>
               <div>
                 <p style={{ color: aiDark ? 'rgba(255,255,255,0.5)' : '#555', fontSize: '11px', fontWeight: 700, margin: '0 0 8px', letterSpacing: '1px' }}>📦 상품 선택</p>
                 <select value={htmlProduct?.id || ''} onChange={e => { const p = products.find(p => p.id === e.target.value); setHtmlProduct(p || null) }}
@@ -590,17 +590,17 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <p style={{ color: aiDark ? 'rgba(255,255,255,0.5)' : '#555', fontSize: '11px', fontWeight: 700, margin: 0, letterSpacing: '1px' }}>{'</>'} HTML 코드 붙여넣기</p>
-                  <button onClick={() => { const el = document.getElementById('html-preview'); if (el) el.innerHTML = htmlCode }} style={{ padding: '4px 10px', borderRadius: '6px', background: 'rgba(200,169,110,0.2)', border: 'none', color: '#c8a96e', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>미리보기 갱신</button>
+                  <button onClick={() => { const el = document.getElementById('html-preview'); if (el) el.innerHTML = htmlCode }} style={{ padding: '4px 10px', borderRadius: '6px', background: 'rgba(34,197,94,0.2)', border: 'none', color: '#22c55e', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>미리보기 갱신</button>
                 </div>
                 <textarea
                   value={htmlCode}
                   onChange={e => setHtmlCode(e.target.value)}
                   placeholder={'기존 상세페이지 HTML 코드를 붙여넣으세요\n\n예시:\n<div style="...">\n  <img src="..." />\n  <p>상품 설명</p>\n</div>'}
-                  style={{ flex: 1, minHeight: '320px', padding: '12px', borderRadius: '10px', border: '1px solid rgba(200,169,110,0.2)', background: aiDark ? '#0a0a0a' : 'white', color: aiDark ? '#c8a96e' : '#111', fontSize: '12px', fontFamily: "'Courier New', monospace", outline: 'none', resize: 'none', lineHeight: 1.6 }}
+                  style={{ flex: 1, minHeight: '320px', padding: '12px', borderRadius: '10px', border: '1px solid rgba(34,197,94,0.2)', background: aiDark ? '#0a0a0a' : 'white', color: aiDark ? '#22c55e' : '#111', fontSize: '12px', fontFamily: "'Courier New', monospace", outline: 'none', resize: 'none', lineHeight: 1.6 }}
                 />
               </div>
 
-              <div style={{ background: 'rgba(200,169,110,0.06)', border: '1px solid rgba(200,169,110,0.15)', borderRadius: '10px', padding: '10px 12px', fontSize: '11px', color: aiDark ? 'rgba(255,255,255,0.4)' : '#666', lineHeight: 1.6 }}>
+              <div style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)', borderRadius: '10px', padding: '10px 12px', fontSize: '11px', color: aiDark ? 'rgba(255,255,255,0.4)' : '#666', lineHeight: 1.6 }}>
                 💡 스마트스토어, 쿠팡, 자사몰 등 기존 상세페이지의 HTML 소스를 복사해서 붙여넣으면 됩니다
               </div>
 
@@ -618,7 +618,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
                   finally { setAiLoading(false) }
                 }}
                 disabled={aiLoading || !htmlProduct || !htmlCode.trim()}
-                style={{ padding: '14px', borderRadius: '12px', background: aiLoading || !htmlProduct || !htmlCode.trim() ? 'rgba(200,169,110,0.2)' : 'linear-gradient(135deg,#c8a96e,#e8c878)', color: aiLoading || !htmlProduct || !htmlCode.trim() ? 'rgba(255,255,255,0.3)' : '#111', fontSize: '14px', fontWeight: 900, border: 'none', cursor: 'pointer' }}>
+                style={{ padding: '14px', borderRadius: '12px', background: aiLoading || !htmlProduct || !htmlCode.trim() ? 'rgba(34,197,94,0.2)' : 'linear-gradient(135deg,#22c55e,#4ade80)', color: aiLoading || !htmlProduct || !htmlCode.trim() ? 'rgba(255,255,255,0.3)' : '#111', fontSize: '14px', fontWeight: 900, border: 'none', cursor: 'pointer' }}>
                 {aiLoading ? '저장 중...' : '💾 상세페이지 저장'}
               </button>
             </div>
@@ -645,7 +645,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
           <Header />
           <div style={{ flex: 1, display: 'flex', gap: 0, minHeight: 0, overflow: 'hidden' }}>
             {/* 왼쪽 편집 */}
-            <div style={{ width: '360px', flexShrink: 0, background: aiDark ? '#111' : '#fafafa', borderRight: '1px solid rgba(200,169,110,0.15)', display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', overflowY: 'auto' }}>
+            <div style={{ width: '360px', flexShrink: 0, background: aiDark ? '#111' : '#fafafa', borderRight: '1px solid rgba(34,197,94,0.15)', display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', overflowY: 'auto' }}>
               <div>
                 <p style={{ color: aiDark ? 'rgba(255,255,255,0.5)' : '#555', fontSize: '11px', fontWeight: 700, margin: '0 0 8px', letterSpacing: '1px' }}>📦 상품 선택</p>
                 <select value={imgProduct?.id || ''} onChange={e => { const p = products.find(p => p.id === e.target.value); setImgProduct(p || null) }}
@@ -670,9 +670,9 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
                   }}
                 />
                 <div onClick={() => document.getElementById('multi-img-input')?.click()}
-                  style={{ border: '2px dashed rgba(200,169,110,0.4)', borderRadius: '12px', padding: '20px', textAlign: 'center', cursor: 'pointer', background: 'rgba(200,169,110,0.03)' }}>
+                  style={{ border: '2px dashed rgba(34,197,94,0.4)', borderRadius: '12px', padding: '20px', textAlign: 'center', cursor: 'pointer', background: 'rgba(34,197,94,0.03)' }}>
                   <div style={{ fontSize: '28px', marginBottom: '6px' }}>📁</div>
-                  <p style={{ color: '#c8a96e', fontSize: '13px', fontWeight: 700, margin: '0 0 4px' }}>클릭해서 이미지 추가</p>
+                  <p style={{ color: '#22c55e', fontSize: '13px', fontWeight: 700, margin: '0 0 4px' }}>클릭해서 이미지 추가</p>
                   <p style={{ color: aiDark ? 'rgba(255,255,255,0.3)' : '#888', fontSize: '11px', margin: 0 }}>여러 장 동시 선택 가능 · JPG / PNG / WEBP</p>
                 </div>
               </div>
@@ -685,7 +685,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
                     <button onClick={() => setImgFiles([])} style={{ background: 'none', border: 'none', color: '#f87171', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }}>전체 삭제</button>
                   </div>
                   {imgFiles.map((img, idx) => (
-                    <div key={img.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: aiDark ? 'rgba(255,255,255,0.04)' : 'white', border: '1px solid rgba(200,169,110,0.15)', borderRadius: '8px', padding: '8px 10px' }}>
+                    <div key={img.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: aiDark ? 'rgba(255,255,255,0.04)' : 'white', border: '1px solid rgba(34,197,94,0.15)', borderRadius: '8px', padding: '8px 10px' }}>
                       <span style={{ color: aiDark ? 'rgba(255,255,255,0.3)' : '#888', fontSize: '11px', fontWeight: 700, width: '20px', textAlign: 'center' }}>{idx + 1}</span>
                       <img src={img.preview} alt="" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px', flexShrink: 0 }} />
                       <span style={{ flex: 1, fontSize: '11px', color: aiDark ? 'rgba(255,255,255,0.5)' : '#555', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{img.file.name}</span>
@@ -699,7 +699,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
                 </div>
               )}
 
-              <div style={{ background: 'rgba(200,169,110,0.06)', border: '1px solid rgba(200,169,110,0.15)', borderRadius: '10px', padding: '10px 12px', fontSize: '11px', color: aiDark ? 'rgba(255,255,255,0.4)' : '#666', lineHeight: 1.6 }}>
+              <div style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)', borderRadius: '10px', padding: '10px 12px', fontSize: '11px', color: aiDark ? 'rgba(255,255,255,0.4)' : '#666', lineHeight: 1.6 }}>
                 💡 상세페이지 이미지를 순서대로 올리면 자동으로 세로로 쌓아서 저장됩니다
               </div>
 
@@ -732,7 +732,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
                   finally { setAiLoading(false) }
                 }}
                 disabled={aiLoading || !imgProduct || imgFiles.length === 0}
-                style={{ padding: '14px', borderRadius: '12px', background: aiLoading || !imgProduct || imgFiles.length === 0 ? 'rgba(200,169,110,0.2)' : 'linear-gradient(135deg,#c8a96e,#e8c878)', color: aiLoading || !imgProduct || imgFiles.length === 0 ? 'rgba(255,255,255,0.3)' : '#111', fontSize: '14px', fontWeight: 900, border: 'none', cursor: 'pointer' }}>
+                style={{ padding: '14px', borderRadius: '12px', background: aiLoading || !imgProduct || imgFiles.length === 0 ? 'rgba(34,197,94,0.2)' : 'linear-gradient(135deg,#22c55e,#4ade80)', color: aiLoading || !imgProduct || imgFiles.length === 0 ? 'rgba(255,255,255,0.3)' : '#111', fontSize: '14px', fontWeight: 900, border: 'none', cursor: 'pointer' }}>
                 {aiLoading ? '업로드 중...' : `💾 이미지 ${imgFiles.length}장으로 상세페이지 저장`}
               </button>
             </div>
