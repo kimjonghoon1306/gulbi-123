@@ -97,6 +97,12 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
   const [imgFiles, setImgFiles] = useState<{ id: number; file: File; preview: string }[]>([])
   const [imgProduct, setImgProduct] = useState<SupplierProduct | null>(null)
   const aiLoadingTimer = useRef<any>(null)
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check(); window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   if (!show) return null
 
@@ -308,7 +314,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
           {aiStep === 1 && (
             <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', gap: '20px', minHeight: 0 }}>
               {/* 상품 리스트 */}
-              <div style={{ width: '260px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ width: isMobile ? '100%' : '260px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <p style={{ color: aiDark ? 'rgba(255,255,255,0.5)' : '#555', fontSize: '11px', fontWeight: 700, margin: '0 0 4px', letterSpacing: '1px' }}>📦 내 상품 선택</p>
                 <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {products.map(p => (
@@ -445,7 +451,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
 
               {/* 미리보기 */}
               <div style={{ flex: 1, overflowY: 'auto', background: '#d0d0d0', display: 'flex', justifyContent: 'center', padding: '16px' }}>
-                <div style={{ width: '390px', background: 'white', boxShadow: '0 24px 60px rgba(0,0,0,0.3)', borderRadius: '16px', overflow: 'hidden' }}>
+                <div style={{ width: '100%', maxWidth: '390px', background: 'white', boxShadow: '0 24px 60px rgba(0,0,0,0.3)', borderRadius: '16px', overflow: 'hidden' }}>
                   {aiImagePreview && (
                     <div style={{ width: '100%', aspectRatio: '1', background: BG_PRESETS[aiSelectedBg as keyof typeof BG_PRESETS]?.bg || '#0d0d0d', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <img src={aiImagePreview} alt="" style={{ width: '85%', height: '85%', objectFit: 'contain' }} />
@@ -466,9 +472,9 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
       {aiTab === 'manual' && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: aiDark ? 'rgba(0,0,0,0.95)' : 'rgba(240,240,240,0.97)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column' }}>
           <Header />
-          <div style={{ flex: 1, display: 'flex', gap: '0', minHeight: 0, overflow: 'hidden' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '0', minHeight: 0, overflow: isMobile ? 'auto' : 'hidden' }}>
             {/* 왼쪽 편집 */}
-            <div style={{ width: '320px', flexShrink: 0, background: aiDark ? '#111' : '#fafafa', borderRight: '1px solid rgba(34,197,94,0.15)', overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ width: isMobile ? '100%' : '320px', flexShrink: 0, background: aiDark ? '#111' : '#fafafa', borderRight: '1px solid rgba(34,197,94,0.15)', overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
                 <p style={{ color: aiDark ? 'rgba(255,255,255,0.5)' : '#555', fontSize: '11px', fontWeight: 700, margin: '0 0 8px', letterSpacing: '1px' }}>📦 상품 선택</p>
                 <select value={selectedProduct?.id || ''} onChange={e => { const p = products.find(p => p.id === e.target.value); if (p) selectProductForAI(p) }}
@@ -558,7 +564,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
           </div>
           <div style={{ flex: 1, overflow: 'auto', display: 'flex', justifyContent: 'center', padding: '20px', background: '#1a1a1a' }}>
             {showBuyerPreview === 'mobile' ? (
-              <div style={{ width: '390px', minHeight: '844px', background: 'white', borderRadius: '36px', overflow: 'hidden', boxShadow: '0 40px 80px rgba(0,0,0,0.8)', border: '8px solid #333', flexShrink: 0 }}>
+              <div style={{ width: '100%', maxWidth: '390px', minHeight: '844px', background: 'white', borderRadius: '36px', overflow: 'hidden', boxShadow: '0 40px 80px rgba(0,0,0,0.8)', border: '8px solid #333', flexShrink: 0 }}>
                 {aiImagePreview && <div style={{ width: '100%', aspectRatio: '1/1', display: 'flex', alignItems: 'center', justifyContent: 'center', background: BG_PRESETS[aiSelectedBg as keyof typeof BG_PRESETS]?.bg || '#0d0d0d' }}><img src={aiImagePreview} alt="" style={{ width: '85%', height: '85%', objectFit: 'contain' }} /></div>}
                 <div dangerouslySetInnerHTML={{ __html: aiLandingHtml }} />
               </div>
@@ -575,9 +581,9 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
       {aiTab === 'html' && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: aiDark ? 'rgba(0,0,0,0.95)' : 'rgba(240,240,240,0.97)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column' }}>
           <Header />
-          <div style={{ flex: 1, display: 'flex', gap: 0, minHeight: 0, overflow: 'hidden' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 0, minHeight: 0, overflow: isMobile ? 'auto' : 'hidden' }}>
             {/* 왼쪽 편집 */}
-            <div style={{ width: '420px', flexShrink: 0, background: aiDark ? '#111' : '#fafafa', borderRight: '1px solid rgba(34,197,94,0.15)', display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', overflowY: 'auto' }}>
+            <div style={{ width: isMobile ? '100%' : '420px', flexShrink: 0, background: aiDark ? '#111' : '#fafafa', borderRight: '1px solid rgba(34,197,94,0.15)', display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', overflowY: 'auto' }}>
               <div>
                 <p style={{ color: aiDark ? 'rgba(255,255,255,0.5)' : '#555', fontSize: '11px', fontWeight: 700, margin: '0 0 8px', letterSpacing: '1px' }}>📦 상품 선택</p>
                 <select value={htmlProduct?.id || ''} onChange={e => { const p = products.find(p => p.id === e.target.value); setHtmlProduct(p || null) }}
@@ -643,9 +649,9 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
       {aiTab === 'images' && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: aiDark ? 'rgba(0,0,0,0.95)' : 'rgba(240,240,240,0.97)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column' }}>
           <Header />
-          <div style={{ flex: 1, display: 'flex', gap: 0, minHeight: 0, overflow: 'hidden' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 0, minHeight: 0, overflow: isMobile ? 'auto' : 'hidden' }}>
             {/* 왼쪽 편집 */}
-            <div style={{ width: '360px', flexShrink: 0, background: aiDark ? '#111' : '#fafafa', borderRight: '1px solid rgba(34,197,94,0.15)', display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', overflowY: 'auto' }}>
+            <div style={{ width: isMobile ? '100%' : '360px', flexShrink: 0, background: aiDark ? '#111' : '#fafafa', borderRight: '1px solid rgba(34,197,94,0.15)', display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', overflowY: 'auto' }}>
               <div>
                 <p style={{ color: aiDark ? 'rgba(255,255,255,0.5)' : '#555', fontSize: '11px', fontWeight: 700, margin: '0 0 8px', letterSpacing: '1px' }}>📦 상품 선택</p>
                 <select value={imgProduct?.id || ''} onChange={e => { const p = products.find(p => p.id === e.target.value); setImgProduct(p || null) }}
