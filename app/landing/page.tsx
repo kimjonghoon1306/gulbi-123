@@ -575,6 +575,10 @@ export default function LandingPage() {
           </a>
           <p className="text-xs sm:text-sm" style={{ color: dark ? '#475569' : '#9ca3af' }}>© 2026 All rights reserved</p>
         </div>
+        <div className="max-w-6xl mx-auto mt-5 pt-5 text-xs leading-relaxed text-center sm:text-left" style={{ borderTop: dark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)', color: dark ? '#64748b' : '#9ca3af' }}>
+          상호: 주식회사 유안에프앤비 &nbsp;|&nbsp; 대표: 오준영 &nbsp;|&nbsp; 사업자등록번호: 692-88-03600 &nbsp;|&nbsp; 통신판매업신고: 제2026-전남영광-0027호<br className="hidden sm:block" />
+          주소: 전라남도 영광군 법성면 굴비로1길 112-4 &nbsp;|&nbsp; 전화: 010-7432-3888
+        </div>
       </footer>
 
       <style jsx>{`
