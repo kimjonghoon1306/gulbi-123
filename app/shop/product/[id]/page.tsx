@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
+import { loadToss } from '@/lib/toss'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 
@@ -537,14 +538,15 @@ export default function ProductDetailPage() {
                       try {
                         const table = memberType === '도매업' ? 'wholesale_orders' : memberType === '소매업' ? 'retail_orders' : 'general_orders'
                         const itemTable = memberType === '도매업' ? 'wholesale_order_items' : memberType === '소매업' ? 'retail_order_items' : 'general_order_items'
+                        const isToss = orderForm.payment_method === '카드'  // 카드 = 토스페이먼츠
                         const orderData = {
                           customer_name: memberInfo?.name || '',
                           contact: memberInfo?.contact || '',
                           user_id: user?.id || '',
                           address: orderForm.address,
                           note: orderForm.note,
-                          payment_method: orderForm.payment_method,
-                          status: '접수',
+                          payment_method: isToss ? '카드(토스)' : orderForm.payment_method,
+                          status: isToss ? '결제대기' : '접수',
                           total_amount: totalPrice,
                         }
                         const { data: newOrder } = await supabase.from(table).insert(orderData).select().single()
@@ -558,6 +560,19 @@ export default function ProductDetailPage() {
                             unit_price: getPrice(),
                             total_price: totalPrice,
                           })
+                        }
+                        // 카드 결제 → 토스 결제창 호출
+                        if (isToss && newOrder) {
+                          const toss = await loadToss()
+                          await toss.requestPayment('카드', {
+                            amount: totalPrice,
+                            orderId: String(newOrder.id),
+                            orderName: product.name,
+                            customerName: memberInfo?.name || '고객',
+                            successUrl: `${window.location.origin}/shop/payment/success?table=${table}`,
+                            failUrl: `${window.location.origin}/shop/payment/fail`,
+                          })
+                          return  // 토스 결제창으로 리다이렉트
                         }
                         setOrderDone(true)
                       } catch { alert('주문 중 오류가 발생했어요. 다시 시도해주세요.') }
