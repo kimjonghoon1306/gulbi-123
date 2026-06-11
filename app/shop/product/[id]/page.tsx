@@ -352,7 +352,7 @@ export default function ProductDetailPage() {
                     style={{padding:'16px',borderRadius:'14px',background:cartAdded?'rgba(34,197,94,0.15)':D.input,color:cartAdded?'#22c55e':D.text,fontSize:'14px',fontWeight:700,border:`2px solid ${cartAdded?'#22c55e':D.border}`,cursor:user?'pointer':'not-allowed',transition:'all 0.3s'}}>
                     {cartAdded ? '✓ 담김' : cartLoading ? '...' : '🛒 담기'}
                   </button>
-                  <button onClick={() => { setOrderDone(false); setOrderForm({ address: '', note: '', payment_method: '계좌이체' }); setShowOrderForm(true) }}
+                  <button onClick={() => { setOrderDone(false); setOrderForm({ address: (typeof window !== 'undefined' && localStorage.getItem('onjongil_addr')) || '', note: '', payment_method: '계좌이체' }); setShowOrderForm(true) }}
                     style={{padding:'16px',borderRadius:'14px',background:'linear-gradient(135deg,#ec4899,#f43f5e)',color:'white',fontSize:'15px',fontWeight:900,border:'none',cursor:'pointer',boxShadow:'0 8px 20px rgba(236,72,153,0.35)'}}>
                     바로 구매
                   </button>
@@ -534,6 +534,7 @@ export default function ProductDetailPage() {
                   <button
                     onClick={async () => {
                       if (!orderForm.address) return alert('배송지를 입력해주세요.')
+                      try { localStorage.setItem('onjongil_addr', orderForm.address) } catch {}  // 주소 저장(다음 주문 자동입력)
                       setOrderLoading(true)
                       try {
                         const table = memberType === '도매업' ? 'wholesale_orders' : memberType === '소매업' ? 'retail_orders' : 'general_orders'

@@ -104,6 +104,7 @@ export default function CartPage() {
 
   const handleOrder = async () => {
     if (!orderForm.address) return alert('배송지를 입력해주세요.')
+    try { localStorage.setItem('onjongil_addr', orderForm.address) } catch {}  // 주소 저장(다음 주문 자동입력)
     setOrderLoading(true)
     try {
       const table = memberType === '도매업' ? 'wholesale_orders' : memberType === '소매업' ? 'retail_orders' : 'general_orders'
@@ -272,7 +273,7 @@ export default function CartPage() {
             </div>
 
             {/* 주문하기 버튼 */}
-            <button onClick={() => { setOrderDone(false); setOrderForm({ address:'', note:'', payment_method:'계좌이체' }); setShowOrder(true) }}
+            <button onClick={() => { setOrderDone(false); setOrderForm({ address: (typeof window !== 'undefined' && localStorage.getItem('onjongil_addr')) || '', note:'', payment_method:'계좌이체' }); setShowOrder(true) }}
               style={{ width:'100%', padding:'18px', borderRadius:'16px', background:'linear-gradient(135deg,#14532d,#15803d)', color:'white', fontSize:'17px', fontWeight:900, border:'none', cursor:'pointer', boxShadow:'0 10px 28px rgba(22,163,74,0.35)' }}>
               🛒 {totalAmount.toLocaleString()}원 주문하기
             </button>
