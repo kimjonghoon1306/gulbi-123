@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
+import { loadToss } from '@/lib/toss'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -108,14 +109,16 @@ export default function CartPage() {
       const table = memberType === '도매업' ? 'wholesale_orders' : memberType === '소매업' ? 'retail_orders' : 'general_orders'
       const itemTable = memberType === '도매업' ? 'wholesale_order_items' : memberType === '소매업' ? 'retail_order_items' : 'general_order_items'
 
+      const isToss = orderForm.payment_method === '카드'  // 카드 = 토스페이먼츠 결제
+
       const { data: newOrder } = await supabase.from(table).insert({
         customer_name: memberInfo?.name || '',
         contact: memberInfo?.contact || '',
         user_id: userId,
         address: orderForm.address,
         note: orderForm.note,
-        payment_method: orderForm.payment_method,
-        status: '접수',
+        payment_method: isToss ? '카드(토스)' : orderForm.payment_method,
+        status: isToss ? '결제대기' : '접수',
         total_amount: totalAmount,
       }).select().single()
 
@@ -132,6 +135,24 @@ export default function CartPage() {
           }))
         )
       }
+
+      // 카드 결제 → 토스 결제창 호출 (성공 시 /shop/payment/success 에서 승인 + 장바구니 비움)
+      if (isToss && newOrder) {
+        const toss = await loadToss()
+        const orderName = items.length > 1
+          ? `${items[0].products.name} 외 ${items.length - 1}건`
+          : (items[0]?.products?.name || '온종일팜 주문')
+        await toss.requestPayment('카드', {
+          amount: totalAmount,
+          orderId: String(newOrder.id),
+          orderName,
+          customerName: memberInfo?.name || '고객',
+          successUrl: `${window.location.origin}/shop/payment/success?table=${table}`,
+          failUrl: `${window.location.origin}/shop/payment/fail`,
+        })
+        return  // 토스 결제창으로 리다이렉트되므로 이후 코드 실행 안 함
+      }
+
       await clearCart()
       // 🛒 헤더 카운트 0 갱신 신호
       localStorage.setItem('cart-updated', Date.now().toString())
