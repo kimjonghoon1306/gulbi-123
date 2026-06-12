@@ -29,7 +29,8 @@ function SuccessInner() {
         if (!res.ok) { setState('fail'); setMsg(data.message || '결제 승인에 실패했습니다.'); return }
         // 주문 상태 업데이트 + 장바구니 비우기
         try {
-          await supabase.from(table).update({ status: '결제완료' }).eq('id', orderId)
+          // paymentKey/승인금액 저장 → 나중에 관리자 환불(토스 결제취소)에 사용
+          await supabase.from(table).update({ status: '결제완료', payment_key: paymentKey, paid_amount: Number(amt) }).eq('id', orderId)
           const { data: { user } } = await supabase.auth.getUser()
           if (user) await supabase.from('cart_items').delete().eq('user_id', user.id)
           localStorage.setItem('cart-updated', Date.now().toString())

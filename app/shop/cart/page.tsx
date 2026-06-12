@@ -31,6 +31,7 @@ export default function CartPage() {
   const [orderForm, setOrderForm] = useState({ address: '', note: '', payment_method: '계좌이체', evidence: '현금영수증', evidenceContact: '' })
   const [orderLoading, setOrderLoading] = useState(false)
   const [orderDone, setOrderDone] = useState(false)
+  const [agreeRefund, setAgreeRefund] = useState(false)  // 청약철회·반품 안내 동의(신선식품 반품제한 고지)
   const [memberInfo, setMemberInfo] = useState<any>(null)
   const [userId, setUserId] = useState('')
   const [redirectCount, setRedirectCount] = useState(3)
@@ -109,6 +110,7 @@ export default function CartPage() {
 
   const handleOrder = async () => {
     if (!orderForm.address) return alert('배송지를 입력해주세요.')
+    if (!agreeRefund) return alert('청약철회·반품 안내를 확인하고 동의해주세요.')
     try { localStorage.setItem('onjongil_addr', orderForm.address) } catch {}  // 주소 저장(다음 주문 자동입력)
     setOrderLoading(true)
     try {
@@ -304,7 +306,7 @@ export default function CartPage() {
             </div>
 
             {/* 주문하기 버튼 */}
-            <button onClick={() => { setOrderDone(false); setOrderForm({ address: (typeof window !== 'undefined' && localStorage.getItem('onjongil_addr')) || '', note:'', payment_method:'계좌이체', evidence: isBiz ? '세금계산서' : '현금영수증', evidenceContact: '' }); setShowOrder(true) }}
+            <button onClick={() => { setOrderDone(false); setAgreeRefund(false); setOrderForm({ address: (typeof window !== 'undefined' && localStorage.getItem('onjongil_addr')) || '', note:'', payment_method:'계좌이체', evidence: isBiz ? '세금계산서' : '현금영수증', evidenceContact: '' }); setShowOrder(true) }}
               style={{ width:'100%', padding:'18px', borderRadius:'16px', background:'linear-gradient(135deg,#14532d,#15803d)', color:'white', fontSize:'17px', fontWeight:900, border:'none', cursor:'pointer', boxShadow:'0 10px 28px rgba(22,163,74,0.35)' }}>
               🛒 {totalAmount.toLocaleString()}원 주문하기
             </button>
@@ -444,8 +446,24 @@ export default function CartPage() {
                     style={{ width:'100%', padding:'14px 16px', borderRadius:'14px', border:`2px solid ${D.border}`, background:D.input, color:D.text, fontSize:'13px', outline:'none', resize:'none', boxSizing:'border-box' }} />
                 </div>
 
-                <button onClick={handleOrder} disabled={orderLoading}
-                  style={{ width:'100%', padding:'18px', borderRadius:'16px', background:orderLoading ? D.input : 'linear-gradient(135deg,#14532d,#15803d)', color:orderLoading ? D.sub : 'white', fontSize:'17px', fontWeight:900, border:'none', cursor:orderLoading ? 'not-allowed' : 'pointer', boxShadow:orderLoading ? 'none' : '0 10px 28px rgba(22,163,74,0.35)' }}>
+                {/* 청약철회·반품 안내 (신선식품 반품제한 사전고지) */}
+                <div style={{ background:D.input, borderRadius:'14px', padding:'14px 16px' }}>
+                  <p style={{ fontSize:'12px', fontWeight:800, color:D.text, margin:'0 0 6px' }}>📦 교환·반품 / 청약철회 안내</p>
+                  <ul style={{ margin:0, paddingLeft:'16px', fontSize:'11.5px', color:D.sub, lineHeight:1.6 }}>
+                    <li>상품 수령일로부터 <b style={{ color:D.text }}>7일 이내</b> 청약철회(반품)가 가능합니다.</li>
+                    <li><b style={{ color:D.text }}>농·축·수산물 등 신선·냉장·냉동 식품</b>은 부패·변질 우려로, 포장 개봉·사용 시 또는 시간 경과 시 <b style={{ color:'#ef4444' }}>반품·교환이 불가</b>합니다.</li>
+                    <li>소비자의 사용·섭취 또는 책임 있는 훼손·멸실로 가치가 현저히 감소한 경우 청약철회가 제한됩니다. (단순 포장 확인을 위한 개봉은 제외)</li>
+                    <li>단순 변심에 의한 반품의 왕복 배송비는 소비자가 부담합니다.</li>
+                  </ul>
+                  <label style={{ display:'flex', alignItems:'flex-start', gap:'8px', marginTop:'12px', cursor:'pointer' }}>
+                    <input type="checkbox" checked={agreeRefund} onChange={e => setAgreeRefund(e.target.checked)}
+                      style={{ width:'18px', height:'18px', marginTop:'1px', accentColor:'#14532d', flexShrink:0 }} />
+                    <span style={{ fontSize:'12.5px', fontWeight:700, color:D.text }}>위 청약철회·반품 제한 사항을 확인했으며, 이에 동의합니다. <span style={{ color:'#14532d' }}>(필수)</span></span>
+                  </label>
+                </div>
+
+                <button onClick={handleOrder} disabled={orderLoading || !agreeRefund}
+                  style={{ width:'100%', padding:'18px', borderRadius:'16px', background:(orderLoading || !agreeRefund) ? D.input : 'linear-gradient(135deg,#14532d,#15803d)', color:(orderLoading || !agreeRefund) ? D.sub : 'white', fontSize:'17px', fontWeight:900, border:'none', cursor:(orderLoading || !agreeRefund) ? 'not-allowed' : 'pointer', boxShadow:(orderLoading || !agreeRefund) ? 'none' : '0 10px 28px rgba(22,163,74,0.35)' }}>
                   {orderLoading ? '⏳ 처리 중...' : `🛒 ${totalAmount.toLocaleString()}원 주문하기`}
                 </button>
               </div>

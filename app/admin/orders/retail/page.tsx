@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase'
 type Order = {
   id: string; order_number: string; customer_name: string; contact: string
   address: string; note: string; payment_method: string; status: string
-  total_amount: number; created_at: string
+  total_amount: number; created_at: string; payment_key?: string; paid_amount?: number
 }
 type OrderItem = {
   id?: string; product_id: string; product_name: string
@@ -20,6 +20,7 @@ const STATUS_CONFIG: Record<string, { color: string; bg: string; icon: string }>
   '준비중':{ color: 'text-amber-600 dark:text-amber-400',  bg: 'bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800',  icon: '📦' },
   '출고':  { color: 'text-violet-600 dark:text-violet-400',bg: 'bg-violet-50 dark:bg-violet-900/20 border-violet-100 dark:border-violet-800',icon: '🚚' },
   '완료':  { color: 'text-emerald-600 dark:text-emerald-400',bg: 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-800',icon: '✅' },
+  '환불':  { color: 'text-red-500 dark:text-red-400',         bg: 'bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-900',          icon: '↩️' },
 }
 const PAYMENT_LIST = ['계좌이체', '현금', '카드', '외상']
 
@@ -117,6 +118,26 @@ export default function RetailPage() {
     await supabase.from('retail_orders').delete().eq('id', id)
     if (viewOrder?.id === id) setViewOrder(null)
     fetchAll()
+  }
+
+  // 환불: 카드(토스)결제는 토스 결제취소 호출, 그 외(계좌이체/현금)는 수동 환불 후 상태만 변경
+  const refundOrder = async (o: Order) => {
+    if (o.status === '환불') return
+    const isCard = (o.payment_method || '').includes('카드')
+    if (!confirm(`${o.customer_name} 주문(${o.total_amount.toLocaleString()}원)을 환불 처리할까요?` + (isCard ? '\n카드결제 → 토스 결제취소가 즉시 실행됩니다.' : '\n계좌이체/현금 → 환불 송금 후 상태만 변경됩니다.'))) return
+    if (isCard) {
+      if (!o.payment_key) { alert('결제키(paymentKey)가 없어 자동취소가 불가합니다. 토스 콘솔에서 직접 취소 후 상태를 변경하세요.'); return }
+      const res = await fetch('/api/payments/cancel', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentKey: o.payment_key, cancelReason: '관리자 환불' }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) { alert('토스 환불 실패: ' + (data.message || '오류')); return }
+    }
+    await supabase.from('retail_orders').update({ status: '환불', updated_at: new Date().toISOString() }).eq('id', o.id)
+    if (viewOrder?.id === o.id) setViewOrder({ ...viewOrder, status: '환불' })
+    fetchAll()
+    alert('환불 처리되었습니다.')
   }
 
   const downloadExcel = () => {
@@ -268,6 +289,9 @@ export default function RetailPage() {
                   </div>
                   <div className="flex flex-col gap-1.5" onClick={e => e.stopPropagation()}>
                     <button onClick={() => openEdit(o)} className="text-xs text-teal-500 font-medium px-2.5 py-1.5 rounded-lg border border-teal-200 dark:border-teal-800 bg-teal-50 dark:bg-teal-900/20">수정</button>
+                    {o.status !== '환불' && (
+                      <button onClick={() => refundOrder(o)} className="text-xs text-orange-500 font-medium px-2.5 py-1.5 rounded-lg border border-orange-200 dark:border-orange-900 bg-orange-50 dark:bg-orange-900/20">환불</button>
+                    )}
                     <button onClick={() => deleteOrder(o.id)} className="text-xs text-red-400 font-medium px-2.5 py-1.5 rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-900/20">삭제</button>
                   </div>
                 </div>
