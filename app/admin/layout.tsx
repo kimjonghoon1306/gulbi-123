@@ -38,6 +38,7 @@ const menuGroups = [
   {
     label: '기타',
     items: [
+      { href: '/admin/coupons',      icon: '🎟️', label: '쿠폰' },
       { href: '/admin/tax',          icon: '🧾', label: '세금계산서' },
       { href: '/admin/social-proof', icon: '⭐', label: '소셜프루프' },
       { href: '/admin/settings',     icon: '⚙️', label: '설정' },
