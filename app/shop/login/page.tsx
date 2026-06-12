@@ -247,6 +247,11 @@ export default function ShopLoginPage() {
         .login-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 14px 32px rgba(22,163,74,0.4); }
         .login-btn:active:not(:disabled) { transform: translateY(1px); }
         .login-btn:disabled { background: #9ca3af; cursor: not-allowed; box-shadow: none; }
+        @keyframes loginFadeUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+        button, a, input { -webkit-tap-highlight-color: transparent; }
+        button { transition: transform 0.2s, filter 0.2s; }
+        button:not(:disabled):active { transform: scale(0.97); }
+        input { transition: border-color 0.2s, box-shadow 0.2s; }
       `}</style>
     </div>
   )

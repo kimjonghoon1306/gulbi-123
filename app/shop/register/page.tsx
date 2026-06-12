@@ -292,6 +292,11 @@ export default function ShopRegisterPage() {
         }
         .animate-fadeIn { animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+        button, a, input, select { -webkit-tap-highlight-color: transparent; }
+        button { transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), filter 0.2s, box-shadow 0.2s; }
+        button:not(:disabled):hover { transform: translateY(-2px); filter: brightness(1.05); }
+        button:not(:disabled):active { transform: scale(0.97); }
+        input, select, textarea { transition: border-color 0.2s, box-shadow 0.2s; }
       `}</style>
     </div>
   )
