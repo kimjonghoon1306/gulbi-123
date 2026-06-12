@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { ThemeContext, darkTheme, lightTheme } from './theme-context'
+import SupplierGuide from './SupplierGuide'
 
 const menus = [
   { href: '/supplier/dashboard', icon: '🏠', label: '대시보드' },
@@ -239,6 +240,9 @@ export default function SupplierLayout({ children }: { children: React.ReactNode
             {children}
           </div>
         </main>
+
+        {/* 📖 사용 방법 고정 버튼 (모든 공급업체 화면 공통) */}
+        <SupplierGuide t={t} isMobile={isMobile} />
 
         {/* ── 모바일 하단 탭 ── */}
         {isMobile && (
