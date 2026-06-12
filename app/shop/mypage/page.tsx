@@ -117,6 +117,12 @@ function MyPageInner() {
     }
   }
 
+  // 찜 해제
+  const removeWishlist = async (wishId: string) => {
+    setWishlists(prev => prev.filter(w => w.id !== wishId))
+    await supabase.from('wishlists').delete().eq('id', wishId)
+  }
+
   useEffect(() => {
     const saved = localStorage.getItem('shop-theme')
     if (saved === 'dark') setDark(true)
@@ -475,6 +481,9 @@ function MyPageInner() {
                 {wishlists.map((w: any) => {
                   const p = w.products
                   if (!p) return null
+                  const wishPrice = member.member_type === '도매업' ? (p.wholesale_price||0)
+                    : member.member_type === '소매업' ? (p.member_price||0)
+                    : (p.retail_price||0)
                   return (
                     <a key={w.id} href={`/shop/product/${p.id}`} style={{ textDecoration:'none', display:'block', background:D.card, borderRadius:'16px', overflow:'hidden', border:`1px solid ${D.border}`, transition:'transform 0.15s' }}>
                       <div style={{ width:'100%', paddingTop:'100%', position:'relative', background:dark?'#1e2530':'#f8fafc' }}>
@@ -487,10 +496,13 @@ function MyPageInner() {
                             <span style={{ background:'rgba(0,0,0,0.7)', color:'white', fontSize:'11px', fontWeight:700, padding:'4px 10px', borderRadius:'20px' }}>품절</span>
                           </div>
                         )}
+                        {/* 찜 해제 */}
+                        <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); removeWishlist(w.id) }} aria-label="찜 해제"
+                          style={{ position:'absolute', top:'8px', right:'8px', width:'30px', height:'30px', borderRadius:'50%', border:'none', cursor:'pointer', background:'rgba(255,255,255,0.92)', fontSize:'15px', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 2px 8px rgba(0,0,0,0.15)', backdropFilter:'blur(4px)' }}>❤️</button>
                       </div>
                       <div style={{ padding:'10px 12px' }}>
                         <p style={{ fontSize:'13px', fontWeight:700, color:D.text, margin:'0 0 4px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{p.name}</p>
-                        <p style={{ fontSize:'14px', fontWeight:900, color:tc.color, margin:0 }}>{(p.retail_price||0).toLocaleString()}원</p>
+                        <p style={{ fontSize:'14px', fontWeight:900, color:tc.color, margin:0 }}>{wishPrice.toLocaleString()}원</p>
                         <p style={{ fontSize:'10px', color:D.sub, margin:'2px 0 0' }}>/{p.unit}</p>
                       </div>
                     </a>
