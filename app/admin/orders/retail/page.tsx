@@ -515,7 +515,7 @@ export default function RetailPage() {
                           onChange={e => updateItem(i, 'product_name', e.target.value)}
                           className="w-full border border-slate-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-400" />
                       )}
-                      <div className="grid grid-cols-3 gap-2 min-w-max">
+                      <div className="grid grid-cols-3 gap-2">
                         {[
                           { label: '수량', key: 'quantity', type: 'number' },
                           { label: '단가(원)', key: 'unit_price', type: 'number' },

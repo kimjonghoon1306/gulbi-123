@@ -24,6 +24,9 @@ export default function SettingsPage() {
   const [geminiKeyMsg, setGeminiKeyMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [geminiKeyLoading, setGeminiKeyLoading] = useState(false)
   const [showGeminiKey, setShowGeminiKey] = useState(false)
+  // 등록된 키 상태(힌트) — 입력칸과 별개로 "등록됨" 여부를 항상 보여줌
+  const [openaiSaved, setOpenaiSaved] = useState<string | null>(null)
+  const [geminiSaved, setGeminiSaved] = useState<string | null>(null)
   const supabase = createClient()
   const router = useRouter()
 
@@ -39,8 +42,9 @@ export default function SettingsPage() {
       const res = await fetch('/api/user-key')
       if (res.ok) {
         const data = await res.json()
-        if (data.keyHint) setOpenaiKey(data.keyHint)
-        if (data.geminiKeyHint) setGeminiKey(data.geminiKeyHint)
+        // 입력칸엔 넣지 않고(마스킹 혼동 방지), 등록 상태만 별도 표시
+        setOpenaiSaved(data.keyHint || null)
+        setGeminiSaved(data.geminiKeyHint || null)
       }
     } catch {}
   }
@@ -63,7 +67,8 @@ export default function SettingsPage() {
         setOpenaiKeyMsg({ type: 'error', text: data.error || '저장 실패' })
       } else {
         setOpenaiKeyMsg({ type: 'success', text: '✅ API 키가 저장됐어요!' })
-        setOpenaiKey(data.keyHint || '')
+        setOpenaiSaved(data.keyHint || null)
+        setOpenaiKey('')
         setTimeout(() => setOpenaiKeyMsg(null), 3000)
       }
     } catch (e: any) {
@@ -90,7 +95,8 @@ export default function SettingsPage() {
         setGeminiKeyMsg({ type: 'error', text: data.error || '저장 실패' })
       } else {
         setGeminiKeyMsg({ type: 'success', text: '✅ Gemini API 키가 저장됐어요!' })
-        setGeminiKey(data.geminiKeyHint || '')
+        setGeminiSaved(data.geminiKeyHint || null)
+        setGeminiKey('')
         setTimeout(() => setGeminiKeyMsg(null), 3000)
       }
     } catch (e: any) {
@@ -344,14 +350,21 @@ export default function SettingsPage() {
                         🔑 OpenAI API 키 발급받기 →
                       </a>
                     </div>
+                    {openaiSaved
+                      ? <div className="flex items-center gap-2 rounded-xl px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+                          <span className="text-emerald-600 dark:text-emerald-400 text-sm font-bold">✅ 키 등록됨</span>
+                          <span className="text-emerald-700 dark:text-emerald-400 text-xs font-mono">{openaiSaved}</span>
+                        </div>
+                      : <div className="rounded-xl px-3 py-2 bg-slate-50 dark:bg-gray-700/40 border border-slate-200 dark:border-gray-600 text-slate-400 text-xs font-medium">아직 등록된 키가 없어요</div>
+                    }
                     <div>
-                      <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">OpenAI API 키</label>
+                      <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">{openaiSaved ? '키 변경 (새 키 입력)' : 'OpenAI API 키'}</label>
                       <div className="relative">
                         <input
                           type={showOpenaiKey ? 'text' : 'password'}
                           value={openaiKey}
                           onChange={e => setOpenaiKey(e.target.value)}
-                          placeholder="sk-..."
+                          placeholder={openaiSaved ? '바꿀 때만 새 키 붙여넣기 (그대로 두면 유지)' : 'sk-...'}
                           className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 pr-12 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-600"
                         />
                         <button type="button" onClick={() => setShowOpenaiKey(!showOpenaiKey)}
@@ -387,14 +400,21 @@ export default function SettingsPage() {
                         🔑 Gemini API 키 발급받기 (무료) →
                       </a>
                     </div>
+                    {geminiSaved
+                      ? <div className="flex items-center gap-2 rounded-xl px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+                          <span className="text-emerald-600 dark:text-emerald-400 text-sm font-bold">✅ 키 등록됨</span>
+                          <span className="text-emerald-700 dark:text-emerald-400 text-xs font-mono">{geminiSaved}</span>
+                        </div>
+                      : <div className="rounded-xl px-3 py-2 bg-slate-50 dark:bg-gray-700/40 border border-slate-200 dark:border-gray-600 text-slate-400 text-xs font-medium">아직 등록된 키가 없어요</div>
+                    }
                     <div>
-                      <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Gemini API 키</label>
+                      <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">{geminiSaved ? '키 변경 (새 키 입력)' : 'Gemini API 키'}</label>
                       <div className="relative">
                         <input
                           type={showGeminiKey ? 'text' : 'password'}
                           value={geminiKey}
                           onChange={e => setGeminiKey(e.target.value)}
-                          placeholder="AIza..."
+                          placeholder={geminiSaved ? '바꿀 때만 새 키 붙여넣기 (그대로 두면 유지)' : 'AIza...'}
                           className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 pr-12 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                         />
                         <button type="button" onClick={() => setShowGeminiKey(!showGeminiKey)}
