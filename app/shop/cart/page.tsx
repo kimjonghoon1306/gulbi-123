@@ -208,7 +208,7 @@ export default function CartPage() {
     input:  dark ? '#1e2530' : '#f1f5f9',
   }
 
-  const priceColor = memberType === '도매업' ? '#ec4899' : memberType === '소매업' ? '#14532d' : '#6366f1'
+  const priceColor = memberType === '도매업' ? '#047857' : memberType === '소매업' ? '#14532d' : '#15803d'
 
   if (loading) return (
     <div style={{ minHeight:'100vh', background:D.bg, display:'flex', alignItems:'center', justifyContent:'center' }}>
@@ -222,7 +222,7 @@ export default function CartPage() {
 
       {/* 헤더 */}
       <header style={{ background:dark?'rgba(13,17,23,0.97)':'rgba(255,255,255,0.97)', backdropFilter:'blur(20px)', borderBottom:`1px solid ${D.border}`, position:'sticky', top:0, zIndex:50 }}>
-        <div style={{ maxWidth:'720px', margin:'0 auto', padding:'0 20px', height:'60px', display:'flex', alignItems:'center', gap:'12px' }}>
+        <div style={{ maxWidth:'1080px', margin:'0 auto', padding:'0 20px', height:'60px', display:'flex', alignItems:'center', gap:'12px' }}>
           <button onClick={() => router.back()} style={{ width:'36px', height:'36px', borderRadius:'10px', background:D.input, border:'none', cursor:'pointer', fontSize:'16px', color:D.text, display:'flex', alignItems:'center', justifyContent:'center' }}>←</button>
           <p style={{ fontWeight:800, fontSize:'16px', margin:0, flex:1 }}>장바구니 🛒</p>
           <span style={{ background:'linear-gradient(135deg,#14532d,#15803d)', color:'white', fontSize:'11px', fontWeight:700, padding:'3px 10px', borderRadius:'20px' }}>
@@ -234,7 +234,7 @@ export default function CartPage() {
         </div>
       </header>
 
-      <div style={{ maxWidth:'720px', margin:'0 auto', padding:'20px 20px 120px' }}>
+      <div style={{ maxWidth:'1080px', margin:'0 auto', padding:'24px 20px 120px' }}>
 
         {items.length === 0 ? (
           <div style={{ textAlign:'center', padding:'80px 20px' }}>
@@ -246,13 +246,14 @@ export default function CartPage() {
             </Link>
           </div>
         ) : (
-          <>
+          <div className="cart-grid">
+            <div className="cart-items">
             {/* 상품 목록 */}
-            <div style={{ display:'flex', flexDirection:'column', gap:'10px', marginBottom:'20px' }}>
+            <div style={{ display:'flex', flexDirection:'column', gap:'12px', marginBottom:'20px' }}>
               {items.map(item => {
                 const price = getPrice(item.products)
                 return (
-                  <div key={item.id} style={{ background:D.card, borderRadius:'20px', padding:'16px', border:`1px solid ${D.border}`, display:'flex', gap:'14px', alignItems:'center' }}>
+                  <div key={item.id} className="cart-item-card" style={{ background:D.card, borderRadius:'20px', padding:'16px', border:`1px solid ${D.border}`, display:'flex', gap:'14px', alignItems:'center' }}>
                     {/* 이미지 */}
                     <div style={{ width:'72px', height:'72px', borderRadius:'14px', overflow:'hidden', flexShrink:0, background:D.input }}>
                       {item.products.image_url
@@ -291,9 +292,11 @@ export default function CartPage() {
               style={{ background:'none', border:'none', color:D.sub, fontSize:'12px', cursor:'pointer', marginBottom:'20px', textDecoration:'underline' }}>
               전체 삭제
             </button>
+            </div>
 
+            <div className="cart-summary">
             {/* 합계 카드 */}
-            <div style={{ background:D.card, borderRadius:'20px', padding:'20px', border:`1px solid ${D.border}`, marginBottom:'16px' }}>
+            <div style={{ background:D.card, borderRadius:'20px', padding:'22px', border:`1px solid ${D.border}`, marginBottom:'16px', boxShadow:'0 6px 24px rgba(0,0,0,0.05)' }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'8px' }}>
                 <p style={{ fontSize:'13px', color:D.sub, margin:0 }}>상품 {items.length}종</p>
                 <p style={{ fontSize:'13px', color:D.sub, margin:0 }}>{totalAmount.toLocaleString()}원</p>
@@ -310,11 +313,12 @@ export default function CartPage() {
             </div>
 
             {/* 주문하기 버튼 */}
-            <button onClick={() => { setOrderDone(false); setAgreeRefund(false); setOrderForm({ address: memberInfo?.address || (typeof window !== 'undefined' && localStorage.getItem('onjongil_addr')) || '', note:'', payment_method:'계좌이체', evidence: isBiz ? '세금계산서' : '현금영수증', evidenceContact: '' }); setShowOrder(true) }}
-              style={{ width:'100%', padding:'18px', borderRadius:'16px', background:'linear-gradient(135deg,#14532d,#15803d)', color:'white', fontSize:'17px', fontWeight:900, border:'none', cursor:'pointer', boxShadow:'0 10px 28px rgba(22,163,74,0.35)' }}>
+            <button className="cart-order-btn" onClick={() => { setOrderDone(false); setAgreeRefund(false); setOrderForm({ address: memberInfo?.address || (typeof window !== 'undefined' && localStorage.getItem('onjongil_addr')) || '', note:'', payment_method:'계좌이체', evidence: isBiz ? '세금계산서' : '현금영수증', evidenceContact: '' }); setShowOrder(true) }}
+              style={{ width:'100%', padding:'18px', borderRadius:'16px', background:'linear-gradient(135deg,#16a34a,#15803d)', color:'white', fontSize:'17px', fontWeight:900, border:'none', cursor:'pointer', boxShadow:'0 10px 28px rgba(22,163,74,0.35)' }}>
               🛒 {totalAmount.toLocaleString()}원 주문하기
             </button>
-          </>
+            </div>
+          </div>
         )}
       </div>
 
@@ -481,7 +485,21 @@ export default function CartPage() {
         </div>
       )}
 
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <style>{`
+        @keyframes spin{to{transform:rotate(360deg)}}
+        @keyframes cartFadeUp { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform: translateY(0); } }
+        .cart-item-card { animation: cartFadeUp 0.45s ease both; transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s, border-color 0.25s; }
+        .cart-item-card:hover { transform: translateY(-3px); box-shadow: 0 14px 32px rgba(0,0,0,0.1); border-color: rgba(22,163,74,0.35); }
+        .cart-order-btn { transition: transform 0.2s, filter 0.2s; }
+        .cart-order-btn:hover { transform: translateY(-2px); filter: brightness(1.08); }
+        .cart-order-btn:active { transform: scale(0.98); }
+        button, a { -webkit-tap-highlight-color: transparent; }
+        /* PC: 2단 (상품 목록 / 결제요약 sticky) */
+        @media (min-width: 880px) {
+          .cart-grid { display: grid; grid-template-columns: 1fr 360px; gap: 26px; align-items: start; }
+          .cart-summary { position: sticky; top: 84px; }
+        }
+      `}</style>
     </div>
   )
 }
