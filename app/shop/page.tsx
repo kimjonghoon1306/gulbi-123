@@ -49,6 +49,8 @@ export default function ShopPage() {
   const [banners, setBanners] = useState<any[]>([])
   const [bannerIdx, setBannerIdx] = useState(0)
   const bannerTimer = useRef<any>(null)
+  const PAGE_SIZE = 24
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [selectedCat, setSelectedCat] = useState('전체')
   const [search, setSearch] = useState('')
   const [searchFocus, setSearchFocus] = useState(false)
@@ -206,6 +208,9 @@ export default function ShopPage() {
     }, 4500)
     return () => clearInterval(bannerTimer.current)
   }, [banners.length])
+
+  // 검색·카테고리·정렬 바뀌면 다시 첫 페이지부터 (페이지네이션)
+  useEffect(() => { setVisibleCount(PAGE_SIZE) }, [search, selectedCat, sortBy])
 
   useEffect(() => {
     if (products.length > 0) startPopupCycle()
@@ -1210,7 +1215,7 @@ export default function ShopPage() {
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: '20px' }}>
-            {sorted.map((p, i) => (
+            {sorted.slice(0, visibleCount).map((p, i) => (
               <Link key={p.id} href={`/shop/product/${p.id}`} style={{ textDecoration: 'none' }}>
                 <div className="product-card" style={{
                   background: card,
@@ -1321,6 +1326,20 @@ export default function ShopPage() {
                 </div>
               </Link>
             ))}
+          </div>
+        )}
+
+        {/* 더 보기 (페이지네이션) */}
+        {!loading && sorted.length > visibleCount && (
+          <div style={{ textAlign: 'center', marginTop: '32px' }}>
+            <button onClick={() => setVisibleCount(c => c + PAGE_SIZE)} style={{
+              padding: '14px 32px', borderRadius: '100px', cursor: 'pointer',
+              border: `2px solid ${border}`, background: card, color: text,
+              fontSize: '15px', fontWeight: 800, fontFamily: 'inherit',
+              transition: 'all 0.2s ease', boxShadow: '0 4px 14px rgba(0,0,0,0.06)'
+            }}>
+              상품 더 보기 ({sorted.length - visibleCount}개 남음) ↓
+            </button>
           </div>
         )}
       </div>
