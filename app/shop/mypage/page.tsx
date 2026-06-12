@@ -269,7 +269,7 @@ function MyPageInner() {
             <p style={{ fontWeight:800, fontSize:'16px', margin:0 }}>마이페이지</p>
           </div>
           <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-            <div style={{ background:tc.gradient, color:'white', fontSize:'10px', fontWeight:700, padding:'4px 10px', borderRadius:'20px' }}>{tc.badge}</div>
+            <div style={{ background:tc.gradient, color:'white', fontSize:'14px', fontWeight:800, padding:'7px 16px', borderRadius:'20px', boxShadow:`0 4px 12px ${tc.color}50` }}>{tc.badge}</div>
             <button onClick={toggleDark} style={{ width:'44px', height:'44px', borderRadius:'12px',
               background: dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.07)',
               border:'none', cursor:'pointer', fontSize:'22px', display:'flex', alignItems:'center', justifyContent:'center',
@@ -313,7 +313,7 @@ function MyPageInner() {
                 {tc.icon}
               </div>
               <div style={{ flex:1, minWidth:0 }}>
-                <span style={{ display:'inline-block', color:'white', fontSize:'11px', fontWeight:700, margin:'0 0 8px', letterSpacing:'0.08em', background:'rgba(255,255,255,0.2)', padding:'4px 12px', borderRadius:'100px', backdropFilter:'blur(8px)' }}>{tc.label}</span>
+                <span style={{ display:'inline-flex', alignItems:'center', gap:'6px', color:'white', fontSize:'15px', fontWeight:800, margin:'0 0 10px', background:'rgba(255,255,255,0.25)', padding:'7px 16px', borderRadius:'100px', backdropFilter:'blur(8px)', border:'1px solid rgba(255,255,255,0.3)' }}>{tc.icon} {tc.label}</span>
                 <p style={{ color:'white', fontSize:'30px', fontWeight:900, margin:'0 0 4px', letterSpacing:'-1px' }}>{member.name}님</p>
                 <p style={{ color:'rgba(255,255,255,0.75)', fontSize:'13px', margin:0, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{member.email}</p>
               </div>

@@ -299,12 +299,6 @@ export default function ShopPage() {
                 </button>
                 {user ? (
                   <>
-                    <span style={{
-                      fontSize: '12px', fontWeight: 700, padding: '5px 12px',
-                      borderRadius: '20px',
-                      background: memberType === '도매업' ? 'rgba(124,58,237,0.12)' : memberType === '소매업' ? 'rgba(22,163,74,0.12)' : 'rgba(0,0,0,0.06)',
-                      color: memberType === '도매업' ? '#7c3aed' : memberType === '소매업' ? '#14532d' : sub
-                    }}>{memberType}</span>
                     <Link href="/shop/cart" className="header-btn" style={{
                       position: 'relative', width: '40px', height: '40px', borderRadius: '12px',
                       background: 'transparent', border: `1.5px solid ${border}`,
