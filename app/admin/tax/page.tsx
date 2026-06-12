@@ -17,6 +17,7 @@ const STATUS_COLOR: Record<string, string> = {
   '미발행': 'bg-red-100 dark:bg-red-900/30 text-red-500',
   '발행완료': 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400',
   '발행안함': 'bg-slate-100 dark:bg-gray-700 text-slate-400 dark:text-slate-500',
+  '발행취소': 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400',
 }
 
 export default function TaxPage() {
@@ -92,6 +93,21 @@ export default function TaxPage() {
   }
 
   const updateInvoiceStatus = async (id: string, status: string) => {
+    // '발행취소'로 바꿀 때, 이미 팝빌 발행된 건이면 국세청 취소발행 호출 (환불 시)
+    if (status === '발행취소') {
+      const inv = invoices.find(i => i.id === id)
+      if (inv && inv.status === '발행완료') {
+        if (!confirm('이미 발행된 세금계산서입니다. 국세청에 취소발행을 요청할까요?')) return
+        const res = await fetch('/api/tax/issue', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'cancel-invoice', record: inv }),
+        })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) { alert('팝빌 세금계산서 취소 실패:\n' + (data.message || '오류')); return }
+      }
+      await supabase.from('tax_invoices').update({ status: '발행취소' }).eq('id', id)
+      fetchAll(); return
+    }
     // '발행완료'로 바꿀 때 팝빌로 전자세금계산서 실제 발행
     if (status === '발행완료') {
       const inv = invoices.find(i => i.id === id)
@@ -112,6 +128,21 @@ export default function TaxPage() {
   }
 
   const updateReceiptStatus = async (id: string, status: string) => {
+    // '발행취소'로 바꿀 때, 이미 팝빌 발행된 건이면 국세청 취소발행 호출 (환불 시)
+    if (status === '발행취소') {
+      const rec = receipts.find(r => r.id === id)
+      if (rec && rec.status === '발행완료') {
+        if (!confirm('이미 발행된 현금영수증입니다. 국세청에 취소발행을 요청할까요?')) return
+        const res = await fetch('/api/tax/issue', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'cancel-receipt', record: rec }),
+        })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) { alert('팝빌 현금영수증 취소 실패:\n' + (data.message || '오류')); return }
+      }
+      await supabase.from('cash_receipts').update({ status: '발행취소' }).eq('id', id)
+      fetchAll(); return
+    }
     // '발행완료'로 바꿀 때 팝빌로 현금영수증 실제 발행
     if (status === '발행완료') {
       const rec = receipts.find(r => r.id === id)
@@ -218,7 +249,7 @@ export default function TaxPage() {
                 </div>
               </div>
               <div className="flex gap-2 mt-4 pt-4 border-t border-slate-50 dark:border-gray-700">
-                {['미발행', '발행완료', '발행안함'].map(s => (
+                {['미발행', '발행완료', '발행안함', '발행취소'].map(s => (
                   <button key={s} onClick={() => updateInvoiceStatus(inv.id, s)}
                     className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all duration-150
                       ${inv.status === s ? 'bg-indigo-500 text-white' : 'bg-slate-50 dark:bg-gray-700 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-gray-600'}`}>
@@ -263,7 +294,7 @@ export default function TaxPage() {
                 </div>
               </div>
               <div className="flex gap-2 mt-4 pt-4 border-t border-slate-50 dark:border-gray-700">
-                {['미발행', '발행완료', '발행안함'].map(s => (
+                {['미발행', '발행완료', '발행안함', '발행취소'].map(s => (
                   <button key={s} onClick={() => updateReceiptStatus(rec.id, s)}
                     className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all duration-150
                       ${rec.status === s ? 'bg-indigo-500 text-white' : 'bg-slate-50 dark:bg-gray-700 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-gray-600'}`}>
@@ -321,6 +352,7 @@ export default function TaxPage() {
                       <option>미발행</option>
                       <option>발행완료</option>
                       <option>발행안함</option>
+                      <option>발행취소</option>
                     </select>
                   </div>
                   <div>
@@ -363,6 +395,7 @@ export default function TaxPage() {
                       <option>미발행</option>
                       <option>발행완료</option>
                       <option>발행안함</option>
+                      <option>발행취소</option>
                     </select>
                   </div>
                   <div>

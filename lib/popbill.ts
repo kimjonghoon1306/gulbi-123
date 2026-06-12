@@ -72,7 +72,7 @@ export function issueTaxinvoice(inv: any): Promise<{ mgtKey: string; result: any
     invoiceeEmail1: inv.invoicee_email || inv.email || '',
     supplyCostTotal: String(supplyCost), taxTotal: String(tax), totalAmount: String(total),
     detailList: [{
-      serialNum: 1, purchaseDT: writeDate, itemName: '농수산물 외',
+      serialNum: 1, purchaseDT: writeDate, itemName: inv.item_name || '농수산물 외',
       qty: '1', unitCost: String(supplyCost), supplyCost: String(supplyCost), tax: String(tax),
       remark: inv.note || '',
     }],
@@ -102,12 +102,35 @@ export function issueCashbill(rec: any): Promise<{ mgtKey: string; result: any }
     franchiseCorpNum: SELLER.corpNum, franchiseCorpName: SELLER.corpName,
     franchiseCEOName: SELLER.ceoName, franchiseAddr: SELLER.addr, franchiseTEL: SELLER.tel,
     identityNum: onlyNum(rec.contact), customerName: rec.customer_name || '',
-    itemName: '농수산물 외', orderNumber: '', email: '', hp: onlyNum(rec.contact), smssendYN: false,
+    itemName: rec.item_name || '농수산물 외', orderNumber: '', email: '', hp: onlyNum(rec.contact), smssendYN: false,
   }
 
   return new Promise((resolve, reject) => {
     svc.registIssue(SELLER.corpNum, cashbill,
       (result: any) => resolve({ mgtKey, result }),
+      (err: any) => reject(err))
+  })
+}
+
+// ── 발행 취소 (환불 시) ──
+// 세금계산서 취소발행: cancelIssue(CorpNum, KeyType=SELL, MgtKey, Memo, success, error)
+export function cancelTaxinvoice(mgtKey: string, memo?: string): Promise<any> {
+  ensureConfig()
+  const svc = popbill.TaxinvoiceService()
+  return new Promise((resolve, reject) => {
+    svc.cancelIssue(SELLER.corpNum, popbill.MgtKeyType.SELL, mgtKey, memo || '주문 환불에 따른 취소',
+      (result: any) => resolve(result),
+      (err: any) => reject(err))
+  })
+}
+
+// 현금영수증 취소발행: cancelIssue(CorpNum, MgtKey, Memo, success, error)
+export function cancelCashbill(mgtKey: string, memo?: string): Promise<any> {
+  ensureConfig()
+  const svc = popbill.CashbillService()
+  return new Promise((resolve, reject) => {
+    svc.cancelIssue(SELLER.corpNum, mgtKey, memo || '주문 환불에 따른 취소',
+      (result: any) => resolve(result),
       (err: any) => reject(err))
   })
 }
