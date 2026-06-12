@@ -100,19 +100,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Gemini 키 형식이 아닙니다. (AIza로 시작해야 합니다)' }, { status: 400 })
     }
 
-    // Gemini 검증 — gemini-2.0-flash로 ping
+    // Gemini 검증 — 모델 목록 조회로 키 유효성만 확인 (generateContent 호출은 생성 quota를 소모해
+    // 무료 사용량 0인 멀쩡한 키도 429로 거부되므로 사용하지 않음). 인증 실패(400/403)만 무효로 처리.
     let isValid = false
     let validationError: string | null = null
     try {
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${trimmed}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: 'hi' }] }], generationConfig: { maxOutputTokens: 5 } }),
-        }
-      )
-      if (res.ok) {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${trimmed}`)
+      if (res.ok || res.status === 429) {
+        // 200 = 정상, 429 = 키는 유효하나 사용량 초과(키 자체는 정상이므로 저장 허용)
         isValid = true
       } else {
         const errBody = await res.json().catch(() => ({}))
