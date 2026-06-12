@@ -34,6 +34,47 @@ export default function ProductDetailPage() {
   const [cartLoading, setCartLoading] = useState(false)
   const popupTimer = useRef<any>(null)
 
+  // ── 리뷰/별점 ──
+  const [reviews, setReviews] = useState<any[]>([])
+  const [myReview, setMyReview] = useState<any>(null)
+  const [reviewRating, setReviewRating] = useState(5)
+  const [reviewContent, setReviewContent] = useState('')
+  const [reviewSubmitting, setReviewSubmitting] = useState(false)
+
+  const fetchReviews = async (uid?: string) => {
+    const { data } = await supabase.from('reviews').select('*').eq('product_id', id).order('created_at', { ascending: false })
+    const list = data || []
+    setReviews(list)
+    const mine = uid ? list.find((r: any) => r.user_id === uid) : null
+    setMyReview(mine || null)
+    if (mine) { setReviewRating(mine.rating); setReviewContent(mine.content || '') }
+  }
+
+  const submitReview = async () => {
+    if (!user) { router.push('/shop/login'); return }
+    setReviewSubmitting(true)
+    try {
+      await supabase.from('reviews').upsert({
+        product_id: id, user_id: user.id,
+        author_name: memberInfo?.name || '익명',
+        rating: reviewRating, content: reviewContent.trim(),
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'product_id,user_id' })
+      await fetchReviews(user.id)
+    } catch { alert('리뷰 저장 중 오류가 발생했어요.') }
+    finally { setReviewSubmitting(false) }
+  }
+
+  const deleteReview = async () => {
+    if (!user || !myReview) return
+    if (!confirm('리뷰를 삭제할까요?')) return
+    await supabase.from('reviews').delete().eq('id', myReview.id)
+    setMyReview(null); setReviewRating(5); setReviewContent('')
+    await fetchReviews(user.id)
+  }
+
+  const reviewAvg = reviews.length ? reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length : 0
+
   const fetchProduct = async () => {
     const { data } = await supabase.from('products').select('*').eq('id', id).single()
     setProduct(data)
@@ -54,6 +95,7 @@ export default function ProductDetailPage() {
       }
       const { data: wish } = await supabase.from('wishlists').select('id').eq('user_id', user.id).eq('product_id', id).single()
       setLiked(!!wish)
+      fetchReviews(user.id)
     }
   }
 
@@ -117,6 +159,7 @@ export default function ProductDetailPage() {
   useEffect(() => {
     fetchProduct()
     checkUser()
+    fetchReviews()
     const saved = localStorage.getItem('shop-theme')
     if (saved === 'dark') setDark(true)
     fetchSocialData()
@@ -261,7 +304,20 @@ export default function ProductDetailPage() {
             <p style={{fontSize:'11px',color:D.sub,letterSpacing:'2px',fontWeight:700,marginBottom:'8px',textTransform:'uppercase'}}>
               {product.category_id ? '수산물' : '신선 식품'}
             </p>
-            <h1 style={{fontSize:'26px',fontWeight:900,letterSpacing:'-0.8px',lineHeight:1.25,marginBottom:'14px',color:D.text}}>{product.name}</h1>
+            <h1 style={{fontSize:'26px',fontWeight:900,letterSpacing:'-0.8px',lineHeight:1.25,marginBottom:'10px',color:D.text}}>{product.name}</h1>
+
+            {/* 평균 별점 요약 */}
+            {reviews.length > 0 && (
+              <a href="#reviews" style={{display:'inline-flex',alignItems:'center',gap:'8px',marginBottom:'14px',textDecoration:'none'}}>
+                <span style={{display:'flex',gap:'1px'}}>
+                  {[1,2,3,4,5].map(n => (
+                    <span key={n} style={{fontSize:'15px',filter:n<=Math.round(reviewAvg)?'none':'grayscale(1) opacity(0.35)'}}>⭐</span>
+                  ))}
+                </span>
+                <span style={{fontSize:'14px',fontWeight:900,color:D.text}}>{reviewAvg.toFixed(1)}</span>
+                <span style={{fontSize:'12px',color:D.sub,fontWeight:600}}>리뷰 {reviews.length}개</span>
+              </a>
+            )}
 
             {/* 회원 유형별 가격 탭 - 표시 전용 */}
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'6px',marginBottom:'14px'}}>
@@ -404,6 +460,85 @@ export default function ProductDetailPage() {
             </div>
           </div>
         )}
+
+        {/* ── 상품 리뷰 (실제 구매자) ── */}
+        <div id="reviews" style={{background:D.card,borderRadius:'24px',padding:'28px',marginBottom:'16px',border:`1px solid ${D.border}`,scrollMarginTop:'80px'}}>
+          <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'20px'}}>
+            <div style={{width:'32px',height:'32px',background:'linear-gradient(135deg,#ec4899,#f43f5e)',borderRadius:'10px',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'16px'}}>📝</div>
+            <h2 style={{fontSize:'16px',fontWeight:900,letterSpacing:'-0.3px'}}>상품 리뷰</h2>
+            {reviews.length > 0 && (
+              <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:'6px'}}>
+                <span style={{fontSize:'15px'}}>⭐</span>
+                <span style={{fontSize:'15px',fontWeight:900,color:D.text}}>{reviewAvg.toFixed(1)}</span>
+                <span style={{fontSize:'12px',color:D.sub}}>({reviews.length})</span>
+              </div>
+            )}
+          </div>
+
+          {/* 작성/수정 폼 */}
+          {user ? (
+            <div style={{background:dark?'#1e2530':'#fdf2f8',borderRadius:'16px',padding:'18px',marginBottom:'20px',border:`1px solid ${dark?'rgba(255,255,255,0.06)':'#fce7f3'}`}}>
+              <p style={{fontSize:'13px',fontWeight:800,color:D.text,margin:'0 0 10px'}}>{myReview ? '내 리뷰 수정' : '리뷰 작성하기'}</p>
+              {/* 별점 선택 */}
+              <div style={{display:'flex',gap:'4px',marginBottom:'12px'}}>
+                {[1,2,3,4,5].map(n => (
+                  <button key={n} onClick={() => setReviewRating(n)} aria-label={`별점 ${n}점`}
+                    style={{background:'none',border:'none',cursor:'pointer',padding:0,fontSize:'26px',lineHeight:1,filter:n<=reviewRating?'none':'grayscale(1) opacity(0.3)',transition:'filter 0.15s'}}>⭐</button>
+                ))}
+                <span style={{alignSelf:'center',marginLeft:'6px',fontSize:'13px',fontWeight:800,color:'#ec4899'}}>{reviewRating}.0</span>
+              </div>
+              <textarea value={reviewContent} onChange={e => setReviewContent(e.target.value)}
+                placeholder="상품은 어떠셨나요? 신선도, 맛, 포장 등 솔직한 후기를 남겨주세요 😊"
+                rows={3} maxLength={500}
+                style={{width:'100%',padding:'12px 14px',borderRadius:'12px',border:`2px solid ${D.border}`,background:D.card,color:D.text,fontSize:'13px',outline:'none',resize:'none',boxSizing:'border-box',lineHeight:1.6,fontFamily:'inherit'}} />
+              <div style={{display:'flex',gap:'8px',marginTop:'10px'}}>
+                <button onClick={submitReview} disabled={reviewSubmitting || !reviewContent.trim()}
+                  style={{flex:1,padding:'12px',borderRadius:'12px',background:(reviewSubmitting||!reviewContent.trim())?D.input:'linear-gradient(135deg,#ec4899,#f43f5e)',color:(reviewSubmitting||!reviewContent.trim())?D.sub:'white',fontSize:'14px',fontWeight:900,border:'none',cursor:(reviewSubmitting||!reviewContent.trim())?'not-allowed':'pointer'}}>
+                  {reviewSubmitting ? '저장 중...' : myReview ? '수정 완료' : '리뷰 등록'}
+                </button>
+                {myReview && (
+                  <button onClick={deleteReview}
+                    style={{padding:'12px 18px',borderRadius:'12px',background:'transparent',color:D.sub,fontSize:'13px',fontWeight:700,border:`1.5px solid ${D.border}`,cursor:'pointer'}}>삭제</button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <Link href="/shop/login" style={{display:'block',textAlign:'center',padding:'14px',background:D.input,color:D.sub,fontSize:'13px',fontWeight:600,borderRadius:'14px',textDecoration:'none',marginBottom:'20px'}}>
+              로그인하고 리뷰 남기기 →
+            </Link>
+          )}
+
+          {/* 리뷰 목록 */}
+          {reviews.length === 0 ? (
+            <div style={{textAlign:'center',padding:'24px 0',color:D.sub}}>
+              <p style={{fontSize:'32px',margin:'0 0 8px'}}>🌱</p>
+              <p style={{fontSize:'13px',fontWeight:600,margin:0}}>아직 리뷰가 없어요. 첫 리뷰를 남겨주세요!</p>
+            </div>
+          ) : (
+            <div style={{display:'flex',flexDirection:'column',gap:'12px'}}>
+              {reviews.map((r:any) => (
+                <div key={r.id} style={{padding:'16px',background:dark?'#1e2530':'#f8fafc',borderRadius:'14px',border:`1px solid ${r.user_id===user?.id?'#ec4899':D.border}`}}>
+                  <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'8px'}}>
+                    <div style={{width:'32px',height:'32px',borderRadius:'50%',background:'linear-gradient(135deg,#ec4899,#f43f5e)',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'12px',fontWeight:900,flexShrink:0}}>
+                      {(r.author_name||'익')[0]}
+                    </div>
+                    <div>
+                      <div style={{display:'flex',alignItems:'center',gap:'6px'}}>
+                        <p style={{fontSize:'13px',fontWeight:700,color:D.text,margin:0}}>{r.author_name||'익명'}</p>
+                        {r.user_id===user?.id && <span style={{fontSize:'10px',fontWeight:700,color:'#ec4899',background:'rgba(236,72,153,0.1)',padding:'1px 7px',borderRadius:'20px'}}>내 리뷰</span>}
+                      </div>
+                      <p style={{fontSize:'11px',color:D.sub,margin:0}}>{r.created_at ? new Date(r.created_at).toLocaleDateString('ko-KR') : ''}</p>
+                    </div>
+                    <div style={{marginLeft:'auto',fontSize:'12px',letterSpacing:'1px'}}>
+                      {[1,2,3,4,5].map(n => <span key={n} style={{filter:n<=r.rating?'none':'grayscale(1) opacity(0.3)'}}>⭐</span>)}
+                    </div>
+                  </div>
+                  {r.content && <p style={{fontSize:'13px',color:D.text,lineHeight:1.7,margin:0,whiteSpace:'pre-wrap'}}>{r.content}</p>}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 주문 폼 모달 */}
