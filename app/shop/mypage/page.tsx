@@ -280,7 +280,10 @@ function MyPageInner() {
         </div>
       </header>
 
-      <div style={{ maxWidth:'1100px', margin:'0 auto', padding:'20px 20px 100px' }}>
+      <div style={{ maxWidth:'1340px', margin:'0 auto', padding:'24px 24px 100px' }}>
+
+        <div className="mp-layout">
+        <div className="mp-side">
 
         {/* ── 프로필 히어로 ── */}
         <div className="hero-card" style={{ background:tc.gradient, borderRadius:'32px', padding:'40px 36px', marginBottom:'22px', position:'relative', overflow:'hidden', boxShadow:`0 24px 60px ${tc.color}40` }}>
@@ -337,7 +340,7 @@ function MyPageInner() {
         </div>
 
         {/* ── 탭 네비게이션 ── */}
-        <div style={{ display:'flex', gap:'8px', marginBottom:'22px', background:D.card, borderRadius:'20px', padding:'7px', border:`1px solid ${D.border}`, boxShadow:'0 4px 20px rgba(0,0,0,0.04)' }}>
+        <div className="mp-tabs" style={{ display:'flex', gap:'8px', marginBottom:'22px', background:D.card, borderRadius:'20px', padding:'8px', border:`1px solid ${D.border}`, boxShadow:'0 4px 20px rgba(0,0,0,0.04)' }}>
           {[
             { key:'home',     icon:'🏠', label:'홈' },
             { key:'orders',   icon:'📦', label:'주문/배송' },
@@ -346,7 +349,7 @@ function MyPageInner() {
             { key:'settings', icon:'⚙️', label:'설정' },
           ].map(t => (
             <button key={t.key} onClick={() => setTab(t.key as any)} className="mp-tab"
-              style={{ flex:1, padding:'13px 6px', borderRadius:'15px', border:'none', cursor:'pointer', fontSize:'13px', fontWeight:800, transition:'all 0.25s cubic-bezier(0.34,1.56,0.64,1)',
+              style={{ flex:1, padding:'15px 8px', borderRadius:'15px', border:'none', cursor:'pointer', fontSize:'15px', fontWeight:800, transition:'all 0.25s cubic-bezier(0.34,1.56,0.64,1)',
                 background: tab === t.key ? tc.gradient : 'transparent',
                 color: tab === t.key ? 'white' : D.sub,
                 boxShadow: tab === t.key ? `0 8px 20px ${tc.color}45` : 'none',
@@ -355,6 +358,9 @@ function MyPageInner() {
             </button>
           ))}
         </div>
+
+        </div>{/* /mp-side */}
+        <div className="mp-main">
 
         {/* ════════════════ TAB: HOME ════════════════ */}
         {tab === 'home' && (
@@ -522,8 +528,8 @@ function MyPageInner() {
                       {order.tracking_number && <p style={{ fontSize:'12px', color:D.sub, margin:0 }}>🚚 {courierName(order.courier_code || '')} {order.tracking_number}</p>}
                     </div>
                     {order.tracking_number && (
-                      <button onClick={() => openTracking(order)}
-                        style={{ marginTop:'14px', width:'100%', padding:'12px', borderRadius:'12px', border:'none', background:tc.gradient, color:'white', fontSize:'13px', fontWeight:800, cursor:'pointer' }}>
+                      <button onClick={() => openTracking(order)} className="mp-track-btn"
+                        style={{ marginTop:'14px', width:'100%', padding:'16px', borderRadius:'14px', border:'none', background:tc.gradient, color:'white', fontSize:'16px', fontWeight:800, cursor:'pointer', boxShadow:`0 8px 20px ${tc.color}40` }}>
                         🚚 실시간 배송조회
                       </button>
                     )}
@@ -802,45 +808,45 @@ function MyPageInner() {
         <div onClick={() => setTrackModal(false)}
           style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', backdropFilter:'blur(8px)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:'16px' }}>
           <div onClick={e => e.stopPropagation()}
-            style={{ background:D.card, width:'100%', maxWidth:'440px', maxHeight:'85vh', overflowY:'auto', borderRadius:'24px', border:`1px solid ${D.border}` }}>
-            <div style={{ position:'sticky', top:0, background:tc.gradient, padding:'18px 22px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-              <p style={{ fontSize:'16px', fontWeight:900, color:'white', margin:0 }}>🚚 배송 조회</p>
-              <button onClick={() => setTrackModal(false)} style={{ width:'30px', height:'30px', borderRadius:'10px', background:'rgba(255,255,255,0.2)', border:'none', cursor:'pointer', color:'white', fontSize:'15px' }}>✕</button>
+            style={{ background:D.card, width:'100%', maxWidth:'560px', maxHeight:'88vh', overflowY:'auto', borderRadius:'28px', border:`1px solid ${D.border}` }}>
+            <div style={{ position:'sticky', top:0, background:tc.gradient, padding:'24px 26px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <p style={{ fontSize:'22px', fontWeight:900, color:'white', margin:0 }}>🚚 배송 조회</p>
+              <button onClick={() => setTrackModal(false)} style={{ width:'42px', height:'42px', borderRadius:'14px', background:'rgba(255,255,255,0.2)', border:'none', cursor:'pointer', color:'white', fontSize:'20px' }}>✕</button>
             </div>
-            <div style={{ padding:'22px' }}>
+            <div style={{ padding:'26px' }}>
               {trackLoading ? (
-                <div style={{ textAlign:'center', padding:'40px 0' }}>
-                  <div style={{ width:'40px', height:'40px', borderRadius:'50%', border:'3px solid '+tc.color, borderTopColor:'transparent', animation:'spin 0.8s linear infinite', margin:'0 auto 12px' }} />
-                  <p style={{ fontSize:'13px', color:D.sub, margin:0 }}>배송 정보를 불러오는 중...</p>
+                <div style={{ textAlign:'center', padding:'50px 0' }}>
+                  <div style={{ width:'52px', height:'52px', borderRadius:'50%', border:'4px solid '+tc.color, borderTopColor:'transparent', animation:'spin 0.8s linear infinite', margin:'0 auto 16px' }} />
+                  <p style={{ fontSize:'17px', color:D.sub, margin:0, fontWeight:600 }}>배송 정보를 불러오는 중...</p>
                 </div>
               ) : !trackData?.ok ? (
-                <div style={{ textAlign:'center', padding:'30px 0' }}>
-                  <p style={{ fontSize:'40px', margin:'0 0 10px' }}>📦</p>
-                  <p style={{ fontSize:'13px', color:D.sub, margin:0, lineHeight:1.6 }}>{trackData?.error || '배송 정보를 찾을 수 없어요.'}</p>
+                <div style={{ textAlign:'center', padding:'40px 0' }}>
+                  <p style={{ fontSize:'56px', margin:'0 0 14px' }}>📦</p>
+                  <p style={{ fontSize:'17px', color:D.text, margin:0, lineHeight:1.7, fontWeight:700 }}>{trackData?.error || '배송 정보를 찾을 수 없어요.'}</p>
                 </div>
               ) : (
                 <>
-                  <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'4px' }}>
-                    <p style={{ fontSize:'14px', fontWeight:800, color:D.text, margin:0 }}>{trackData.courierName}</p>
-                    <span style={{ fontSize:'11px', fontWeight:800, padding:'3px 10px', borderRadius:'20px', background: trackData.completed ? 'rgba(22,163,74,0.12)' : 'rgba(245,158,11,0.12)', color: trackData.completed ? '#16a34a' : '#d97706' }}>
+                  <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'8px', flexWrap:'wrap', gap:'8px' }}>
+                    <p style={{ fontSize:'20px', fontWeight:900, color:D.text, margin:0 }}>{trackData.courierName}</p>
+                    <span style={{ fontSize:'15px', fontWeight:800, padding:'6px 16px', borderRadius:'100px', background: trackData.completed ? 'rgba(22,163,74,0.12)' : 'rgba(245,158,11,0.12)', color: trackData.completed ? '#16a34a' : '#d97706' }}>
                       {trackData.completed ? '✅ 배송완료' : '🚚 배송중'}
                     </span>
                   </div>
-                  <p style={{ fontSize:'12px', color:D.sub, margin:'0 0 18px' }}>송장번호 {trackData.invoiceNo}</p>
+                  <p style={{ fontSize:'15px', color:D.sub, margin:'0 0 24px', fontWeight:600 }}>송장번호 {trackData.invoiceNo}</p>
 
                   {(!trackData.steps || trackData.steps.length === 0) ? (
-                    <p style={{ fontSize:'13px', color:D.sub, textAlign:'center', padding:'20px 0' }}>아직 배송 이력이 없어요. 집화 후 표시됩니다.</p>
+                    <p style={{ fontSize:'16px', color:D.sub, textAlign:'center', padding:'28px 0', fontWeight:600 }}>아직 배송 이력이 없어요.<br/>집화 후 표시됩니다.</p>
                   ) : (
                     <div style={{ display:'flex', flexDirection:'column' }}>
                       {[...trackData.steps].reverse().map((s: any, i: number) => (
-                        <div key={i} style={{ display:'flex', gap:'12px' }}>
+                        <div key={i} style={{ display:'flex', gap:'16px' }}>
                           <div style={{ display:'flex', flexDirection:'column', alignItems:'center' }}>
-                            <div style={{ width:'12px', height:'12px', borderRadius:'50%', background: i===0 ? tc.color : D.border, flexShrink:0, marginTop:'3px' }} />
-                            {i < trackData.steps.length - 1 && <div style={{ width:'2px', flex:1, background:D.border, minHeight:'24px' }} />}
+                            <div style={{ width:'18px', height:'18px', borderRadius:'50%', background: i===0 ? tc.color : D.border, flexShrink:0, marginTop:'4px', boxShadow: i===0 ? `0 0 0 5px ${tc.color}25` : 'none' }} />
+                            {i < trackData.steps.length - 1 && <div style={{ width:'3px', flex:1, background:D.border, minHeight:'30px' }} />}
                           </div>
-                          <div style={{ paddingBottom:'16px' }}>
-                            <p style={{ fontSize:'13px', fontWeight: i===0 ? 800 : 600, color: i===0 ? D.text : D.sub, margin:'0 0 2px' }}>{s.kind || '이동중'}</p>
-                            <p style={{ fontSize:'12px', color:D.sub, margin:0 }}>{s.where} {s.time && `· ${s.time}`}</p>
+                          <div style={{ paddingBottom:'22px' }}>
+                            <p style={{ fontSize:'17px', fontWeight: i===0 ? 900 : 700, color: i===0 ? D.text : D.sub, margin:'0 0 4px' }}>{s.kind || '이동중'}</p>
+                            <p style={{ fontSize:'15px', color:D.sub, margin:0, lineHeight:1.5 }}>{s.where} {s.time && `· ${s.time}`}</p>
                           </div>
                         </div>
                       ))}
@@ -852,6 +858,9 @@ function MyPageInner() {
           </div>
         </div>
       )}
+
+        </div>{/* /mp-main */}
+        </div>{/* /mp-layout */}
 
       {/* ── 하단 고정 탭바 ── */}
       <nav style={{ position:'fixed', bottom:0, left:0, right:0, background:dark?'rgba(13,17,23,0.97)':'rgba(255,255,255,0.97)', backdropFilter:'blur(20px)', borderTop:`1px solid ${D.border}`, padding:'10px 0 16px', display:'flex', justifyContent:'space-around', zIndex:50 }}>
@@ -893,10 +902,17 @@ function MyPageInner() {
         /* 카드 등장 */
         .my-orders > div { animation: mpFadeUp 0.5s ease both; }
 
-        /* PC: 주문 2칸, 콘텐츠 꽉차게 */
-        @media (min-width: 820px) {
-          .my-orders { display: grid !important; grid-template-columns: 1fr 1fr; gap: 16px !important; align-items: start; }
-          .hero-card { padding: 48px 44px !important; }
+        /* PC: 좌우 2단 대시보드 (왼쪽 프로필+메뉴 고정 / 오른쪽 콘텐츠 꽉) */
+        @media (min-width: 900px) {
+          .mp-layout { display: grid; grid-template-columns: 340px 1fr; gap: 26px; align-items: start; }
+          .mp-side { position: sticky; top: 84px; }
+          .mp-tabs { flex-direction: column !important; }
+          .mp-tab { text-align: left !important; padding: 16px 18px !important; font-size: 16px !important; }
+          .my-orders { display: grid !important; grid-template-columns: 1fr 1fr; gap: 18px !important; align-items: start; }
+        }
+        /* 모바일/태블릿: 위아래 스택 */
+        @media (max-width: 899px) {
+          .mp-layout { display: block; }
         }
 
         @media (max-width: 640px) {
