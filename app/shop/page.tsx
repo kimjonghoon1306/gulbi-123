@@ -841,13 +841,48 @@ export default function ShopPage() {
               {banners.map((b, i) => {
                 const active = i === (bannerIdx % banners.length)
                 const href = b.product_id ? `/shop/product/${b.product_id}` : (b.link_url || null)
+                const hasText = b.title || b.subtitle || b.tag
                 const content = (
                   <>
                     <img src={b.image_url} alt={b.title || '광고'} className="ad-banner-img"
                       style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.5s ease' }} />
-                    {b.title && (
-                      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: '40px 24px 22px', background: 'linear-gradient(to top, rgba(0,0,0,0.55), transparent)' }}>
-                        <p style={{ margin: 0, color: '#fff', fontSize: 'clamp(17px,2.6vw,26px)', fontWeight: 900, letterSpacing: '-0.5px', textShadow: '0 2px 12px rgba(0,0,0,0.4)' }}>{b.title}</p>
+                    {hasText && (
+                      <div className="ad-banner-overlay" style={{
+                        position: 'absolute', inset: 0,
+                        background: 'linear-gradient(90deg, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.34) 42%, rgba(0,0,0,0) 72%)',
+                        display: 'flex', flexDirection: 'column', justifyContent: 'center',
+                        padding: 'clamp(20px,4vw,48px)', gap: '10px'
+                      }}>
+                        {b.tag && (
+                          <span style={{
+                            alignSelf: 'flex-start', fontSize: 'clamp(10px,1.3vw,12px)', fontWeight: 800,
+                            letterSpacing: '1.5px', color: '#fff', textTransform: 'uppercase',
+                            background: 'rgba(255,255,255,0.16)', border: '1px solid rgba(255,255,255,0.3)',
+                            backdropFilter: 'blur(6px)', padding: '5px 13px', borderRadius: '100px'
+                          }}>{b.tag}</span>
+                        )}
+                        {b.title && (
+                          <p style={{
+                            margin: 0, color: '#fff', fontSize: 'clamp(20px,3.6vw,38px)', fontWeight: 900,
+                            letterSpacing: '-1px', lineHeight: 1.12, maxWidth: '620px',
+                            textShadow: '0 3px 18px rgba(0,0,0,0.5)'
+                          }}>{b.title}</p>
+                        )}
+                        {b.subtitle && (
+                          <p style={{
+                            margin: 0, color: 'rgba(255,255,255,0.92)', fontSize: 'clamp(13px,1.9vw,18px)',
+                            fontWeight: 600, lineHeight: 1.5, maxWidth: '540px',
+                            textShadow: '0 2px 10px rgba(0,0,0,0.45)'
+                          }}>{b.subtitle}</p>
+                        )}
+                        {href && (
+                          <span className="ad-banner-cta" style={{
+                            alignSelf: 'flex-start', marginTop: '6px', display: 'inline-flex', alignItems: 'center', gap: '7px',
+                            fontSize: 'clamp(13px,1.6vw,15px)', fontWeight: 800, color: '#15803d',
+                            background: '#fff', padding: '11px 22px', borderRadius: '100px',
+                            boxShadow: '0 8px 24px rgba(0,0,0,0.28)', transition: 'all 0.25s ease'
+                          }}>{b.cta_label || '자세히 보기'} <span style={{ fontSize: '1.1em' }}>→</span></span>
+                        )}
                       </div>
                     )}
                   </>
@@ -1359,6 +1394,7 @@ export default function ShopPage() {
         .search-sg:hover { background: rgba(22,163,74,0.08); }
         .ad-banner-box { aspect-ratio: 1000 / 340; }
         .ad-banner-box:hover .ad-banner-img { transform: scale(1.04); }
+        .ad-banner-box:hover .ad-banner-cta { background: #15803d !important; color: #fff !important; transform: translateY(-2px); box-shadow: 0 12px 30px rgba(21,128,61,0.45) !important; }
         @media (max-width: 639px) {
           .ad-banner-box { aspect-ratio: 16 / 9; border-radius: 18px !important; }
         }

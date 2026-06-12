@@ -5,7 +5,10 @@ import { createClient } from '@/lib/supabase'
 
 type Banner = {
   id: string
+  tag: string | null
   title: string | null
+  subtitle: string | null
+  cta_label: string | null
   image_url: string
   product_id: string | null
   link_url: string | null
@@ -19,7 +22,7 @@ type Banner = {
 type ProductLite = { id: string; name: string }
 
 const EMPTY = {
-  title: '', image_url: '', product_id: '', link_url: '',
+  tag: '', title: '', subtitle: '', cta_label: '', image_url: '', product_id: '', link_url: '',
   sort_order: '0', starts_at: '', ends_at: '', is_active: true,
 }
 
@@ -82,7 +85,8 @@ export default function AdminAdsPage() {
   const openEdit = (b: Banner) => {
     setEditId(b.id)
     setForm({
-      title: b.title || '', image_url: b.image_url, product_id: b.product_id || '',
+      tag: b.tag || '', title: b.title || '', subtitle: b.subtitle || '', cta_label: b.cta_label || '',
+      image_url: b.image_url, product_id: b.product_id || '',
       link_url: b.link_url || '', sort_order: String(b.sort_order),
       starts_at: toLocalInput(b.starts_at), ends_at: toLocalInput(b.ends_at), is_active: b.is_active,
     })
@@ -111,7 +115,10 @@ export default function AdminAdsPage() {
     setSaving(true)
     const { data: { user } } = await supabase.auth.getUser()
     const payload: any = {
+      tag: form.tag.trim() || null,
       title: form.title.trim() || null,
+      subtitle: form.subtitle.trim() || null,
+      cta_label: form.cta_label.trim() || null,
       image_url: form.image_url,
       product_id: form.product_id || null,
       link_url: form.link_url.trim() || null,
@@ -276,8 +283,17 @@ export default function AdminAdsPage() {
                     <>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={form.image_url} alt="미리보기" className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
-                      {form.title && <p className="absolute bottom-4 left-4 right-4 text-white font-black text-xl drop-shadow truncate">{form.title}</p>}
+                      <div className="absolute inset-0 flex flex-col justify-center gap-1.5 p-5"
+                        style={{ background: 'linear-gradient(90deg, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.34) 42%, rgba(0,0,0,0) 72%)' }}>
+                        {form.tag && <span className="self-start text-[10px] font-extrabold tracking-widest uppercase text-white px-2.5 py-1 rounded-full" style={{ background: 'rgba(255,255,255,0.16)', border: '1px solid rgba(255,255,255,0.3)' }}>{form.tag}</span>}
+                        {form.title && <p className="text-white font-black leading-tight drop-shadow" style={{ fontSize: 'clamp(16px,3vw,26px)', maxWidth: '70%' }}>{form.title}</p>}
+                        {form.subtitle && <p className="text-white/90 font-semibold leading-snug drop-shadow" style={{ fontSize: 'clamp(11px,1.6vw,15px)', maxWidth: '60%' }}>{form.subtitle}</p>}
+                        {(form.product_id || form.link_url) && (
+                          <span className="self-start mt-1 inline-flex items-center gap-1.5 text-green-700 bg-white font-extrabold px-4 py-2 rounded-full shadow-lg" style={{ fontSize: 'clamp(11px,1.4vw,14px)' }}>
+                            {form.cta_label || '자세히 보기'} →
+                          </span>
+                        )}
+                      </div>
                     </>
                   ) : (
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-300 dark:text-slate-600">
@@ -298,12 +314,33 @@ export default function AdminAdsPage() {
                 <p className="text-[11px] text-slate-400 mt-1.5">가로로 긴 이미지(권장 비율 5:2, 예: 1000×400)가 가장 예쁘게 나와요.</p>
               </div>
 
-              {/* 제목 */}
-              <div>
-                <label className="block text-sm font-bold text-slate-600 dark:text-slate-300 mb-2">제목 <span className="text-slate-300 font-normal">(선택 · 이미지 위에 표시)</span></label>
-                <input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })}
-                  placeholder="예: 햇사과 특가 50% 할인"
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-gray-700 dark:bg-gray-900 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none" />
+              {/* 문구 (라벨/제목/부제/버튼) */}
+              <div className="rounded-2xl border border-slate-100 dark:border-gray-700 p-4 space-y-3 bg-slate-50/60 dark:bg-gray-900/40">
+                <p className="text-sm font-bold text-slate-600 dark:text-slate-300">✍️ 배너 문구 <span className="text-slate-300 font-normal">(이미지 위에 표시 · 전부 선택)</span></p>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1">라벨 <span className="text-slate-300">(작은 윗줄 · 예: 이벤트 / 신상품 / 브랜드명)</span></label>
+                  <input value={form.tag} onChange={e => setForm({ ...form, tag: e.target.value })}
+                    placeholder="예: 특가 이벤트"
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-gray-700 dark:bg-gray-900 text-sm outline-none focus:ring-2 focus:ring-green-500" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1">제목 <span className="text-slate-300">(큰 헤드라인)</span></label>
+                  <input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })}
+                    placeholder="예: 햇사과 특가 50% 할인"
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-gray-700 dark:bg-gray-900 text-sm outline-none focus:ring-2 focus:ring-green-500" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1">부제 <span className="text-slate-300">(한 줄 설명)</span></label>
+                  <input value={form.subtitle} onChange={e => setForm({ ...form, subtitle: e.target.value })}
+                    placeholder="예: 산지직송 햇사과를 가장 신선하게, 오늘만 이 가격"
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-gray-700 dark:bg-gray-900 text-sm outline-none focus:ring-2 focus:ring-green-500" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1">버튼 문구 <span className="text-slate-300">(클릭 연결 있을 때 표시 · 비우면 &ldquo;자세히 보기&rdquo;)</span></label>
+                  <input value={form.cta_label} onChange={e => setForm({ ...form, cta_label: e.target.value })}
+                    placeholder="자세히 보기"
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-gray-700 dark:bg-gray-900 text-sm outline-none focus:ring-2 focus:ring-green-500" />
+                </div>
               </div>
 
               {/* 연결 대상 */}
