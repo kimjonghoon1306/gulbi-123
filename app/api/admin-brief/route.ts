@@ -7,7 +7,11 @@ import { getUserAIKeys, callAI, extractJson } from '@/lib/ai'
 //  관리자 "AI 아침 브리핑" — 로그인한 관리자 본인 키로만 호출.
 //  어제 매출·주문, 미출고, 재고부족, 공급사 승인대기를 모아 AI가 요약 + 할 일 제안.
 // ─────────────────────────────────────────────────────────────
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
+ try {
   // 1) 본인 키 확보. 비로그인(401)만 에러, 키 없음(400)은 기본 브리핑으로 진행
   const auth = await getUserAIKeys()
   if (!auth.ok && auth.status === 401) return NextResponse.json({ error: auth.error }, { status: 401 })
@@ -143,4 +147,14 @@ actions는 데이터에 근거해 1~4개. 위 '처리 대기' 항목 중 건수�
     provider: ai.provider,
     date: todayStr,
   })
+ } catch (e: any) {
+  // 어떤 오류가 나도 화면이 비지 않도록 최소 브리핑을 200으로 반환
+  return NextResponse.json({
+    headline: '오늘의 브리핑 ☀️',
+    summary: '브리핑 데이터를 불러오는 중 문제가 있었어요. 잠시 후 다시 시도해 주세요.',
+    actions: [],
+    provider: '기본',
+    note: '오류: ' + (e?.message || '알 수 없는 오류'),
+  })
+ }
 }
