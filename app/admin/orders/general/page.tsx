@@ -41,7 +41,7 @@ export default function GeneralOrdersPage() {
   const [search, setSearch] = useState('')
   const [form, setForm] = useState({
     customer_name: '', contact: '', address: '', note: '',
-    payment_method: '계좌이체', status: '접수'
+    payment_method: '계좌이체', status: '접수', courier_code: '', tracking_number: ''
   })
   const [items, setItems] = useState<OrderItem[]>([
     { product_id: '', product_name: '', quantity: 1, unit: 'kg', unit_price: 0, total_price: 0 }
@@ -62,7 +62,7 @@ export default function GeneralOrdersPage() {
   }
 
   const resetForm = () => {
-    setForm({ customer_name: '', contact: '', address: '', note: '', payment_method: '계좌이체', status: '접수' })
+    setForm({ customer_name: '', contact: '', address: '', note: '', payment_method: '계좌이체', status: '접수', courier_code: '', tracking_number: '' })
     setItems([{ product_id: '', product_name: '', quantity: 1, unit: 'kg', unit_price: 0, total_price: 0 }])
     setEditOrder(null)
     setShowForm(false)
@@ -70,7 +70,7 @@ export default function GeneralOrdersPage() {
 
   const openEdit = async (o: Order) => {
     setEditOrder(o)
-    setForm({ customer_name: o.customer_name, contact: o.contact || '', address: o.address || '', note: o.note || '', payment_method: o.payment_method, status: o.status })
+    setForm({ customer_name: o.customer_name, contact: o.contact || '', address: o.address || '', note: o.note || '', payment_method: o.payment_method, status: o.status, courier_code: o.courier_code || '', tracking_number: o.tracking_number || '' })
     const { data } = await supabase.from('general_order_items').select('*').eq('order_id', o.id)
     setItems(data && data.length > 0 ? data : [{ product_id: '', product_name: '', quantity: 1, unit: 'kg', unit_price: 0, total_price: 0 }])
     setShowForm(true)
@@ -510,6 +510,19 @@ export default function GeneralOrdersPage() {
                     <textarea value={form.note} onChange={e => setForm({ ...form, note: e.target.value })} rows={2}
                       placeholder="특이사항 또는 배송 요청사항"
                       className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none" />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">🚚 택배사 / 송장번호</label>
+                    <div className="flex gap-2">
+                      <select value={form.courier_code} onChange={e => setForm({ ...form, courier_code: e.target.value })}
+                        className="w-32 border border-slate-200 dark:border-gray-600 rounded-xl px-3 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                        <option value="">택배사</option>
+                        {COURIERS.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
+                      </select>
+                      <input value={form.tracking_number} onChange={e => setForm({ ...form, tracking_number: e.target.value })}
+                        placeholder="송장번호 (배송 시작 시 입력)"
+                        className="flex-1 border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+                    </div>
                   </div>
                 </div>
               </div>
