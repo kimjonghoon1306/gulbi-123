@@ -27,7 +27,7 @@ async function expectedAmount(table: OrderTable, orderId: string): Promise<numbe
   if (!order) return null
 
   const itemTable = `${table.replace('_orders', '')}_order_items`
-  const { data: items } = await supabase.from(itemTable).select('product_id, quantity').eq('order_id', orderId)
+  const { data: items } = await supabase.from(itemTable).select('product_id, quantity, supplier_id').eq('order_id', orderId)
   if (!items || items.length === 0) return null
 
   const ids = items.map((i: any) => i.product_id)
@@ -35,12 +35,19 @@ async function expectedAmount(table: OrderTable, orderId: string): Promise<numbe
   const { data: products } = await supabase.from('products').select(`id, ${field}`).in('id', ids)
   const priceMap = new Map<string, number>((products || []).map((p: any) => [p.id, Number(p[field]) || 0]))
 
-  const subtotal = items.reduce((s: number, i: any) => s + (priceMap.get(i.product_id) || 0) * i.quantity, 0)
+  const lineTotal = (i: any) => (priceMap.get(i.product_id) || 0) * i.quantity
+  const subtotal = items.reduce((s: number, i: any) => s + lineTotal(i), 0)
 
   let discount = 0
   if ((order as any).coupon_code) {
     const { data: coupon } = await supabase.from('coupons').select('*').eq('code', (order as any).coupon_code).maybeSingle()
-    if (coupon && subtotal >= (coupon.min_amount || 0)) discount = calcDiscount(coupon, subtotal)
+    if (coupon) {
+      // 방식 A: 공급사 쿠폰은 그 공급사 상품 합계에만 적용 / 본사 쿠폰은 주문 전체
+      const base = coupon.created_by_role === 'supplier'
+        ? items.filter((i: any) => i.supplier_id === coupon.created_by).reduce((s: number, i: any) => s + lineTotal(i), 0)
+        : subtotal
+      if (base >= (coupon.min_amount || 0)) discount = calcDiscount(coupon, base)
+    }
   }
   return Math.max(0, subtotal - discount)
 }

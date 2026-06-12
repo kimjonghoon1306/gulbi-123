@@ -306,16 +306,24 @@ export default function ProductDetailPage() {
     if (c.discount_type === 'percent' && c.max_discount) d = Math.min(d, c.max_discount)
     return Math.min(d, base)
   }
-  const couponDiscount = calcDiscount(appliedCoupon, totalPrice)
+  // 방식 A: 공급사 쿠폰은 그 공급사 상품에만 적용. 상품상세는 단일상품이라 해당 공급사 상품이면 전액, 아니면 0
+  const couponBase = (c: any) => {
+    if (!c) return totalPrice
+    if (c.created_by_role === 'supplier') return product?.supplier_id === c.created_by ? totalPrice : 0
+    return totalPrice
+  }
+  const couponDiscount = calcDiscount(appliedCoupon, couponBase(appliedCoupon))
   const finalPrice = Math.max(0, totalPrice - couponDiscount)
   const selectCoupon = (uc: any) => {
     const c = uc.coupons; if (!c) return
     if (!c.is_active) { setCouponMsg({ ok: false, text: '사용 중지된 쿠폰이에요.' }); return }
     if (c.starts_at && new Date(c.starts_at) > new Date()) { setCouponMsg({ ok: false, text: '아직 사용 기간이 아니에요.' }); return }
     if (c.expires_at && new Date(c.expires_at) < new Date()) { setCouponMsg({ ok: false, text: '만료된 쿠폰이에요.' }); return }
-    if (totalPrice < (c.min_amount || 0)) { setCouponMsg({ ok: false, text: `${Number(c.min_amount).toLocaleString()}원 이상 주문 시 사용 가능해요.` }); return }
+    const base = couponBase(c)
+    if (c.created_by_role === 'supplier' && base === 0) { setCouponMsg({ ok: false, text: '이 공급사 상품에만 쓸 수 있는 쿠폰이에요.' }); return }
+    if (base < (c.min_amount || 0)) { setCouponMsg({ ok: false, text: `${Number(c.min_amount).toLocaleString()}원 이상 주문 시 사용 가능해요.` }); return }
     setAppliedCoupon(c); setAppliedUcId(uc.id)
-    setCouponMsg({ ok: true, text: `🎉 ${calcDiscount(c, totalPrice).toLocaleString()}원 할인 적용!` })
+    setCouponMsg({ ok: true, text: `🎉 ${calcDiscount(c, base).toLocaleString()}원 할인 적용!` })
   }
   const removeCoupon = () => { setAppliedCoupon(null); setAppliedUcId(null); setCouponMsg(null) }
 
@@ -855,7 +863,8 @@ export default function ProductDetailPage() {
                         {ownedCoupons.map((uc:any) => {
                           const c = uc.coupons; if (!c) return null
                           const dtext = c.discount_type === 'percent' ? `${c.discount_value}% 할인${c.max_discount?` (최대 ${Number(c.max_discount).toLocaleString()}원)`:''}` : `${Number(c.discount_value).toLocaleString()}원 할인`
-                          const usable = totalPrice >= (c.min_amount || 0)
+                          const base = couponBase(c)
+                          const usable = base >= (c.min_amount || 0) && !(c.created_by_role === 'supplier' && base === 0)
                           return (
                             <button key={uc.id} onClick={() => selectCoupon(uc)} disabled={!usable}
                               style={{display:'flex',alignItems:'center',justifyContent:'space-between',textAlign:'left',gap:'10px',padding:'12px 14px',borderRadius:'12px',border:`2px solid ${D.border}`,background:D.input,cursor:usable?'pointer':'not-allowed',opacity:usable?1:0.5}}>
@@ -910,6 +919,8 @@ export default function ProductDetailPage() {
                           status: isToss ? '결제대기' : '접수',
                           total_amount: finalPrice,
                           coupon_code: appliedCoupon?.code || null,
+                          coupon_owner: appliedCoupon?.created_by_role === 'supplier' ? appliedCoupon.created_by : null,
+                          coupon_discount: couponDiscount,
                         }
                         const { data: newOrder } = await supabase.from(table).insert(orderData).select().single()
                         if (newOrder) {
@@ -921,6 +932,7 @@ export default function ProductDetailPage() {
                             unit: product.unit,
                             unit_price: getPrice(),
                             total_price: totalPrice,
+                            supplier_id: product.supplier_id || null,
                           })
                           // 쿠폰 사용처리
                           if (appliedCoupon) {

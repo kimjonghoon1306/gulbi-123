@@ -14,7 +14,7 @@ type CartItem = {
   products: {
     id: string; name: string; image_url: string
     retail_price: number; wholesale_price: number; member_price: number
-    stock: number; unit: string; is_taxable: boolean
+    stock: number; unit: string; is_taxable: boolean; supplier_id: string | null
   }
 }
 
@@ -125,7 +125,15 @@ export default function CartPage() {
     if (c.discount_type === 'percent' && c.max_discount) d = Math.min(d, c.max_discount)
     return Math.min(d, base) // 할인이 결제액 초과 못함
   }
-  const discount = calcDiscount(appliedCoupon, totalAmount)
+  // 방식 A: 공급사 쿠폰은 그 공급사 상품 합계에만 적용 / 본사 쿠폰은 주문 전체
+  const couponBase = (c: any) => {
+    if (!c) return totalAmount
+    if (c.created_by_role === 'supplier') {
+      return items.filter(i => i.products.supplier_id === c.created_by).reduce((s, i) => s + getPrice(i.products) * i.quantity, 0)
+    }
+    return totalAmount
+  }
+  const discount = calcDiscount(appliedCoupon, couponBase(appliedCoupon))
   const finalAmount = Math.max(0, totalAmount - discount)
 
   // 쿠폰함에서 받은 쿠폰을 선택해서 사용
@@ -135,9 +143,14 @@ export default function CartPage() {
     if (!c.is_active) { setCouponMsg({ ok: false, text: '사용 중지된 쿠폰이에요.' }); return }
     if (c.starts_at && new Date(c.starts_at) > new Date()) { setCouponMsg({ ok: false, text: '아직 사용 기간이 아니에요.' }); return }
     if (c.expires_at && new Date(c.expires_at) < new Date()) { setCouponMsg({ ok: false, text: '만료된 쿠폰이에요.' }); return }
-    if (totalAmount < (c.min_amount || 0)) { setCouponMsg({ ok: false, text: `${Number(c.min_amount).toLocaleString()}원 이상 주문 시 사용 가능해요.` }); return }
+    const base = couponBase(c)
+    if (c.created_by_role === 'supplier' && base === 0) { setCouponMsg({ ok: false, text: '이 공급사 상품이 장바구니에 없어 사용할 수 없어요.' }); return }
+    if (base < (c.min_amount || 0)) {
+      const scope = c.created_by_role === 'supplier' ? '해당 공급사 상품 ' : ''
+      setCouponMsg({ ok: false, text: `${scope}${Number(c.min_amount).toLocaleString()}원 이상일 때 사용 가능해요.` }); return
+    }
     setAppliedCoupon(c); setAppliedUcId(uc.id)
-    const d = calcDiscount(c, totalAmount)
+    const d = calcDiscount(c, base)
     setCouponMsg({ ok: true, text: `🎉 ${d.toLocaleString()}원 할인이 적용됐어요!` })
   }
   const removeCoupon = () => { setAppliedCoupon(null); setAppliedUcId(null); setCouponMsg(null) }
@@ -180,6 +193,8 @@ export default function CartPage() {
         status: isToss ? '결제대기' : '접수',
         total_amount: finalAmount,
         coupon_code: appliedCoupon?.code || null,   // 서버 결제금액 검증용
+        coupon_owner: appliedCoupon?.created_by_role === 'supplier' ? appliedCoupon.created_by : null, // 부담주체(공급사id/null=본사)
+        coupon_discount: discount,
         note: orderForm.note + (appliedCoupon ? ` [쿠폰 ${appliedCoupon.code} -${discount.toLocaleString()}원]` : ''),
       }).select().single()
 
@@ -193,6 +208,7 @@ export default function CartPage() {
             unit: item.products.unit,
             unit_price: getPrice(item.products),
             total_price: getPrice(item.products) * item.quantity,
+            supplier_id: item.products.supplier_id || null,  // 정산 귀속(공급사 상품)
           }))
         )
       }
@@ -377,7 +393,8 @@ export default function CartPage() {
                   {ownedCoupons.map((uc:any) => {
                     const c = uc.coupons; if (!c) return null
                     const dtext = c.discount_type === 'percent' ? `${c.discount_value}% 할인${c.max_discount?` (최대 ${Number(c.max_discount).toLocaleString()}원)`:''}` : `${Number(c.discount_value).toLocaleString()}원 할인`
-                    const usable = totalAmount >= (c.min_amount || 0)
+                    const base = couponBase(c)
+                    const usable = base >= (c.min_amount || 0) && !(c.created_by_role === 'supplier' && base === 0)
                     return (
                       <button key={uc.id} onClick={() => selectCoupon(uc)} disabled={!usable}
                         style={{ display:'flex', alignItems:'center', justifyContent:'space-between', textAlign:'left', gap:'10px', padding:'12px 14px', borderRadius:'12px', border:`2px solid ${D.border}`, background:D.input, cursor:usable?'pointer':'not-allowed', opacity:usable?1:0.5 }}>
