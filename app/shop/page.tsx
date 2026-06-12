@@ -46,6 +46,8 @@ export default function ShopPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [selectedCat, setSelectedCat] = useState('전체')
   const [search, setSearch] = useState('')
+  const [searchFocus, setSearchFocus] = useState(false)
+  const [recentSearches, setRecentSearches] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
   const [memberType, setMemberType] = useState('일반')
@@ -59,6 +61,32 @@ export default function ShopPage() {
   const gulbiTimer = useRef<any>(null)
   const popupTimer = useRef<any>(null)
   const supabase = createClient()
+
+  // 최근 검색어 (localStorage)
+  const saveRecent = (term: string) => {
+    const t = term.trim()
+    if (!t) return
+    setRecentSearches(prev => {
+      const next = [t, ...prev.filter(x => x !== t)].slice(0, 8)
+      try { localStorage.setItem('recent-searches', JSON.stringify(next)) } catch {}
+      return next
+    })
+  }
+  const removeRecent = (term: string) => {
+    setRecentSearches(prev => {
+      const next = prev.filter(x => x !== term)
+      try { localStorage.setItem('recent-searches', JSON.stringify(next)) } catch {}
+      return next
+    })
+  }
+
+  // 입력 중 상품명 추천 (상위 6개)
+  const sq = search.trim().toLowerCase()
+  const suggestions = sq
+    ? products.filter(p => p.name.toLowerCase().includes(sq)).slice(0, 6)
+    : []
+  // 인기 검색어 = 등록 상품명 앞부분(간이) 최대 6개
+  const popularTerms = Array.from(new Set(products.map(p => p.name.split(' ')[0]).filter(Boolean))).slice(0, 6)
 
   const fetchData = async () => {
     setLoading(true)
@@ -104,6 +132,7 @@ export default function ShopPage() {
   useEffect(() => {
     fetchData()
     checkUser()
+    try { const r = localStorage.getItem('recent-searches'); if (r) setRecentSearches(JSON.parse(r)) } catch {}
     const saved = localStorage.getItem('shop-theme')
     if (saved === 'dark') setDark(true)
     const handleScroll = () => setScrolled(window.scrollY > 10)
@@ -249,6 +278,7 @@ export default function ShopPage() {
                 <input
                   type="text" value={search} onChange={e => setSearch(e.target.value)}
                   placeholder="어떤 상품을 찾으세요?"
+                  onKeyDown={e => { if (e.key === 'Enter' && search.trim()) { saveRecent(search); (e.target as HTMLInputElement).blur() } }}
                   style={{
                     width: '100%', background: inputBg,
                     border: `2px solid transparent`,
@@ -257,8 +287,8 @@ export default function ShopPage() {
                     transition: 'all 0.2s', boxSizing: 'border-box',
                     fontWeight: 500
                   }}
-                  onFocus={e => { e.target.style.borderColor = '#14532d'; e.target.style.boxShadow = '0 0 0 4px rgba(22,163,74,0.12)' }}
-                  onBlur={e => { e.target.style.borderColor = 'transparent'; e.target.style.boxShadow = 'none' }}
+                  onFocus={e => { setSearchFocus(true); e.target.style.borderColor = '#14532d'; e.target.style.boxShadow = '0 0 0 4px rgba(22,163,74,0.12)' }}
+                  onBlur={e => { setTimeout(() => setSearchFocus(false), 180); e.target.style.borderColor = 'transparent'; e.target.style.boxShadow = 'none' }}
                 />
                 {search && (
                   <button onClick={() => setSearch('')} aria-label="검색어 지우기"
@@ -268,6 +298,56 @@ export default function ShopPage() {
                       background: dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)', color: sub,
                       fontSize: '14px', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center'
                     }}>✕</button>
+                )}
+
+                {/* 검색 자동완성 드롭다운 */}
+                {searchFocus && (suggestions.length > 0 || (!sq && (recentSearches.length > 0 || popularTerms.length > 0))) && (
+                  <div style={{
+                    position: 'absolute', top: 'calc(100% + 8px)', left: 0, right: 0, zIndex: 100,
+                    background: card, borderRadius: '16px', border: `1px solid ${border}`,
+                    boxShadow: '0 16px 40px rgba(0,0,0,0.18)', overflow: 'hidden', padding: '8px'
+                  }}>
+                    {/* 입력 중 → 상품 추천 */}
+                    {sq && suggestions.map(p => (
+                      <Link key={p.id} href={`/shop/product/${p.id}`} onMouseDown={() => saveRecent(p.name)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '10px', textDecoration: 'none', color: text }}
+                        className="search-sg">
+                        <span style={{ fontSize: '15px' }}>🔍</span>
+                        <span style={{ fontSize: '14px', fontWeight: 600, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
+                        <span style={{ fontSize: '13px', fontWeight: 800, color: gtext }}>{getPrice(p).toLocaleString()}원</span>
+                      </Link>
+                    ))}
+
+                    {/* 입력 전 → 최근/인기 검색어 */}
+                    {!sq && recentSearches.length > 0 && (
+                      <div style={{ padding: '4px 4px 8px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 8px' }}>
+                          <span style={{ fontSize: '11px', fontWeight: 800, color: sub }}>🕘 최근 검색어</span>
+                          <button onMouseDown={() => { setRecentSearches([]); try { localStorage.removeItem('recent-searches') } catch {} }}
+                            style={{ fontSize: '10px', color: sub, background: 'none', border: 'none', cursor: 'pointer' }}>전체삭제</button>
+                        </div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', padding: '0 8px' }}>
+                          {recentSearches.map(t => (
+                            <span key={t} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: inputBg, borderRadius: '100px', padding: '5px 10px' }}>
+                              <button onMouseDown={() => { setSearch(t); saveRecent(t) }} style={{ fontSize: '12px', fontWeight: 600, color: text, background: 'none', border: 'none', cursor: 'pointer' }}>{t}</button>
+                              <button onMouseDown={() => removeRecent(t)} style={{ fontSize: '11px', color: sub, background: 'none', border: 'none', cursor: 'pointer', lineHeight: 1 }}>✕</button>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {!sq && popularTerms.length > 0 && (
+                      <div style={{ padding: '4px 4px 4px' }}>
+                        <span style={{ display: 'block', fontSize: '11px', fontWeight: 800, color: sub, padding: '4px 8px' }}>🔥 인기 검색어</span>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', padding: '0 8px 4px' }}>
+                          {popularTerms.map(t => (
+                            <button key={t} onMouseDown={() => { setSearch(t); saveRecent(t) }}
+                              style={{ fontSize: '12px', fontWeight: 700, color: gtext, background: dark ? 'rgba(74,222,128,0.12)' : 'rgba(22,163,74,0.08)', border: `1px solid ${dark ? 'rgba(74,222,128,0.25)' : 'rgba(22,163,74,0.2)'}`, borderRadius: '100px', padding: '5px 12px', cursor: 'pointer' }}>{t}</button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
@@ -1127,6 +1207,8 @@ export default function ShopPage() {
           .header-user-btns { display: flex !important; align-items: center !important; gap: 8px !important; }
           .mobile-animals { display: none !important; }
         }
+        .search-sg { transition: background 0.15s; }
+        .search-sg:hover { background: rgba(22,163,74,0.08); }
         .header-btn {
           transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1) !important;
         }
