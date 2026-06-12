@@ -160,9 +160,12 @@ export default function ShopPage() {
     return ''
   }
 
+  const q = search.trim().toLowerCase()
   const filtered = products.filter(p => {
     const matchCat = selectedCat === '전체' || categories.find(c => c.id === p.category_id)?.name === selectedCat
-    const matchSearch = p.name.includes(search)
+    const matchSearch = !q
+      || p.name.toLowerCase().includes(q)
+      || (p.description || '').toLowerCase().includes(q)
     return matchCat && matchSearch
   })
 
@@ -256,6 +259,15 @@ export default function ShopPage() {
                   onFocus={e => { e.target.style.borderColor = '#14532d'; e.target.style.boxShadow = '0 0 0 4px rgba(22,163,74,0.12)' }}
                   onBlur={e => { e.target.style.borderColor = 'transparent'; e.target.style.boxShadow = 'none' }}
                 />
+                {search && (
+                  <button onClick={() => setSearch('')} aria-label="검색어 지우기"
+                    style={{
+                      position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
+                      width: '26px', height: '26px', borderRadius: '50%', border: 'none', cursor: 'pointer',
+                      background: dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)', color: sub,
+                      fontSize: '14px', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    }}>✕</button>
+                )}
               </div>
             </div>
 
@@ -933,9 +945,23 @@ export default function ShopPage() {
           </div>
         ) : filtered.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '100px 0' }}>
-            <div style={{ fontSize: '72px', marginBottom: '20px', animation: 'floatItem 3s ease-in-out infinite' }}>🧺</div>
-            <p style={{ fontSize: '20px', fontWeight: 800, color: text, marginBottom: '8px' }}>아직 상품이 없어요</p>
-            <p style={{ color: sub, fontSize: '14px' }}>곧 신선한 농축수산물이 올라올 예정이에요!</p>
+            <div style={{ fontSize: '72px', marginBottom: '20px', animation: 'floatItem 3s ease-in-out infinite' }}>{q ? '🔍' : '🧺'}</div>
+            {q ? (
+              <>
+                <p style={{ fontSize: '20px', fontWeight: 800, color: text, marginBottom: '8px' }}>&lsquo;{search.trim()}&rsquo; 검색 결과가 없어요</p>
+                <p style={{ color: sub, fontSize: '14px', marginBottom: '20px' }}>다른 검색어로 찾아보거나 카테고리를 둘러보세요.</p>
+                <button onClick={() => { setSearch(''); setSelectedCat('전체') }} style={{
+                  padding: '11px 22px', borderRadius: '12px', border: 'none', cursor: 'pointer',
+                  background: 'linear-gradient(135deg,#14532d,#15803d)', color: 'white',
+                  fontSize: '14px', fontWeight: 800, fontFamily: 'inherit'
+                }}>전체 상품 보기</button>
+              </>
+            ) : (
+              <>
+                <p style={{ fontSize: '20px', fontWeight: 800, color: text, marginBottom: '8px' }}>아직 상품이 없어요</p>
+                <p style={{ color: sub, fontSize: '14px' }}>곧 신선한 농축수산물이 올라올 예정이에요!</p>
+              </>
+            )}
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: '20px' }}>
