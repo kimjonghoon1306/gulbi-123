@@ -183,9 +183,9 @@ export default function ProductDetailPage() {
   }
 
   const getPriceColor = () => {
-    if (memberType === '도매업') return '#ec4899'
+    if (memberType === '도매업') return '#047857'
     if (memberType === '소매업') return '#14532d'
-    return '#6366f1'
+    return '#15803d'
   }
 
   const D = {
@@ -197,15 +197,15 @@ export default function ProductDetailPage() {
     sub: dark ? '#6b7280' : '#64748b',
     input: dark ? '#1e2530' : '#f1f5f9',
     imgBg: dark ? '#1e2530' : '#f8fafc',
-    accent: '#ec4899',
-    accentDark: '#f43f5e',
+    accent: '#15803d',
+    accentDark: '#16a34a',
     green: '#059669',
   }
 
   if (loading) return (
     <div style={{minHeight:'100vh',background:D.bg,display:'flex',alignItems:'center',justifyContent:'center'}}>
       <div style={{textAlign:'center'}}>
-        <div style={{width:'40px',height:'40px',borderRadius:'50%',border:'3px solid #ec4899',borderTopColor:'transparent',animation:'spin 0.8s linear infinite',margin:'0 auto 12px'}} />
+        <div style={{width:'40px',height:'40px',borderRadius:'50%',border:'3px solid #15803d',borderTopColor:'transparent',animation:'spin 0.8s linear infinite',margin:'0 auto 12px'}} />
         <p style={{color:D.sub,fontSize:'13px'}}>불러오는 중...</p>
       </div>
     </div>
@@ -228,7 +228,7 @@ export default function ProductDetailPage() {
       {popup.show && (
         <div style={{position:'fixed',bottom:'24px',left:'16px',zIndex:9999,background:D.card,borderRadius:'16px',padding:'12px 16px',boxShadow:'0 8px 32px rgba(0,0,0,0.15)',border:`1px solid ${D.border}`,maxWidth:'260px',animation:'slideUp 0.4s ease'}}>
           <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
-            <div style={{width:'36px',height:'36px',borderRadius:'50%',background:'linear-gradient(135deg,#ec4899,#f43f5e)',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'14px',fontWeight:900,flexShrink:0}}>
+            <div style={{width:'36px',height:'36px',borderRadius:'50%',background:'linear-gradient(135deg,#15803d,#16a34a)',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'14px',fontWeight:900,flexShrink:0}}>
               {popup.name[0]}
             </div>
             <div>
@@ -255,8 +255,8 @@ export default function ProductDetailPage() {
           <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
             {visitorCount > 0 && (
               <div style={{background:dark?'#1e2530':'#fdf2f8',borderRadius:'100px',padding:'4px 10px',display:'flex',alignItems:'center',gap:'4px'}}>
-                <div style={{width:'6px',height:'6px',borderRadius:'50%',background:'#ec4899',animation:'pulse 2s infinite'}} />
-                <span style={{fontSize:'11px',fontWeight:700,color:'#ec4899'}}>{visitorCount}명 방문중</span>
+                <div style={{width:'6px',height:'6px',borderRadius:'50%',background:'#15803d',animation:'pulse 2s infinite'}} />
+                <span style={{fontSize:'11px',fontWeight:700,color:'#15803d'}}>{visitorCount}명 방문중</span>
               </div>
             )}
             <button onClick={() => { const n = !dark; setDark(n); localStorage.setItem('shop-theme', n ? 'dark' : 'light') }}
@@ -323,9 +323,9 @@ export default function ProductDetailPage() {
             {/* 회원 유형별 가격 탭 - 표시 전용 */}
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'6px',marginBottom:'14px'}}>
               {([
-                {type:'일반',   label:'일반 소매가', emoji:'🛒', color:'#6366f1'},
+                {type:'일반',   label:'일반 소매가', emoji:'🛒', color:'#15803d'},
                 {type:'소매업', label:'소매 유통가',  emoji:'🏪', color:'#14532d'},
-                {type:'도매업', label:'도매 유통가',  emoji:'🏭', color:'#ec4899'},
+                {type:'도매업', label:'도매 유통가',  emoji:'🏭', color:'#15803d'},
               ] as const).map(t => (
                 isAdmin ? (
                   <button key={t.type} onClick={() => setMemberType(t.type)}
@@ -362,7 +362,7 @@ export default function ProductDetailPage() {
               {memberType === '일반' && (
                 <div style={{marginTop:'10px',padding:'8px 12px',background:dark?'rgba(255,255,255,0.04)':'#f8fafc',borderRadius:'10px',display:'flex',flexDirection:'column',gap:'4px'}}>
                   <p style={{fontSize:'11px',color:'#14532d',fontWeight:600,margin:0}}>🏪 소매 유통가 {product.member_price.toLocaleString()}원 — 소매회원 전용</p>
-                  <p style={{fontSize:'11px',color:'#ec4899',fontWeight:600,margin:0}}>🏭 도매 유통가 {product.wholesale_price.toLocaleString()}원 — 도매회원 전용</p>
+                  <p style={{fontSize:'11px',color:'#15803d',fontWeight:600,margin:0}}>🏭 도매 유통가 {product.wholesale_price.toLocaleString()}원 — 도매회원 전용</p>
                 </div>
               )}
             </div>
@@ -384,7 +384,7 @@ export default function ProductDetailPage() {
                   <span style={{width:'40px',textAlign:'center',fontSize:'15px',fontWeight:700,color:D.text}}>{quantity}</span>
                   <button onClick={() => setQuantity(Math.min(product.stock,quantity+1))} style={{width:'40px',height:'40px',background:'none',border:'none',fontSize:'18px',cursor:'pointer',color:D.text,display:'flex',alignItems:'center',justifyContent:'center'}}>+</button>
                 </div>
-                <p style={{fontSize:'15px',fontWeight:900,color:'#ec4899',marginLeft:'auto'}}>
+                <p style={{fontSize:'15px',fontWeight:900,color:'#15803d',marginLeft:'auto'}}>
                   = {totalPrice.toLocaleString()}원
                 </p>
               </div>
@@ -393,7 +393,7 @@ export default function ProductDetailPage() {
             {/* 버튼 */}
             {!user ? (
               <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
-                <Link href="/shop/login" style={{display:'block',textAlign:'center',padding:'16px',background:'linear-gradient(135deg,#ec4899,#f43f5e)',color:'white',fontWeight:900,fontSize:'15px',borderRadius:'14px',textDecoration:'none',boxShadow:'0 8px 20px rgba(236,72,153,0.35)'}}>
+                <Link href="/shop/login" style={{display:'block',textAlign:'center',padding:'16px',background:'linear-gradient(135deg,#15803d,#16a34a)',color:'white',fontWeight:900,fontSize:'15px',borderRadius:'14px',textDecoration:'none',boxShadow:'0 8px 20px rgba(22,163,74,0.35)'}}>
                   🛒 로그인 후 구매하기
                 </Link>
                 <Link href="/shop/register" style={{display:'block',textAlign:'center',padding:'13px',background:'transparent',color:D.sub,fontSize:'13px',fontWeight:600,borderRadius:'14px',textDecoration:'none',border:`1.5px solid ${D.border}`}}>
@@ -410,7 +410,7 @@ export default function ProductDetailPage() {
                     {cartAdded ? '✓ 담김' : cartLoading ? '...' : '🛒 담기'}
                   </button>
                   <button onClick={() => { setOrderDone(false); setOrderForm({ address: memberInfo?.address || (typeof window !== 'undefined' && localStorage.getItem('onjongil_addr')) || '', note: '', payment_method: '계좌이체' }); setShowOrderForm(true) }}
-                    style={{padding:'16px',borderRadius:'14px',background:'linear-gradient(135deg,#ec4899,#f43f5e)',color:'white',fontSize:'15px',fontWeight:900,border:'none',cursor:'pointer',boxShadow:'0 8px 20px rgba(236,72,153,0.35)'}}>
+                    style={{padding:'16px',borderRadius:'14px',background:'linear-gradient(135deg,#15803d,#16a34a)',color:'white',fontSize:'15px',fontWeight:900,border:'none',cursor:'pointer',boxShadow:'0 8px 20px rgba(22,163,74,0.35)'}}>
                     바로 구매
                   </button>
                 </div>
@@ -425,7 +425,7 @@ export default function ProductDetailPage() {
           <div style={{marginBottom:'16px',display:'flex',justifyContent:'center'}}>
             <div style={{width:'100%',maxWidth:'760px',background:D.card,borderRadius:'24px',overflow:'hidden',border:`1px solid ${D.border}`}}>
               <div style={{display:'flex',alignItems:'center',gap:'10px',padding:'20px 20px 0',marginBottom:'12px'}}>
-                <div style={{width:'32px',height:'32px',background:'linear-gradient(135deg,#ec4899,#f43f5e)',borderRadius:'10px',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'16px'}}>✦</div>
+                <div style={{width:'32px',height:'32px',background:'linear-gradient(135deg,#15803d,#16a34a)',borderRadius:'10px',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'16px'}}>✦</div>
                 <h2 style={{fontSize:'16px',fontWeight:900,letterSpacing:'-0.3px'}}>상품 상세</h2>
               </div>
               <div dangerouslySetInnerHTML={{__html: product.description}} style={{lineHeight:1.8, pointerEvents:'none', userSelect:'none'}} />
@@ -444,7 +444,7 @@ export default function ProductDetailPage() {
               {socialComments.map((c:any) => (
                 <div key={c.id} style={{padding:'16px',background:dark?'#1e2530':'#f8fafc',borderRadius:'14px',border:`1px solid ${D.border}`}}>
                   <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'8px'}}>
-                    <div style={{width:'32px',height:'32px',borderRadius:'50%',background:`linear-gradient(135deg,${c.avatar_color||'#ec4899'},${c.avatar_color2||'#f43f5e'})`,display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'12px',fontWeight:900,flexShrink:0}}>
+                    <div style={{width:'32px',height:'32px',borderRadius:'50%',background:`linear-gradient(135deg,${c.avatar_color||'#15803d'},${c.avatar_color2||'#16a34a'})`,display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'12px',fontWeight:900,flexShrink:0}}>
                       {(c.author||'익')[0]}
                     </div>
                     <div>
@@ -465,7 +465,7 @@ export default function ProductDetailPage() {
         {/* ── 상품 리뷰 (실제 구매자) ── */}
         <div id="reviews" style={{background:D.card,borderRadius:'24px',padding:'28px',marginBottom:'16px',border:`1px solid ${D.border}`,scrollMarginTop:'80px'}}>
           <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'20px'}}>
-            <div style={{width:'32px',height:'32px',background:'linear-gradient(135deg,#ec4899,#f43f5e)',borderRadius:'10px',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'16px'}}>📝</div>
+            <div style={{width:'32px',height:'32px',background:'linear-gradient(135deg,#15803d,#16a34a)',borderRadius:'10px',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'16px'}}>📝</div>
             <h2 style={{fontSize:'16px',fontWeight:900,letterSpacing:'-0.3px'}}>상품 리뷰</h2>
             {reviews.length > 0 && (
               <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:'6px'}}>
@@ -486,7 +486,7 @@ export default function ProductDetailPage() {
                   <button key={n} onClick={() => setReviewRating(n)} aria-label={`별점 ${n}점`}
                     style={{background:'none',border:'none',cursor:'pointer',padding:0,fontSize:'26px',lineHeight:1,filter:n<=reviewRating?'none':'grayscale(1) opacity(0.3)',transition:'filter 0.15s'}}>⭐</button>
                 ))}
-                <span style={{alignSelf:'center',marginLeft:'6px',fontSize:'13px',fontWeight:800,color:'#ec4899'}}>{reviewRating}.0</span>
+                <span style={{alignSelf:'center',marginLeft:'6px',fontSize:'13px',fontWeight:800,color:'#15803d'}}>{reviewRating}.0</span>
               </div>
               <textarea value={reviewContent} onChange={e => setReviewContent(e.target.value)}
                 placeholder="상품은 어떠셨나요? 신선도, 맛, 포장 등 솔직한 후기를 남겨주세요 😊"
@@ -494,7 +494,7 @@ export default function ProductDetailPage() {
                 style={{width:'100%',padding:'12px 14px',borderRadius:'12px',border:`2px solid ${D.border}`,background:D.card,color:D.text,fontSize:'13px',outline:'none',resize:'none',boxSizing:'border-box',lineHeight:1.6,fontFamily:'inherit'}} />
               <div style={{display:'flex',gap:'8px',marginTop:'10px'}}>
                 <button onClick={submitReview} disabled={reviewSubmitting || !reviewContent.trim()}
-                  style={{flex:1,padding:'12px',borderRadius:'12px',background:(reviewSubmitting||!reviewContent.trim())?D.input:'linear-gradient(135deg,#ec4899,#f43f5e)',color:(reviewSubmitting||!reviewContent.trim())?D.sub:'white',fontSize:'14px',fontWeight:900,border:'none',cursor:(reviewSubmitting||!reviewContent.trim())?'not-allowed':'pointer'}}>
+                  style={{flex:1,padding:'12px',borderRadius:'12px',background:(reviewSubmitting||!reviewContent.trim())?D.input:'linear-gradient(135deg,#15803d,#16a34a)',color:(reviewSubmitting||!reviewContent.trim())?D.sub:'white',fontSize:'14px',fontWeight:900,border:'none',cursor:(reviewSubmitting||!reviewContent.trim())?'not-allowed':'pointer'}}>
                   {reviewSubmitting ? '저장 중...' : myReview ? '수정 완료' : '리뷰 등록'}
                 </button>
                 {myReview && (
@@ -518,15 +518,15 @@ export default function ProductDetailPage() {
           ) : (
             <div style={{display:'flex',flexDirection:'column',gap:'12px'}}>
               {reviews.map((r:any) => (
-                <div key={r.id} style={{padding:'16px',background:dark?'#1e2530':'#f8fafc',borderRadius:'14px',border:`1px solid ${r.user_id===user?.id?'#ec4899':D.border}`}}>
+                <div key={r.id} style={{padding:'16px',background:dark?'#1e2530':'#f8fafc',borderRadius:'14px',border:`1px solid ${r.user_id===user?.id?'#15803d':D.border}`}}>
                   <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'8px'}}>
-                    <div style={{width:'32px',height:'32px',borderRadius:'50%',background:'linear-gradient(135deg,#ec4899,#f43f5e)',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'12px',fontWeight:900,flexShrink:0}}>
+                    <div style={{width:'32px',height:'32px',borderRadius:'50%',background:'linear-gradient(135deg,#15803d,#16a34a)',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'12px',fontWeight:900,flexShrink:0}}>
                       {(r.author_name||'익')[0]}
                     </div>
                     <div>
                       <div style={{display:'flex',alignItems:'center',gap:'6px'}}>
                         <p style={{fontSize:'13px',fontWeight:700,color:D.text,margin:0}}>{r.author_name||'익명'}</p>
-                        {r.user_id===user?.id && <span style={{fontSize:'10px',fontWeight:700,color:'#ec4899',background:'rgba(236,72,153,0.1)',padding:'1px 7px',borderRadius:'20px'}}>내 리뷰</span>}
+                        {r.user_id===user?.id && <span style={{fontSize:'10px',fontWeight:700,color:'#15803d',background:'rgba(22,163,74,0.1)',padding:'1px 7px',borderRadius:'20px'}}>내 리뷰</span>}
                       </div>
                       <p style={{fontSize:'11px',color:D.sub,margin:0}}>{r.created_at ? new Date(r.created_at).toLocaleDateString('ko-KR') : ''}</p>
                     </div>
@@ -560,14 +560,14 @@ export default function ProductDetailPage() {
             {orderDone ? (
               /* ── 완료 화면 ── */
               <div style={{padding:'48px 28px',textAlign:'center'}}>
-                <div style={{width:'80px',height:'80px',borderRadius:'50%',background:'linear-gradient(135deg,#ec4899,#f43f5e)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'36px',margin:'0 auto 20px',boxShadow:'0 12px 32px rgba(236,72,153,0.4)'}}>🎉</div>
+                <div style={{width:'80px',height:'80px',borderRadius:'50%',background:'linear-gradient(135deg,#15803d,#16a34a)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'36px',margin:'0 auto 20px',boxShadow:'0 12px 32px rgba(22,163,74,0.4)'}}>🎉</div>
                 <p style={{fontSize:'22px',fontWeight:900,color:D.text,margin:'0 0 8px'}}>주문 접수 완료!</p>
                 <p style={{fontSize:'14px',color:D.sub,margin:'0 0 4px'}}>빠르게 연락드릴게요 😊</p>
                 <p style={{fontSize:'12px',color:D.sub,margin:'0 0 32px'}}>마이페이지에서 주문 현황을 확인하세요</p>
                 {/* 주문 유형 뱃지 */}
-                <div style={{display:'inline-flex',alignItems:'center',gap:'6px',background:memberType==='도매업'?'rgba(124,58,237,0.1)':memberType==='소매업'?'rgba(22,163,74,0.1)':'rgba(99,102,241,0.1)',borderRadius:'20px',padding:'6px 16px',marginBottom:'28px'}}>
+                <div style={{display:'inline-flex',alignItems:'center',gap:'6px',background:memberType==='도매업'?'rgba(4,120,87,0.12)':memberType==='소매업'?'rgba(22,163,74,0.1)':'rgba(22,163,74,0.1)',borderRadius:'20px',padding:'6px 16px',marginBottom:'28px'}}>
                   <span style={{fontSize:'14px'}}>{memberType==='도매업'?'🏭':memberType==='소매업'?'🏪':'🛒'}</span>
-                  <span style={{fontSize:'12px',fontWeight:700,color:memberType==='도매업'?'#7c3aed':memberType==='소매업'?'#14532d':'#6366f1'}}>{memberType} 주문 접수됨</span>
+                  <span style={{fontSize:'12px',fontWeight:700,color:memberType==='도매업'?'#047857':memberType==='소매업'?'#14532d':'#15803d'}}>{memberType} 주문 접수됨</span>
                 </div>
                 <div style={{display:'flex',gap:'10px'}}>
                   <button onClick={() => setShowOrderForm(false)}
@@ -575,7 +575,7 @@ export default function ProductDetailPage() {
                     닫기
                   </button>
                   <button onClick={() => { setShowOrderForm(false); router.push('/shop/mypage') }}
-                    style={{flex:2,padding:'14px',borderRadius:'14px',background:'linear-gradient(135deg,#ec4899,#f43f5e)',color:'white',fontSize:'14px',fontWeight:900,border:'none',cursor:'pointer',boxShadow:'0 6px 20px rgba(236,72,153,0.35)'}}>
+                    style={{flex:2,padding:'14px',borderRadius:'14px',background:'linear-gradient(135deg,#15803d,#16a34a)',color:'white',fontSize:'14px',fontWeight:900,border:'none',cursor:'pointer',boxShadow:'0 6px 20px rgba(22,163,74,0.35)'}}>
                     📦 주문 확인하기 →
                   </button>
                 </div>
@@ -588,7 +588,7 @@ export default function ProductDetailPage() {
                 </div>
 
                 {/* ── 컬러풀 헤더 ── */}
-                <div style={{padding:'16px 24px 20px',background:'linear-gradient(135deg,#ec4899,#f43f5e)',margin:'12px 16px 0',borderRadius:'20px',position:'relative',overflow:'hidden'}}>
+                <div style={{padding:'16px 24px 20px',background:'linear-gradient(135deg,#15803d,#16a34a)',margin:'12px 16px 0',borderRadius:'20px',position:'relative',overflow:'hidden'}}>
                   <div style={{position:'absolute',top:'-20px',right:'-20px',width:'80px',height:'80px',borderRadius:'50%',background:'rgba(255,255,255,0.1)'}} />
                   <div style={{position:'absolute',bottom:'-30px',left:'20%',width:'100px',height:'100px',borderRadius:'50%',background:'rgba(255,255,255,0.06)'}} />
                   <div style={{position:'relative',zIndex:1}}>
@@ -617,13 +617,13 @@ export default function ProductDetailPage() {
                   {/* 회원 정보 뱃지 */}
                   {memberInfo && (
                     <div style={{display:'flex',alignItems:'center',gap:'12px',background:D.input,borderRadius:'14px',padding:'12px 16px'}}>
-                      <div style={{width:'40px',height:'40px',borderRadius:'12px',background:memberType==='도매업'?'linear-gradient(135deg,#7c3aed,#db2777)':memberType==='소매업'?'linear-gradient(135deg,#14532d,#15803d)':'linear-gradient(135deg,#6366f1,#8b5cf6)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'18px',flexShrink:0}}>
+                      <div style={{width:'40px',height:'40px',borderRadius:'12px',background:memberType==='도매업'?'linear-gradient(135deg,#059669,#047857)':memberType==='소매업'?'linear-gradient(135deg,#14532d,#15803d)':'linear-gradient(135deg,#16a34a,#15803d)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'18px',flexShrink:0}}>
                         {memberType==='도매업'?'🏭':memberType==='소매업'?'🏪':'🛒'}
                       </div>
                       <div>
                         <div style={{display:'flex',alignItems:'center',gap:'6px'}}>
                           <p style={{fontSize:'14px',fontWeight:800,color:D.text,margin:0}}>{memberInfo.name}</p>
-                          <span style={{fontSize:'10px',fontWeight:700,padding:'2px 8px',borderRadius:'20px',background:memberType==='도매업'?'rgba(124,58,237,0.12)':memberType==='소매업'?'rgba(22,163,74,0.12)':'rgba(99,102,241,0.12)',color:memberType==='도매업'?'#7c3aed':memberType==='소매업'?'#14532d':'#6366f1'}}>{memberType}</span>
+                          <span style={{fontSize:'10px',fontWeight:700,padding:'2px 8px',borderRadius:'20px',background:memberType==='도매업'?'rgba(4,120,87,0.12)':memberType==='소매업'?'rgba(22,163,74,0.12)':'rgba(22,163,74,0.12)',color:memberType==='도매업'?'#047857':memberType==='소매업'?'#14532d':'#15803d'}}>{memberType}</span>
                         </div>
                         <p style={{fontSize:'11px',color:D.sub,margin:'2px 0 0'}}>{memberInfo.contact || memberInfo.email}</p>
                       </div>
@@ -634,7 +634,7 @@ export default function ProductDetailPage() {
                   <div>
                     <label style={{display:'flex',alignItems:'center',gap:'6px',fontSize:'13px',fontWeight:800,color:D.text,marginBottom:'10px'}}>
                       📍 배송지
-                      <span style={{fontSize:'10px',fontWeight:700,color:'#ec4899',background:'rgba(236,72,153,0.1)',padding:'2px 7px',borderRadius:'20px'}}>필수</span>
+                      <span style={{fontSize:'10px',fontWeight:700,color:'#15803d',background:'rgba(22,163,74,0.1)',padding:'2px 7px',borderRadius:'20px'}}>필수</span>
                     </label>
                     <button type="button" onClick={async () => { const r = await openPostcode(); if (r) setOrderForm(p => ({...p, address: r.address + ' '})) }}
                       style={{width:'100%',marginBottom:'8px',padding:'12px',borderRadius:'14px',border:`2px dashed ${D.border}`,background:D.input,color:D.text,fontSize:'14px',fontWeight:700,cursor:'pointer'}}>
@@ -642,7 +642,7 @@ export default function ProductDetailPage() {
                     </button>
                     <input type="text" value={orderForm.address} onChange={e => setOrderForm(p => ({...p, address: e.target.value}))}
                       placeholder="주소 검색 후 상세주소(동·호수)를 입력해주세요"
-                      style={{width:'100%',padding:'14px 16px',borderRadius:'14px',border:`2px solid ${orderForm.address ? '#ec4899' : D.border}`,background:D.input,color:D.text,fontSize:'14px',outline:'none',boxSizing:'border-box',transition:'border-color 0.2s'}} />
+                      style={{width:'100%',padding:'14px 16px',borderRadius:'14px',border:`2px solid ${orderForm.address ? '#15803d' : D.border}`,background:D.input,color:D.text,fontSize:'14px',outline:'none',boxSizing:'border-box',transition:'border-color 0.2s'}} />
                   </div>
 
                   {/* 결제방법 */}
@@ -654,7 +654,7 @@ export default function ProductDetailPage() {
                         {label:'카드',    icon:'💳'},
                       ].map(pm => (
                         <button key={pm.label} onClick={() => setOrderForm(p => ({...p, payment_method: pm.label}))}
-                          style={{padding:'12px 10px',borderRadius:'12px',border:`2px solid ${orderForm.payment_method===pm.label ? '#ec4899' : D.border}`,background:orderForm.payment_method===pm.label ? 'rgba(236,72,153,0.08)' : D.input,color:orderForm.payment_method===pm.label ? '#ec4899' : D.sub,fontSize:'13px',fontWeight:orderForm.payment_method===pm.label ? 800 : 500,cursor:'pointer',transition:'all 0.15s',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px'}}>
+                          style={{padding:'12px 10px',borderRadius:'12px',border:`2px solid ${orderForm.payment_method===pm.label ? '#15803d' : D.border}`,background:orderForm.payment_method===pm.label ? 'rgba(22,163,74,0.08)' : D.input,color:orderForm.payment_method===pm.label ? '#15803d' : D.sub,fontSize:'13px',fontWeight:orderForm.payment_method===pm.label ? 800 : 500,cursor:'pointer',transition:'all 0.15s',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px'}}>
                           <span>{pm.icon}</span> {pm.label}
                         </button>
                       ))}
@@ -720,7 +720,7 @@ export default function ProductDetailPage() {
                       finally { setOrderLoading(false) }
                     }}
                     disabled={orderLoading}
-                    style={{width:'100%',padding:'18px',borderRadius:'16px',background:orderLoading ? D.input : 'linear-gradient(135deg,#ec4899,#f43f5e)',color:orderLoading ? D.sub : 'white',fontSize:'17px',fontWeight:900,border:'none',cursor:orderLoading ? 'not-allowed' : 'pointer',boxShadow:orderLoading ? 'none' : '0 10px 28px rgba(236,72,153,0.4)',transition:'all 0.2s',letterSpacing:'-0.3px'}}>
+                    style={{width:'100%',padding:'18px',borderRadius:'16px',background:orderLoading ? D.input : 'linear-gradient(135deg,#15803d,#16a34a)',color:orderLoading ? D.sub : 'white',fontSize:'17px',fontWeight:900,border:'none',cursor:orderLoading ? 'not-allowed' : 'pointer',boxShadow:orderLoading ? 'none' : '0 10px 28px rgba(22,163,74,0.4)',transition:'all 0.2s',letterSpacing:'-0.3px'}}>
                     {orderLoading ? '⏳ 주문 처리 중...' : `🛒 ${totalPrice.toLocaleString()}원 주문하기`}
                   </button>
                 </div>
@@ -741,12 +741,12 @@ export default function ProductDetailPage() {
             <p style={{fontSize:'18px',fontWeight:900,color:D.text,margin:0,letterSpacing:'-0.5px',whiteSpace:'nowrap'}}>{getPrice().toLocaleString()}<span style={{fontSize:'12px',fontWeight:600,color:D.sub}}>원</span></p>
           </div>
           {!user ? (
-            <Link href="/shop/login" style={{flex:1,textAlign:'center',padding:'15px',borderRadius:'14px',background:'linear-gradient(135deg,#ec4899,#f43f5e)',color:'white',fontWeight:900,fontSize:'15px',textDecoration:'none'}}>로그인 후 구매</Link>
+            <Link href="/shop/login" style={{flex:1,textAlign:'center',padding:'15px',borderRadius:'14px',background:'linear-gradient(135deg,#15803d,#16a34a)',color:'white',fontWeight:900,fontSize:'15px',textDecoration:'none'}}>로그인 후 구매</Link>
           ) : product.stock === 0 ? (
             <button disabled style={{flex:1,padding:'15px',borderRadius:'14px',background:D.input,color:D.sub,fontSize:'15px',fontWeight:700,border:'none'}}>품절</button>
           ) : (
             <button onClick={() => { setOrderDone(false); setOrderForm({ address: memberInfo?.address || (typeof window !== 'undefined' && localStorage.getItem('onjongil_addr')) || '', note: '', payment_method: '계좌이체' }); setShowOrderForm(true) }}
-              style={{flex:1,padding:'15px',borderRadius:'14px',background:'linear-gradient(135deg,#ec4899,#f43f5e)',color:'white',fontWeight:900,fontSize:'15px',border:'none',cursor:'pointer',boxShadow:'0 6px 18px rgba(236,72,153,0.35)'}}>
+              style={{flex:1,padding:'15px',borderRadius:'14px',background:'linear-gradient(135deg,#15803d,#16a34a)',color:'white',fontWeight:900,fontSize:'15px',border:'none',cursor:'pointer',boxShadow:'0 6px 18px rgba(22,163,74,0.35)'}}>
               🛒 바로 구매
             </button>
           )}
@@ -755,6 +755,18 @@ export default function ProductDetailPage() {
 
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}
+        @keyframes pdFadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+        /* 진입 애니메이션 */
+        .product-grid > div { animation: pdFadeUp 0.5s ease both; }
+        .product-grid > div:nth-child(2){ animation-delay: 0.08s; }
+        /* 모든 버튼/링크 터치·hover 반응 */
+        button, a { -webkit-tap-highlight-color: transparent; }
+        button { transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), filter 0.2s, box-shadow 0.2s; }
+        button:not(:disabled):hover { transform: translateY(-2px); filter: brightness(1.06); }
+        button:not(:disabled):active { transform: scale(0.97); }
+        /* 상품 이미지 살짝 줌 */
+        .product-grid img { transition: transform 0.4s ease; }
+        .product-grid img:hover { transform: scale(1.04); }
         /* 모바일 구매바: 모바일에서만 노출 */
         .mobile-buybar{display:none}
         @media(max-width:639px){ .mobile-buybar{display:flex!important} }
