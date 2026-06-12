@@ -1334,6 +1334,10 @@ export default function ShopPage() {
           <div style={{ fontWeight: 700, color: '#e2e8f0', marginBottom: '10px', fontSize: '14px' }}>온종일팜 · 주식회사 유안에프앤비</div>
           상호: 주식회사 유안에프앤비 &nbsp;|&nbsp; 대표: 오준영 &nbsp;|&nbsp; 사업자등록번호: 692-88-03600 &nbsp;|&nbsp; 통신판매업신고: 제2026-전남영광-0027호<br />
           주소: 전라남도 영광군 법성면 굴비로1길 112-4 &nbsp;|&nbsp; 전화: 010-7432-3888<br />
+          <div style={{ margin: '12px 0 10px', display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link href="/shop/terms" style={{ color: '#cbd5e1', fontWeight: 700, textDecoration: 'none' }}>이용약관</Link>
+            <Link href="/shop/privacy" style={{ color: '#cbd5e1', fontWeight: 700, textDecoration: 'none' }}>개인정보처리방침</Link>
+          </div>
           <span style={{ color: '#475569' }}>© 2026 주식회사 유안에프앤비. All rights reserved.</span>
         </div>
       </footer>
