@@ -12,6 +12,7 @@ export default function DashboardPage() {
   const [orderStatusStats, setOrderStatusStats] = useState<{ status: string; count: number; color: string }[]>([])
   const [recentOrders, setRecentOrders] = useState<any[]>([])
   const [lowStockItems, setLowStockItems] = useState<any[]>([])
+  const [topProducts, setTopProducts] = useState<{ name: string; qty: number; revenue: number }[]>([])
   const [loading, setLoading] = useState(true)
   const [greeting, setGreeting] = useState('')
   const [chartType, setChartType] = useState<'bar' | 'line'>('line')
@@ -104,6 +105,24 @@ export default function DashboardPage() {
       ...(rRecent || []).map(o => ({ name: o.customer_name, amount: o.total_amount, status: o.status, date: o.created_at, type: '소매' })),
     ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 8)
 
+    // 🏆 베스트셀러 상품 (주문 아이템 3종 집계)
+    const [{ data: gItems }, { data: rItems }, { data: wItems }] = await Promise.all([
+      supabase.from('general_order_items').select('product_name, quantity, total_price'),
+      supabase.from('retail_order_items').select('product_name, quantity, total_price'),
+      supabase.from('wholesale_order_items').select('product_name, quantity, total_price'),
+    ])
+    const itemMap: Record<string, { qty: number; revenue: number }> = {}
+    ;[...(gItems || []), ...(rItems || []), ...(wItems || [])].forEach((it: any) => {
+      const key = it.product_name || '(이름없음)'
+      if (!itemMap[key]) itemMap[key] = { qty: 0, revenue: 0 }
+      itemMap[key].qty += Number(it.quantity || 0)
+      itemMap[key].revenue += Number(it.total_price || 0)
+    })
+    const top = Object.entries(itemMap)
+      .map(([name, v]) => ({ name, qty: v.qty, revenue: v.revenue }))
+      .sort((a, b) => b.qty - a.qty)
+      .slice(0, 5)
+
     setStats({ todayOrders, unshipped, lowStock: lowStockList.length, monthRevenue })
     setChannelStats({ general: gRevenue, retail: rRevenue, wholesale: wRevenue })
     setMonthlyData(monthly)
@@ -111,6 +130,7 @@ export default function DashboardPage() {
     setOrderStatusStats(statusStats)
     setRecentOrders(combined)
     setLowStockItems(lowStockList)
+    setTopProducts(top)
     setLoading(false)
   }
 
@@ -422,6 +442,43 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* 🏆 베스트셀러 상품 */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-100 dark:border-gray-700 shadow-sm p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="font-bold text-slate-800 dark:text-white">🏆 베스트셀러 상품</h2>
+          <Link href="/admin/products" className="text-xs text-amber-500 hover:text-amber-600 font-medium">상품 관리 →</Link>
+        </div>
+        {loading ? (
+          <div className="py-8 text-center text-slate-400">불러오는 중...</div>
+        ) : topProducts.length === 0 ? (
+          <div className="py-8 text-center">
+            <p className="text-3xl mb-2">📦</p>
+            <p className="text-sm text-slate-400 dark:text-slate-500">아직 판매 데이터가 없어요</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {topProducts.map((p, i) => {
+              const maxQty = Math.max(...topProducts.map(t => t.qty), 1)
+              const medal = ['🥇', '🥈', '🥉'][i] || `${i + 1}`
+              return (
+                <div key={p.name} className="flex items-center gap-3">
+                  <span className="w-7 text-center text-base font-bold flex-shrink-0">{medal}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-sm font-semibold text-slate-800 dark:text-white truncate">{p.name}</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 flex-shrink-0 ml-2">{p.qty.toLocaleString()}개 · {p.revenue.toLocaleString()}원</p>
+                    </div>
+                    <div className="h-2 bg-slate-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full transition-all duration-700" style={{ width: `${(p.qty / maxQty) * 100}%`, background: 'linear-gradient(90deg,#f59e0b,#f97316)' }} />
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       {/* 최근 주문 */}
