@@ -11,6 +11,7 @@ const menus = [
   { href: '/supplier/dashboard', icon: '🏠', label: '대시보드' },
   { href: '/supplier/products',  icon: '🧺', label: '상품 관리' },
   { href: '/supplier/sales',     icon: '📊', label: '매출 현황' },
+  { href: '/supplier/coupons',   icon: '🎟️', label: '쿠폰' },
   { href: '/supplier/settings',  icon: '⚙️', label: '설정' },
 ]
 
@@ -18,6 +19,7 @@ const mobileMenus = [
   { href: '/supplier/dashboard', icon: '🏠', label: '홈' },
   { href: '/supplier/products',  icon: '🧺', label: '상품' },
   { href: '/supplier/sales',     icon: '📊', label: '매출' },
+  { href: '/supplier/coupons',   icon: '🎟️', label: '쿠폰' },
   { href: '/supplier/settings',  icon: '⚙️', label: '설정' },
 ]
 
