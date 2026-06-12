@@ -23,7 +23,7 @@ function SuccessInner() {
         const res = await fetch('/api/payments/confirm', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ paymentKey, orderId, amount: amt }),
+          body: JSON.stringify({ paymentKey, orderId, amount: amt, table }),
         })
         const data = await res.json()
         if (!res.ok) { setState('fail'); setMsg(data.message || '결제 승인에 실패했습니다.'); return }

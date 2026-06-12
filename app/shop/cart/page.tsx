@@ -174,6 +174,7 @@ export default function CartPage() {
         payment_method: isToss ? '카드(토스)' : orderForm.payment_method,
         status: isToss ? '결제대기' : '접수',
         total_amount: finalAmount,
+        coupon_code: appliedCoupon?.code || null,   // 서버 결제금액 검증용
         note: orderForm.note + (appliedCoupon ? ` [쿠폰 ${appliedCoupon.code} -${discount.toLocaleString()}원]` : ''),
       }).select().single()
 
