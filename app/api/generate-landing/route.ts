@@ -14,14 +14,39 @@ const PERSONA_TONES: Record<string, string> = {
     '가족 건강을 생각하는 엄마·아빠. "아이들 먹이기 딱 좋아요", "온가족이 함께" 같은 표현. 안심·신뢰 키워드.',
 }
 
+// 잘린(truncated) JSON 복구: 열린 채 끝난 문자열·괄호를 닫아 최대한 파싱 가능하게 만듦
+function repairTruncatedJson(s: string): string {
+  let inStr = false, esc = false
+  const stack: string[] = []
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i]
+    if (esc) { esc = false; continue }
+    if (c === '\\') { esc = true; continue }
+    if (c === '"') { inStr = !inStr; continue }
+    if (inStr) continue
+    if (c === '{' || c === '[') stack.push(c)
+    else if (c === '}' || c === ']') stack.pop()
+  }
+  let out = s
+  if (inStr) out += '"'                       // 문자열이 열린 채 끝남
+  out = out.replace(/,\s*$/, '')              // 마지막 미완성 쉼표 제거
+  for (let i = stack.length - 1; i >= 0; i--) // 열린 괄호들 역순으로 닫기
+    out += stack[i] === '{' ? '}' : ']'
+  return out
+}
+
 function extractJson(text: string): any | null {
   if (!text) return null
   const cleaned = text.replace(/```json/gi, '').replace(/```/g, '').trim()
   const first = cleaned.indexOf('{')
   const last = cleaned.lastIndexOf('}')
-  if (first === -1 || last === -1) return null
-  const jsonStr = cleaned.slice(first, last + 1)
-  try { return JSON.parse(jsonStr) } catch { return null }
+  if (first === -1) return null
+  // 1차: 정상 종료된 JSON 시도
+  if (last !== -1) {
+    try { return JSON.parse(cleaned.slice(first, last + 1)) } catch {}
+  }
+  // 2차: 잘린 응답 복구 시도 (first 이후 전체를 닫아서 파싱)
+  try { return JSON.parse(repairTruncatedJson(cleaned.slice(first))) } catch { return null }
 }
 
 function buildFallback(productName: string, retail: number, unit: string): Partial<LandingData> {
@@ -297,7 +322,7 @@ unusedIndices: 어느 섹션에도 안 어울리는 이미지 인덱스들.
             body: JSON.stringify({
               system_instruction: { parts: [{ text: systemPrompt }] },
               contents: [{ parts }],
-              generationConfig: { maxOutputTokens: 8192 },
+              generationConfig: { maxOutputTokens: 8192, responseMimeType: 'application/json' },
             }),
           }
         )
