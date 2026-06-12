@@ -16,7 +16,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [greeting, setGreeting] = useState('')
   const [chartType, setChartType] = useState<'bar' | 'line'>('line')
-  const [brief, setBrief] = useState<{ headline: string; summary: string; actions: { label: string; why: string }[]; provider?: string } | null>(null)
+  const [brief, setBrief] = useState<{ headline: string; summary: string; actions: { label: string; why: string }[]; provider?: string; note?: string } | null>(null)
   const [briefLoading, setBriefLoading] = useState(false)
   const [briefError, setBriefError] = useState('')
   const supabase = createClient()
@@ -208,7 +208,7 @@ export default function DashboardPage() {
             <h2 className="font-bold text-slate-800 dark:text-white">AI 아침 브리핑</h2>
             {brief?.provider && (
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/70 dark:bg-gray-800/60 text-slate-500 dark:text-slate-400 font-medium">
-                {brief.provider === 'openai' ? 'GPT' : 'Gemini'}
+                {brief.provider === 'openai' ? 'GPT' : brief.provider === '기본' ? '기본' : 'Gemini'}
               </span>
             )}
           </div>
@@ -233,6 +233,12 @@ export default function DashboardPage() {
           <div className="mt-2 space-y-3">
             <p className="text-base font-bold text-slate-800 dark:text-white">{brief.headline}</p>
             {brief.summary && <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{brief.summary}</p>}
+            {brief.note && (
+              <p className="text-[11px] text-amber-600 dark:text-amber-400">
+                ⓘ {brief.note}
+                {brief.note.includes('키') && <Link href="/admin/settings" className="ml-1 underline">설정 →</Link>}
+              </p>
+            )}
             {brief.actions?.length > 0 && (
               <div className="space-y-2 pt-1">
                 {brief.actions.map((a, i) => (

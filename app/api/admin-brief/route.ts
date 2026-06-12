@@ -8,9 +8,9 @@ import { getUserAIKeys, callAI, extractJson } from '@/lib/ai'
 //  어제 매출·주문, 미출고, 재고부족, 공급사 승인대기를 모아 AI가 요약 + 할 일 제안.
 // ─────────────────────────────────────────────────────────────
 export async function GET() {
-  // 1) 본인 키 확보 (관리자 본인 키)
+  // 1) 본인 키 확보. 비로그인(401)만 에러, 키 없음(400)은 기본 브리핑으로 진행
   const auth = await getUserAIKeys()
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status })
+  if (!auth.ok && auth.status === 401) return NextResponse.json({ error: auth.error }, { status: 401 })
 
   // 2) 데이터 수집 (관리자 세션 권한으로)
   const supabase = await createServerSupabase()
@@ -70,6 +70,32 @@ export async function GET() {
     unissuedReceipts: unissuedReceipts.length,
   }
 
+  // 기본(비AI) 브리핑 — AI 키가 없거나 AI 호출이 실패해도 항상 보여줄 내용
+  const buildFallback = (note?: string) => {
+    const actions: { label: string; why: string }[] = []
+    if (stats.unshipped > 0) actions.push({ label: '미출고 배송 처리', why: `배송 대기 ${stats.unshipped}건이 있어요.` })
+    if (stats.paymentPending > 0) actions.push({ label: '결제대기 확인', why: `결제 미완료 주문 ${stats.paymentPending}건.` })
+    if (stats.pendingMembers > 0) actions.push({ label: '회원 승인', why: `가입 심사 대기 ${stats.pendingMembers}명.` })
+    if (stats.pendingSuppliers > 0) actions.push({ label: '공급사 승인', why: `공급사 승인 대기 ${stats.pendingSuppliers}건.` })
+    if (stats.pendingSupProducts > 0) actions.push({ label: '공급사 상품 승인', why: `상품 승인 대기 ${stats.pendingSupProducts}건.` })
+    if (stats.lowStockCount > 0) actions.push({ label: '재고 보충', why: `재고 부족 ${stats.lowStockCount}개.` })
+    if (stats.unissuedInvoices > 0 || stats.unissuedReceipts > 0) actions.push({ label: '증빙 발행', why: `미발행 세금계산서 ${stats.unissuedInvoices}건·현금영수증 ${stats.unissuedReceipts}건.` })
+    const summary = `어제(${yestStr}) 주문 ${stats.yesterdayOrders}건, 매출 ${stats.yesterdayRevenue.toLocaleString()}원${stats.yesterdayDone ? ` (완료 ${stats.yesterdayDone}건)` : ''}이었어요. 오늘은 지금까지 주문 ${stats.todayOrders}건이에요.` +
+      (actions.length === 0 ? ' 급하게 처리할 건은 없어요. 좋은 하루 되세요!' : ` 아래 ${actions.length}가지를 먼저 챙겨보세요.`)
+    return {
+      headline: '오늘의 운영 브리핑 ☀️',
+      summary,
+      actions: actions.slice(0, 5),
+      stats,
+      provider: '기본',
+      date: todayStr,
+      ...(note ? { note } : {}),
+    }
+  }
+
+  // 키가 없으면 기본 브리핑 반환 (AI 없이 데이터 요약)
+  if (!auth.ok) return NextResponse.json(buildFallback('AI 키가 없어 기본 브리핑으로 표시합니다. (설정에서 키 등록 시 AI 요약 제공)'))
+
   // 3) AI 요약 (본인 키)
   const system = `당신은 농축수산물 직거래 플랫폼 '온종일팜'의 유능한 운영 비서입니다.
 사장님이 아침에 출근해서 한눈에 상황을 파악하도록, 짧고 따뜻하면서도 핵심을 찌르는 브리핑을 작성합니다.
@@ -105,7 +131,8 @@ actions는 데이터에 근거해 1~4개. 위 '처리 대기' 항목 중 건수�
 처리할 게 전혀 없으면 actions는 빈 배열, summary에서 "오늘은 급한 처리건이 없다"고 안내.`
 
   const ai = await callAI({ keys: auth.keys, system, prompt, maxTokens: 1024, jsonMode: true })
-  if (!ai.ok) return NextResponse.json({ error: ai.error, stats }, { status: 502 })
+  // AI 실패(키 오류·쿼터 초과 등) 시에도 기본 브리핑으로 항상 내용 표시
+  if (!ai.ok) return NextResponse.json(buildFallback(`AI 요약을 불러오지 못해 기본 브리핑으로 표시합니다. (${ai.error})`))
 
   const parsed = extractJson(ai.text) || {}
   return NextResponse.json({
