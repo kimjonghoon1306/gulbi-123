@@ -263,7 +263,7 @@ function MyPageInner() {
 
       {/* ── 헤더 ── */}
       <header style={{ background:dark?'rgba(13,17,23,0.97)':'rgba(255,255,255,0.97)', backdropFilter:'blur(20px)', borderBottom:`1px solid ${D.border}`, position:'sticky', top:0, zIndex:50 }}>
-        <div style={{ maxWidth:'860px', margin:'0 auto', padding:'0 20px', height:'60px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+        <div style={{ maxWidth:'1100px', margin:'0 auto', padding:'0 20px', height:'60px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
           <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
             <Link href="/shop" style={{ width:'36px', height:'36px', borderRadius:'10px', background:D.input, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'16px', textDecoration:'none', color:D.text, flexShrink:0 }}>←</Link>
             <p style={{ fontWeight:800, fontSize:'16px', margin:0 }}>마이페이지</p>
@@ -280,40 +280,56 @@ function MyPageInner() {
         </div>
       </header>
 
-      <div style={{ maxWidth:'860px', margin:'0 auto', padding:'20px 20px 100px' }}>
+      <div style={{ maxWidth:'1100px', margin:'0 auto', padding:'20px 20px 100px' }}>
 
         {/* ── 프로필 히어로 ── */}
-        <div style={{ background:tc.gradient, borderRadius:'28px', padding:'28px 24px', marginBottom:'20px', position:'relative', overflow:'hidden' }}>
-          {/* 배경 원형 장식 */}
-          <div style={{ position:'absolute', top:'-30px', right:'-30px', width:'140px', height:'140px', borderRadius:'50%', background:'rgba(255,255,255,0.07)' }} />
-          <div style={{ position:'absolute', bottom:'-40px', left:'30%', width:'180px', height:'180px', borderRadius:'50%', background:'rgba(255,255,255,0.04)' }} />
+        <div className="hero-card" style={{ background:tc.gradient, borderRadius:'32px', padding:'40px 36px', marginBottom:'22px', position:'relative', overflow:'hidden', boxShadow:`0 24px 60px ${tc.color}40` }}>
+          {/* 움직이는 빛 블롭 */}
+          <div className="hero-blob" style={{ position:'absolute', top:'-60px', right:'-40px', width:'220px', height:'220px', borderRadius:'50%', background:'rgba(255,255,255,0.12)', filter:'blur(8px)' }} />
+          <div className="hero-blob2" style={{ position:'absolute', bottom:'-70px', left:'18%', width:'240px', height:'240px', borderRadius:'50%', background:'rgba(255,255,255,0.06)', filter:'blur(6px)' }} />
+
+          {/* SVG 물결 (하단) */}
+          <svg viewBox="0 0 1440 120" preserveAspectRatio="none" style={{ position:'absolute', bottom:0, left:0, width:'100%', height:'60px', opacity:0.18 }}>
+            <path className="hero-wave" d="M0,60 C240,110 480,10 720,60 C960,110 1200,10 1440,60 L1440,120 L0,120 Z" fill="white" />
+          </svg>
+
+          {/* 떠다니는 아이콘들 */}
+          {['🛒','🧺','🐟','🌾','✨','📦'].map((em, i) => (
+            <div key={i} className="hero-float" style={{
+              position:'absolute', fontSize:`${20 + (i%3)*8}px`, opacity:0.22,
+              left:`${10 + i*15}%`, top:`${12 + (i%3)*26}%`,
+              animationDelay:`${i*0.5}s`, animationDuration:`${4 + i*0.4}s`, pointerEvents:'none', userSelect:'none',
+            }}>{em}</div>
+          ))}
+
           <div style={{ position:'relative', zIndex:2 }}>
 
             {/* 프로필 */}
-            <div style={{ display:'flex', alignItems:'center', gap:'16px', marginBottom:'24px' }}>
-              <div style={{ width:'68px', height:'68px', borderRadius:'50%', background:'rgba(255,255,255,0.2)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'30px', flexShrink:0, border:'2px solid rgba(255,255,255,0.35)' }}>
+            <div className="hero-profile" style={{ display:'flex', alignItems:'center', gap:'20px', marginBottom:'28px' }}>
+              <div className="hero-avatar" style={{ width:'84px', height:'84px', borderRadius:'50%', background:'rgba(255,255,255,0.22)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'40px', flexShrink:0, border:'3px solid rgba(255,255,255,0.45)', boxShadow:'0 8px 24px rgba(0,0,0,0.18)' }}>
                 {tc.icon}
               </div>
               <div style={{ flex:1, minWidth:0 }}>
-                <p style={{ color:'rgba(255,255,255,0.7)', fontSize:'11px', margin:'0 0 3px', letterSpacing:'0.08em' }}>{tc.label}</p>
-                <p style={{ color:'white', fontSize:'22px', fontWeight:900, margin:'0 0 2px', letterSpacing:'-0.5px' }}>{member.name}님</p>
-                <p style={{ color:'rgba(255,255,255,0.65)', fontSize:'12px', margin:0, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{member.email}</p>
+                <span style={{ display:'inline-block', color:'white', fontSize:'11px', fontWeight:700, margin:'0 0 8px', letterSpacing:'0.08em', background:'rgba(255,255,255,0.2)', padding:'4px 12px', borderRadius:'100px', backdropFilter:'blur(8px)' }}>{tc.label}</span>
+                <p style={{ color:'white', fontSize:'30px', fontWeight:900, margin:'0 0 4px', letterSpacing:'-1px' }}>{member.name}님</p>
+                <p style={{ color:'rgba(255,255,255,0.75)', fontSize:'13px', margin:0, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{member.email}</p>
               </div>
             </div>
 
             {/* 통계 3칸 */}
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'8px' }} className="stat-grid">
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'12px' }} className="stat-grid">
               {[
-                { label:'총 주문',   value: `${orders.length}건` },
-                { label:'누적 금액', value: totalAmount > 0 ? `${Math.floor(totalAmount/10000)}만원` : '0원' },
-                { label: member.member_type === '일반' ? '등급' : '상태',
+                { label:'총 주문',   value: `${orders.length}건`, icon:'📦' },
+                { label:'누적 금액', value: totalAmount > 0 ? `${Math.floor(totalAmount/10000)}만원` : '0원', icon:'💰' },
+                { label: member.member_type === '일반' ? '등급' : '상태', icon: member.member_type === '일반' ? '🏆' : '✅',
                   value: member.member_type === '일반'
                     ? `${curGrade.icon} ${curGrade.name}`
                     : member.status === '승인' ? '✅ 승인' : member.status === '대기중' ? '⏳ 대기' : '❌ 거절' },
               ].map((s, i) => (
-                <div key={i} style={{ background:'rgba(255,255,255,0.15)', borderRadius:'14px', padding:'12px 8px', textAlign:'center', backdropFilter:'blur(8px)' }} className="stat-card">
-                  <p style={{ color:'rgba(255,255,255,0.65)', fontSize:'10px', margin:'0 0 4px', letterSpacing:'0.04em' }}>{s.label}</p>
-                  <p style={{ color:'white', fontSize:'14px', fontWeight:800, margin:0 }} className="stat-value">{s.value}</p>
+                <div key={i} className="stat-card" style={{ background:'rgba(255,255,255,0.16)', borderRadius:'18px', padding:'18px 10px', textAlign:'center', backdropFilter:'blur(10px)', border:'1px solid rgba(255,255,255,0.2)' }}>
+                  <p style={{ fontSize:'20px', margin:'0 0 6px' }}>{s.icon}</p>
+                  <p style={{ color:'rgba(255,255,255,0.7)', fontSize:'11px', margin:'0 0 5px', letterSpacing:'0.04em' }}>{s.label}</p>
+                  <p style={{ color:'white', fontSize:'17px', fontWeight:900, margin:0 }} className="stat-value">{s.value}</p>
                 </div>
               ))}
             </div>
@@ -321,7 +337,7 @@ function MyPageInner() {
         </div>
 
         {/* ── 탭 네비게이션 ── */}
-        <div style={{ display:'flex', gap:'6px', marginBottom:'20px', background:D.card, borderRadius:'18px', padding:'5px', border:`1px solid ${D.border}` }}>
+        <div style={{ display:'flex', gap:'8px', marginBottom:'22px', background:D.card, borderRadius:'20px', padding:'7px', border:`1px solid ${D.border}`, boxShadow:'0 4px 20px rgba(0,0,0,0.04)' }}>
           {[
             { key:'home',     icon:'🏠', label:'홈' },
             { key:'orders',   icon:'📦', label:'주문/배송' },
@@ -329,10 +345,12 @@ function MyPageInner() {
             { key:'benefits', icon: member.member_type === '일반' ? '⭐' : '💼', label: member.member_type === '일반' ? '등급/혜택' : '유통 혜택' },
             { key:'settings', icon:'⚙️', label:'설정' },
           ].map(t => (
-            <button key={t.key} onClick={() => setTab(t.key as any)}
-              style={{ flex:1, padding:'10px 6px', borderRadius:'14px', border:'none', cursor:'pointer', fontSize:'12px', fontWeight:700, transition:'all 0.2s',
+            <button key={t.key} onClick={() => setTab(t.key as any)} className="mp-tab"
+              style={{ flex:1, padding:'13px 6px', borderRadius:'15px', border:'none', cursor:'pointer', fontSize:'13px', fontWeight:800, transition:'all 0.25s cubic-bezier(0.34,1.56,0.64,1)',
                 background: tab === t.key ? tc.gradient : 'transparent',
-                color: tab === t.key ? 'white' : D.sub }}>
+                color: tab === t.key ? 'white' : D.sub,
+                boxShadow: tab === t.key ? `0 8px 20px ${tc.color}45` : 'none',
+                transform: tab === t.key ? 'translateY(-1px)' : 'none' }}>
               {t.icon} {t.label}
             </button>
           ))}
@@ -425,7 +443,7 @@ function MyPageInner() {
 
         {/* ════════════════ TAB: ORDERS ════════════════ */}
         {tab === 'orders' && (
-          <div className="my-orders" style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+          <div className="my-orders" style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
             {orders.length === 0 ? (
               <div style={{ gridColumn:'1 / -1', background:D.card, borderRadius:'24px', padding:'56px 20px', textAlign:'center', border:`1px solid ${D.border}` }}>
                 <p style={{ fontSize:'52px', margin:'0 0 16px' }}>📭</p>
@@ -852,10 +870,59 @@ function MyPageInner() {
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes mpFadeUp { from { opacity:0; transform: translateY(18px); } to { opacity:1; transform: translateY(0); } }
+        @keyframes mpFloat { 0%,100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-14px) rotate(4deg); } }
+        @keyframes mpBlob { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(14px,-10px) scale(1.12); } }
+        @keyframes mpWave { 0%,100% { transform: translateX(0); } 50% { transform: translateX(-40px); } }
 
-        /* PC에서 주문 목록 2칸으로 (화면 넓게 활용) */
+        .hero-card { animation: mpFadeUp 0.6s ease both; }
+        .hero-float { animation-name: mpFloat; animation-timing-function: ease-in-out; animation-iteration-count: infinite; }
+        .hero-blob { animation: mpBlob 7s ease-in-out infinite; }
+        .hero-blob2 { animation: mpBlob 9s ease-in-out infinite reverse; }
+        .hero-wave { animation: mpWave 8s ease-in-out infinite; }
+        .hero-avatar { transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+        .hero-card:hover .hero-avatar { transform: scale(1.08) rotate(-6deg); }
+
+        /* 통계칸 hover */
+        .stat-card { transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), background 0.25s; }
+        .stat-card:hover { transform: translateY(-4px); background: rgba(255,255,255,0.26) !important; }
+
+        /* 탭 hover */
+        .mp-tab:hover { transform: translateY(-2px); }
+
+        /* 카드 등장 */
+        .my-orders > div { animation: mpFadeUp 0.5s ease both; }
+
+        /* PC: 주문 2칸, 콘텐츠 꽉차게 */
+        @media (min-width: 820px) {
+          .my-orders { display: grid !important; grid-template-columns: 1fr 1fr; gap: 16px !important; align-items: start; }
+          .hero-card { padding: 48px 44px !important; }
+        }
 
         @media (max-width: 640px) {
+          .hero-card { padding: 28px 22px !important; }
+          .hero-avatar { width: 64px !important; height: 64px !important; font-size: 30px !important; }
+          /* 주문 배송 단계 - 작은 화면에서 원 크기 축소 */
+          .status-circle {
+            width: 24px !important;
+            height: 24px !important;
+            font-size: 10px !important;
+          }
+          .status-label {
+            font-size: 8px !important;
+          }
+          /* 3열 통계 - 아주 작은 화면 대응 */
+          .stat-grid {
+            gap: 6px !important;
+          }
+          .stat-card {
+            padding: 10px 4px !important;
+          }
+          .stat-value {
+            font-size: 12px !important;
+          }
+          /* 퀵메뉴 카드 패딩 축소 */
+          .quick-card {
           /* 주문 배송 단계 - 작은 화면에서 원 크기 축소 */
           .status-circle {
             width: 24px !important;
