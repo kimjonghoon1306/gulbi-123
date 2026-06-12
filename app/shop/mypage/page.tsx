@@ -872,9 +872,9 @@ function MyPageInner() {
           { icon:'👤', label:'마이', href:'/shop/mypage', active:true  },
         ].map((item, i) => (
           <Link key={i} href={item.href}
-            style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:'3px', textDecoration:'none', opacity: item.active ? 1 : 0.45 }}>
-            <span style={{ fontSize:'22px' }}>{item.icon}</span>
-            <span style={{ fontSize:'10px', fontWeight:700, color: item.active ? tc.color : D.sub }}>{item.label}</span>
+            style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:'3px', textDecoration:'none', opacity: item.active ? 1 : 0.9 }}>
+            <span style={{ fontSize:'24px', filter: dark ? 'brightness(1.25) drop-shadow(0 1px 2px rgba(0,0,0,0.4))' : 'none' }}>{item.icon}</span>
+            <span style={{ fontSize:'11px', fontWeight:700, color: item.active ? tc.color : (dark ? '#cbd5e1' : D.sub) }}>{item.label}</span>
           </Link>
         ))}
       </nav>

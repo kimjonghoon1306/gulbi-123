@@ -1083,23 +1083,18 @@ export default function ShopPage() {
           <span style={{ fontSize: '10px', fontWeight: 800 }}>홈</span>
         </Link>
 
-        {/* 회원등급 */}
-        <div className="nav-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', flex: 1 }}>
-          <div style={{
-            padding: '3px 8px', borderRadius: '20px', fontSize: '10px', fontWeight: 800,
-            background: memberType === '도매업'
-              ? 'linear-gradient(135deg,#7c3aed,#6366f1)'
-              : memberType === '소매업'
-              ? 'linear-gradient(135deg,#14532d,#15803d)'
-              : 'rgba(0,0,0,0.08)',
-            color: memberType !== '일반' ? 'white' : sub,
-            boxShadow: memberType !== '일반' ? '0 3px 10px rgba(0,0,0,0.2)' : 'none',
-            whiteSpace: 'nowrap'
-          }}>
-            {memberType === '도매업' ? '🏭' : memberType === '소매업' ? '🏪' : '👤'} {memberType}
-          </div>
-          <span style={{ fontSize: '9px', fontWeight: 700, color: sub }}>등급</span>
-        </div>
+        {/* 장바구니 */}
+        <Link href="/shop/cart" className="nav-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', textDecoration: 'none', color: '#14532d', flex: 1 }}>
+          <span style={{ fontSize: '24px', position: 'relative' }}>
+            🛒
+            {cartCount > 0 && (
+              <span style={{ position: 'absolute', top: '-4px', right: '-10px', minWidth: '16px', height: '16px', padding: '0 4px', borderRadius: '8px', background: '#ec4899', color: 'white', fontSize: '9px', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, boxSizing: 'border-box' }}>
+                {cartCount > 9 ? '9+' : cartCount}
+              </span>
+            )}
+          </span>
+          <span style={{ fontSize: '10px', fontWeight: 800 }}>장바구니</span>
+        </Link>
 
         {/* 테마 */}
         <button onClick={() => setDark(!dark)} className="nav-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', background: 'none', border: 'none', cursor: 'pointer', color: sub, flex: 1 }}>
