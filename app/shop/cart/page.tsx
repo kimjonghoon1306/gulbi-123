@@ -208,7 +208,8 @@ export default function CartPage() {
     input:  dark ? '#15391f' : '#f1f5f9',
   }
 
-  const priceColor = memberType === '도매업' ? '#047857' : memberType === '소매업' ? '#14532d' : '#15803d'
+  const priceColor = dark ? '#4ade80' : (memberType === '도매업' ? '#047857' : memberType === '소매업' ? '#14532d' : '#15803d')
+  const gtext = dark ? '#4ade80' : '#14532d'
 
   if (loading) return (
     <div style={{ minHeight:'100vh', background:D.bg, display:'flex', alignItems:'center', justifyContent:'center' }}>
@@ -303,7 +304,7 @@ export default function CartPage() {
               </div>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'4px' }}>
                 <p style={{ fontSize:'13px', color:D.sub, margin:0 }}>배송비</p>
-                <p style={{ fontSize:'13px', color:'#14532d', fontWeight:700, margin:0 }}>무료</p>
+                <p style={{ fontSize:'13px', color:gtext, fontWeight:700, margin:0 }}>무료</p>
               </div>
               <div style={{ height:'1px', background:D.border, margin:'14px 0' }} />
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
@@ -348,7 +349,7 @@ export default function CartPage() {
                       strokeDashoffset={`${2 * Math.PI * 28 * (1 - redirectCount / 3)}`}
                       style={{ transition:'stroke-dashoffset 1s linear' }} />
                   </svg>
-                  <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'20px', fontWeight:900, color:'#14532d' }}>{redirectCount}</div>
+                  <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'20px', fontWeight:900, color:gtext }}>{redirectCount}</div>
                 </div>
 
                 <p style={{ fontSize:'13px', color:D.sub, margin:'0 0 24px' }}>{redirectCount}초 후 주문내역으로 이동해요</p>
@@ -386,7 +387,7 @@ export default function CartPage() {
                 {/* 배송지 */}
                 <div>
                   <label style={{ display:'flex', alignItems:'center', gap:'6px', fontSize:'13px', fontWeight:800, color:D.text, marginBottom:'10px' }}>
-                    📍 배송지 <span style={{ fontSize:'10px', color:'#14532d', background:'rgba(22,163,74,0.1)', padding:'2px 7px', borderRadius:'20px', fontWeight:700 }}>필수</span>
+                    📍 배송지 <span style={{ fontSize:'10px', color:gtext, background:'rgba(22,163,74,0.1)', padding:'2px 7px', borderRadius:'20px', fontWeight:700 }}>필수</span>
                   </label>
                   <button type="button" onClick={async () => { const r = await openPostcode(); if (r) setOrderForm(p => ({...p, address: r.address + ' '})) }}
                     style={{ width:'100%', marginBottom:'8px', padding:'12px', borderRadius:'14px', border:`2px dashed ${D.border}`, background:D.input, color:D.text, fontSize:'14px', fontWeight:700, cursor:'pointer' }}>
@@ -471,7 +472,7 @@ export default function CartPage() {
                   <label style={{ display:'flex', alignItems:'flex-start', gap:'8px', marginTop:'12px', cursor:'pointer' }}>
                     <input type="checkbox" checked={agreeRefund} onChange={e => setAgreeRefund(e.target.checked)}
                       style={{ width:'18px', height:'18px', marginTop:'1px', accentColor:'#14532d', flexShrink:0 }} />
-                    <span style={{ fontSize:'12.5px', fontWeight:700, color:D.text }}>위 청약철회·반품 제한 사항을 확인했으며, 이에 동의합니다. <span style={{ color:'#14532d' }}>(필수)</span></span>
+                    <span style={{ fontSize:'12.5px', fontWeight:700, color:D.text }}>위 청약철회·반품 제한 사항을 확인했으며, 이에 동의합니다. <span style={{ color:gtext }}>(필수)</span></span>
                   </label>
                 </div>
 

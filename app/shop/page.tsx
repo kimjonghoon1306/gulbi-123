@@ -182,6 +182,7 @@ export default function ShopPage() {
   const border = dark ? 'rgba(52,211,153,0.13)' : 'rgba(0,0,0,0.07)'
   const headerBg = dark ? 'rgba(10,28,19,0.95)' : 'rgba(240,250,249,0.95)'
   const inputBg = dark ? '#15391f' : '#e8f5f3'
+  const gtext = dark ? '#4ade80' : '#14532d'  // 다크 배경에서도 보이는 강조 녹색 텍스트
 
   return (
     <div style={{ background: bg, color: text, minHeight: '100vh', fontFamily: "'Pretendard','Apple SD Gothic Neo',sans-serif", overflowX: 'hidden' }}>
@@ -207,7 +208,7 @@ export default function ShopPage() {
           <p style={{ fontSize: '13px', fontWeight: 800, color: text, margin: 0, lineHeight: 1.3 }}>
             {popup.name}님이
           </p>
-          <p style={{ fontSize: '11px', color: '#14532d', fontWeight: 700, margin: '2px 0' }}>
+          <p style={{ fontSize: '11px', color: gtext, fontWeight: 700, margin: '2px 0' }}>
             {popup.action}
           </p>
           <p style={{ fontSize: '11px', color: sub, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '160px' }}>
@@ -237,7 +238,7 @@ export default function ShopPage() {
               }}>🧺</div>
               <div>
                 <p style={{ fontSize: '16px', fontWeight: 900, color: text, letterSpacing: '-0.5px', lineHeight: 1, margin: 0 }}>온종일팜</p>
-                <p style={{ fontSize: '9px', color: '#14532d', letterSpacing: '2px', textTransform: 'uppercase', lineHeight: 1.5, margin: 0, fontWeight: 700 }}>FRESH FARM</p>
+                <p style={{ fontSize: '9px', color: gtext, letterSpacing: '2px', textTransform: 'uppercase', lineHeight: 1.5, margin: 0, fontWeight: 700 }}>FRESH FARM</p>
               </div>
             </Link>
 
@@ -281,7 +282,7 @@ export default function ShopPage() {
                   padding: '5px 12px', border: '1px solid rgba(22,163,74,0.2)'
                 }}>
                   <span style={{ fontSize: '8px', color: '#22c55e' }}>●</span>
-                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#14532d' }}>{visitorCount}명 쇼핑중</span>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: gtext }}>{visitorCount}명 쇼핑중</span>
                 </div>
               )}
 
@@ -402,7 +403,7 @@ export default function ShopPage() {
               borderRadius: '100px', padding: '6px 16px', marginBottom: '20px'
             }}>
               <span style={{ fontSize: '12px' }}>🌿</span>
-              <span style={{ fontSize: '12px', fontWeight: 700, color: '#14532d' }}>산지에서 매일 직송</span>
+              <span style={{ fontSize: '12px', fontWeight: 700, color: gtext }}>산지에서 매일 직송</span>
             </div>
             <h1 style={{
               fontSize: 'clamp(32px,4vw,60px)', fontWeight: 900,
@@ -431,7 +432,7 @@ export default function ShopPage() {
                 }}>
                   <span style={{ fontSize: '20px', flexShrink: 0 }}>{s.icon}</span>
                   <div style={{ minWidth: 0 }}>
-                    <p style={{ fontSize: '18px', fontWeight: 900, color: '#14532d', margin: 0, letterSpacing: '-1px' }}>{s.num}</p>
+                    <p style={{ fontSize: '18px', fontWeight: 900, color: gtext, margin: 0, letterSpacing: '-1px' }}>{s.num}</p>
                     <p style={{ fontSize: '10px', color: sub, margin: '1px 0 0', fontWeight: 600, whiteSpace: 'nowrap' }}>{s.label}</p>
                   </div>
                 </div>
@@ -450,7 +451,7 @@ export default function ShopPage() {
             <div style={{ fontSize:'32px', animation:'floatItem 3.5s ease-in-out infinite', animationDelay:'1.5s' }}>🥬</div>
             <div style={{
               background:'white', borderRadius:'12px', padding:'5px 8px',
-              fontSize:'9px', fontWeight:800, color:'#14532d',
+              fontSize:'9px', fontWeight:800, color:gtext,
               boxShadow:'0 4px 12px rgba(0,0,0,0.12)',
               animation:'bounce 2s ease-in-out infinite', whiteSpace:'nowrap',
               textAlign:'center'
@@ -640,7 +641,7 @@ export default function ShopPage() {
             <div style={{
               position:'absolute', bottom:'56%', left:'16%',
               background:'white', borderRadius:'12px 12px 12px 2px',
-              padding:'5px 10px', fontSize:'9px', fontWeight:800, color:'#14532d',
+              padding:'5px 10px', fontSize:'9px', fontWeight:800, color:gtext,
               boxShadow:'0 4px 16px rgba(0,0,0,0.15)',
               animation:'bounce 2.2s ease-in-out infinite', animationDelay:'0.4s',
               whiteSpace:'nowrap'
@@ -701,7 +702,7 @@ export default function ShopPage() {
             background: dark ? 'rgba(22,163,74,0.12)' : 'rgba(22,163,74,0.08)',
             border: '1px solid rgba(22,163,74,0.25)',
             borderRadius: '100px', padding: '6px 16px', marginBottom: '16px',
-            fontSize: '12px', fontWeight: 700, color: '#14532d', letterSpacing: '1px',
+            fontSize: '12px', fontWeight: 700, color: gtext, letterSpacing: '1px',
           }}>✦ 이렇게 이용하세요</div>
 
           <h2 style={{
@@ -748,7 +749,7 @@ export default function ShopPage() {
                   <p style={{ fontSize: '15px', color: sub, lineHeight: 1.7 }}>카테고리별로 농산물, 축산물, 농축수산물 등<br />다양한 신선 상품을 직접 고르세요.</p>
                   <div style={{ display: 'flex', gap: '8px', marginTop: '20px', flexWrap: 'wrap' as const }}>
                     {['🥬 채소','🍎 과일','🥩 한우','🧺 농축수산물','🌾 곡물'].map((item, i) => (
-                      <span key={i} style={{ padding: '6px 14px', borderRadius: '100px', fontSize: '13px', fontWeight: 600, background: dark ? 'rgba(22,163,74,0.15)' : 'rgba(22,163,74,0.08)', border: '1px solid rgba(22,163,74,0.25)', color: '#14532d' }}>{item}</span>
+                      <span key={i} style={{ padding: '6px 14px', borderRadius: '100px', fontSize: '13px', fontWeight: 600, background: dark ? 'rgba(22,163,74,0.15)' : 'rgba(22,163,74,0.08)', border: '1px solid rgba(22,163,74,0.25)', color: gtext }}>{item}</span>
                     ))}
                   </div>
                 </div>
@@ -762,10 +763,10 @@ export default function ShopPage() {
                       <span style={{ fontSize: '28px' }}>{p.icon}</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: '13px', fontWeight: 700, color: text }}>{p.name}</div>
-                        <div style={{ fontSize: '11px', color: '#14532d', fontWeight: 600, marginTop: '2px' }}>✅ {p.fresh}</div>
+                        <div style={{ fontSize: '11px', color: gtext, fontWeight: 600, marginTop: '2px' }}>✅ {p.fresh}</div>
                       </div>
                       <div style={{ textAlign: 'right' as const }}>
-                        <div style={{ fontSize: '15px', fontWeight: 900, color: '#14532d' }}>{p.price}</div>
+                        <div style={{ fontSize: '15px', fontWeight: 900, color: gtext }}>{p.price}</div>
                         <div style={{ fontSize: '11px', color: sub }}>{p.unit}</div>
                       </div>
                     </div>
@@ -813,7 +814,7 @@ export default function ShopPage() {
                     {[
                       { label: '도매가', color: '#7c3aed', bg: dark ? 'rgba(124,58,237,0.12)' : 'rgba(124,58,237,0.08)' },
                       { label: '소매가', color: '#15803d', bg: dark ? 'rgba(21,128,61,0.12)' : 'rgba(21,128,61,0.08)' },
-                      { label: '일반구매', color: '#14532d', bg: dark ? 'rgba(22,163,74,0.12)' : 'rgba(22,163,74,0.08)' },
+                      { label: '일반구매', color: gtext, bg: dark ? 'rgba(22,163,74,0.12)' : 'rgba(22,163,74,0.08)' },
                     ].map((p, i) => (
                       <span key={i} style={{ padding: '7px 14px', borderRadius: '10px', fontSize: '12px', fontWeight: 700, background: p.bg, color: p.color, border: `1px solid ${p.color}40` }}>{p.label}</span>
                     ))}
@@ -827,12 +828,12 @@ export default function ShopPage() {
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '13px' }}>
                     <span style={{ color: sub }}>배송비</span>
-                    <span style={{ color: '#14532d', fontWeight: 700 }}>무료</span>
+                    <span style={{ color: gtext, fontWeight: 700 }}>무료</span>
                   </div>
                   <div style={{ height: '1px', background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)', margin: '12px 0' }} />
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '16px', fontWeight: 900 }}>
                     <span style={{ color: text }}>합계</span>
-                    <span style={{ color: '#14532d' }}>₩125,000</span>
+                    <span style={{ color: gtext }}>₩125,000</span>
                   </div>
                   <div style={{ marginTop: '16px', padding: '12px', borderRadius: '12px', textAlign: 'center' as const, background: 'linear-gradient(135deg,#14532d,#15803d)', color: 'white', fontSize: '14px', fontWeight: 800, cursor: 'pointer' }}>결제하기 →</div>
                 </div>
@@ -862,7 +863,7 @@ export default function ShopPage() {
                         <div style={{ fontSize: '13px', fontWeight: 700, color: step.done ? text : sub }}>{step.label}</div>
                         <div style={{ fontSize: '11px', color: step.done ? '#14532d' : sub }}>{step.time}</div>
                       </div>
-                      {step.done && <div style={{ marginLeft: 'auto', fontSize: '11px', fontWeight: 700, color: '#14532d', background: dark ? 'rgba(22,163,74,0.15)' : 'rgba(22,163,74,0.08)', padding: '3px 8px', borderRadius: '20px' }}>완료 ✓</div>}
+                      {step.done && <div style={{ marginLeft: 'auto', fontSize: '11px', fontWeight: 700, color: gtext, background: dark ? 'rgba(22,163,74,0.15)' : 'rgba(22,163,74,0.08)', padding: '3px 8px', borderRadius: '20px' }}>완료 ✓</div>}
                     </div>
                   ))}
                 </div>
@@ -1036,7 +1037,7 @@ export default function ShopPage() {
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div>
                         <p style={{
-                          fontSize: '22px', fontWeight: 900, color: '#14532d',
+                          fontSize: '22px', fontWeight: 900, color: gtext,
                           letterSpacing: '-1px', margin: 0
                         }}>{getPrice(p).toLocaleString()}원</p>
                         {memberType === '도매업' && (
@@ -1072,13 +1073,13 @@ export default function ShopPage() {
       }} className="mobile-nav">
 
         {/* 홈 */}
-        <Link href="/shop" className="nav-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', textDecoration: 'none', color: '#14532d', flex: 1 }}>
+        <Link href="/shop" className="nav-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', textDecoration: 'none', color: gtext, flex: 1 }}>
           <span style={{ fontSize: '24px' }}>🏠</span>
           <span style={{ fontSize: '10px', fontWeight: 800 }}>홈</span>
         </Link>
 
         {/* 장바구니 */}
-        <Link href="/shop/cart" className="nav-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', textDecoration: 'none', color: '#14532d', flex: 1 }}>
+        <Link href="/shop/cart" className="nav-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', textDecoration: 'none', color: gtext, flex: 1 }}>
           <span style={{ fontSize: '24px', position: 'relative' }}>
             🛒
             {cartCount > 0 && (
@@ -1098,7 +1099,7 @@ export default function ShopPage() {
 
         {/* 마이페이지 / 로그인 */}
         {user ? (
-          <Link href="/shop/mypage" className="nav-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', textDecoration: 'none', color: '#14532d', flex: 1 }}>
+          <Link href="/shop/mypage" className="nav-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', textDecoration: 'none', color: gtext, flex: 1 }}>
             <span style={{ fontSize: '24px' }}>👤</span>
             <span style={{ fontSize: '10px', fontWeight: 800 }}>마이</span>
           </Link>

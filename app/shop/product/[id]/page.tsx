@@ -183,6 +183,7 @@ export default function ProductDetailPage() {
   }
 
   const getPriceColor = () => {
+    if (dark) return '#4ade80'
     if (memberType === '도매업') return '#047857'
     if (memberType === '소매업') return '#14532d'
     return '#15803d'
@@ -197,9 +198,10 @@ export default function ProductDetailPage() {
     sub: dark ? '#86a394' : '#64748b',
     input: dark ? '#15391f' : '#f1f5f9',
     imgBg: dark ? '#15391f' : '#f8fafc',
-    accent: '#15803d',
+    accent: dark ? '#4ade80' : '#15803d',
     accentDark: '#16a34a',
     green: '#059669',
+    gtext: dark ? '#4ade80' : '#15803d',
   }
 
   if (loading) return (
@@ -256,7 +258,7 @@ export default function ProductDetailPage() {
             {visitorCount > 0 && (
               <div style={{background:dark?'#15391f':'#fdf2f8',borderRadius:'100px',padding:'4px 10px',display:'flex',alignItems:'center',gap:'4px'}}>
                 <div style={{width:'6px',height:'6px',borderRadius:'50%',background:'#15803d',animation:'pulse 2s infinite'}} />
-                <span style={{fontSize:'11px',fontWeight:700,color:'#15803d'}}>{visitorCount}명 방문중</span>
+                <span style={{fontSize:'11px',fontWeight:700,color:D.gtext}}>{visitorCount}명 방문중</span>
               </div>
             )}
             <button onClick={() => { const n = !dark; setDark(n); localStorage.setItem('shop-theme', n ? 'dark' : 'light') }}
@@ -323,9 +325,9 @@ export default function ProductDetailPage() {
             {/* 회원 유형별 가격 탭 - 표시 전용 */}
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'6px',marginBottom:'14px'}}>
               {([
-                {type:'일반',   label:'일반 소매가', emoji:'🛒', color:'#15803d'},
-                {type:'소매업', label:'소매 유통가',  emoji:'🏪', color:'#14532d'},
-                {type:'도매업', label:'도매 유통가',  emoji:'🏭', color:'#15803d'},
+                {type:'일반',   label:'일반 소매가', emoji:'🛒', color:D.gtext},
+                {type:'소매업', label:'소매 유통가',  emoji:'🏪', color:D.gtext},
+                {type:'도매업', label:'도매 유통가',  emoji:'🏭', color:D.gtext},
               ] as const).map(t => (
                 isAdmin ? (
                   <button key={t.type} onClick={() => setMemberType(t.type)}
@@ -361,8 +363,8 @@ export default function ProductDetailPage() {
               <p style={{fontSize:'12px',color:D.sub}}>/{product.unit}</p>
               {memberType === '일반' && (
                 <div style={{marginTop:'10px',padding:'8px 12px',background:dark?'rgba(255,255,255,0.04)':'#f8fafc',borderRadius:'10px',display:'flex',flexDirection:'column',gap:'4px'}}>
-                  <p style={{fontSize:'11px',color:'#14532d',fontWeight:600,margin:0}}>🏪 소매 유통가 {product.member_price.toLocaleString()}원 — 소매회원 전용</p>
-                  <p style={{fontSize:'11px',color:'#15803d',fontWeight:600,margin:0}}>🏭 도매 유통가 {product.wholesale_price.toLocaleString()}원 — 도매회원 전용</p>
+                  <p style={{fontSize:'11px',color:D.gtext,fontWeight:600,margin:0}}>🏪 소매 유통가 {product.member_price.toLocaleString()}원 — 소매회원 전용</p>
+                  <p style={{fontSize:'11px',color:D.gtext,fontWeight:600,margin:0}}>🏭 도매 유통가 {product.wholesale_price.toLocaleString()}원 — 도매회원 전용</p>
                 </div>
               )}
             </div>
@@ -384,7 +386,7 @@ export default function ProductDetailPage() {
                   <span style={{width:'40px',textAlign:'center',fontSize:'15px',fontWeight:700,color:D.text}}>{quantity}</span>
                   <button onClick={() => setQuantity(Math.min(product.stock,quantity+1))} style={{width:'40px',height:'40px',background:'none',border:'none',fontSize:'18px',cursor:'pointer',color:D.text,display:'flex',alignItems:'center',justifyContent:'center'}}>+</button>
                 </div>
-                <p style={{fontSize:'15px',fontWeight:900,color:'#15803d',marginLeft:'auto'}}>
+                <p style={{fontSize:'15px',fontWeight:900,color:D.gtext,marginLeft:'auto'}}>
                   = {totalPrice.toLocaleString()}원
                 </p>
               </div>
@@ -486,7 +488,7 @@ export default function ProductDetailPage() {
                   <button key={n} onClick={() => setReviewRating(n)} aria-label={`별점 ${n}점`}
                     style={{background:'none',border:'none',cursor:'pointer',padding:0,fontSize:'26px',lineHeight:1,filter:n<=reviewRating?'none':'grayscale(1) opacity(0.3)',transition:'filter 0.15s'}}>⭐</button>
                 ))}
-                <span style={{alignSelf:'center',marginLeft:'6px',fontSize:'13px',fontWeight:800,color:'#15803d'}}>{reviewRating}.0</span>
+                <span style={{alignSelf:'center',marginLeft:'6px',fontSize:'13px',fontWeight:800,color:D.gtext}}>{reviewRating}.0</span>
               </div>
               <textarea value={reviewContent} onChange={e => setReviewContent(e.target.value)}
                 placeholder="상품은 어떠셨나요? 신선도, 맛, 포장 등 솔직한 후기를 남겨주세요 😊"
@@ -526,7 +528,7 @@ export default function ProductDetailPage() {
                     <div>
                       <div style={{display:'flex',alignItems:'center',gap:'6px'}}>
                         <p style={{fontSize:'13px',fontWeight:700,color:D.text,margin:0}}>{r.author_name||'익명'}</p>
-                        {r.user_id===user?.id && <span style={{fontSize:'10px',fontWeight:700,color:'#15803d',background:'rgba(22,163,74,0.1)',padding:'1px 7px',borderRadius:'20px'}}>내 리뷰</span>}
+                        {r.user_id===user?.id && <span style={{fontSize:'10px',fontWeight:700,color:D.gtext,background:'rgba(22,163,74,0.1)',padding:'1px 7px',borderRadius:'20px'}}>내 리뷰</span>}
                       </div>
                       <p style={{fontSize:'11px',color:D.sub,margin:0}}>{r.created_at ? new Date(r.created_at).toLocaleDateString('ko-KR') : ''}</p>
                     </div>
@@ -634,7 +636,7 @@ export default function ProductDetailPage() {
                   <div>
                     <label style={{display:'flex',alignItems:'center',gap:'6px',fontSize:'13px',fontWeight:800,color:D.text,marginBottom:'10px'}}>
                       📍 배송지
-                      <span style={{fontSize:'10px',fontWeight:700,color:'#15803d',background:'rgba(22,163,74,0.1)',padding:'2px 7px',borderRadius:'20px'}}>필수</span>
+                      <span style={{fontSize:'10px',fontWeight:700,color:D.gtext,background:'rgba(22,163,74,0.1)',padding:'2px 7px',borderRadius:'20px'}}>필수</span>
                     </label>
                     <button type="button" onClick={async () => { const r = await openPostcode(); if (r) setOrderForm(p => ({...p, address: r.address + ' '})) }}
                       style={{width:'100%',marginBottom:'8px',padding:'12px',borderRadius:'14px',border:`2px dashed ${D.border}`,background:D.input,color:D.text,fontSize:'14px',fontWeight:700,cursor:'pointer'}}>

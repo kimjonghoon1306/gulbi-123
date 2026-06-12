@@ -233,6 +233,7 @@ function MyPageInner() {
 
   // Derived values
   const tc           = member ? TYPE_CONFIG[member.member_type] : TYPE_CONFIG['일반']
+  const accent       = dark ? '#4ade80' : tc.color  // 다크 배경에서도 보이는 강조 텍스트색
   const totalAmount  = orders.reduce((s, o) => s + (o.total_amount || 0), 0)
   const curGrade     = [...GRADE_INFO].reverse().find(g => totalAmount >= g.min) || GRADE_INFO[0]
   const nextGrade    = GRADE_INFO[GRADE_INFO.indexOf(curGrade) + 1] || null
@@ -426,7 +427,7 @@ function MyPageInner() {
               <div style={{ background:D.card, borderRadius:'20px', padding:'20px', border:`1px solid ${D.border}` }}>
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'14px' }}>
                   <p style={{ fontSize:'13px', fontWeight:800, color:D.text, margin:0 }}>📦 최근 주문</p>
-                  <button onClick={() => setTab('orders')} style={{ fontSize:'11px', color:tc.color, fontWeight:700, background:'none', border:'none', cursor:'pointer' }}>전체 보기 →</button>
+                  <button onClick={() => setTab('orders')} style={{ fontSize:'11px', color:accent, fontWeight:700, background:'none', border:'none', cursor:'pointer' }}>전체 보기 →</button>
                 </div>
                 {orders.slice(0, 2).map(order => (
                   <div key={order.id} style={{ background:D.input, borderRadius:'14px', padding:'14px', marginBottom:'8px' }}>
@@ -434,7 +435,7 @@ function MyPageInner() {
                       <p style={{ fontSize:'12px', fontWeight:700, color:D.text, margin:0 }}>{order.order_number || `#${order.id.slice(0,8).toUpperCase()}`}</p>
                       <OrderBadge status={order.status} />
                     </div>
-                    <p style={{ fontSize:'15px', fontWeight:900, color:tc.color, margin:'0 0 2px' }}>{order.total_amount.toLocaleString()}원</p>
+                    <p style={{ fontSize:'15px', fontWeight:900, color:accent, margin:'0 0 2px' }}>{order.total_amount.toLocaleString()}원</p>
                     <p style={{ fontSize:'11px', color:D.sub, margin:0 }}>{new Date(order.created_at).toLocaleDateString('ko-KR')}</p>
                   </div>
                 ))}
@@ -491,7 +492,7 @@ function MyPageInner() {
                                 className="status-circle">
                                 {done ? (current ? STATUS_ICON[i] : '✓') : i+1}
                               </div>
-                              <p style={{ fontSize:'9px', fontWeight: current ? 700 : 400, color: done ? tc.color : D.sub, margin:0, whiteSpace:'nowrap' }} className="status-label">{s}</p>
+                              <p style={{ fontSize:'9px', fontWeight: current ? 700 : 400, color: done ? accent : D.sub, margin:0, whiteSpace:'nowrap' }} className="status-label">{s}</p>
                             </div>
                             {i < 3 && (
                               <div style={{ flex:1, height:'2px', background: i < (STATUS_STEP[order.status]||0) ? tc.color : D.border, margin:'0 4px 16px', borderRadius:'2px', transition:'background 0.3s' }} />
@@ -503,7 +504,7 @@ function MyPageInner() {
                   </div>
 
                   <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                    <p style={{ fontSize:'18px', fontWeight:900, color:tc.color, margin:0 }}>{order.total_amount.toLocaleString()}원</p>
+                    <p style={{ fontSize:'18px', fontWeight:900, color:accent, margin:0 }}>{order.total_amount.toLocaleString()}원</p>
                   </div>
                 </div>
 
@@ -593,7 +594,7 @@ function MyPageInner() {
                       </div>
                       <div style={{ padding:'10px 12px' }}>
                         <p style={{ fontSize:'13px', fontWeight:700, color:D.text, margin:'0 0 4px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{p.name}</p>
-                        <p style={{ fontSize:'14px', fontWeight:900, color:tc.color, margin:0 }}>{wishPrice.toLocaleString()}원</p>
+                        <p style={{ fontSize:'14px', fontWeight:900, color:accent, margin:0 }}>{wishPrice.toLocaleString()}원</p>
                         <p style={{ fontSize:'10px', color:D.sub, margin:'2px 0 0' }}>/{p.unit}</p>
                       </div>
                     </a>
@@ -629,7 +630,7 @@ function MyPageInner() {
                         <div style={{ height:'100%', background:tc.gradient, borderRadius:'8px', width:`${gradeProgress}%`, transition:'width 1s ease' }} />
                       </div>
                       <p style={{ fontSize:'11px', color:D.sub, margin:'8px 0 0', textAlign:'center' }}>
-                        {nextGrade.name}까지 <strong style={{ color:tc.color }}>{(nextGrade.min - totalAmount).toLocaleString()}원</strong> 남았어요
+                        {nextGrade.name}까지 <strong style={{ color:accent }}>{(nextGrade.min - totalAmount).toLocaleString()}원</strong> 남았어요
                       </p>
                     </div>
                   )}
@@ -653,7 +654,7 @@ function MyPageInner() {
                           <p style={{ fontSize:'11px', color:D.sub, margin:0 }}>{g.benefit}</p>
                         </div>
                       </div>
-                      <p style={{ fontSize:'11px', color: g.active ? tc.color : D.sub, fontWeight: g.active ? 700 : 400, margin:0, flexShrink:0 }}>{g.range}</p>
+                      <p style={{ fontSize:'11px', color: g.active ? accent : D.sub, fontWeight: g.active ? 700 : 400, margin:0, flexShrink:0 }}>{g.range}</p>
                     </div>
                   ))}
                 </div>
@@ -664,7 +665,7 @@ function MyPageInner() {
                     <p style={{ fontSize:'13px', fontWeight:800, color:D.text, margin:0 }}>💰 쇼핑 포인트</p>
                     <span style={{ fontSize:'10px', color:'#f59e0b', fontWeight:700, background:'rgba(245,158,11,0.12)', padding:'3px 8px', borderRadius:'20px' }}>준비 중</span>
                   </div>
-                  <p style={{ fontSize:'36px', fontWeight:900, color:tc.color, margin:'0 0 4px', letterSpacing:'-1px' }}>0<span style={{ fontSize:'16px', fontWeight:600, color:D.sub, marginLeft:'4px' }}>P</span></p>
+                  <p style={{ fontSize:'36px', fontWeight:900, color:accent, margin:'0 0 4px', letterSpacing:'-1px' }}>0<span style={{ fontSize:'16px', fontWeight:600, color:D.sub, marginLeft:'4px' }}>P</span></p>
                   <p style={{ fontSize:'12px', color:D.sub, margin:0 }}>구매금액의 1% 포인트 적립 예정</p>
                 </div>
               </>
@@ -749,7 +750,7 @@ function MyPageInner() {
                       ].map((s, i) => (
                         <div key={i} style={{ background:D.input, borderRadius:'14px', padding:'14px', textAlign:'center' }}>
                           <p style={{ fontSize:'10px', color:D.sub, margin:'0 0 5px' }}>{s.label}</p>
-                          <p style={{ fontSize:'16px', fontWeight:900, color:tc.color, margin:0 }}>{s.value}</p>
+                          <p style={{ fontSize:'16px', fontWeight:900, color:accent, margin:0 }}>{s.value}</p>
                         </div>
                       ))}
                     </div>
@@ -874,7 +875,7 @@ function MyPageInner() {
           <Link key={i} href={item.href}
             style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:'3px', textDecoration:'none', opacity: item.active ? 1 : 0.9 }}>
             <span style={{ fontSize:'24px', filter: dark ? 'brightness(1.25) drop-shadow(0 1px 2px rgba(0,0,0,0.4))' : 'none' }}>{item.icon}</span>
-            <span style={{ fontSize:'11px', fontWeight:700, color: item.active ? tc.color : (dark ? '#cbd5e1' : D.sub) }}>{item.label}</span>
+            <span style={{ fontSize:'11px', fontWeight:700, color: item.active ? accent : (dark ? '#cbd5e1' : D.sub) }}>{item.label}</span>
           </Link>
         ))}
       </nav>
