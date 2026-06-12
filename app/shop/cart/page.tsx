@@ -200,12 +200,12 @@ export default function CartPage() {
   }
 
   const D = {
-    bg:     dark ? '#0d1117' : '#f8fafc',
-    card:   dark ? '#161b22' : '#ffffff',
-    text:   dark ? '#f0f0ee' : '#0f172a',
-    sub:    dark ? '#6b7280' : '#64748b',
-    border: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)',
-    input:  dark ? '#1e2530' : '#f1f5f9',
+    bg:     dark ? 'linear-gradient(180deg,#0d2a1d 0%,#081710 60%,#0a1c13 100%)' : '#f8fafc',
+    card:   dark ? '#102a1d' : '#ffffff',
+    text:   dark ? '#eaf5ee' : '#0f172a',
+    sub:    dark ? '#86a394' : '#64748b',
+    border: dark ? 'rgba(52,211,153,0.14)' : 'rgba(0,0,0,0.07)',
+    input:  dark ? '#15391f' : '#f1f5f9',
   }
 
   const priceColor = memberType === '도매업' ? '#047857' : memberType === '소매업' ? '#14532d' : '#15803d'
@@ -221,7 +221,7 @@ export default function CartPage() {
     <div style={{ background:D.bg, color:D.text, minHeight:'100vh', fontFamily:"'Pretendard','Apple SD Gothic Neo',sans-serif" }}>
 
       {/* 헤더 */}
-      <header style={{ background:dark?'rgba(13,17,23,0.97)':'rgba(255,255,255,0.97)', backdropFilter:'blur(20px)', borderBottom:`1px solid ${D.border}`, position:'sticky', top:0, zIndex:50 }}>
+      <header style={{ background:dark?'rgba(10,28,19,0.95)':'rgba(255,255,255,0.97)', backdropFilter:'blur(20px)', borderBottom:`1px solid ${D.border}`, position:'sticky', top:0, zIndex:50 }}>
         <div style={{ maxWidth:'1080px', margin:'0 auto', padding:'0 20px', height:'60px', display:'flex', alignItems:'center', gap:'12px' }}>
           <button onClick={() => router.back()} style={{ width:'36px', height:'36px', borderRadius:'10px', background:D.input, border:'none', cursor:'pointer', fontSize:'16px', color:D.text, display:'flex', alignItems:'center', justifyContent:'center' }}>←</button>
           <p style={{ fontWeight:800, fontSize:'16px', margin:0, flex:1 }}>장바구니 🛒</p>

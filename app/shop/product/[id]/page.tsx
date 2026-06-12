@@ -189,14 +189,14 @@ export default function ProductDetailPage() {
   }
 
   const D = {
-    bg: dark ? '#0d1117' : '#f8fafc',
-    headerBg: dark ? 'rgba(13,17,23,0.97)' : 'rgba(255,255,255,0.97)',
-    border: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)',
-    card: dark ? '#161b22' : '#ffffff',
-    text: dark ? '#f0f0ee' : '#0f172a',
-    sub: dark ? '#6b7280' : '#64748b',
-    input: dark ? '#1e2530' : '#f1f5f9',
-    imgBg: dark ? '#1e2530' : '#f8fafc',
+    bg: dark ? 'linear-gradient(180deg,#0d2a1d 0%,#081710 60%,#0a1c13 100%)' : '#f8fafc',
+    headerBg: dark ? 'rgba(10,28,19,0.95)' : 'rgba(255,255,255,0.97)',
+    border: dark ? 'rgba(52,211,153,0.14)' : 'rgba(0,0,0,0.07)',
+    card: dark ? '#102a1d' : '#ffffff',
+    text: dark ? '#eaf5ee' : '#0f172a',
+    sub: dark ? '#86a394' : '#64748b',
+    input: dark ? '#15391f' : '#f1f5f9',
+    imgBg: dark ? '#15391f' : '#f8fafc',
     accent: '#15803d',
     accentDark: '#16a34a',
     green: '#059669',
@@ -254,7 +254,7 @@ export default function ProductDetailPage() {
           </div>
           <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
             {visitorCount > 0 && (
-              <div style={{background:dark?'#1e2530':'#fdf2f8',borderRadius:'100px',padding:'4px 10px',display:'flex',alignItems:'center',gap:'4px'}}>
+              <div style={{background:dark?'#15391f':'#fdf2f8',borderRadius:'100px',padding:'4px 10px',display:'flex',alignItems:'center',gap:'4px'}}>
                 <div style={{width:'6px',height:'6px',borderRadius:'50%',background:'#15803d',animation:'pulse 2s infinite'}} />
                 <span style={{fontSize:'11px',fontWeight:700,color:'#15803d'}}>{visitorCount}명 방문중</span>
               </div>
@@ -351,7 +351,7 @@ export default function ProductDetailPage() {
             </div>
 
             {/* 가격 */}
-            <div style={{background:dark?'#1e2530':'#fdf2f8',borderRadius:'18px',padding:'18px 20px',marginBottom:'16px',border:`1px solid ${dark?'rgba(255,255,255,0.06)':'#fce7f3'}`}}>
+            <div style={{background:dark?'#15391f':'#fdf2f8',borderRadius:'18px',padding:'18px 20px',marginBottom:'16px',border:`1px solid ${dark?'rgba(255,255,255,0.06)':'#fce7f3'}`}}>
               <p style={{fontSize:'11px',fontWeight:700,color:getPriceColor(),marginBottom:'4px',letterSpacing:'0.5px'}}>
                 {getPriceLabel()}
               </p>
@@ -442,7 +442,7 @@ export default function ProductDetailPage() {
             </div>
             <div style={{display:'flex',flexDirection:'column',gap:'12px'}}>
               {socialComments.map((c:any) => (
-                <div key={c.id} style={{padding:'16px',background:dark?'#1e2530':'#f8fafc',borderRadius:'14px',border:`1px solid ${D.border}`}}>
+                <div key={c.id} style={{padding:'16px',background:dark?'#15391f':'#f8fafc',borderRadius:'14px',border:`1px solid ${D.border}`}}>
                   <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'8px'}}>
                     <div style={{width:'32px',height:'32px',borderRadius:'50%',background:`linear-gradient(135deg,${c.avatar_color||'#15803d'},${c.avatar_color2||'#16a34a'})`,display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'12px',fontWeight:900,flexShrink:0}}>
                       {(c.author||'익')[0]}
@@ -478,7 +478,7 @@ export default function ProductDetailPage() {
 
           {/* 작성/수정 폼 */}
           {user ? (
-            <div style={{background:dark?'#1e2530':'#fdf2f8',borderRadius:'16px',padding:'18px',marginBottom:'20px',border:`1px solid ${dark?'rgba(255,255,255,0.06)':'#fce7f3'}`}}>
+            <div style={{background:dark?'#15391f':'#fdf2f8',borderRadius:'16px',padding:'18px',marginBottom:'20px',border:`1px solid ${dark?'rgba(255,255,255,0.06)':'#fce7f3'}`}}>
               <p style={{fontSize:'13px',fontWeight:800,color:D.text,margin:'0 0 10px'}}>{myReview ? '내 리뷰 수정' : '리뷰 작성하기'}</p>
               {/* 별점 선택 */}
               <div style={{display:'flex',gap:'4px',marginBottom:'12px'}}>
@@ -518,7 +518,7 @@ export default function ProductDetailPage() {
           ) : (
             <div style={{display:'flex',flexDirection:'column',gap:'12px'}}>
               {reviews.map((r:any) => (
-                <div key={r.id} style={{padding:'16px',background:dark?'#1e2530':'#f8fafc',borderRadius:'14px',border:`1px solid ${r.user_id===user?.id?'#15803d':D.border}`}}>
+                <div key={r.id} style={{padding:'16px',background:dark?'#15391f':'#f8fafc',borderRadius:'14px',border:`1px solid ${r.user_id===user?.id?'#15803d':D.border}`}}>
                   <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'8px'}}>
                     <div style={{width:'32px',height:'32px',borderRadius:'50%',background:'linear-gradient(135deg,#15803d,#16a34a)',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'12px',fontWeight:900,flexShrink:0}}>
                       {(r.author_name||'익')[0]}

@@ -240,13 +240,13 @@ function MyPageInner() {
 
   // Design tokens
   const D = {
-    bg:     dark ? '#0d1117' : '#f1f5f9',
-    card:   dark ? '#161b22' : '#ffffff',
-    card2:  dark ? '#1e2530' : '#f8fafc',
-    text:   dark ? '#f0f0ee' : '#0f172a',
-    sub:    dark ? '#6b7280' : '#64748b',
-    border: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)',
-    input:  dark ? '#1e2530' : '#f1f5f9',
+    bg:     dark ? 'linear-gradient(180deg,#0d2a1d 0%,#081710 60%,#0a1c13 100%)' : '#f1f5f9',
+    card:   dark ? '#102a1d' : '#ffffff',
+    card2:  dark ? '#15391f' : '#f8fafc',
+    text:   dark ? '#eaf5ee' : '#0f172a',
+    sub:    dark ? '#86a394' : '#64748b',
+    border: dark ? 'rgba(52,211,153,0.14)' : 'rgba(0,0,0,0.07)',
+    input:  dark ? '#15391f' : '#f1f5f9',
   }
 
   if (loading) return (
@@ -262,7 +262,7 @@ function MyPageInner() {
     <div style={{ background:D.bg, color:D.text, minHeight:'100vh', fontFamily:"'Pretendard','Apple SD Gothic Neo',sans-serif" }}>
 
       {/* ── 헤더 ── */}
-      <header style={{ background:dark?'rgba(13,17,23,0.97)':'rgba(255,255,255,0.97)', backdropFilter:'blur(20px)', borderBottom:`1px solid ${D.border}`, position:'sticky', top:0, zIndex:50 }}>
+      <header style={{ background:dark?'rgba(10,28,19,0.95)':'rgba(255,255,255,0.97)', backdropFilter:'blur(20px)', borderBottom:`1px solid ${D.border}`, position:'sticky', top:0, zIndex:50 }}>
         <div style={{ maxWidth:'1100px', margin:'0 auto', padding:'0 20px', height:'60px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
           <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
             <Link href="/shop" style={{ width:'36px', height:'36px', borderRadius:'10px', background:D.input, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'16px', textDecoration:'none', color:D.text, flexShrink:0 }}>←</Link>
@@ -577,7 +577,7 @@ function MyPageInner() {
                     : (p.retail_price||0)
                   return (
                     <a key={w.id} href={`/shop/product/${p.id}`} style={{ textDecoration:'none', display:'block', background:D.card, borderRadius:'16px', overflow:'hidden', border:`1px solid ${D.border}`, transition:'transform 0.15s' }}>
-                      <div style={{ width:'100%', paddingTop:'100%', position:'relative', background:dark?'#1e2530':'#f8fafc' }}>
+                      <div style={{ width:'100%', paddingTop:'100%', position:'relative', background:dark?'#15391f':'#f8fafc' }}>
                         {p.image_url
                           ? <img src={p.image_url} alt={p.name} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} />
                           : <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'40px' }}>🧺</div>
@@ -865,7 +865,7 @@ function MyPageInner() {
         </div>{/* /mp-layout */}
 
       {/* ── 하단 고정 탭바 ── */}
-      <nav style={{ position:'fixed', bottom:0, left:0, right:0, background:dark?'rgba(13,17,23,0.97)':'rgba(255,255,255,0.97)', backdropFilter:'blur(20px)', borderTop:`1px solid ${D.border}`, padding:'10px 0 16px', display:'flex', justifyContent:'space-around', zIndex:50 }}>
+      <nav style={{ position:'fixed', bottom:0, left:0, right:0, background:dark?'rgba(10,28,19,0.95)':'rgba(255,255,255,0.97)', backdropFilter:'blur(20px)', borderTop:`1px solid ${D.border}`, padding:'10px 0 16px', display:'flex', justifyContent:'space-around', zIndex:50 }}>
         {[
           { icon:'🏠', label:'홈',  href:'/shop',        active:false },
           { icon:'🔍', label:'상품', href:'/shop',        active:false },

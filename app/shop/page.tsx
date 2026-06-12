@@ -175,13 +175,13 @@ export default function ShopPage() {
     setMemberType('일반')
   }
 
-  const bg = dark ? '#0a0e1a' : '#f0faf9'
-  const card = dark ? '#111827' : '#ffffff'
-  const text = dark ? '#f0f0ee' : '#0f172a'
-  const sub = dark ? '#6b7280' : '#64748b'
-  const border = dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)'
-  const headerBg = dark ? 'rgba(10,14,26,0.95)' : 'rgba(240,250,249,0.95)'
-  const inputBg = dark ? '#1a2235' : '#e8f5f3'
+  const bg = dark ? '#0a1c13' : '#f0faf9'
+  const card = dark ? '#102a1d' : '#ffffff'
+  const text = dark ? '#eaf5ee' : '#0f172a'
+  const sub = dark ? '#86a394' : '#64748b'
+  const border = dark ? 'rgba(52,211,153,0.13)' : 'rgba(0,0,0,0.07)'
+  const headerBg = dark ? 'rgba(10,28,19,0.95)' : 'rgba(240,250,249,0.95)'
+  const inputBg = dark ? '#15391f' : '#e8f5f3'
 
   return (
     <div style={{ background: bg, color: text, minHeight: '100vh', fontFamily: "'Pretendard','Apple SD Gothic Neo',sans-serif", overflowX: 'hidden' }}>
@@ -363,7 +363,7 @@ export default function ShopPage() {
       {/* ── 히어로 섹션 ── */}
       <section style={{
         background: dark
-          ? 'linear-gradient(160deg,#0a1628 0%,#0d2137 50%,#0a1628 100%)'
+          ? 'linear-gradient(160deg,#0d2a1d 0%,#103024 50%,#0a1c13 100%)'
           : 'linear-gradient(160deg,#e8f8f5 0%,#dff4f8 50%,#e8f8f5 100%)',
         padding: '60px 20px 80px', position: 'relative', overflow: 'hidden'
       }}>
@@ -691,7 +691,7 @@ export default function ShopPage() {
       {/* ── 프로모션 애니메이션 섹션 ── */}
       <section style={{
         padding: '80px 20px 60px',
-        background: dark ? '#0a0e1a' : '#f0faf9',
+        background: dark ? '#0a1c13' : '#f0faf9',
         position: 'relative', zIndex: 1,
       }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto', textAlign: 'center' }}>
@@ -713,7 +713,7 @@ export default function ShopPage() {
           </h2>
 
           <div style={{
-            background: dark ? '#111827' : 'white',
+            background: dark ? '#102a1d' : 'white',
             border: `1px solid ${dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
             borderRadius: '28px', overflow: 'hidden',
             boxShadow: dark ? '0 40px 80px rgba(0,0,0,0.5)' : '0 20px 60px rgba(22,163,74,0.12)',
@@ -973,7 +973,7 @@ export default function ShopPage() {
                   {/* 이미지 */}
                   <div style={{
                     aspectRatio: '4/3', position: 'relative', overflow: 'hidden',
-                    background: dark ? '#1a2235' : 'linear-gradient(135deg,#e8f8f5,#dff4f8)'
+                    background: dark ? '#15391f' : 'linear-gradient(135deg,#e8f8f5,#dff4f8)'
                   }}>
                     {p.image_url ? (
                       <img src={p.image_url} alt={p.name}
