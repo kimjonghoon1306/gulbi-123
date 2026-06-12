@@ -151,7 +151,10 @@ export default function CartPage() {
             company_name: memberInfo?.business_name || memberInfo?.name || '',
             business_number: memberInfo?.business_number || '',
             manager_name: memberInfo?.name || '',
-            contact: orderForm.evidenceContact || memberInfo?.contact || '',
+            contact: memberInfo?.contact || '',                                  // 연락처(전화)
+            invoicee_ceo_name: memberInfo?.business_ceo || memberInfo?.name || '', // 대표자명
+            invoicee_addr: memberInfo?.business_address || '',                    // 사업장 주소
+            invoicee_email: orderForm.evidenceContact || memberInfo?.email || '', // 세금계산서 수신 이메일
             amount: totalAmount - vatAmount,   // 공급가액(과세 공급가 + 면세금액)
             tax_amount: vatAmount,             // 면세 상품엔 0
             total_amount: totalAmount,

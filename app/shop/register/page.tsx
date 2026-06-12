@@ -12,7 +12,7 @@ export default function ShopRegisterPage() {
   const [memberType, setMemberType] = useState<MemberType>('일반')
   const [form, setForm] = useState({
     email: '', password: '', confirmPw: '', name: '', contact: '',
-    businessName: '', businessNumber: ''
+    businessName: '', businessNumber: '', businessCeo: '', businessAddress: ''
   })
   const [showPw, setShowPw] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -42,8 +42,8 @@ export default function ShopRegisterPage() {
     if (form.password.length < 6) {
       return setError('비밀번호는 6자 이상이어야 합니다.')
     }
-    if ((memberType === '소매업' || memberType === '도매업') && (!form.businessName || !form.businessNumber)) {
-      return setError('업체명과 사업자번호를 입력해주세요.')
+    if ((memberType === '소매업' || memberType === '도매업') && (!form.businessName || !form.businessNumber || !form.businessCeo || !form.businessAddress)) {
+      return setError('업체명·사업자번호·대표자명·사업장 주소를 모두 입력해주세요. (세금계산서 발행에 필요)')
     }
     setLoading(true)
     setError('')
@@ -59,6 +59,8 @@ export default function ShopRegisterPage() {
             member_type: memberType,
             business_name: form.businessName || null,
             business_number: form.businessNumber || null,
+            business_ceo: form.businessCeo || null,
+            business_address: form.businessAddress || null,
           }
         }
       })
@@ -94,6 +96,8 @@ export default function ShopRegisterPage() {
           member_type: memberType,
           business_name: form.businessName || null,
           business_number: form.businessNumber || null,
+          business_ceo: form.businessCeo || null,
+          business_address: form.businessAddress || null,
           status,
         }, { onConflict: 'id' })
         if (insertError) return setError(`정보 저장 중 오류가 발생했어요: ${insertError.message}`)
@@ -251,6 +255,8 @@ export default function ShopRegisterPage() {
                     {[
                       { label: '업체명 *', key: 'businessName', placeholder: '예) 온종일팜 거래처' },
                       { label: '사업자번호 *', key: 'businessNumber', placeholder: '000-00-00000' },
+                      { label: '대표자명 *', key: 'businessCeo', placeholder: '대표자 성함' },
+                      { label: '사업장 주소 *', key: 'businessAddress', placeholder: '세금계산서에 표기될 주소' },
                     ].map(f => (
                       <div key={f.key}>
                         <label className="block text-xs font-bold mb-1.5 tracking-wide" style={{ color: D.sub }}>{f.label}</label>

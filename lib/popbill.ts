@@ -65,10 +65,11 @@ export function issueTaxinvoice(inv: any): Promise<{ mgtKey: string; result: any
     invoiceeType: '사업자',
     invoiceeCorpNum: onlyNum(inv.business_number),
     invoiceeCorpName: inv.company_name || '',
-    invoiceeCEOName: inv.manager_name || inv.company_name || '',
+    invoiceeCEOName: inv.invoicee_ceo_name || inv.manager_name || inv.company_name || '',
+    invoiceeAddr: inv.invoicee_addr || '',
     invoiceeContactName1: inv.manager_name || '',
     invoiceeTEL1: inv.contact || '',
-    invoiceeEmail1: inv.email || '',
+    invoiceeEmail1: inv.invoicee_email || inv.email || '',
     supplyCostTotal: String(supplyCost), taxTotal: String(tax), totalAmount: String(total),
     detailList: [{
       serialNum: 1, purchaseDT: writeDate, itemName: '농수산물 외',
