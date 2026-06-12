@@ -407,6 +407,7 @@ export default function CartPage() {
                     </div>
                   ) : (
                     <>
+                      <p style={{ fontSize:'11.5px', color:D.sub, margin:'0 0 8px' }}>증빙(세금계산서·현금영수증)이 필요 없으면 <b style={{ color:D.text }}>발행안함</b>을 선택하세요.</p>
                       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px' }}>
                         {[{ label: isBiz ? '세금계산서' : '현금영수증', icon:'🧾' }, { label:'발행안함', icon:'🚫' }].map(ev => (
                           <button key={ev.label} onClick={() => setOrderForm(p => ({...p, evidence: ev.label}))}

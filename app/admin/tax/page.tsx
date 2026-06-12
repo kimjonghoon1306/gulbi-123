@@ -16,6 +16,7 @@ type CashReceipt = {
 const STATUS_COLOR: Record<string, string> = {
   '미발행': 'bg-red-100 dark:bg-red-900/30 text-red-500',
   '발행완료': 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400',
+  '발행안함': 'bg-slate-100 dark:bg-gray-700 text-slate-400 dark:text-slate-500',
 }
 
 export default function TaxPage() {
@@ -217,7 +218,7 @@ export default function TaxPage() {
                 </div>
               </div>
               <div className="flex gap-2 mt-4 pt-4 border-t border-slate-50 dark:border-gray-700">
-                {['미발행', '발행완료'].map(s => (
+                {['미발행', '발행완료', '발행안함'].map(s => (
                   <button key={s} onClick={() => updateInvoiceStatus(inv.id, s)}
                     className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all duration-150
                       ${inv.status === s ? 'bg-indigo-500 text-white' : 'bg-slate-50 dark:bg-gray-700 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-gray-600'}`}>
@@ -262,7 +263,7 @@ export default function TaxPage() {
                 </div>
               </div>
               <div className="flex gap-2 mt-4 pt-4 border-t border-slate-50 dark:border-gray-700">
-                {['미발행', '발행완료'].map(s => (
+                {['미발행', '발행완료', '발행안함'].map(s => (
                   <button key={s} onClick={() => updateReceiptStatus(rec.id, s)}
                     className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all duration-150
                       ${rec.status === s ? 'bg-indigo-500 text-white' : 'bg-slate-50 dark:bg-gray-700 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-gray-600'}`}>
@@ -319,6 +320,7 @@ export default function TaxPage() {
                       className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
                       <option>미발행</option>
                       <option>발행완료</option>
+                      <option>발행안함</option>
                     </select>
                   </div>
                   <div>
@@ -360,6 +362,7 @@ export default function TaxPage() {
                       className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
                       <option>미발행</option>
                       <option>발행완료</option>
+                      <option>발행안함</option>
                     </select>
                   </div>
                   <div>
