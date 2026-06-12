@@ -65,8 +65,8 @@ export async function middleware(request: NextRequest) {
 
   if (pathname.startsWith('/supplier') && !isSupplierPublic) {
     if (!user) return NextResponse.redirect(new URL('/supplier/login', request.url))
-    // 승인된 공급사가 아니면(손님/미승인) 접근 차단
-    if (!isApprovedSupplier(await supplierStatus())) {
+    // 관리자(만능키)는 공급업체 포털 그대로 통과. 그 외엔 승인된 공급사만.
+    if (!(await checkAdmin()) && !isApprovedSupplier(await supplierStatus())) {
       return NextResponse.redirect(new URL('/supplier/login', request.url))
     }
   }
