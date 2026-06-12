@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
+import { COURIERS } from '@/lib/tracking'
 
 type Order = {
   id: string; order_number: string; company_name: string; contact: string
   address: string; note: string; payment_method: string; status: string
   total_amount: number; created_at: string; payment_key?: string; paid_amount?: number
+  courier_code?: string | null; tracking_number?: string | null
 }
 type OrderItem = {
   id?: string; product_id: string; product_name: string
@@ -32,6 +34,9 @@ export default function WholesalePage() {
   const [editOrder, setEditOrder] = useState<Order | null>(null)
   const [viewOrder, setViewOrder] = useState<Order | null>(null)
   const [viewItems, setViewItems] = useState<OrderItem[]>([])
+  const [courierInput, setCourierInput] = useState('')
+  const [trackingInput, setTrackingInput] = useState('')
+  const [trackSaved, setTrackSaved] = useState(false)
   const [filterStatus, setFilterStatus] = useState('전체')
   const [search, setSearch] = useState('')
   const [form, setForm] = useState({ company_name: '', contact: '', address: '', note: '', payment_method: '계좌이체', status: '접수' })
@@ -67,8 +72,21 @@ export default function WholesalePage() {
 
   const openView = async (o: Order) => {
     setViewOrder(o)
+    setCourierInput(o.courier_code || '')
+    setTrackingInput(o.tracking_number || '')
+    setTrackSaved(false)
     const { data } = await supabase.from('wholesale_order_items').select('*').eq('order_id', o.id)
     setViewItems(data || [])
+  }
+
+  const saveTracking = async () => {
+    if (!viewOrder) return
+    const patch = { courier_code: courierInput || null, tracking_number: trackingInput.trim() || null }
+    await supabase.from('wholesale_orders').update(patch).eq('id', viewOrder.id)
+    setViewOrder({ ...viewOrder, ...patch })
+    setOrders(prev => prev.map(o => o.id === viewOrder.id ? { ...o, ...patch } : o))
+    setTrackSaved(true)
+    setTimeout(() => setTrackSaved(false), 2000)
   }
 
   const addItem = () => setItems([...items, { product_id: '', product_name: '', quantity: 1, unit: 'kg', unit_price: 0, total_price: 0 }])
@@ -375,6 +393,27 @@ export default function WholesalePage() {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* 송장 / 배송추적 */}
+              <div>
+                <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">🚚 송장 등록</p>
+                <div className="flex gap-2">
+                  <select value={courierInput} onChange={e => setCourierInput(e.target.value)}
+                    className="w-32 px-3 py-2.5 rounded-xl text-sm border-2 border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-slate-700 dark:text-slate-200 outline-none">
+                    <option value="">택배사</option>
+                    {COURIERS.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
+                  </select>
+                  <input value={trackingInput} onChange={e => setTrackingInput(e.target.value)}
+                    placeholder="송장번호"
+                    className="flex-1 px-3 py-2.5 rounded-xl text-sm border-2 border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-slate-700 dark:text-slate-200 outline-none" />
+                  <button onClick={saveTracking}
+                    className="px-4 py-2.5 rounded-xl text-sm font-bold text-white shadow-md"
+                    style={{ background: trackSaved ? '#16a34a' : 'linear-gradient(135deg,#7c3aed,#6366f1)' }}>
+                    {trackSaved ? '✓ 저장' : '저장'}
+                  </button>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-1.5">송장 등록 시 거래처가 마이페이지에서 실시간 배송조회를 할 수 있어요.</p>
               </div>
               <div className="flex gap-2 pt-2">
                 <button onClick={() => { setViewOrder(null); openEdit(viewOrder) }} className="flex-1 py-2.5 rounded-xl text-sm font-bold border-2 border-violet-200 dark:border-violet-800 text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-colors">✏️ 수정</button>
