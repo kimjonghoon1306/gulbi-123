@@ -18,6 +18,7 @@ const menuGroups = [
     items: [
       { href: '/admin/products',  icon: '🧺', label: '상품관리' },
       { href: '/admin/inventory', icon: '📦', label: '재고관리', badge: true },
+      { href: '/admin/restock',   icon: '🔔', label: '재입고알림' },
     ],
   },
   {

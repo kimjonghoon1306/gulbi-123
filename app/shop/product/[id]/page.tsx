@@ -98,6 +98,23 @@ export default function ProductDetailPage() {
   const [related, setRelated] = useState<any[]>([])
   const [recentProducts, setRecentProducts] = useState<any[]>([])
 
+  // 재입고 알림
+  const [restockDone, setRestockDone] = useState(false)
+  const [restockContact, setRestockContact] = useState('')
+  const [restockLoading, setRestockLoading] = useState(false)
+  const requestRestock = async () => {
+    const contact = (restockContact || memberInfo?.contact || '').trim()
+    if (!contact) { alert('연락받으실 전화번호 또는 이메일을 입력해주세요.'); return }
+    setRestockLoading(true)
+    const { error } = await supabase.from('restock_alerts').upsert({
+      product_id: id, user_id: user?.id || null,
+      name: memberInfo?.name || '', contact,
+    }, { onConflict: 'product_id,user_id' })
+    setRestockLoading(false)
+    if (error && !error.message.includes('duplicate')) { alert('신청 중 오류가 발생했어요.'); return }
+    setRestockDone(true)
+  }
+
   // 최근 본 상품 로드 (자기 자신 제외)
   const fetchRecentProducts = async () => {
     try {
@@ -434,7 +451,28 @@ export default function ProductDetailPage() {
                 </Link>
               </div>
             ) : product.stock === 0 ? (
-              <button disabled style={{width:'100%',padding:'16px',borderRadius:'14px',background:D.input,color:D.sub,fontSize:'15px',fontWeight:700,border:'none',cursor:'not-allowed'}}>품절</button>
+              <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
+                <button disabled style={{width:'100%',padding:'16px',borderRadius:'14px',background:D.input,color:D.sub,fontSize:'15px',fontWeight:700,border:'none',cursor:'not-allowed'}}>😢 품절되었어요</button>
+                {restockDone ? (
+                  <div style={{padding:'16px',borderRadius:'14px',background:dark?'rgba(74,222,128,0.1)':'rgba(22,163,74,0.07)',border:`1px solid ${dark?'rgba(74,222,128,0.25)':'rgba(22,163,74,0.2)'}`,textAlign:'center'}}>
+                    <p style={{fontSize:'14px',fontWeight:800,color:D.gtext,margin:'0 0 2px'}}>🔔 재입고 알림 신청 완료!</p>
+                    <p style={{fontSize:'12px',color:D.sub,margin:0}}>다시 입고되면 연락드릴게요.</p>
+                  </div>
+                ) : (
+                  <div style={{padding:'14px',borderRadius:'14px',background:D.input}}>
+                    <p style={{fontSize:'13px',fontWeight:800,color:D.text,margin:'0 0 8px'}}>🔔 재입고되면 알림 받기</p>
+                    <div style={{display:'flex',gap:'8px'}}>
+                      <input value={restockContact} onChange={e=>setRestockContact(e.target.value)}
+                        placeholder={memberInfo?.contact ? `${memberInfo.contact} (기본)` : '전화번호 또는 이메일'}
+                        style={{flex:1,padding:'12px 14px',borderRadius:'12px',border:`2px solid ${D.border}`,background:D.card,color:D.text,fontSize:'13px',outline:'none',boxSizing:'border-box'}} />
+                      <button onClick={requestRestock} disabled={restockLoading}
+                        style={{padding:'0 18px',borderRadius:'12px',border:'none',cursor:'pointer',background:'linear-gradient(135deg,#16a34a,#15803d)',color:'white',fontSize:'14px',fontWeight:800,whiteSpace:'nowrap'}}>
+                        {restockLoading?'...':'신청'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             ) : (
               <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 2fr',gap:'10px'}}>
