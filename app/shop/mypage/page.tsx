@@ -32,9 +32,9 @@ const STATUS_LABEL = ['접수', '준비중', '출고', '완료']
 const STATUS_ICON = ['📋', '📦', '🚚', '✅']
 
 const TYPE_CONFIG = {
-  '일반':  { color: '#6366f1', gradient: 'linear-gradient(135deg,#6366f1,#8b5cf6)', label: '일반 구매자', icon: '🛒', badge: '일반회원' },
-  '소매업': { color: '#14532d', gradient: 'linear-gradient(135deg,#14532d,#15803d)', label: '소매 유통',   icon: '🏪', badge: '소매회원' },
-  '도매업': { color: '#7c3aed', gradient: 'linear-gradient(135deg,#7c3aed,#db2777)', label: '도매 유통',   icon: '🏭', badge: '도매회원' },
+  '일반':  { color: '#15803d', gradient: 'linear-gradient(135deg,#16a34a,#15803d)', label: '일반 구매자', icon: '🛒', badge: '일반회원' },
+  '소매업': { color: '#14532d', gradient: 'linear-gradient(135deg,#15803d,#14532d)', label: '소매 유통',   icon: '🏪', badge: '소매회원' },
+  '도매업': { color: '#047857', gradient: 'linear-gradient(135deg,#059669,#047857)', label: '도매 유통',   icon: '🏭', badge: '도매회원' },
 }
 
 const GRADE_INFO = [
@@ -349,12 +349,14 @@ function MyPageInner() {
             { key:'settings', icon:'⚙️', label:'설정' },
           ].map(t => (
             <button key={t.key} onClick={() => setTab(t.key as any)} className="mp-tab"
-              style={{ flex:1, padding:'15px 8px', borderRadius:'15px', border:'none', cursor:'pointer', fontSize:'15px', fontWeight:800, transition:'all 0.25s cubic-bezier(0.34,1.56,0.64,1)',
+              style={{ flex:1, padding:'12px 6px', borderRadius:'15px', border:'none', cursor:'pointer', fontWeight:800, transition:'all 0.25s cubic-bezier(0.34,1.56,0.64,1)',
+                display:'flex', flexDirection:'column', alignItems:'center', gap:'5px',
                 background: tab === t.key ? tc.gradient : 'transparent',
                 color: tab === t.key ? 'white' : D.sub,
                 boxShadow: tab === t.key ? `0 8px 20px ${tc.color}45` : 'none',
                 transform: tab === t.key ? 'translateY(-1px)' : 'none' }}>
-              {t.icon} {t.label}
+              <span style={{ fontSize:'22px', lineHeight:1 }}>{t.icon}</span>
+              <span className="mp-tab-label" style={{ fontSize:'12px', whiteSpace:'nowrap' }}>{t.label}</span>
             </button>
           ))}
         </div>
@@ -897,17 +899,28 @@ function MyPageInner() {
         .stat-card:hover { transform: translateY(-4px); background: rgba(255,255,255,0.26) !important; }
 
         /* 탭 hover */
-        .mp-tab:hover { transform: translateY(-2px); }
+        .mp-tab:hover { transform: translateY(-2px); filter: brightness(1.06); }
+        .mp-tab:active { transform: scale(0.96); }
 
-        /* 카드 등장 */
-        .my-orders > div { animation: mpFadeUp 0.5s ease both; }
+        /* 카드 등장 + hover 부양 */
+        .my-orders > div { animation: mpFadeUp 0.5s ease both; transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s; }
+        .my-orders > div:hover { transform: translateY(-4px); box-shadow: 0 16px 36px rgba(0,0,0,0.1); }
+
+        /* 버튼/카드 hover 공통 */
+        .mp-track-btn { transition: transform 0.2s, filter 0.2s; }
+        .mp-track-btn:hover { transform: translateY(-2px); filter: brightness(1.08); }
+        .mp-track-btn:active { transform: scale(0.97); }
+        .quick-card { transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s; }
+        .quick-card:hover { transform: translateY(-4px); box-shadow: 0 14px 32px rgba(0,0,0,0.1); }
+        button, a { -webkit-tap-highlight-color: transparent; }
 
         /* PC: 좌우 2단 대시보드 (왼쪽 프로필+메뉴 고정 / 오른쪽 콘텐츠 꽉) */
         @media (min-width: 900px) {
           .mp-layout { display: grid; grid-template-columns: 340px 1fr; gap: 26px; align-items: start; }
           .mp-side { position: sticky; top: 84px; }
           .mp-tabs { flex-direction: column !important; }
-          .mp-tab { text-align: left !important; padding: 16px 18px !important; font-size: 16px !important; }
+          .mp-tab { flex-direction: row !important; justify-content: flex-start !important; gap: 12px !important; padding: 16px 18px !important; }
+          .mp-tab-label { font-size: 16px !important; }
           .my-orders { display: grid !important; grid-template-columns: 1fr 1fr; gap: 18px !important; align-items: start; }
         }
         /* 모바일/태블릿: 위아래 스택 */
@@ -980,7 +993,7 @@ function OrderBadge({ status }: { status: string }) {
   const styles: Record<string, { bg: string; color: string }> = {
     '접수':  { bg:'rgba(59,130,246,0.12)',   color:'#3b82f6' },
     '준비중':{ bg:'rgba(245,158,11,0.12)',   color:'#f59e0b' },
-    '출고':  { bg:'rgba(139,92,246,0.12)',  color:'#8b5cf6' },
+    '출고':  { bg:'rgba(13,148,136,0.12)',  color:'#0d9488' },
     '완료':  { bg:'rgba(34,197,94,0.12)',   color:'#22c55e' },
     '취소':  { bg:'rgba(239,68,68,0.12)',   color:'#ef4444' },
   }
