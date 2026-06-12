@@ -263,7 +263,7 @@ function MyPageInner() {
 
       {/* ── 헤더 ── */}
       <header style={{ background:dark?'rgba(13,17,23,0.97)':'rgba(255,255,255,0.97)', backdropFilter:'blur(20px)', borderBottom:`1px solid ${D.border}`, position:'sticky', top:0, zIndex:50 }}>
-        <div style={{ maxWidth:'680px', margin:'0 auto', padding:'0 20px', height:'60px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+        <div style={{ maxWidth:'1040px', margin:'0 auto', padding:'0 20px', height:'60px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
           <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
             <Link href="/shop" style={{ width:'36px', height:'36px', borderRadius:'10px', background:D.input, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'16px', textDecoration:'none', color:D.text, flexShrink:0 }}>←</Link>
             <p style={{ fontWeight:800, fontSize:'16px', margin:0 }}>마이페이지</p>
@@ -280,7 +280,7 @@ function MyPageInner() {
         </div>
       </header>
 
-      <div style={{ maxWidth:'680px', margin:'0 auto', padding:'20px 20px 100px' }}>
+      <div style={{ maxWidth:'1040px', margin:'0 auto', padding:'20px 20px 100px' }}>
 
         {/* ── 프로필 히어로 ── */}
         <div style={{ background:tc.gradient, borderRadius:'28px', padding:'28px 24px', marginBottom:'20px', position:'relative', overflow:'hidden' }}>
@@ -425,9 +425,9 @@ function MyPageInner() {
 
         {/* ════════════════ TAB: ORDERS ════════════════ */}
         {tab === 'orders' && (
-          <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+          <div className="my-orders" style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
             {orders.length === 0 ? (
-              <div style={{ background:D.card, borderRadius:'24px', padding:'56px 20px', textAlign:'center', border:`1px solid ${D.border}` }}>
+              <div style={{ gridColumn:'1 / -1', background:D.card, borderRadius:'24px', padding:'56px 20px', textAlign:'center', border:`1px solid ${D.border}` }}>
                 <p style={{ fontSize:'52px', margin:'0 0 16px' }}>📭</p>
                 <p style={{ fontWeight:800, fontSize:'16px', color:D.text, margin:'0 0 6px' }}>아직 주문 내역이 없어요</p>
                 <p style={{ fontSize:'13px', color:D.sub, margin:'0 0 24px' }}>마음에 드는 상품을 찾아보세요</p>
@@ -542,7 +542,7 @@ function MyPageInner() {
                 </a>
               </div>
             ) : (
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(150px, 1fr))', gap:'12px' }}>
                 {wishlists.map((w: any) => {
                   const p = w.products
                   if (!p) return null
@@ -852,6 +852,11 @@ function MyPageInner() {
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* PC에서 주문 목록 2칸으로 (화면 넓게 활용) */
+        @media (min-width: 760px) {
+          .my-orders { display: grid !important; grid-template-columns: 1fr 1fr; gap: 16px !important; align-items: start; }
+        }
 
         @media (max-width: 640px) {
           /* 주문 배송 단계 - 작은 화면에서 원 크기 축소 */
