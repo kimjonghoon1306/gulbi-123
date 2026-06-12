@@ -31,6 +31,11 @@ export default function ProductDetailPage() {
   const [orderForm, setOrderForm] = useState({ address: '', note: '', payment_method: '계좌이체' })
   const [orderLoading, setOrderLoading] = useState(false)
   const [orderDone, setOrderDone] = useState(false)
+  // 쿠폰 (쿠폰함에서 받은 쿠폰 선택 사용)
+  const [ownedCoupons, setOwnedCoupons] = useState<any[]>([])
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null)
+  const [appliedUcId, setAppliedUcId] = useState<string | null>(null)
+  const [couponMsg, setCouponMsg] = useState<{ ok: boolean; text: string } | null>(null)
   const [cartAdded, setCartAdded] = useState(false)
   const [cartLoading, setCartLoading] = useState(false)
   const popupTimer = useRef<any>(null)
@@ -161,6 +166,9 @@ export default function ProductDetailPage() {
       } else {
         setIsAdmin(true)
       }
+      // 쿠폰함: 받은 쿠폰 중 미사용만
+      const { data: ucs } = await supabase.from('user_coupons').select('id, coupons(*)').eq('user_id', user.id).eq('used', false)
+      setOwnedCoupons((ucs as any) || [])
       const { data: wish } = await supabase.from('wishlists').select('id').eq('user_id', user.id).eq('product_id', id).single()
       setLiked(!!wish)
       fetchReviews(user.id)
@@ -290,6 +298,26 @@ export default function ProductDetailPage() {
   )
 
   const totalPrice = getPrice() * quantity
+
+  // 쿠폰 할인 (cart와 동일 공식)
+  const calcDiscount = (c: any, base: number) => {
+    if (!c) return 0
+    let d = c.discount_type === 'percent' ? Math.floor(base * c.discount_value / 100) : c.discount_value
+    if (c.discount_type === 'percent' && c.max_discount) d = Math.min(d, c.max_discount)
+    return Math.min(d, base)
+  }
+  const couponDiscount = calcDiscount(appliedCoupon, totalPrice)
+  const finalPrice = Math.max(0, totalPrice - couponDiscount)
+  const selectCoupon = (uc: any) => {
+    const c = uc.coupons; if (!c) return
+    if (!c.is_active) { setCouponMsg({ ok: false, text: '사용 중지된 쿠폰이에요.' }); return }
+    if (c.starts_at && new Date(c.starts_at) > new Date()) { setCouponMsg({ ok: false, text: '아직 사용 기간이 아니에요.' }); return }
+    if (c.expires_at && new Date(c.expires_at) < new Date()) { setCouponMsg({ ok: false, text: '만료된 쿠폰이에요.' }); return }
+    if (totalPrice < (c.min_amount || 0)) { setCouponMsg({ ok: false, text: `${Number(c.min_amount).toLocaleString()}원 이상 주문 시 사용 가능해요.` }); return }
+    setAppliedCoupon(c); setAppliedUcId(uc.id)
+    setCouponMsg({ ok: true, text: `🎉 ${calcDiscount(c, totalPrice).toLocaleString()}원 할인 적용!` })
+  }
+  const removeCoupon = () => { setAppliedCoupon(null); setAppliedUcId(null); setCouponMsg(null) }
 
   return (
     <div style={{background:D.bg,color:D.text,minHeight:'100vh',fontFamily:"'Pretendard','Apple SD Gothic Neo',sans-serif"}}>
@@ -809,6 +837,50 @@ export default function ProductDetailPage() {
                       style={{width:'100%',padding:'14px 16px',borderRadius:'14px',border:`2px solid ${D.border}`,background:D.input,color:D.text,fontSize:'13px',outline:'none',resize:'none',boxSizing:'border-box'}} />
                   </div>
 
+                  {/* 쿠폰 사용하기 (쿠폰함에서 선택) */}
+                  <div>
+                    <label style={{display:'block',fontSize:'13px',fontWeight:800,color:D.text,marginBottom:'10px'}}>🎟️ 쿠폰 사용하기</label>
+                    {appliedCoupon ? (
+                      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',background:dark?'rgba(74,222,128,0.1)':'rgba(22,163,74,0.07)',border:`1px solid ${D.border}`,borderRadius:'12px',padding:'12px 14px'}}>
+                        <div>
+                          <p style={{fontSize:'14px',fontWeight:900,color:D.text,margin:0}}>{appliedCoupon.description || appliedCoupon.code}</p>
+                          <p style={{fontSize:'12px',color:D.sub,margin:'2px 0 0'}}>−{couponDiscount.toLocaleString()}원 적용중</p>
+                        </div>
+                        <button onClick={removeCoupon} style={{fontSize:'12px',fontWeight:700,color:D.sub,background:'none',border:`1px solid ${D.border}`,borderRadius:'10px',padding:'7px 12px',cursor:'pointer'}}>해제</button>
+                      </div>
+                    ) : ownedCoupons.length === 0 ? (
+                      <p style={{fontSize:'12px',color:D.sub,margin:0}}>사용할 수 있는 쿠폰이 없어요. <a href="/shop/mypage?tab=coupons" style={{color:D.text,fontWeight:700,textDecoration:'underline'}}>쿠폰함에서 받기 →</a></p>
+                    ) : (
+                      <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
+                        {ownedCoupons.map((uc:any) => {
+                          const c = uc.coupons; if (!c) return null
+                          const dtext = c.discount_type === 'percent' ? `${c.discount_value}% 할인${c.max_discount?` (최대 ${Number(c.max_discount).toLocaleString()}원)`:''}` : `${Number(c.discount_value).toLocaleString()}원 할인`
+                          const usable = totalPrice >= (c.min_amount || 0)
+                          return (
+                            <button key={uc.id} onClick={() => selectCoupon(uc)} disabled={!usable}
+                              style={{display:'flex',alignItems:'center',justifyContent:'space-between',textAlign:'left',gap:'10px',padding:'12px 14px',borderRadius:'12px',border:`2px solid ${D.border}`,background:D.input,cursor:usable?'pointer':'not-allowed',opacity:usable?1:0.5}}>
+                              <span>
+                                <span style={{display:'block',fontSize:'14px',fontWeight:900,color:D.text}}>{dtext}</span>
+                                <span style={{display:'block',fontSize:'11px',color:D.sub,marginTop:'2px'}}>{c.created_by_role==='supplier'?'공급사 발행':'본사 발행'}{c.min_amount?` · ${Number(c.min_amount).toLocaleString()}원 이상`:''}</span>
+                              </span>
+                              <span style={{fontSize:'12px',fontWeight:800,color:D.sub,whiteSpace:'nowrap'}}>{usable?'사용':'금액부족'}</span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
+                    {couponMsg && <p style={{fontSize:'12px',fontWeight:700,color:couponMsg.ok?'#16a34a':'#ef4444',margin:'10px 0 0'}}>{couponMsg.text}</p>}
+                  </div>
+
+                  {/* 결제 요약 (쿠폰 적용 시 차감 표시) */}
+                  {appliedCoupon && (
+                    <div style={{background:D.input,borderRadius:'14px',padding:'14px 16px',display:'flex',flexDirection:'column',gap:'6px'}}>
+                      <div style={{display:'flex',justifyContent:'space-between',fontSize:'13px',color:D.sub}}><span>상품 금액</span><span>{totalPrice.toLocaleString()}원</span></div>
+                      <div style={{display:'flex',justifyContent:'space-between',fontSize:'13px',color:'#16a34a',fontWeight:700}}><span>쿠폰 할인</span><span>−{couponDiscount.toLocaleString()}원</span></div>
+                      <div style={{display:'flex',justifyContent:'space-between',fontSize:'15px',color:D.text,fontWeight:900,borderTop:`1px solid ${D.border}`,paddingTop:'6px',marginTop:'2px'}}><span>최종 결제액</span><span>{finalPrice.toLocaleString()}원</span></div>
+                    </div>
+                  )}
+
                   {/* 주문하기 버튼 */}
                   <button
                     onClick={async () => {
@@ -836,7 +908,8 @@ export default function ProductDetailPage() {
                           note: orderForm.note,
                           payment_method: isToss ? '카드(토스)' : orderForm.payment_method,
                           status: isToss ? '결제대기' : '접수',
-                          total_amount: totalPrice,
+                          total_amount: finalPrice,
+                          coupon_code: appliedCoupon?.code || null,
                         }
                         const { data: newOrder } = await supabase.from(table).insert(orderData).select().single()
                         if (newOrder) {
@@ -849,12 +922,17 @@ export default function ProductDetailPage() {
                             unit_price: getPrice(),
                             total_price: totalPrice,
                           })
+                          // 쿠폰 사용처리
+                          if (appliedCoupon) {
+                            try { await supabase.rpc('increment_coupon_usage', { coupon_code: appliedCoupon.code }) } catch {}
+                            if (appliedUcId) { try { await supabase.from('user_coupons').update({ used: true, used_at: new Date().toISOString(), order_ref: `${table}#${newOrder.id}` }).eq('id', appliedUcId) } catch {} }
+                          }
                         }
                         // 카드 결제 → 토스 결제창 호출
                         if (isToss && newOrder) {
                           const toss = await loadToss()
                           await toss.requestPayment('카드', {
-                            amount: totalPrice,
+                            amount: finalPrice,
                             orderId: String(newOrder.id),
                             orderName: product.name,
                             customerName: memberInfo?.name || '고객',
@@ -869,7 +947,7 @@ export default function ProductDetailPage() {
                     }}
                     disabled={orderLoading}
                     style={{width:'100%',padding:'18px',borderRadius:'16px',background:orderLoading ? D.input : 'linear-gradient(135deg,#15803d,#16a34a)',color:orderLoading ? D.sub : 'white',fontSize:'17px',fontWeight:900,border:'none',cursor:orderLoading ? 'not-allowed' : 'pointer',boxShadow:orderLoading ? 'none' : '0 10px 28px rgba(22,163,74,0.4)',transition:'all 0.2s',letterSpacing:'-0.3px'}}>
-                    {orderLoading ? '⏳ 주문 처리 중...' : `🛒 ${totalPrice.toLocaleString()}원 주문하기`}
+                    {orderLoading ? '⏳ 주문 처리 중...' : `🛒 ${finalPrice.toLocaleString()}원 주문하기`}
                   </button>
                 </div>
               </>
