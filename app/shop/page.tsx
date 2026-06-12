@@ -44,6 +44,8 @@ const POPUP_ACTIONS = ['방금 구매했어요 🛒','장바구니에 담았어�
 export default function ShopPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
+  const [reviewStats, setReviewStats] = useState<Record<string, { sum: number; count: number }>>({})
+  const [sortBy, setSortBy] = useState<'추천순' | '평점순' | '최신순'>('추천순')
   const [selectedCat, setSelectedCat] = useState('전체')
   const [search, setSearch] = useState('')
   const [searchFocus, setSearchFocus] = useState(false)
@@ -90,12 +92,23 @@ export default function ShopPage() {
 
   const fetchData = async () => {
     setLoading(true)
-    const [{ data: p }, { data: c }] = await Promise.all([
+    const [{ data: p }, { data: c }, { data: rv }] = await Promise.all([
       supabase.from('products').select('*').eq('is_active', true).order('created_at', { ascending: false }),
-      supabase.from('categories').select('*').order('sort_order')
+      supabase.from('categories').select('*').order('sort_order'),
+      supabase.from('reviews').select('product_id, rating')
     ])
     setProducts(p || [])
     setCategories(c || [])
+    // 리뷰 통계 집계 (상품별 별점합/개수) → 베이지안 상위노출 랭킹에 사용
+    const stats: Record<string, { sum: number; count: number }> = {}
+    for (const r of (rv || []) as any[]) {
+      if (!r.product_id) continue
+      const s = stats[r.product_id] || { sum: 0, count: 0 }
+      s.sum += r.rating || 0
+      s.count += 1
+      stats[r.product_id] = s
+    }
+    setReviewStats(stats)
     setLoading(false)
   }
 
@@ -196,6 +209,28 @@ export default function ShopPage() {
       || p.name.toLowerCase().includes(q)
       || (p.description || '').toLowerCase().includes(q)
     return matchCat && matchSearch
+  })
+
+  // ── 리뷰 별점 + 후기수 기반 베이지안 상위노출 랭킹 (네이버식) ──
+  // score = (별점합 + 전체평균*C) / (후기수 + C)
+  // 후기 1개 만점보다, 후기 많은 4점대가 위로. C=신뢰상수(후기 적을수록 전체평균 쪽으로 끌림)
+  const C = 5
+  const ratingOf = (id: string) => { const s = reviewStats[id]; return s && s.count > 0 ? s.sum / s.count : 0 }
+  const countOf = (id: string) => reviewStats[id]?.count || 0
+  const allStats = Object.values(reviewStats)
+  const gSum = allStats.reduce((a, s) => a + s.sum, 0)
+  const gCount = allStats.reduce((a, s) => a + s.count, 0)
+  const globalMean = gCount > 0 ? gSum / gCount : 4.5
+  const bayes = (id: string) => {
+    const s = reviewStats[id]
+    const sum = s?.sum || 0
+    const n = s?.count || 0
+    return (sum + globalMean * C) / (n + C)
+  }
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortBy === '최신순') return 0 // products는 이미 created_at 역순
+    if (sortBy === '평점순') return (ratingOf(b.id) - ratingOf(a.id)) || (countOf(b.id) - countOf(a.id))
+    return bayes(b.id) - bayes(a.id) // 추천순(베이지안)
   })
 
   const handleLogout = async () => {
@@ -993,18 +1028,37 @@ export default function ShopPage() {
         </div>
 
         {/* ── 상품 수 & 필터 ── */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', gap: '10px', flexWrap: 'wrap' }}>
           <p style={{ fontSize: '15px', color: sub, fontWeight: 600 }}>
             총 <strong style={{ color: text, fontSize: '18px' }}>{filtered.length}</strong>개 상품
           </p>
-          {getPriceLabel() && (
-            <span style={{
-              fontSize: '12px', fontWeight: 800, padding: '6px 14px',
-              borderRadius: '100px',
-              background: 'linear-gradient(135deg,#14532d,#15803d)',
-              color: 'white'
-            }}>{getPriceLabel()} 기준 💰</span>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            {getPriceLabel() && (
+              <span style={{
+                fontSize: '12px', fontWeight: 800, padding: '6px 14px',
+                borderRadius: '100px',
+                background: 'linear-gradient(135deg,#14532d,#15803d)',
+                color: 'white'
+              }}>{getPriceLabel()} 기준 💰</span>
+            )}
+            {/* 정렬 선택 — 추천순(별점+후기수 베이지안) 기본 */}
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              style={{
+                fontSize: '14px', fontWeight: 800, color: text,
+                padding: '9px 14px', borderRadius: '12px',
+                border: `2px solid ${border}`, background: card,
+                cursor: 'pointer', fontFamily: 'inherit', appearance: 'none',
+                backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2315803d' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>")`,
+                backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', paddingRight: '32px'
+              }}
+            >
+              <option value="추천순">⭐ 추천순</option>
+              <option value="평점순">평점 높은순</option>
+              <option value="최신순">최신순</option>
+            </select>
+          </div>
         </div>
 
         {/* ── 상품 그리드 ── */}
@@ -1040,7 +1094,7 @@ export default function ShopPage() {
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: '20px' }}>
-            {filtered.map((p, i) => (
+            {sorted.map((p, i) => (
               <Link key={p.id} href={`/shop/product/${p.id}`} style={{ textDecoration: 'none' }}>
                 <div className="product-card" style={{
                   background: card,
@@ -1100,11 +1154,13 @@ export default function ShopPage() {
                       )}
                       {i < 3 && p.stock > 0 && (
                         <span style={{
-                          background: 'linear-gradient(135deg,#14532d,#15803d)',
+                          background: sortBy === '최신순'
+                            ? 'linear-gradient(135deg,#14532d,#15803d)'
+                            : 'linear-gradient(135deg,#d97706,#f59e0b)',
                           color: 'white', fontSize: '10px', fontWeight: 800,
                           padding: '4px 10px', borderRadius: '100px',
-                          boxShadow: '0 4px 12px rgba(22,163,74,0.4)'
-                        }}>✨ NEW</span>
+                          boxShadow: sortBy === '최신순' ? '0 4px 12px rgba(22,163,74,0.4)' : '0 4px 12px rgba(245,158,11,0.45)'
+                        }}>{sortBy === '최신순' ? '✨ NEW' : '👑 인기'}</span>
                       )}
                     </div>
                   </div>
@@ -1112,6 +1168,17 @@ export default function ShopPage() {
                   {/* 정보 */}
                   <div style={{ padding: '18px' }}>
                     <p style={{ fontSize: '15px', fontWeight: 800, color: text, marginBottom: '4px', lineHeight: 1.3 }}>{p.name}</p>
+                    {/* ⭐ 별점 + 후기수 (베이지안 랭킹 기준 노출) */}
+                    {countOf(p.id) > 0 ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '8px' }}>
+                        <span style={{ color: '#f59e0b', fontSize: '13px', fontWeight: 900, letterSpacing: '-0.5px' }}>
+                          ⭐ {ratingOf(p.id).toFixed(1)}
+                        </span>
+                        <span style={{ fontSize: '12px', color: sub, fontWeight: 600 }}>후기 {countOf(p.id)}개</span>
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: '12px', color: sub, fontWeight: 500, marginBottom: '8px', opacity: 0.7 }}>아직 후기 없음</div>
+                    )}
                     <p style={{ fontSize: '12px', color: sub, marginBottom: '14px', fontWeight: 500 }}>{p.unit} 단위</p>
 
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
