@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { openPostcode } from '@/lib/postcode'
+import { courierName } from '@/lib/tracking'
 
 type Member = {
   id: string; email: string; name: string; contact: string
@@ -18,6 +19,7 @@ type Order = {
   id: string; order_number: string; customer_name: string; contact: string
   address: string; note: string; payment_method: string; status: string
   total_amount: number; created_at: string
+  courier_code?: string; tracking_number?: string
 }
 
 type OrderItem = {
@@ -85,6 +87,26 @@ function MyPageInner() {
       setAddrMsg('✅ 기본 배송지가 저장됐어요')
     }
     setAddrSaving(false)
+  }
+
+  // ── 배송 조회 ──
+  const [trackModal, setTrackModal] = useState(false)
+  const [trackLoading, setTrackLoading] = useState(false)
+  const [trackData, setTrackData] = useState<any>(null)
+
+  const openTracking = async (order: Order) => {
+    if (!order.courier_code || !order.tracking_number) return
+    setTrackModal(true); setTrackLoading(true); setTrackData(null)
+    try {
+      const res = await fetch('/api/tracking', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ courier: order.courier_code, invoice: order.tracking_number }),
+      })
+      const data = await res.json()
+      setTrackData(data)
+    } catch {
+      setTrackData({ ok: false, error: '배송조회 중 오류가 발생했어요.' })
+    } finally { setTrackLoading(false) }
   }
 
   const changePassword = async () => {
@@ -478,7 +500,14 @@ function MyPageInner() {
                       {order.address      && <p style={{ fontSize:'12px', color:D.sub, margin:0 }}>📍 {order.address}</p>}
                       {order.payment_method && <p style={{ fontSize:'12px', color:D.sub, margin:0 }}>💳 {order.payment_method}</p>}
                       {order.note         && <p style={{ fontSize:'12px', color:D.sub, margin:0 }}>📝 {order.note}</p>}
+                      {order.tracking_number && <p style={{ fontSize:'12px', color:D.sub, margin:0 }}>🚚 {courierName(order.courier_code || '')} {order.tracking_number}</p>}
                     </div>
+                    {order.tracking_number && (
+                      <button onClick={() => openTracking(order)}
+                        style={{ marginTop:'14px', width:'100%', padding:'12px', borderRadius:'12px', border:'none', background:tc.gradient, color:'white', fontSize:'13px', fontWeight:800, cursor:'pointer' }}>
+                        🚚 실시간 배송조회
+                      </button>
+                    )}
                     {order.status === '접수' && (
                       <button
                         onClick={async () => {
@@ -750,6 +779,62 @@ function MyPageInner() {
         )}
 
       </div>
+
+      {/* ── 배송조회 모달 ── */}
+      {trackModal && (
+        <div onClick={() => setTrackModal(false)}
+          style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', backdropFilter:'blur(8px)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:'16px' }}>
+          <div onClick={e => e.stopPropagation()}
+            style={{ background:D.card, width:'100%', maxWidth:'440px', maxHeight:'85vh', overflowY:'auto', borderRadius:'24px', border:`1px solid ${D.border}` }}>
+            <div style={{ position:'sticky', top:0, background:tc.gradient, padding:'18px 22px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <p style={{ fontSize:'16px', fontWeight:900, color:'white', margin:0 }}>🚚 배송 조회</p>
+              <button onClick={() => setTrackModal(false)} style={{ width:'30px', height:'30px', borderRadius:'10px', background:'rgba(255,255,255,0.2)', border:'none', cursor:'pointer', color:'white', fontSize:'15px' }}>✕</button>
+            </div>
+            <div style={{ padding:'22px' }}>
+              {trackLoading ? (
+                <div style={{ textAlign:'center', padding:'40px 0' }}>
+                  <div style={{ width:'40px', height:'40px', borderRadius:'50%', border:'3px solid '+tc.color, borderTopColor:'transparent', animation:'spin 0.8s linear infinite', margin:'0 auto 12px' }} />
+                  <p style={{ fontSize:'13px', color:D.sub, margin:0 }}>배송 정보를 불러오는 중...</p>
+                </div>
+              ) : !trackData?.ok ? (
+                <div style={{ textAlign:'center', padding:'30px 0' }}>
+                  <p style={{ fontSize:'40px', margin:'0 0 10px' }}>📦</p>
+                  <p style={{ fontSize:'13px', color:D.sub, margin:0, lineHeight:1.6 }}>{trackData?.error || '배송 정보를 찾을 수 없어요.'}</p>
+                </div>
+              ) : (
+                <>
+                  <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'4px' }}>
+                    <p style={{ fontSize:'14px', fontWeight:800, color:D.text, margin:0 }}>{trackData.courierName}</p>
+                    <span style={{ fontSize:'11px', fontWeight:800, padding:'3px 10px', borderRadius:'20px', background: trackData.completed ? 'rgba(22,163,74,0.12)' : 'rgba(245,158,11,0.12)', color: trackData.completed ? '#16a34a' : '#d97706' }}>
+                      {trackData.completed ? '✅ 배송완료' : '🚚 배송중'}
+                    </span>
+                  </div>
+                  <p style={{ fontSize:'12px', color:D.sub, margin:'0 0 18px' }}>송장번호 {trackData.invoiceNo}</p>
+
+                  {(!trackData.steps || trackData.steps.length === 0) ? (
+                    <p style={{ fontSize:'13px', color:D.sub, textAlign:'center', padding:'20px 0' }}>아직 배송 이력이 없어요. 집화 후 표시됩니다.</p>
+                  ) : (
+                    <div style={{ display:'flex', flexDirection:'column' }}>
+                      {[...trackData.steps].reverse().map((s: any, i: number) => (
+                        <div key={i} style={{ display:'flex', gap:'12px' }}>
+                          <div style={{ display:'flex', flexDirection:'column', alignItems:'center' }}>
+                            <div style={{ width:'12px', height:'12px', borderRadius:'50%', background: i===0 ? tc.color : D.border, flexShrink:0, marginTop:'3px' }} />
+                            {i < trackData.steps.length - 1 && <div style={{ width:'2px', flex:1, background:D.border, minHeight:'24px' }} />}
+                          </div>
+                          <div style={{ paddingBottom:'16px' }}>
+                            <p style={{ fontSize:'13px', fontWeight: i===0 ? 800 : 600, color: i===0 ? D.text : D.sub, margin:'0 0 2px' }}>{s.kind || '이동중'}</p>
+                            <p style={{ fontSize:'12px', color:D.sub, margin:0 }}>{s.where} {s.time && `· ${s.time}`}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── 하단 고정 탭바 ── */}
       <nav style={{ position:'fixed', bottom:0, left:0, right:0, background:dark?'rgba(13,17,23,0.97)':'rgba(255,255,255,0.97)', backdropFilter:'blur(20px)', borderTop:`1px solid ${D.border}`, padding:'10px 0 16px', display:'flex', justifyContent:'space-around', zIndex:50 }}>
