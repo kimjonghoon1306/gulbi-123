@@ -725,8 +725,34 @@ export default function ProductDetailPage() {
         </div>
       )}
 
+      {/* ── 모바일 전용 하단 고정 구매바 ── */}
+      {!showOrderForm && (
+        <div className="mobile-buybar" style={{position:'fixed',bottom:0,left:0,right:0,zIndex:60,background:D.headerBg,backdropFilter:'blur(20px)',borderTop:`1px solid ${D.border}`,padding:'10px 16px calc(10px + env(safe-area-inset-bottom))',display:'flex',alignItems:'center',gap:'12px',boxShadow:'0 -6px 24px rgba(0,0,0,0.1)'}}>
+          <button onClick={toggleLike} aria-label="찜하기" style={{width:'48px',height:'48px',flexShrink:0,borderRadius:'14px',border:`1.5px solid ${D.border}`,background:'transparent',cursor:'pointer',fontSize:'22px',display:'flex',alignItems:'center',justifyContent:'center'}}>
+            {liked ? '❤️' : '🤍'}
+          </button>
+          <div style={{flex:'0 0 auto',minWidth:0}}>
+            <p style={{fontSize:'10px',color:D.sub,margin:0,fontWeight:600}}>{getPriceLabel()}</p>
+            <p style={{fontSize:'18px',fontWeight:900,color:D.text,margin:0,letterSpacing:'-0.5px',whiteSpace:'nowrap'}}>{getPrice().toLocaleString()}<span style={{fontSize:'12px',fontWeight:600,color:D.sub}}>원</span></p>
+          </div>
+          {!user ? (
+            <Link href="/shop/login" style={{flex:1,textAlign:'center',padding:'15px',borderRadius:'14px',background:'linear-gradient(135deg,#ec4899,#f43f5e)',color:'white',fontWeight:900,fontSize:'15px',textDecoration:'none'}}>로그인 후 구매</Link>
+          ) : product.stock === 0 ? (
+            <button disabled style={{flex:1,padding:'15px',borderRadius:'14px',background:D.input,color:D.sub,fontSize:'15px',fontWeight:700,border:'none'}}>품절</button>
+          ) : (
+            <button onClick={() => { setOrderDone(false); setOrderForm({ address: (typeof window !== 'undefined' && localStorage.getItem('onjongil_addr')) || '', note: '', payment_method: '계좌이체' }); setShowOrderForm(true) }}
+              style={{flex:1,padding:'15px',borderRadius:'14px',background:'linear-gradient(135deg,#ec4899,#f43f5e)',color:'white',fontWeight:900,fontSize:'15px',border:'none',cursor:'pointer',boxShadow:'0 6px 18px rgba(236,72,153,0.35)'}}>
+              🛒 바로 구매
+            </button>
+          )}
+        </div>
+      )}
+
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}
+        /* 모바일 구매바: 모바일에서만 노출 */
+        .mobile-buybar{display:none}
+        @media(max-width:639px){ .mobile-buybar{display:flex!important} }
         @keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
         @keyframes slideUpSheet{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:translateY(0)}}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
