@@ -109,6 +109,21 @@ function SalesContent() {
     return true
   })
 
+  // 상품별 판매 분석 (선택한 기간/필터 기준, 반품·환불 제외)
+  const productStats = (() => {
+    const map: Record<string, { qty: number; sales: number }> = {}
+    filteredOrders.forEach(o => {
+      if (['반품', '환불취소'].includes(o.delivery_status)) return
+      const key = o.product_name || '(이름없음)'
+      if (!map[key]) map[key] = { qty: 0, sales: 0 }
+      map[key].qty += o.quantity
+      map[key].sales += o.total_price
+    })
+    return Object.entries(map)
+      .map(([name, v]) => ({ name, qty: v.qty, sales: v.sales }))
+      .sort((a, b) => b.sales - a.sales)
+  })()
+
   // 요약 통계
   const thisMonth = new Date().toISOString().slice(0, 7)
   const monthOrders = orders.filter(o => o.created_at?.startsWith(thisMonth))
@@ -237,6 +252,42 @@ ${rows.map(r => `<Row>${r.map(c => `<Cell><Data ss:Type="String">${c}</Data></Ce
             </div>
           ))}
         </div>
+
+        {/* 📊 상품별 판매 분석 (선택 기간 기준) */}
+        {tab === 'orders' && (
+          <div style={card}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 24px', borderBottom: `1px solid ${t.border}` }}>
+              <p style={{ fontSize: '15px', fontWeight: 800, color: t.text, margin: 0 }}>📊 상품별 판매 분석</p>
+              <span style={{ fontSize: '12px', color: t.textMuted }}>{dateFrom} ~ {dateTo}</span>
+            </div>
+            {productStats.length === 0 ? (
+              <div style={{ padding: '40px 24px', textAlign: 'center' }}>
+                <p style={{ fontSize: '32px', margin: '0 0 8px' }}>📦</p>
+                <p style={{ color: t.textMuted, fontSize: '13px', margin: 0 }}>해당 기간 판매 데이터가 없습니다</p>
+              </div>
+            ) : (
+              <div style={{ padding: '18px 24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                {productStats.slice(0, 8).map((p, i) => {
+                  const maxSales = Math.max(...productStats.map(x => x.sales), 1)
+                  return (
+                    <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <span style={{ width: '20px', textAlign: 'center', fontSize: '13px', fontWeight: 800, color: t.textMuted, flexShrink: 0 }}>{i + 1}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                          <span style={{ fontSize: '13px', fontWeight: 700, color: t.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
+                          <span style={{ fontSize: '12px', color: t.textMuted, flexShrink: 0, marginLeft: '8px' }}>{p.qty.toLocaleString()}개 · <strong style={{ color: '#34d399' }}>{p.sales.toLocaleString()}원</strong></span>
+                        </div>
+                        <div style={{ height: '8px', background: t.input, borderRadius: '8px', overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${(p.sales / maxSales) * 100}%`, borderRadius: '8px', background: 'linear-gradient(90deg,#a78bfa,#818cf8)', transition: 'width 0.7s ease' }} />
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* 탭 + 필터 */}
         <div style={card}>
