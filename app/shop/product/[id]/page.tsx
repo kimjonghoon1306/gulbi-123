@@ -80,6 +80,36 @@ export default function ProductDetailPage() {
     const { data } = await supabase.from('products').select('*').eq('id', id).single()
     setProduct(data)
     setLoading(false)
+    if (data) {
+      // 같은 카테고리 추천 상품 (자기 자신 제외, 최대 8)
+      const { data: rec } = await supabase.from('products').select('*')
+        .eq('is_active', true).eq('category_id', data.category_id).neq('id', data.id).limit(8)
+      setRelated(rec || [])
+      // 최근 본 상품 기록 (localStorage, id 목록)
+      try {
+        const raw = localStorage.getItem('recent-products')
+        const ids: string[] = raw ? JSON.parse(raw) : []
+        const next = [String(data.id), ...ids.filter(x => x !== String(data.id))].slice(0, 12)
+        localStorage.setItem('recent-products', JSON.stringify(next))
+      } catch {}
+    }
+  }
+
+  const [related, setRelated] = useState<any[]>([])
+  const [recentProducts, setRecentProducts] = useState<any[]>([])
+
+  // 최근 본 상품 로드 (자기 자신 제외)
+  const fetchRecentProducts = async () => {
+    try {
+      const raw = localStorage.getItem('recent-products')
+      const ids: string[] = raw ? JSON.parse(raw) : []
+      const others = ids.filter(x => x !== String(id)).slice(0, 8)
+      if (others.length === 0) { setRecentProducts([]); return }
+      const { data } = await supabase.from('products').select('*').in('id', others)
+      // localStorage 순서 유지
+      const ordered = others.map(x => (data || []).find((p: any) => String(p.id) === x)).filter(Boolean)
+      setRecentProducts(ordered)
+    } catch {}
   }
 
   const checkUser = async () => {
@@ -159,6 +189,7 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     fetchProduct()
+    fetchRecentProducts()
     checkUser()
     fetchReviews()
     const saved = localStorage.getItem('shop-theme')
@@ -542,6 +573,26 @@ export default function ProductDetailPage() {
             </div>
           )}
         </div>
+
+        {/* ── 추천 상품 (같은 카테고리) ── */}
+        {related.length > 0 && (
+          <div style={{marginBottom:'16px'}}>
+            <h2 style={{fontSize:'17px',fontWeight:900,letterSpacing:'-0.3px',margin:'0 0 14px',color:D.text}}>🧺 이런 상품은 어때요?</h2>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(150px,1fr))',gap:'12px'}}>
+              {related.map(p => <ProductMini key={p.id} p={p} D={D} dark={dark} getC={getPriceColor} mt={memberType} />)}
+            </div>
+          </div>
+        )}
+
+        {/* ── 최근 본 상품 ── */}
+        {recentProducts.length > 0 && (
+          <div style={{marginBottom:'16px'}}>
+            <h2 style={{fontSize:'17px',fontWeight:900,letterSpacing:'-0.3px',margin:'0 0 14px',color:D.text}}>🕘 최근 본 상품</h2>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(150px,1fr))',gap:'12px'}}>
+              {recentProducts.map(p => <ProductMini key={p.id} p={p} D={D} dark={dark} getC={getPriceColor} mt={memberType} />)}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 주문 폼 모달 */}
@@ -758,6 +809,10 @@ export default function ProductDetailPage() {
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}
         @keyframes pdFadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+        .pd-mini{transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.25s,border-color 0.25s}
+        .pd-mini:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(0,0,0,0.12);border-color:rgba(22,163,74,0.35)}
+        .pd-mini img{transition:transform 0.4s ease}
+        .pd-mini:hover img{transform:scale(1.06)}
         /* 진입 애니메이션 */
         .product-grid > div { animation: pdFadeUp 0.5s ease both; }
         .product-grid > div:nth-child(2){ animation-delay: 0.08s; }
@@ -799,5 +854,29 @@ export default function ProductDetailPage() {
         }
       `}</style>
     </div>
+  )
+}
+
+// 추천/최근본 상품 미니 카드
+function ProductMini({ p, D, dark, getC, mt }: { p: any; D: any; dark: boolean; getC: () => string; mt: string }) {
+  const price = mt === '도매업' ? p.wholesale_price : mt === '소매업' ? p.member_price : p.retail_price
+  return (
+    <Link href={`/shop/product/${p.id}`} className="pd-mini" style={{ textDecoration:'none', display:'block', background:D.card, borderRadius:'16px', overflow:'hidden', border:`1px solid ${D.border}` }}>
+      <div style={{ width:'100%', paddingTop:'100%', position:'relative', background:D.imgBg }}>
+        {p.image_url
+          ? <img src={p.image_url} alt={p.name} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} />
+          : <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'40px' }}>🧺</div>}
+        {p.stock === 0 && (
+          <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.45)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <span style={{ background:'rgba(0,0,0,0.7)', color:'white', fontSize:'11px', fontWeight:700, padding:'4px 10px', borderRadius:'20px' }}>품절</span>
+          </div>
+        )}
+      </div>
+      <div style={{ padding:'10px 12px' }}>
+        <p style={{ fontSize:'13px', fontWeight:700, color:D.text, margin:'0 0 4px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{p.name}</p>
+        <p style={{ fontSize:'14px', fontWeight:900, color:getC(), margin:0 }}>{(price||0).toLocaleString()}원</p>
+        <p style={{ fontSize:'10px', color:D.sub, margin:'2px 0 0' }}>/{p.unit}</p>
+      </div>
+    </Link>
   )
 }
