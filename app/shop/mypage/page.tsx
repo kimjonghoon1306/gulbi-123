@@ -161,6 +161,7 @@ function MyPageInner() {
         o = o2
       }
       setOrders(o || [])
+      loadAllOrderItems(o || [], m.member_type)
       // 찜 목록 조회
       const { data: wishes } = await supabase
         .from('wishlists')
@@ -205,16 +206,18 @@ function MyPageInner() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const toggleOrder = async (orderId: string) => {
-    if (expandedOrder === orderId) { setExpandedOrder(null); return }
-    if (!orderItems[orderId]) {
-      setItemsLoading(orderId)
-      const table = member?.member_type === '도매업' ? 'wholesale_order_items' : member?.member_type === '소매업' ? 'retail_order_items' : 'general_order_items'
-      const { data } = await supabase.from(table).select('*').eq('order_id', orderId)
-      setOrderItems(prev => ({ ...prev, [orderId]: data || [] }))
-      setItemsLoading(null)
-    }
-    setExpandedOrder(orderId)
+  // 모든 주문의 상품을 한 번에 로드 (상세보기 없이 항상 펼쳐 보여주기 위함)
+  const loadAllOrderItems = async (orderList: Order[], memberType?: string) => {
+    if (!orderList || orderList.length === 0) return
+    const table = memberType === '도매업' ? 'wholesale_order_items' : memberType === '소매업' ? 'retail_order_items' : 'general_order_items'
+    const ids = orderList.map(o => o.id)
+    const { data } = await supabase.from(table).select('*').in('order_id', ids)
+    const grouped: Record<string, OrderItem[]> = {}
+    ;(data || []).forEach((it: any) => {
+      if (!grouped[it.order_id]) grouped[it.order_id] = []
+      grouped[it.order_id].push(it)
+    })
+    setOrderItems(grouped)
   }
 
   const handleLogout = async () => {
@@ -436,8 +439,8 @@ function MyPageInner() {
             ) : orders.map(order => (
               <div key={order.id} style={{ background:D.card, borderRadius:'20px', border:`1px solid ${D.border}`, overflow:'hidden' }}>
 
-                {/* 주문 헤더 (클릭 토글) */}
-                <div style={{ padding:'18px 20px', cursor:'pointer' }} onClick={() => toggleOrder(order.id)}>
+                {/* 주문 헤더 */}
+                <div style={{ padding:'18px 20px' }}>
                   <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'14px' }}>
                     <div>
                       <p style={{ fontSize:'13px', fontWeight:800, color:D.text, margin:'0 0 3px' }}>{order.order_number || `#${order.id.slice(0,8).toUpperCase()}`}</p>
@@ -475,13 +478,11 @@ function MyPageInner() {
 
                   <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                     <p style={{ fontSize:'18px', fontWeight:900, color:tc.color, margin:0 }}>{order.total_amount.toLocaleString()}원</p>
-                    <p style={{ fontSize:'11px', color:D.sub, margin:0 }}>{expandedOrder === order.id ? '▲ 접기' : '▼ 상세 보기'}</p>
                   </div>
                 </div>
 
-                {/* 주문 상세 (펼침) */}
-                {expandedOrder === order.id && (
-                  <div style={{ borderTop:`1px solid ${D.border}`, padding:'16px 20px', background:D.card2 }}>
+                {/* 주문 상세 (항상 표시) */}
+                <div style={{ borderTop:`1px solid ${D.border}`, padding:'16px 20px', background:D.card2 }}>
                     <p style={{ fontSize:'11px', fontWeight:700, color:D.sub, margin:'0 0 10px', letterSpacing:'0.06em' }}>주문 상품</p>
                     {itemsLoading === order.id ? (
                       <div style={{ textAlign:'center', padding:'16px', color:D.sub, fontSize:'12px' }}>불러오는 중...</div>
@@ -515,14 +516,12 @@ function MyPageInner() {
                           const table = member?.member_type === '도매업' ? 'wholesale_orders' : member?.member_type === '소매업' ? 'retail_orders' : 'general_orders'
                           await supabase.from(table).update({ status: '취소', updated_at: new Date().toISOString() }).eq('id', order.id)
                           setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: '취소' } : o))
-                          setExpandedOrder(null)
                         }}
                         style={{ marginTop:'14px', width:'100%', padding:'12px', borderRadius:'12px', border:'1.5px solid rgba(239,68,68,0.4)', background:'rgba(239,68,68,0.06)', color:'#ef4444', fontSize:'13px', fontWeight:700, cursor:'pointer' }}>
                         🚫 주문 취소
                       </button>
                     )}
                   </div>
-                )}
               </div>
             ))}
           </div>
