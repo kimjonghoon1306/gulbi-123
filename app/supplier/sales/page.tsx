@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Fragment } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import SupplierLayout from '../_layout/layout'
 import { useSupplierTheme } from '../_layout/theme-context'
+import { COURIERS } from '@/lib/tracking'
 
 type OrderItem = {
   id: string; order_id: string; product_id: string; product_name: string
@@ -12,6 +13,7 @@ type OrderItem = {
   delivery_status: string; return_reason: string | null; settled: boolean
   created_at: string; order_type: 'general' | 'retail' | 'wholesale'
   customer_name?: string; company_name?: string; order_number?: string
+  courier_code?: string; tracking_number?: string
 }
 
 type Settlement = {
@@ -71,7 +73,7 @@ function SalesContent() {
     for (const tbl of tables) {
       const { data } = await supabase
         .from(tbl.name)
-        .select(`*, ${tbl.orderTable}(order_number, ${tbl.customerCol}, created_at)`)
+        .select(`*, ${tbl.orderTable}(order_number, ${tbl.customerCol}, created_at, courier_code, tracking_number)`)
         .eq('supplier_id', uid)
         .order('created_at', { ascending: false })
       if (data) {
@@ -83,12 +85,25 @@ function SalesContent() {
             order_number: orderData?.order_number,
             customer_name: orderData?.[tbl.customerCol],
             created_at: orderData?.created_at || item.created_at,
+            courier_code: orderData?.courier_code || '',
+            tracking_number: orderData?.tracking_number || '',
           })
         })
       }
     }
     all.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     setOrders(all)
+  }
+
+  // 공급업체가 자기 주문의 송장 저장 → 관리자/고객과 같은 칸(order의 courier_code/tracking_number)에 저장돼 연동됨
+  const ORDER_TABLE: Record<string, string> = { general: 'general_orders', retail: 'retail_orders', wholesale: 'wholesale_orders' }
+  const saveSupplierTracking = async (orderType: string, orderId: string, courier: string, tracking: string) => {
+    const patch = { courier_code: courier || null, tracking_number: tracking.trim() || null }
+    const { error } = await supabase.from(ORDER_TABLE[orderType]).update(patch).eq('id', orderId)
+    if (error) { alert('송장 저장 실패: ' + error.message); return false }
+    setOrders(prev => prev.map(o => o.order_id === orderId
+      ? { ...o, courier_code: patch.courier_code || '', tracking_number: patch.tracking_number || '' } : o))
+    return true
   }
 
   const fetchSettlements = async (uid: string) => {
@@ -395,7 +410,8 @@ ${rows.map(r => `<Row>${r.map(c => `<Cell><Data ss:Type="String">${c}</Data></Ce
                     {filteredOrders.map((o, i) => {
                       const ds = DELIVERY_COLOR[o.delivery_status] || { bg: t.input, color: t.textMuted }
                       return (
-                        <tr key={o.id} style={{
+                        <Fragment key={o.id}>
+                        <tr style={{
                           borderBottom: `1px solid ${t.border}`,
                           background: i % 2 === 0 ? 'transparent' : (t.isDark ? 'rgba(255,255,255,0.01)' : 'rgba(0,0,0,0.01)'),
                         }}>
@@ -434,6 +450,14 @@ ${rows.map(r => `<Row>${r.map(c => `<Cell><Data ss:Type="String">${c}</Data></Ce
                             {o.created_at?.split('T')[0] || '-'}
                           </td>
                         </tr>
+                        {/* 송장 입력줄 (어르신용 크게) */}
+                        <tr>
+                          <td colSpan={8} style={{ padding: 0, borderBottom: `2px solid ${t.border}` }}>
+                            <SupplierTrackingRow o={o} t={t}
+                              onSave={(c, tk) => saveSupplierTracking(o.order_type, o.order_id, c, tk)} />
+                          </td>
+                        </tr>
+                        </Fragment>
                       )
                     })}
                   </tbody>
@@ -551,6 +575,52 @@ ${rows.map(r => `<Row>${r.map(c => `<Cell><Data ss:Type="String">${c}</Data></Ce
           .summary-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
+    </div>
+  )
+}
+
+// 공급업체용 송장 입력줄 — 크고 단순하게 (어르신 보기 편하게)
+function SupplierTrackingRow({ o, t, onSave }: {
+  o: OrderItem
+  t: any
+  onSave: (courier: string, tracking: string) => Promise<boolean>
+}) {
+  const [courier, setCourier] = useState(o.courier_code || '')
+  const [tracking, setTracking] = useState(o.tracking_number || '')
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const has = !!o.tracking_number
+
+  const box: React.CSSProperties = {
+    fontSize: '16px', padding: '12px 14px', borderRadius: '12px',
+    border: `2px solid ${t.border}`, background: t.input, color: t.text, outline: 'none',
+  }
+
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap',
+      padding: '14px 16px',
+      background: has ? (t.isDark ? 'rgba(52,211,153,0.06)' : 'rgba(52,211,153,0.06)') : (t.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.015)'),
+    }}>
+      <span style={{ fontSize: '16px', fontWeight: 800, color: t.text, whiteSpace: 'nowrap' }}>🚚 송장 입력</span>
+      <select value={courier} onChange={e => { setCourier(e.target.value); setSaved(false) }}
+        style={{ ...box, minWidth: '130px', fontWeight: 700 }}>
+        <option value="">택배사 선택</option>
+        {COURIERS.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
+      </select>
+      <input value={tracking} onChange={e => { setTracking(e.target.value); setSaved(false) }}
+        placeholder="송장번호 입력" inputMode="numeric"
+        style={{ ...box, flex: 1, minWidth: '160px' }} />
+      <button
+        onClick={async () => { setSaving(true); const ok = await onSave(courier, tracking); setSaving(false); if (ok) { setSaved(true); setTimeout(() => setSaved(false), 2500) } }}
+        disabled={saving}
+        style={{
+          fontSize: '16px', fontWeight: 800, padding: '12px 24px', borderRadius: '12px',
+          border: 'none', cursor: 'pointer', color: 'white', whiteSpace: 'nowrap',
+          background: saved ? '#16a34a' : 'linear-gradient(135deg,#34d399,#10b981)',
+        }}>
+        {saving ? '저장 중...' : saved ? '✓ 저장됨' : '저장'}
+      </button>
     </div>
   )
 }
