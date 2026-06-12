@@ -91,12 +91,40 @@ export default function TaxPage() {
   }
 
   const updateInvoiceStatus = async (id: string, status: string) => {
+    // '발행완료'로 바꿀 때 팝빌로 전자세금계산서 실제 발행
+    if (status === '발행완료') {
+      const inv = invoices.find(i => i.id === id)
+      if (inv && inv.status !== '발행완료') {
+        const res = await fetch('/api/tax/issue', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'invoice', record: inv }),
+        })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) { alert('팝빌 세금계산서 발행 실패:\n' + (data.message || '오류')); return }
+        await supabase.from('tax_invoices').update({ status, issued_at: new Date().toISOString(), invoice_number: data.mgtKey || inv.invoice_number }).eq('id', id)
+        fetchAll(); return
+      }
+    }
     const issued_at = status === '발행완료' ? new Date().toISOString() : null
     await supabase.from('tax_invoices').update({ status, issued_at }).eq('id', id)
     fetchAll()
   }
 
   const updateReceiptStatus = async (id: string, status: string) => {
+    // '발행완료'로 바꿀 때 팝빌로 현금영수증 실제 발행
+    if (status === '발행완료') {
+      const rec = receipts.find(r => r.id === id)
+      if (rec && rec.status !== '발행완료') {
+        const res = await fetch('/api/tax/issue', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'receipt', record: rec }),
+        })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) { alert('팝빌 현금영수증 발행 실패:\n' + (data.message || '오류')); return }
+        await supabase.from('cash_receipts').update({ status, issued_at: new Date().toISOString(), receipt_number: data.mgtKey || rec.receipt_number }).eq('id', id)
+        fetchAll(); return
+      }
+    }
     const issued_at = status === '발행완료' ? new Date().toISOString() : null
     await supabase.from('cash_receipts').update({ status, issued_at }).eq('id', id)
     fetchAll()
