@@ -35,23 +35,25 @@ function CouponsContent() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/supplier/login'); return }
     setUid(user.id)
-    const { data } = await supabase.from('coupons').select('*').eq('created_by', user.id).order('created_at', { ascending: false })
+    // 공급사 페이지 = 본인이 발행한 공급사(supplier) 쿠폰만 (본사 쿠폰과 분리)
+    const { data } = await supabase.from('coupons').select('*').eq('created_by', user.id).eq('created_by_role', 'supplier').order('created_at', { ascending: false })
     setCoupons((data as any) || [])
     setLoading(false)
   }
 
   const genCode = () => {
     const s = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-    let c = ''; for (let i = 0; i < 8; i++) c += s[Math.floor(Math.random() * s.length)]
-    setForm(f => ({ ...f, code: c }))
+    let c = ''; for (let i = 0; i < 7; i++) c += s[Math.floor(Math.random() * s.length)]
+    setForm(f => ({ ...f, code: '공' + c }))  // 공급사 발행 식별자
   }
 
   const save = async () => {
     if (!form.code.trim()) return alert('쿠폰 코드를 입력하거나 자동생성하세요.')
     if (!form.discount_value) return alert('할인 값을 입력하세요.')
     setSaving(true)
+    const raw = form.code.trim().toUpperCase()
     const { error } = await supabase.from('coupons').insert({
-      code: form.code.trim().toUpperCase(),
+      code: raw.startsWith('공') ? raw : '공' + raw,  // 공급사 발행 식별자 보장
       description: form.description.trim() || null,
       discount_type: form.discount_type,
       discount_value: Number(form.discount_value),
@@ -89,13 +91,31 @@ function CouponsContent() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
         <div>
           <h1 style={{ fontSize: '22px', fontWeight: 800, color: t.text, margin: 0 }}>🎟️ 내 쿠폰</h1>
-          <p style={{ fontSize: '13px', color: t.textMuted, margin: '6px 0 0' }}>할인 쿠폰을 발급하면 손님이 장바구니에서 코드를 입력해 사용해요.</p>
+          <p style={{ fontSize: '13px', color: t.textMuted, margin: '6px 0 0' }}>발급한 쿠폰은 손님이 쿠폰함에서 &lsquo;받기&rsquo; 후 결제할 때 사용해요. (공급사 발행)</p>
         </div>
         <button onClick={() => { setForm(EMPTY); setShowForm(true) }}
           style={{ padding: '13px 20px', borderRadius: '14px', border: 'none', cursor: 'pointer', color: 'white', fontSize: '15px', fontWeight: 800, background: 'linear-gradient(135deg,#34d399,#10b981)', whiteSpace: 'nowrap' }}>
           + 쿠폰 발급
         </button>
       </div>
+
+      {/* 사용량 요약 (내 쿠폰이 얼만큼 쓰였는지) */}
+      {!loading && coupons.length > 0 && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '10px', margin: '14px 0 4px' }}>
+          {[
+            { k: '발행 쿠폰', v: `${coupons.length}개`, icon: '🎟️' },
+            { k: '총 사용', v: `${coupons.reduce((s, c) => s + (c.used_count || 0), 0)}회`, icon: '✅' },
+            { k: '사용중', v: `${coupons.filter(c => c.is_active && !expired(c)).length}개`, icon: '🟢' },
+          ].map(s => (
+            <div key={s.k} style={{ ...card, padding: '14px 16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '12px', fontWeight: 700, color: t.textMuted }}>{s.k}</span><span>{s.icon}</span>
+              </div>
+              <p style={{ fontSize: '22px', fontWeight: 900, color: t.text, margin: '4px 0 0' }}>{s.v}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       {loading ? (
         <div style={{ padding: '60px', textAlign: 'center', color: t.textMuted }}>불러오는 중...</div>

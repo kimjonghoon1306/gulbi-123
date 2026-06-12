@@ -29,7 +29,8 @@ export default function AdminCouponsPage() {
 
   const fetchAll = async () => {
     setLoading(true)
-    const { data } = await supabase.from('coupons').select('*').order('created_at', { ascending: false })
+    // 관리자 페이지 = 본사(admin) 발행 쿠폰만 (공급사 쿠폰과 분리)
+    const { data } = await supabase.from('coupons').select('*').eq('created_by_role', 'admin').order('created_at', { ascending: false })
     setCoupons((data as any) || [])
     setLoading(false)
   }
@@ -37,8 +38,8 @@ export default function AdminCouponsPage() {
   const genCode = () => {
     const s = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
     let c = ''
-    for (let i = 0; i < 8; i++) c += s[Math.floor(Math.random() * s.length)]
-    setForm(f => ({ ...f, code: c }))
+    for (let i = 0; i < 7; i++) c += s[Math.floor(Math.random() * s.length)]
+    setForm(f => ({ ...f, code: '본' + c }))  // 본사 발행 식별자
   }
 
   const save = async () => {
@@ -46,8 +47,9 @@ export default function AdminCouponsPage() {
     if (!form.discount_value) return alert('할인 값을 입력하세요.')
     setSaving(true)
     const { data: { user } } = await supabase.auth.getUser()
+    const raw = form.code.trim().toUpperCase()
     const payload = {
-      code: form.code.trim().toUpperCase(),
+      code: raw.startsWith('본') ? raw : '본' + raw,  // 본사 발행 식별자 보장
       description: form.description.trim() || null,
       discount_type: form.discount_type,
       discount_value: Number(form.discount_value),
@@ -86,7 +88,7 @@ export default function AdminCouponsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 dark:text-white">🎟️ 쿠폰 관리</h1>
-          <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">할인 쿠폰을 발급하면 손님이 장바구니에서 코드를 입력해 사용해요.</p>
+          <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">발급한 쿠폰은 손님이 쿠폰함에서 &lsquo;받기&rsquo; 후 결제할 때 사용해요. (본사 발행)</p>
         </div>
         <button onClick={() => { setForm(EMPTY); setShowForm(true) }}
           className="px-4 py-2.5 rounded-xl font-semibold text-sm text-white transition-all active:scale-95 hover:-translate-y-0.5"
@@ -94,6 +96,24 @@ export default function AdminCouponsPage() {
           + 쿠폰 발급
         </button>
       </div>
+
+      {/* 사용량 요약 (어떤 쿠폰이 얼만큼 쓰였는지 한눈에) */}
+      {!loading && coupons.length > 0 && (
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { k: '발행 쿠폰', v: `${coupons.length}개`, icon: '🎟️' },
+            { k: '총 사용', v: `${coupons.reduce((s, c) => s + (c.used_count || 0), 0)}회`, icon: '✅' },
+            { k: '사용중', v: `${coupons.filter(c => c.is_active && !expired(c)).length}개`, icon: '🟢' },
+          ].map(s => (
+            <div key={s.k} className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-100 dark:border-gray-700 p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-400">{s.k}</span><span>{s.icon}</span>
+              </div>
+              <p className="text-2xl font-black mt-1 text-slate-700 dark:text-slate-100">{s.v}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       {loading ? (
         <div className="p-12 text-center text-slate-400">불러오는 중...</div>
