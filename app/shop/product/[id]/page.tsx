@@ -41,6 +41,25 @@ export default function ProductDetailPage() {
   const [reviewRating, setReviewRating] = useState(5)
   const [reviewContent, setReviewContent] = useState('')
   const [reviewSubmitting, setReviewSubmitting] = useState(false)
+  const [reviewImages, setReviewImages] = useState<string[]>([])
+  const [reviewUploading, setReviewUploading] = useState(false)
+
+  const uploadReviewImages = async (files: FileList | null) => {
+    if (!files || files.length === 0 || !user) return
+    setReviewUploading(true)
+    const urls: string[] = []
+    for (const file of Array.from(files).slice(0, 3 - reviewImages.length)) {
+      if (!file.type.startsWith('image/')) continue
+      const path = `${user.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${file.name.split('.').pop()}`
+      const { error } = await supabase.storage.from('review-images').upload(path, file, { upsert: false })
+      if (!error) {
+        const { data } = supabase.storage.from('review-images').getPublicUrl(path)
+        if (data?.publicUrl) urls.push(data.publicUrl)
+      }
+    }
+    setReviewImages(prev => [...prev, ...urls].slice(0, 3))
+    setReviewUploading(false)
+  }
 
   const fetchReviews = async (uid?: string) => {
     const { data } = await supabase.from('reviews').select('*').eq('product_id', id).order('created_at', { ascending: false })
@@ -48,7 +67,7 @@ export default function ProductDetailPage() {
     setReviews(list)
     const mine = uid ? list.find((r: any) => r.user_id === uid) : null
     setMyReview(mine || null)
-    if (mine) { setReviewRating(mine.rating); setReviewContent(mine.content || '') }
+    if (mine) { setReviewRating(mine.rating); setReviewContent(mine.content || ''); setReviewImages(mine.image_urls || []) }
   }
 
   const submitReview = async () => {
@@ -59,6 +78,7 @@ export default function ProductDetailPage() {
         product_id: id, user_id: user.id,
         author_name: memberInfo?.name || '익명',
         rating: reviewRating, content: reviewContent.trim(),
+        image_urls: reviewImages,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'product_id,user_id' })
       await fetchReviews(user.id)
@@ -70,7 +90,7 @@ export default function ProductDetailPage() {
     if (!user || !myReview) return
     if (!confirm('리뷰를 삭제할까요?')) return
     await supabase.from('reviews').delete().eq('id', myReview.id)
-    setMyReview(null); setReviewRating(5); setReviewContent('')
+    setMyReview(null); setReviewRating(5); setReviewContent(''); setReviewImages([])
     await fetchReviews(user.id)
   }
 
@@ -563,6 +583,25 @@ export default function ProductDetailPage() {
                 placeholder="상품은 어떠셨나요? 신선도, 맛, 포장 등 솔직한 후기를 남겨주세요 😊"
                 rows={3} maxLength={500}
                 style={{width:'100%',padding:'12px 14px',borderRadius:'12px',border:`2px solid ${D.border}`,background:D.card,color:D.text,fontSize:'13px',outline:'none',resize:'none',boxSizing:'border-box',lineHeight:1.6,fontFamily:'inherit'}} />
+
+              {/* 사진 첨부 (최대 3장) */}
+              <div style={{display:'flex',gap:'8px',marginTop:'10px',flexWrap:'wrap',alignItems:'center'}}>
+                {reviewImages.map((url,i)=>(
+                  <div key={i} style={{position:'relative',width:'64px',height:'64px',borderRadius:'10px',overflow:'hidden',border:`1px solid ${D.border}`}}>
+                    <img src={url} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}} />
+                    <button onClick={()=>setReviewImages(prev=>prev.filter((_,x)=>x!==i))}
+                      style={{position:'absolute',top:'2px',right:'2px',width:'18px',height:'18px',borderRadius:'50%',border:'none',background:'rgba(0,0,0,0.6)',color:'white',fontSize:'11px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1}}>✕</button>
+                  </div>
+                ))}
+                {reviewImages.length < 3 && (
+                  <label style={{width:'64px',height:'64px',borderRadius:'10px',border:`2px dashed ${D.border}`,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',cursor:'pointer',color:D.sub,fontSize:'11px',gap:'2px'}}>
+                    <span style={{fontSize:'18px'}}>{reviewUploading?'⏳':'📷'}</span>
+                    <span>{reviewUploading?'올리는중':'사진'}</span>
+                    <input type="file" accept="image/*" multiple onChange={e=>uploadReviewImages(e.target.files)} style={{display:'none'}} disabled={reviewUploading} />
+                  </label>
+                )}
+              </div>
+
               <div style={{display:'flex',gap:'8px',marginTop:'10px'}}>
                 <button onClick={submitReview} disabled={reviewSubmitting || !reviewContent.trim()}
                   style={{flex:1,padding:'12px',borderRadius:'12px',background:(reviewSubmitting||!reviewContent.trim())?D.input:'linear-gradient(135deg,#15803d,#16a34a)',color:(reviewSubmitting||!reviewContent.trim())?D.sub:'white',fontSize:'14px',fontWeight:900,border:'none',cursor:(reviewSubmitting||!reviewContent.trim())?'not-allowed':'pointer'}}>
@@ -606,6 +645,15 @@ export default function ProductDetailPage() {
                     </div>
                   </div>
                   {r.content && <p style={{fontSize:'13px',color:D.text,lineHeight:1.7,margin:0,whiteSpace:'pre-wrap'}}>{r.content}</p>}
+                  {Array.isArray(r.image_urls) && r.image_urls.length > 0 && (
+                    <div style={{display:'flex',gap:'8px',marginTop:'10px',flexWrap:'wrap'}}>
+                      {r.image_urls.map((url:string,i:number)=>(
+                        <a key={i} href={url} target="_blank" rel="noreferrer" style={{display:'block',width:'72px',height:'72px',borderRadius:'10px',overflow:'hidden',border:`1px solid ${D.border}`}}>
+                          <img src={url} alt="리뷰 사진" style={{width:'100%',height:'100%',objectFit:'cover'}} />
+                        </a>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
