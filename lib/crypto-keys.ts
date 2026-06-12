@@ -25,31 +25,31 @@ function getKey(): Buffer {
 }
 
 /**
- * 평문 → 암호화 바이트 (DB에 bytea로 저장)
- * 구조: [IV(12) | TAG(16) | CIPHERTEXT(..)]
+ * 평문 → 암호화 문자열 (DB에 text로 저장).
+ * 구조: base64( [IV(12) | TAG(16) | CIPHERTEXT(..)] )
+ * ※ Node Buffer를 supabase-js로 그대로 insert하면 JSON 객체로 직렬화돼 저장이 깨지므로
+ *   반드시 base64 문자열로 저장한다.
  */
-export function encryptKey(plaintext: string): Buffer {
+export function encryptKey(plaintext: string): string {
   const key = getKey()
   const iv = crypto.randomBytes(IV_LEN)
   const cipher = crypto.createCipheriv(ALGO, key, iv)
   const enc = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()])
   const tag = cipher.getAuthTag()
-  return Buffer.concat([iv, tag, enc])
+  return Buffer.concat([iv, tag, enc]).toString('base64')
 }
 
 /**
- * 암호화 바이트 → 평문
+ * 암호화 문자열 → 평문. base64(신규) / '\x..'hex(구 bytea) / Buffer 모두 처리.
  */
-export function decryptKey(buf: Buffer | Uint8Array | string): string {
+export function decryptKey(value: Buffer | Uint8Array | string): string {
   const key = getKey()
-  // Supabase에서 bytea로 받으면 hex 문자열로 옴 ('\x...' 형태)
   let data: Buffer
-  if (typeof buf === 'string') {
-    // Supabase가 '\x...' 형태로 hex 반환할 때
-    const cleaned = buf.startsWith('\\x') ? buf.slice(2) : buf
-    data = Buffer.from(cleaned, 'hex')
+  if (typeof value === 'string') {
+    if (value.startsWith('\\x')) data = Buffer.from(value.slice(2), 'hex')   // 구 bytea hex
+    else data = Buffer.from(value, 'base64')                                 // 신규 base64
   } else {
-    data = Buffer.from(buf)
+    data = Buffer.from(value)
   }
   const iv = data.subarray(0, IV_LEN)
   const tag = data.subarray(IV_LEN, IV_LEN + TAG_LEN)

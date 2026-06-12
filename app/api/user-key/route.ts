@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `유효하지 않은 API 키입니다: ${validationError}` }, { status: 400 })
     }
 
-    let encrypted: Buffer
+    let encrypted: string
     try { encrypted = encryptKey(trimmed) } catch (e: any) {
       return NextResponse.json({ error: `암호화 실패: ${e.message}` }, { status: 500 })
     }
@@ -121,7 +121,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `유효하지 않은 Gemini 키입니다: ${validationError}` }, { status: 400 })
     }
 
-    let encrypted: Buffer
+    let encrypted: string
     try { encrypted = encryptKey(trimmed) } catch (e: any) {
       return NextResponse.json({ error: `암호화 실패: ${e.message}` }, { status: 500 })
     }
