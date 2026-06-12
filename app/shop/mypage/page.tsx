@@ -10,6 +10,7 @@ type Member = {
   member_type: '일반' | '소매업' | '도매업'
   business_name: string; business_number: string
   status: string; created_at: string
+  address?: string
 }
 
 type Order = {
@@ -57,11 +58,44 @@ function MyPageInner() {
   const [orders, setOrders]           = useState<Order[]>([])
   const [orderItems, setOrderItems]   = useState<Record<string, OrderItem[]>>({})
   const [loading, setLoading]         = useState(true)
-  const [tab, setTab]                 = useState<'home' | 'orders' | 'benefits' | 'wishlist'>('home')
+  const [tab, setTab]                 = useState<'home' | 'orders' | 'benefits' | 'wishlist' | 'settings'>('home')
   const [wishlists, setWishlists]     = useState<any[]>([])
   const [dark, setDark]               = useState(false)
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null)
   const [itemsLoading, setItemsLoading]   = useState<string | null>(null)
+
+  // ── 설정(주소/비번) ──
+  const [addrInput, setAddrInput]     = useState('')
+  const [addrSaving, setAddrSaving]   = useState(false)
+  const [addrMsg, setAddrMsg]         = useState('')
+  const [pw1, setPw1]                 = useState('')
+  const [pw2, setPw2]                 = useState('')
+  const [pwSaving, setPwSaving]       = useState(false)
+  const [pwMsg, setPwMsg]             = useState('')
+
+  const saveAddress = async () => {
+    if (!member) return
+    setAddrSaving(true); setAddrMsg('')
+    const { error } = await supabase.from('shop_members').update({ address: addrInput.trim() }).eq('id', member.id)
+    if (error) { setAddrMsg('저장 실패: ' + error.message) }
+    else {
+      try { localStorage.setItem('onjongil_addr', addrInput.trim()) } catch {}  // 체크아웃 자동입력 동기화
+      setMember({ ...member, address: addrInput.trim() })
+      setAddrMsg('✅ 기본 배송지가 저장됐어요')
+    }
+    setAddrSaving(false)
+  }
+
+  const changePassword = async () => {
+    setPwMsg('')
+    if (pw1.length < 6) { setPwMsg('비밀번호는 6자 이상이어야 해요.'); return }
+    if (pw1 !== pw2) { setPwMsg('두 비밀번호가 일치하지 않아요.'); return }
+    setPwSaving(true)
+    const { error } = await supabase.auth.updateUser({ password: pw1 })
+    if (error) { setPwMsg('변경 실패: ' + error.message) }
+    else { setPw1(''); setPw2(''); setPwMsg('✅ 비밀번호가 변경됐어요') }
+    setPwSaving(false)
+  }
 
   const fetchData = async () => {
     try {
@@ -95,6 +129,7 @@ function MyPageInner() {
         return
       }
       setMember(m)
+      setAddrInput(m.address || (typeof window !== 'undefined' ? localStorage.getItem('onjongil_addr') || '' : ''))
       const table = m.member_type === '도매업' ? 'wholesale_orders' : m.member_type === '소매업' ? 'retail_orders' : 'general_orders'
       // user_id로 먼저 조회, 없으면 contact로 조회
       let { data: o } = await supabase.from(table).select('*').eq('user_id', user.id).order('created_at', { ascending: false })
@@ -266,6 +301,7 @@ function MyPageInner() {
             { key:'orders',   icon:'📦', label:'주문/배송' },
             { key:'wishlist', icon:'❤️', label:'찜 목록' },
             { key:'benefits', icon: member.member_type === '일반' ? '⭐' : '💼', label: member.member_type === '일반' ? '등급/혜택' : '유통 혜택' },
+            { key:'settings', icon:'⚙️', label:'설정' },
           ].map(t => (
             <button key={t.key} onClick={() => setTab(t.key as any)}
               style={{ flex:1, padding:'10px 6px', borderRadius:'14px', border:'none', cursor:'pointer', fontSize:'12px', fontWeight:700, transition:'all 0.2s',
@@ -666,6 +702,45 @@ function MyPageInner() {
                 )}
               </>
             )}
+          </div>
+        )}
+
+        {/* ════════════════ TAB: SETTINGS ════════════════ */}
+        {tab === 'settings' && (
+          <div style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
+
+            {/* 기본 배송지 */}
+            <div style={{ background:D.card, borderRadius:'20px', padding:'22px', border:`1px solid ${D.border}` }}>
+              <p style={{ fontSize:'14px', fontWeight:800, color:D.text, margin:'0 0 4px' }}>📍 기본 배송지</p>
+              <p style={{ fontSize:'12px', color:D.sub, margin:'0 0 14px' }}>저장해두면 주문할 때 자동으로 입력돼요.</p>
+              <textarea value={addrInput} onChange={e => { setAddrInput(e.target.value); setAddrMsg('') }}
+                placeholder="배송 받으실 주소를 입력해주세요"
+                rows={2}
+                style={{ width:'100%', padding:'13px 14px', borderRadius:'12px', border:`2px solid ${D.border}`, background:D.input, color:D.text, fontSize:'14px', outline:'none', resize:'none', boxSizing:'border-box', lineHeight:1.6, fontFamily:'inherit' }} />
+              {addrMsg && <p style={{ fontSize:'12px', fontWeight:700, color: addrMsg.startsWith('✅') ? '#16a34a' : '#ef4444', margin:'10px 0 0' }}>{addrMsg}</p>}
+              <button onClick={saveAddress} disabled={addrSaving}
+                style={{ width:'100%', marginTop:'12px', padding:'13px', borderRadius:'12px', border:'none', cursor: addrSaving ? 'not-allowed' : 'pointer', background: addrSaving ? D.input : tc.gradient, color: addrSaving ? D.sub : 'white', fontSize:'14px', fontWeight:800 }}>
+                {addrSaving ? '저장 중...' : '배송지 저장'}
+              </button>
+            </div>
+
+            {/* 비밀번호 변경 */}
+            <div style={{ background:D.card, borderRadius:'20px', padding:'22px', border:`1px solid ${D.border}` }}>
+              <p style={{ fontSize:'14px', fontWeight:800, color:D.text, margin:'0 0 4px' }}>🔑 비밀번호 변경</p>
+              <p style={{ fontSize:'12px', color:D.sub, margin:'0 0 14px' }}>새 비밀번호를 두 번 입력하면 바로 변경돼요. (6자 이상)</p>
+              <input type="password" value={pw1} onChange={e => { setPw1(e.target.value); setPwMsg('') }}
+                placeholder="새 비밀번호"
+                style={{ width:'100%', padding:'13px 14px', borderRadius:'12px', border:`2px solid ${D.border}`, background:D.input, color:D.text, fontSize:'14px', outline:'none', boxSizing:'border-box', marginBottom:'10px' }} />
+              <input type="password" value={pw2} onChange={e => { setPw2(e.target.value); setPwMsg('') }}
+                placeholder="새 비밀번호 확인"
+                style={{ width:'100%', padding:'13px 14px', borderRadius:'12px', border:`2px solid ${D.border}`, background:D.input, color:D.text, fontSize:'14px', outline:'none', boxSizing:'border-box' }} />
+              {pwMsg && <p style={{ fontSize:'12px', fontWeight:700, color: pwMsg.startsWith('✅') ? '#16a34a' : '#ef4444', margin:'10px 0 0' }}>{pwMsg}</p>}
+              <button onClick={changePassword} disabled={pwSaving}
+                style={{ width:'100%', marginTop:'12px', padding:'13px', borderRadius:'12px', border:'none', cursor: pwSaving ? 'not-allowed' : 'pointer', background: pwSaving ? D.input : tc.gradient, color: pwSaving ? D.sub : 'white', fontSize:'14px', fontWeight:800 }}>
+                {pwSaving ? '변경 중...' : '비밀번호 변경'}
+              </button>
+            </div>
+
           </div>
         )}
 
