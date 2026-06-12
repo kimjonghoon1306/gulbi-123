@@ -315,7 +315,7 @@ export default function CartPage() {
             {/* 주문하기 버튼 */}
             <button className="cart-order-btn" onClick={() => { setOrderDone(false); setAgreeRefund(false); setOrderForm({ address: memberInfo?.address || (typeof window !== 'undefined' && localStorage.getItem('onjongil_addr')) || '', note:'', payment_method:'계좌이체', evidence: isBiz ? '세금계산서' : '현금영수증', evidenceContact: '' }); setShowOrder(true) }}
               style={{ width:'100%', padding:'18px', borderRadius:'16px', background:'linear-gradient(135deg,#16a34a,#15803d)', color:'white', fontSize:'17px', fontWeight:900, border:'none', cursor:'pointer', boxShadow:'0 10px 28px rgba(22,163,74,0.35)' }}>
-              🛒 {totalAmount.toLocaleString()}원 주문하기
+              <span className="cart-emoji">🛒</span> {totalAmount.toLocaleString()}원 주문하기
             </button>
             </div>
           </div>
@@ -477,7 +477,7 @@ export default function CartPage() {
 
                 <button onClick={handleOrder} disabled={orderLoading || !agreeRefund}
                   style={{ width:'100%', padding:'18px', borderRadius:'16px', background:(orderLoading || !agreeRefund) ? D.input : 'linear-gradient(135deg,#14532d,#15803d)', color:(orderLoading || !agreeRefund) ? D.sub : 'white', fontSize:'17px', fontWeight:900, border:'none', cursor:(orderLoading || !agreeRefund) ? 'not-allowed' : 'pointer', boxShadow:(orderLoading || !agreeRefund) ? 'none' : '0 10px 28px rgba(22,163,74,0.35)' }}>
-                  {orderLoading ? '⏳ 처리 중...' : `🛒 ${totalAmount.toLocaleString()}원 주문하기`}
+                  {orderLoading ? '⏳ 처리 중...' : <><span className="cart-emoji">🛒</span> {totalAmount.toLocaleString()}원 주문하기</>}
                 </button>
               </div>
             )}
@@ -493,6 +493,7 @@ export default function CartPage() {
         .cart-order-btn { transition: transform 0.2s, filter 0.2s; }
         .cart-order-btn:hover { transform: translateY(-2px); filter: brightness(1.08); }
         .cart-order-btn:active { transform: scale(0.98); }
+        .cart-emoji { display: inline-block; font-size: 1.2em; filter: brightness(1.2) saturate(1.25) drop-shadow(0 1px 3px rgba(0,0,0,0.35)); }
         button, a { -webkit-tap-highlight-color: transparent; }
         /* PC: 2단 (상품 목록 / 결제요약 sticky) */
         @media (min-width: 880px) {
