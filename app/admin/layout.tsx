@@ -83,6 +83,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [mounted, setMounted] = useState(false)
   const [lowStockCount, setLowStockCount] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)  // 모바일 전체메뉴(햄버거)
 
   useEffect(() => {
     setMounted(true)
@@ -247,7 +248,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           shadow-sm
         `}>
           <div className="flex items-center gap-2">
-            <FarmLogo size={32} uid="mobile" />
+            <button onClick={() => setMenuOpen(true)} aria-label="전체 메뉴"
+              className={`p-2 -ml-1 rounded-xl transition-colors ${dark ? 'text-green-200 hover:bg-green-900/40' : 'text-slate-600 hover:bg-green-50'}`}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+            </button>
+            <FarmLogo size={30} uid="mobile" />
             <div>
               <p className={`font-black text-sm ${dark ? 'text-white' : 'text-slate-800'}`}>온종일팜</p>
               <p className={`text-[9px] ${dark ? 'text-green-400' : 'text-green-600'}`}>농축수산물 도매</p>
@@ -283,6 +288,65 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {children}
         </div>
       </main>
+
+      {/* ── 모바일 전체 메뉴 드로어 (햄버거) ── */}
+      {menuOpen && (
+        <div className="md:hidden fixed inset-0 z-[60]" onClick={() => setMenuOpen(false)}>
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          <div onClick={(e) => e.stopPropagation()}
+            className={`absolute top-0 left-0 h-full w-[82%] max-w-xs overflow-y-auto shadow-2xl
+              ${dark ? 'bg-[#0a1f10]' : 'bg-white'} animate-fadeIn`}>
+            {/* 드로어 헤더 */}
+            <div className={`flex items-center justify-between px-4 py-4 border-b ${dark ? 'border-green-900/30' : 'border-green-50'}`}>
+              <div className="flex items-center gap-2">
+                <FarmLogo size={30} uid="drawer" />
+                <p className={`font-black text-base ${dark ? 'text-white' : 'text-slate-800'}`}>전체 메뉴</p>
+              </div>
+              <button onClick={() => setMenuOpen(false)} aria-label="닫기"
+                className={`p-2 rounded-xl text-xl ${dark ? 'text-green-200 hover:bg-green-900/40' : 'text-slate-500 hover:bg-slate-100'}`}>✕</button>
+            </div>
+            {/* 메뉴 그룹 (PC 사이드바와 동일하게 전부) */}
+            <nav className="p-3 space-y-4">
+              {menuGroups.map((group) => (
+                <div key={group.label}>
+                  <p className={`text-[10px] font-bold uppercase tracking-widest px-3 mb-1.5 ${dark ? 'text-green-700/60' : 'text-slate-300'}`}>{group.label}</p>
+                  <div className="space-y-0.5">
+                    {group.items.map((item) => {
+                      const active = pathname === item.href || pathname.startsWith(item.href + '/')
+                      return (
+                        <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)}>
+                          <div className={`relative flex items-center gap-3 px-3 py-3 rounded-xl text-[15px] font-bold transition-all
+                            ${active
+                              ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-md'
+                              : dark ? 'text-green-100/80 hover:bg-green-900/40' : 'text-slate-600 hover:bg-green-50'}`}>
+                            <span className="text-xl">{item.icon}</span>
+                            <span>{item.label}</span>
+                            {item.badge && lowStockCount > 0 && (
+                              <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">{lowStockCount}</span>
+                            )}
+                          </div>
+                        </Link>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
+              {/* 바로가기 */}
+              <div className={`pt-3 border-t ${dark ? 'border-green-900/30' : 'border-green-50'} space-y-0.5`}>
+                <Link href="/shop" onClick={() => setMenuOpen(false)}>
+                  <div className={`flex items-center gap-3 px-3 py-3 rounded-xl text-[15px] font-bold ${dark ? 'text-green-300 hover:bg-green-900/40' : 'text-green-700 hover:bg-green-50'}`}>
+                    <span className="text-xl">🛒</span><span>쇼핑몰 바로가기</span>
+                  </div>
+                </Link>
+                <button onClick={() => { setMenuOpen(false); handleLogout() }}
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-[15px] font-bold ${dark ? 'text-red-400 hover:bg-red-900/20' : 'text-red-400 hover:bg-red-50'}`}>
+                  <span className="text-xl">🚪</span><span>로그아웃</span>
+                </button>
+              </div>
+            </nav>
+          </div>
+        </div>
+      )}
 
       {/* ── 모바일 하단 탭바 ── */}
       <nav className={`

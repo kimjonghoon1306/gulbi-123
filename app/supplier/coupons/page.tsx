@@ -29,6 +29,7 @@ function CouponsContent() {
   const [form, setForm] = useState(EMPTY)
   const [saving, setSaving] = useState(false)
   const [uid, setUid] = useState('')
+  const [discByCode, setDiscByCode] = useState<Record<string, number>>({})  // 내 쿠폰별 총 할인 제공(=내 부담)
 
   useEffect(() => { init() }, [])
   const init = async () => {
@@ -38,7 +39,35 @@ function CouponsContent() {
     // 공급사 페이지 = 본인이 발행한 공급사(supplier) 쿠폰만 (본사 쿠폰과 분리)
     const { data } = await supabase.from('coupons').select('*').eq('created_by', user.id).eq('created_by_role', 'supplier').order('created_at', { ascending: false })
     setCoupons((data as any) || [])
+    await loadUsage(user.id)
     setLoading(false)
+  }
+
+  // 내 쿠폰이 부담한 할인액 집계 (주문항목→부모주문 조인, 주문 단위 중복제거)
+  const loadUsage = async (myId: string) => {
+    try {
+      const tables = [
+        { items: 'general_order_items', ord: 'general_orders' },
+        { items: 'retail_order_items', ord: 'retail_orders' },
+        { items: 'wholesale_order_items', ord: 'wholesale_orders' },
+      ]
+      const seen = new Set<string>()
+      const byCode: Record<string, number> = {}
+      for (const t of tables) {
+        const { data } = await supabase.from(t.items)
+          .select(`order_id, ${t.ord}(coupon_code, coupon_owner, coupon_discount)`)
+          .eq('supplier_id', myId)
+        for (const row of (data || []) as any[]) {
+          const o = row[t.ord]
+          if (!o || o.coupon_owner !== myId) continue   // 내가 부담하는 쿠폰만
+          const key = t.ord + ':' + row.order_id
+          if (seen.has(key)) continue
+          seen.add(key)
+          if (o.coupon_code) byCode[o.coupon_code] = (byCode[o.coupon_code] || 0) + (o.coupon_discount || 0)
+        }
+      }
+      setDiscByCode(byCode)
+    } catch (e) { console.error('loadUsage error:', e) }
   }
 
   const genCode = () => {
@@ -144,6 +173,7 @@ function CouponsContent() {
               <div style={{ fontSize: '12px', color: t.textMuted, marginTop: '8px', lineHeight: 1.7 }}>
                 {c.min_amount > 0 && <p style={{ margin: 0 }}>· {c.min_amount.toLocaleString()}원 이상 주문 시</p>}
                 <p style={{ margin: 0 }}>· 사용 {c.used_count}회{c.usage_limit ? ` / ${c.usage_limit}회` : ' (무제한)'}</p>
+                <p style={{ margin: 0 }}>· 할인 제공 <b style={{ color: t.text }}>{(discByCode[c.code] || 0).toLocaleString()}원</b> <span style={{ color: t.textMuted }}>(내 부담)</span></p>
                 {c.expires_at && <p style={{ margin: 0 }}>· {new Date(c.expires_at).toLocaleDateString('ko-KR')}까지</p>}
               </div>
               <button onClick={() => toggleActive(c)}

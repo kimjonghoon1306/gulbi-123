@@ -23,6 +23,8 @@ export default function AdminCouponsPage() {
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState(EMPTY)
   const [saving, setSaving] = useState(false)
+  const [discByCode, setDiscByCode] = useState<Record<string, number>>({})   // 쿠폰별 총 할인 제공액
+  const [burdenBySupplier, setBurdenBySupplier] = useState<{ id: string | null; name: string; amount: number }[]>([])
   const supabase = createClient()
 
   useEffect(() => { fetchAll() }, [])
@@ -32,7 +34,41 @@ export default function AdminCouponsPage() {
     // 관리자 페이지 = 본사(admin) 발행 쿠폰만 (공급사 쿠폰과 분리)
     const { data } = await supabase.from('coupons').select('*').eq('created_by_role', 'admin').order('created_at', { ascending: false })
     setCoupons((data as any) || [])
+    await loadUsage()
     setLoading(false)
+  }
+
+  // 주문 3종에서 쿠폰 사용액 집계 (쿠폰별 할인 + 공급사별 부담)
+  const loadUsage = async () => {
+    try {
+      const tables = ['general_orders', 'retail_orders', 'wholesale_orders']
+      const rows: any[] = []
+      for (const t of tables) {
+        const { data } = await supabase.from(t).select('coupon_code, coupon_owner, coupon_discount').gt('coupon_discount', 0)
+        if (data) rows.push(...data)
+      }
+      const byCode: Record<string, number> = {}
+      const byOwner: Record<string, number> = {}
+      for (const r of rows) {
+        if (r.coupon_code) byCode[r.coupon_code] = (byCode[r.coupon_code] || 0) + (r.coupon_discount || 0)
+        const key = r.coupon_owner || '__hq__'  // null = 본사
+        byOwner[key] = (byOwner[key] || 0) + (r.coupon_discount || 0)
+      }
+      setDiscByCode(byCode)
+      // 공급사 이름 조인
+      const supIds = Object.keys(byOwner).filter(k => k !== '__hq__')
+      let names: Record<string, string> = {}
+      if (supIds.length) {
+        const { data: sups } = await supabase.from('suppliers').select('id, company_name').in('id', supIds)
+        names = Object.fromEntries((sups || []).map((s: any) => [s.id, s.company_name]))
+      }
+      const burden = Object.entries(byOwner).map(([k, amount]) => ({
+        id: k === '__hq__' ? null : k,
+        name: k === '__hq__' ? '본사 부담' : (names[k] || '공급사'),
+        amount,
+      })).sort((a, b) => b.amount - a.amount)
+      setBurdenBySupplier(burden)
+    } catch (e) { console.error('loadUsage error:', e) }
   }
 
   const genCode = () => {
@@ -115,6 +151,24 @@ export default function AdminCouponsPage() {
         </div>
       )}
 
+      {/* 공급사별 쿠폰 부담 (정산에서 차감할 금액) */}
+      {!loading && burdenBySupplier.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-100 dark:border-gray-700 p-5">
+          <p className="font-bold text-slate-700 dark:text-slate-200 mb-1">💸 쿠폰 부담 정산</p>
+          <p className="text-xs text-slate-400 mb-3">공급사 발행 쿠폰의 할인액은 그 공급사 정산에서 차감하세요. (본사 쿠폰은 본사 부담)</p>
+          <div className="space-y-2">
+            {burdenBySupplier.map(b => (
+              <div key={b.id || 'hq'} className="flex items-center justify-between py-2 px-3 rounded-xl bg-slate-50 dark:bg-gray-900/40">
+                <span className="text-sm font-bold text-slate-600 dark:text-slate-300">
+                  {b.id ? `🏭 ${b.name}` : '🏢 본사 부담'}
+                </span>
+                <span className={`text-sm font-black ${b.id ? 'text-amber-600' : 'text-slate-500'}`}>−{b.amount.toLocaleString()}원</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <div className="p-12 text-center text-slate-400">불러오는 중...</div>
       ) : coupons.length === 0 ? (
@@ -142,6 +196,7 @@ export default function AdminCouponsPage() {
               <div className="text-xs text-slate-400 dark:text-slate-500 mt-2 space-y-0.5">
                 {c.min_amount > 0 && <p>· {c.min_amount.toLocaleString()}원 이상 주문 시</p>}
                 <p>· 사용 {c.used_count}회{c.usage_limit ? ` / ${c.usage_limit}회` : ' (무제한)'}</p>
+                <p>· 할인 제공 <b className="text-slate-600 dark:text-slate-300">{(discByCode[c.code] || 0).toLocaleString()}원</b></p>
                 {c.expires_at && <p>· {new Date(c.expires_at).toLocaleDateString('ko-KR')}까지</p>}
               </div>
               <button onClick={() => toggleActive(c)}
