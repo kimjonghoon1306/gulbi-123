@@ -36,11 +36,11 @@ export default function CartPage() {
   const [memberInfo, setMemberInfo] = useState<any>(null)
   const [userId, setUserId] = useState('')
   const [redirectCount, setRedirectCount] = useState(3)
-  // 쿠폰
-  const [couponCode, setCouponCode] = useState('')
-  const [appliedCoupon, setAppliedCoupon] = useState<any>(null)
+  // 쿠폰 (쿠폰함에서 받은 쿠폰을 선택해서 사용)
+  const [ownedCoupons, setOwnedCoupons] = useState<any[]>([])      // user_coupons(미사용) + coupons
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null)    // 선택된 coupons 행
+  const [appliedUcId, setAppliedUcId] = useState<string | null>(null) // 선택된 user_coupons.id (사용처리용)
   const [couponMsg, setCouponMsg] = useState<{ ok: boolean; text: string } | null>(null)
-  const [couponLoading, setCouponLoading] = useState(false)
 
   useEffect(() => {
     const saved = localStorage.getItem('shop-theme')
@@ -80,6 +80,15 @@ export default function CartPage() {
       .order('created_at', { ascending: false })
 
     setItems((cartData as any) || [])
+
+    // 쿠폰함: 받은 쿠폰 중 미사용만 로드
+    const { data: ucs } = await supabase
+      .from('user_coupons')
+      .select('id, coupons(*)')
+      .eq('user_id', user.id)
+      .eq('used', false)
+    setOwnedCoupons((ucs as any) || [])
+
     setLoading(false)
   }
 
@@ -119,23 +128,19 @@ export default function CartPage() {
   const discount = calcDiscount(appliedCoupon, totalAmount)
   const finalAmount = Math.max(0, totalAmount - discount)
 
-  const applyCoupon = async () => {
-    const code = couponCode.trim().toUpperCase()
-    if (!code) return
-    setCouponLoading(true); setCouponMsg(null)
-    const { data: c } = await supabase.from('coupons').select('*').eq('code', code).maybeSingle()
-    setCouponLoading(false)
-    if (!c) { setCouponMsg({ ok: false, text: '존재하지 않는 쿠폰 코드예요.' }); return }
+  // 쿠폰함에서 받은 쿠폰을 선택해서 사용
+  const selectCoupon = (uc: any) => {
+    const c = uc.coupons
+    if (!c) return
     if (!c.is_active) { setCouponMsg({ ok: false, text: '사용 중지된 쿠폰이에요.' }); return }
     if (c.starts_at && new Date(c.starts_at) > new Date()) { setCouponMsg({ ok: false, text: '아직 사용 기간이 아니에요.' }); return }
     if (c.expires_at && new Date(c.expires_at) < new Date()) { setCouponMsg({ ok: false, text: '만료된 쿠폰이에요.' }); return }
-    if (c.usage_limit != null && c.used_count >= c.usage_limit) { setCouponMsg({ ok: false, text: '사용 가능 횟수가 모두 소진됐어요.' }); return }
-    if (totalAmount < (c.min_amount || 0)) { setCouponMsg({ ok: false, text: `${c.min_amount.toLocaleString()}원 이상 주문 시 사용 가능해요.` }); return }
-    setAppliedCoupon(c)
+    if (totalAmount < (c.min_amount || 0)) { setCouponMsg({ ok: false, text: `${Number(c.min_amount).toLocaleString()}원 이상 주문 시 사용 가능해요.` }); return }
+    setAppliedCoupon(c); setAppliedUcId(uc.id)
     const d = calcDiscount(c, totalAmount)
     setCouponMsg({ ok: true, text: `🎉 ${d.toLocaleString()}원 할인이 적용됐어요!` })
   }
-  const removeCoupon = () => { setAppliedCoupon(null); setCouponCode(''); setCouponMsg(null) }
+  const removeCoupon = () => { setAppliedCoupon(null); setAppliedUcId(null); setCouponMsg(null) }
 
   const isBiz = memberType === '소매업' || memberType === '도매업'  // 사업자 회원
   // 과세(가공식품)분 / 면세(미가공 농수산물)분 분리 — 부가세는 과세분에만
@@ -192,9 +197,12 @@ export default function CartPage() {
         )
       }
 
-      // 쿠폰 사용 횟수 증가 (한도 관리)
+      // 쿠폰 사용 횟수 증가 (한도 관리) + 받은 쿠폰 사용처리
       if (appliedCoupon) {
         try { await supabase.rpc('increment_coupon_usage', { coupon_code: appliedCoupon.code }) } catch {}
+        if (appliedUcId && newOrder) {
+          try { await supabase.from('user_coupons').update({ used: true, used_at: new Date().toISOString(), order_ref: `${table}#${newOrder.id}` }).eq('id', appliedUcId) } catch {}
+        }
       }
 
       // 증빙 자동생성 — 계좌이체(현금성)만. 카드결제는 카드매출전표로 갈음되어 별도 발행 안 함(이중과세 방지)
@@ -348,25 +356,41 @@ export default function CartPage() {
             </div>
 
             <div className="cart-summary">
-            {/* 쿠폰 입력 */}
+            {/* 쿠폰 사용하기 (쿠폰함에서 받은 쿠폰 선택) */}
             <div style={{ background:D.card, borderRadius:'20px', padding:'18px', border:`1px solid ${D.border}`, marginBottom:'16px', boxShadow:'0 6px 24px rgba(0,0,0,0.05)' }}>
-              <p style={{ fontSize:'13px', fontWeight:800, color:D.text, margin:'0 0 10px' }}>🎟️ 할인 쿠폰</p>
+              <p style={{ fontSize:'13px', fontWeight:800, color:D.text, margin:'0 0 10px' }}>🎟️ 쿠폰 사용하기</p>
               {appliedCoupon ? (
                 <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', background:dark?'rgba(74,222,128,0.1)':'rgba(22,163,74,0.07)', border:`1px solid ${dark?'rgba(74,222,128,0.25)':'rgba(22,163,74,0.2)'}`, borderRadius:'12px', padding:'12px 14px' }}>
                   <div>
-                    <p style={{ fontSize:'14px', fontWeight:900, color:gtext, margin:0, letterSpacing:'0.5px' }}>{appliedCoupon.code}</p>
+                    <p style={{ fontSize:'14px', fontWeight:900, color:gtext, margin:0 }}>{appliedCoupon.description || appliedCoupon.code}</p>
                     <p style={{ fontSize:'12px', color:D.sub, margin:'2px 0 0' }}>−{discount.toLocaleString()}원 적용중</p>
                   </div>
                   <button onClick={removeCoupon} style={{ fontSize:'12px', fontWeight:700, color:D.sub, background:'none', border:`1px solid ${D.border}`, borderRadius:'10px', padding:'7px 12px', cursor:'pointer' }}>해제</button>
                 </div>
+              ) : ownedCoupons.length === 0 ? (
+                <div style={{ textAlign:'center', padding:'8px 0' }}>
+                  <p style={{ fontSize:'13px', color:D.sub, margin:'0 0 8px' }}>사용할 수 있는 쿠폰이 없어요.</p>
+                  <a href="/shop/mypage?tab=coupons" style={{ fontSize:'12px', fontWeight:800, color:gtext, textDecoration:'underline' }}>쿠폰함에서 받기 →</a>
+                </div>
               ) : (
-                <div style={{ display:'flex', gap:'8px' }}>
-                  <input value={couponCode} onChange={e => setCouponCode(e.target.value.toUpperCase())} onKeyDown={e => { if (e.key==='Enter') applyCoupon() }}
-                    placeholder="쿠폰 코드 입력" style={{ flex:1, padding:'12px 14px', borderRadius:'12px', border:`2px solid ${D.border}`, background:D.input, color:D.text, fontSize:'14px', outline:'none', boxSizing:'border-box', textTransform:'uppercase' }} />
-                  <button onClick={applyCoupon} disabled={couponLoading || !couponCode.trim()}
-                    style={{ padding:'0 18px', borderRadius:'12px', border:'none', cursor:(couponLoading||!couponCode.trim())?'not-allowed':'pointer', background:(couponLoading||!couponCode.trim())?D.input:'linear-gradient(135deg,#16a34a,#15803d)', color:(couponLoading||!couponCode.trim())?D.sub:'white', fontSize:'14px', fontWeight:800, whiteSpace:'nowrap' }}>
-                    {couponLoading ? '...' : '적용'}
-                  </button>
+                <div style={{ display:'flex', flexDirection:'column', gap:'8px' }}>
+                  {ownedCoupons.map((uc:any) => {
+                    const c = uc.coupons; if (!c) return null
+                    const dtext = c.discount_type === 'percent' ? `${c.discount_value}% 할인${c.max_discount?` (최대 ${Number(c.max_discount).toLocaleString()}원)`:''}` : `${Number(c.discount_value).toLocaleString()}원 할인`
+                    const usable = totalAmount >= (c.min_amount || 0)
+                    return (
+                      <button key={uc.id} onClick={() => selectCoupon(uc)} disabled={!usable}
+                        style={{ display:'flex', alignItems:'center', justifyContent:'space-between', textAlign:'left', gap:'10px', padding:'12px 14px', borderRadius:'12px', border:`2px solid ${D.border}`, background:D.input, cursor:usable?'pointer':'not-allowed', opacity:usable?1:0.5 }}>
+                        <span>
+                          <span style={{ display:'block', fontSize:'14px', fontWeight:900, color:gtext }}>{dtext}</span>
+                          <span style={{ display:'block', fontSize:'11px', color:D.sub, marginTop:'2px' }}>
+                            {c.created_by_role==='supplier'?'공급사 발행':'본사 발행'}{c.min_amount?` · ${Number(c.min_amount).toLocaleString()}원 이상`:''}
+                          </span>
+                        </span>
+                        <span style={{ fontSize:'12px', fontWeight:800, color:usable?gtext:D.sub, whiteSpace:'nowrap' }}>{usable?'사용':'금액부족'}</span>
+                      </button>
+                    )
+                  })}
                 </div>
               )}
               {couponMsg && <p style={{ fontSize:'12px', fontWeight:700, color: couponMsg.ok ? gtext : '#ef4444', margin:'10px 0 0' }}>{couponMsg.text}</p>}

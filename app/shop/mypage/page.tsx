@@ -61,8 +61,11 @@ function MyPageInner() {
   const [orders, setOrders]           = useState<Order[]>([])
   const [orderItems, setOrderItems]   = useState<Record<string, OrderItem[]>>({})
   const [loading, setLoading]         = useState(true)
-  const [tab, setTab]                 = useState<'home' | 'orders' | 'benefits' | 'wishlist' | 'settings'>('home')
+  const [tab, setTab]                 = useState<'home' | 'orders' | 'coupons' | 'benefits' | 'wishlist' | 'settings'>('home')
   const [wishlists, setWishlists]     = useState<any[]>([])
+  const [myCoupons, setMyCoupons]     = useState<any[]>([])   // 받은 쿠폰(user_coupons + coupons)
+  const [availCoupons, setAvailCoupons] = useState<any[]>([]) // 받을 수 있는 쿠폰
+  const [couponBusy, setCouponBusy]   = useState('')
   const [dark, setDark]               = useState(false)
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null)
   const [itemsLoading, setItemsLoading]   = useState<string | null>(null)
@@ -169,11 +172,45 @@ function MyPageInner() {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
       setWishlists(wishes || [])
+      await loadCoupons(user.id)
       setLoading(false)
     } catch (e) {
       console.error('fetchData error:', e)
       setLoading(false)
     }
+  }
+
+  // 쿠폰함: 받은 쿠폰 + 받을 수 있는 쿠폰 로드
+  const loadCoupons = async (uid: string) => {
+    try {
+      const now = new Date().toISOString()
+      const [{ data: mine }, { data: all }] = await Promise.all([
+        supabase.from('user_coupons').select('*, coupons(*)').eq('user_id', uid).order('created_at', { ascending: false }),
+        supabase.from('coupons').select('*').eq('is_active', true),
+      ])
+      setMyCoupons(mine || [])
+      const ownedIds = new Set((mine || []).map((m: any) => m.coupon_id))
+      // 활성 + 기간 내 + 사용한도 안 찼고 + 아직 안 받은 것
+      const avail = (all || []).filter((c: any) => {
+        if (ownedIds.has(c.id)) return false
+        if (c.starts_at && c.starts_at > now) return false
+        if (c.expires_at && c.expires_at < now) return false
+        if (c.usage_limit && (c.used_count || 0) >= c.usage_limit) return false
+        return true
+      })
+      setAvailCoupons(avail)
+    } catch (e) { console.error('loadCoupons error:', e) }
+  }
+
+  // 쿠폰 받기 → 쿠폰함에 저장
+  const claimCoupon = async (c: any) => {
+    if (!member) return
+    setCouponBusy(c.id)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setCouponBusy(''); return }
+    const { error } = await supabase.from('user_coupons').insert({ user_id: user.id, coupon_id: c.id })
+    if (!error) await loadCoupons(user.id)
+    setCouponBusy('')
   }
 
   // 찜 해제
@@ -188,8 +225,8 @@ function MyPageInner() {
 
     // 장바구니 결제 완료 후 ?tab=orders 로 진입 시 주문내역 탭 바로 열기
     const tabParam = searchParams.get('tab')
-    if (tabParam === 'orders' || tabParam === 'benefits' || tabParam === 'wishlist') {
-      setTab(tabParam)
+    if (tabParam === 'orders' || tabParam === 'benefits' || tabParam === 'wishlist' || tabParam === 'coupons') {
+      setTab(tabParam as any)
     }
 
     fetchData()
@@ -345,6 +382,7 @@ function MyPageInner() {
           {[
             { key:'home',     icon:'🏠', label:'홈' },
             { key:'orders',   icon:'📦', label:'주문/배송' },
+            { key:'coupons',  icon:'🎟️', label:'쿠폰함' },
             { key:'wishlist', icon:'❤️', label:'찜 목록' },
             { key:'benefits', icon: member.member_type === '일반' ? '⭐' : '💼', label: member.member_type === '일반' ? '등급/혜택' : '유통 혜택' },
             { key:'settings', icon:'⚙️', label:'설정' },
@@ -604,6 +642,73 @@ function MyPageInner() {
             )}
           </div>
         )}
+
+        {/* ════════════════ TAB: COUPONS (쿠폰함) ════════════════ */}
+        {tab === 'coupons' && (() => {
+          const discountText = (c: any) => c.discount_type === 'percent'
+            ? `${c.discount_value}% 할인${c.max_discount ? ` (최대 ${Number(c.max_discount).toLocaleString()}원)` : ''}`
+            : `${Number(c.discount_value).toLocaleString()}원 할인`
+          const issuer = (c: any) => c?.created_by_role === 'supplier' ? '공급사 발행' : '본사 발행'
+          const unused = myCoupons.filter((m: any) => !m.used && m.coupons)
+          const used = myCoupons.filter((m: any) => m.used && m.coupons)
+          const CouponCard = ({ c, children, faded }: any) => (
+            <div style={{ display:'flex', alignItems:'stretch', background:D.card, borderRadius:'16px', border:`1px solid ${D.border}`, overflow:'hidden', opacity: faded ? 0.55 : 1 }}>
+              <div style={{ width:'8px', background: tc.gradient }} />
+              <div style={{ flex:1, padding:'16px 18px' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:'8px', flexWrap:'wrap', marginBottom:'4px' }}>
+                  <span style={{ fontSize:'18px', fontWeight:900, color:accent }}>{discountText(c)}</span>
+                  <span style={{ fontSize:'10px', fontWeight:800, padding:'3px 8px', borderRadius:'100px', background: c.created_by_role === 'supplier' ? 'rgba(13,148,136,0.12)' : 'rgba(22,163,74,0.12)', color: c.created_by_role === 'supplier' ? '#0d9488' : '#15803d' }}>{issuer(c)}</span>
+                </div>
+                <p style={{ fontSize:'13px', fontWeight:700, color:D.text, margin:'0 0 3px' }}>{c.description || c.code}</p>
+                <p style={{ fontSize:'11px', color:D.sub, margin:0 }}>
+                  {c.min_amount ? `${Number(c.min_amount).toLocaleString()}원 이상 · ` : ''}
+                  {c.expires_at ? `${new Date(c.expires_at).toLocaleDateString('ko-KR')}까지` : '기간 제한 없음'}
+                </p>
+              </div>
+              <div style={{ display:'flex', alignItems:'center', paddingRight:'14px' }}>{children}</div>
+            </div>
+          )
+          return (
+            <div style={{ display:'flex', flexDirection:'column', gap:'22px' }}>
+              {/* 받을 수 있는 쿠폰 */}
+              <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+                <p style={{ fontSize:'15px', fontWeight:800, color:D.text, margin:0 }}>🎁 받을 수 있는 쿠폰 <span style={{ color:D.sub, fontSize:'13px', fontWeight:500 }}>{availCoupons.length}개</span></p>
+                {availCoupons.length === 0 ? (
+                  <div style={{ background:D.card, borderRadius:'16px', padding:'32px 20px', textAlign:'center', border:`1px solid ${D.border}` }}>
+                    <p style={{ fontSize:'13px', color:D.sub, margin:0 }}>지금 받을 수 있는 쿠폰이 없어요</p>
+                  </div>
+                ) : availCoupons.map((c: any) => (
+                  <CouponCard key={c.id} c={c}>
+                    <button onClick={() => claimCoupon(c)} disabled={couponBusy === c.id}
+                      style={{ padding:'10px 18px', borderRadius:'12px', border:'none', cursor:'pointer', background:tc.gradient, color:'white', fontSize:'13px', fontWeight:800, whiteSpace:'nowrap' }}>
+                      {couponBusy === c.id ? '...' : '받기'}
+                    </button>
+                  </CouponCard>
+                ))}
+              </div>
+
+              {/* 내 쿠폰 (사용 가능) */}
+              <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+                <p style={{ fontSize:'15px', fontWeight:800, color:D.text, margin:0 }}>🎟️ 내 쿠폰함 <span style={{ color:D.sub, fontSize:'13px', fontWeight:500 }}>{unused.length}개 사용 가능</span></p>
+                <p style={{ fontSize:'12px', color:D.sub, margin:'-4px 0 0' }}>받은 쿠폰은 결제할 때 &lsquo;쿠폰 사용하기&rsquo;에서 골라 쓸 수 있어요.</p>
+                {unused.length === 0 ? (
+                  <div style={{ background:D.card, borderRadius:'16px', padding:'32px 20px', textAlign:'center', border:`1px solid ${D.border}` }}>
+                    <p style={{ fontSize:'40px', margin:'0 0 8px' }}>🎟️</p>
+                    <p style={{ fontSize:'13px', color:D.sub, margin:0 }}>아직 받은 쿠폰이 없어요. 위에서 받아보세요!</p>
+                  </div>
+                ) : unused.map((m: any) => <CouponCard key={m.id} c={m.coupons}><span style={{ fontSize:'11px', fontWeight:800, color:accent }}>사용 가능 ✅</span></CouponCard>)}
+              </div>
+
+              {/* 사용한 쿠폰 */}
+              {used.length > 0 && (
+                <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+                  <p style={{ fontSize:'15px', fontWeight:800, color:D.text, margin:0 }}>사용 완료 <span style={{ color:D.sub, fontSize:'13px', fontWeight:500 }}>{used.length}개</span></p>
+                  {used.map((m: any) => <CouponCard key={m.id} c={m.coupons} faded><span style={{ fontSize:'11px', fontWeight:800, color:D.sub }}>사용함</span></CouponCard>)}
+                </div>
+              )}
+            </div>
+          )
+        })()}
 
         {/* ════════════════ TAB: BENEFITS ════════════════ */}
         {tab === 'benefits' && (
