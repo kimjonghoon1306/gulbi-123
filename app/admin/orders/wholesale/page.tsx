@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
 import { COURIERS } from '@/lib/tracking'
+import TrackingInline from '../TrackingInline'
 
 type Order = {
   id: string; order_number: string; company_name: string; contact: string
@@ -87,6 +88,12 @@ export default function WholesalePage() {
     setOrders(prev => prev.map(o => o.id === viewOrder.id ? { ...o, ...patch } : o))
     setTrackSaved(true)
     setTimeout(() => setTrackSaved(false), 2000)
+  }
+
+  const saveTrackingInline = async (id: string, courier: string, tracking: string) => {
+    const patch = { courier_code: courier || null, tracking_number: tracking.trim() || null }
+    await supabase.from('wholesale_orders').update(patch).eq('id', id)
+    setOrders(prev => prev.map(o => o.id === id ? { ...o, ...patch } : o))
   }
 
   const addItem = () => setItems([...items, { product_id: '', product_name: '', quantity: 1, unit: 'kg', unit_price: 0, total_price: 0 }])
@@ -224,7 +231,7 @@ export default function WholesalePage() {
 
       {/* 통계 카드 */}
       <div className="overflow-x-auto pb-2 mb-4">
-      <div className="grid grid-cols-4 gap-3 min-w-[480px]">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           { label: '전체 주문', value: stats.total + '건', icon: '📋', color: 'from-slate-500 to-slate-600' },
           { label: '오늘 접수', value: stats.today + '건', icon: '🌅', color: 'from-green-600 to-blue-600' },
@@ -323,6 +330,11 @@ export default function WholesalePage() {
                 ))}
               </div>
               </div>
+
+              {/* 송장 바로 입력 */}
+              <TrackingInline courierCode={o.courier_code} trackingNumber={o.tracking_number}
+                color="linear-gradient(135deg,#7c3aed,#6366f1)"
+                onSave={(c, t) => saveTrackingInline(o.id, c, t)} />
             </div>
           )
         })}
