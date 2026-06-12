@@ -1252,8 +1252,12 @@ export default function ShopPage() {
           70%  { transform: scale(1.05); opacity: 1; }
           100% { transform: scale(1); opacity: 1; }
         }
+        /* 모바일: 하단 고정 네비바에 푸터(사업자정보)가 가리지 않도록 여백 */
+        @media (max-width: 639px) {
+          .shop-footer { padding-bottom: calc(100px + env(safe-area-inset-bottom)) !important; }
+        }
       `}</style>
-      <footer style={{ background: '#0f172a', color: '#94a3b8', padding: '34px 20px', textAlign: 'center', fontSize: '12px', lineHeight: 1.8 }}>
+      <footer className="shop-footer" style={{ background: '#0f172a', color: '#94a3b8', padding: '34px 20px', textAlign: 'center', fontSize: '12px', lineHeight: 1.8 }}>
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           <div style={{ fontWeight: 700, color: '#e2e8f0', marginBottom: '10px', fontSize: '14px' }}>온종일팜 · 주식회사 유안에프앤비</div>
           상호: 주식회사 유안에프앤비 &nbsp;|&nbsp; 대표: 오준영 &nbsp;|&nbsp; 사업자등록번호: 692-88-03600 &nbsp;|&nbsp; 통신판매업신고: 제2026-전남영광-0027호<br />
