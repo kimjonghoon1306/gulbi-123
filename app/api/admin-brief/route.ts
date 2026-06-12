@@ -23,12 +23,17 @@ export async function GET() {
   const [
     { data: gOrders }, { data: wOrders }, { data: rOrders },
     { data: products }, { data: suppliers },
+    { data: members }, { data: supProducts }, { data: taxInvoices }, { data: cashReceipts },
   ] = await Promise.all([
     supabase.from('general_orders').select('status, total_amount, created_at, customer_name'),
     supabase.from('wholesale_orders').select('status, total_amount, created_at, company_name'),
     supabase.from('retail_orders').select('status, total_amount, created_at, customer_name'),
     supabase.from('products').select('name, stock, min_stock, unit'),
     supabase.from('suppliers').select('company_name, status, created_at'),
+    supabase.from('shop_members').select('name, business_name, member_type, status'),
+    supabase.from('products').select('name, approval_status, supplier_id').not('supplier_id', 'is', null),
+    supabase.from('tax_invoices').select('company_name, status'),
+    supabase.from('cash_receipts').select('customer_name, status'),
   ])
 
   const all = [...(gOrders || []), ...(wOrders || []), ...(rOrders || [])]
@@ -38,8 +43,13 @@ export async function GET() {
   const yOrders = onDay(yestStr)
   const tOrders = onDay(todayStr)
   const unshipped = all.filter(o => o.status === '접수' || o.status === '준비중')
+  const paymentPending = all.filter(o => o.status === '결제대기')
   const lowStock = (products || []).filter(p => (p.min_stock || 0) > 0 && (p.stock || 0) <= p.min_stock)
   const pendingSuppliers = (suppliers || []).filter(s => s.status && s.status !== '승인')
+  const pendingMembers = (members || []).filter(m => m.status === '대기중')
+  const pendingSupProducts = (supProducts || []).filter(p => p.approval_status === '대기중')
+  const unissuedInvoices = (taxInvoices || []).filter(i => i.status === '미발행')
+  const unissuedReceipts = (cashReceipts || []).filter(r => r.status === '미발행')
 
   const stats = {
     yesterdayOrders: yOrders.length,
@@ -47,10 +57,17 @@ export async function GET() {
     yesterdayDone: yOrders.filter(o => o.status === '완료').length,
     todayOrders: tOrders.length,
     unshipped: unshipped.length,
+    paymentPending: paymentPending.length,
     lowStockCount: lowStock.length,
     lowStockNames: lowStock.slice(0, 8).map(p => `${p.name}(${p.stock}${p.unit || ''}/최소${p.min_stock})`),
     pendingSuppliers: pendingSuppliers.length,
     pendingSupplierNames: pendingSuppliers.slice(0, 8).map(s => s.company_name),
+    pendingMembers: pendingMembers.length,
+    pendingMemberNames: pendingMembers.slice(0, 8).map(m => `${m.business_name || m.name}(${m.member_type})`),
+    pendingSupProducts: pendingSupProducts.length,
+    pendingSupProductNames: pendingSupProducts.slice(0, 8).map(p => p.name),
+    unissuedInvoices: unissuedInvoices.length,
+    unissuedReceipts: unissuedReceipts.length,
   }
 
   // 3) AI 요약 (본인 키)
@@ -64,10 +81,14 @@ export async function GET() {
 - 주문 ${stats.yesterdayOrders}건, 매출 ${stats.yesterdayRevenue.toLocaleString()}원, 완료 ${stats.yesterdayDone}건
 [오늘(${todayStr}) 현재까지]
 - 주문 ${stats.todayOrders}건
-[처리 대기]
+[처리 대기 — 사장님이 오늘 챙겨야 할 것]
 - 미출고(접수·준비중) ${stats.unshipped}건
+- 결제대기(카드결제 미완료) 주문 ${stats.paymentPending}건
 - 재고부족 ${stats.lowStockCount}개: ${stats.lowStockNames.join(', ') || '없음'}
+- 회원 승인대기(소매·도매 가입심사) ${stats.pendingMembers}명: ${stats.pendingMemberNames.join(', ') || '없음'}
 - 공급사 승인대기 ${stats.pendingSuppliers}건: ${stats.pendingSupplierNames.join(', ') || '없음'}
+- 공급사 상품 승인대기 ${stats.pendingSupProducts}건: ${stats.pendingSupProductNames.join(', ') || '없음'}
+- 미발행 세금계산서 ${stats.unissuedInvoices}건 / 미발행 현금영수증 ${stats.unissuedReceipts}건
 
 위 데이터를 바탕으로 아래 JSON을 작성하세요. 모든 문장은 한국어, 사장님께 말하듯 정중하고 간결하게.
 숫자는 위 데이터 그대로만 쓰고 새 숫자를 지어내지 마세요.
@@ -79,7 +100,8 @@ export async function GET() {
     { "label": "오늘 먼저 할 일 (12자 이내)", "why": "왜 중요한지 한 문장" }
   ]
 }
-actions는 데이터에 근거해 1~4개. 미출고·재고부족·승인대기가 0이면 그 항목은 넣지 말 것.
+actions는 데이터에 근거해 1~4개. 위 '처리 대기' 항목 중 건수가 0인 것은 절대 넣지 말 것.
+건수가 많거나 급한 것(미출고, 결제대기, 회원·공급사 승인대기, 미발행 증빙)을 우선순위로 제안할 것.
 처리할 게 전혀 없으면 actions는 빈 배열, summary에서 "오늘은 급한 처리건이 없다"고 안내.`
 
   const ai = await callAI({ keys: auth.keys, system, prompt, maxTokens: 1024, jsonMode: true })
