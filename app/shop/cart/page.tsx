@@ -13,7 +13,7 @@ type CartItem = {
   products: {
     id: string; name: string; image_url: string
     retail_price: number; wholesale_price: number; member_price: number
-    stock: number; unit: string
+    stock: number; unit: string; is_taxable: boolean
   }
 }
 
@@ -28,7 +28,7 @@ export default function CartPage() {
   const [dark, setDark] = useState(false)
   const [updating, setUpdating] = useState<string | null>(null)
   const [showOrder, setShowOrder] = useState(false)
-  const [orderForm, setOrderForm] = useState({ address: '', note: '', payment_method: '계좌이체' })
+  const [orderForm, setOrderForm] = useState({ address: '', note: '', payment_method: '계좌이체', evidence: '현금영수증', evidenceContact: '' })
   const [orderLoading, setOrderLoading] = useState(false)
   const [orderDone, setOrderDone] = useState(false)
   const [memberInfo, setMemberInfo] = useState<any>(null)
@@ -101,6 +101,11 @@ export default function CartPage() {
   }
 
   const totalAmount = items.reduce((sum, item) => sum + getPrice(item.products) * item.quantity, 0)
+  const isBiz = memberType === '소매업' || memberType === '도매업'  // 사업자 회원
+  // 과세(가공식품)분 / 면세(미가공 농수산물)분 분리 — 부가세는 과세분에만
+  const taxableSum = items.filter(i => i.products.is_taxable).reduce((s, i) => s + getPrice(i.products) * i.quantity, 0)
+  const exemptSum = totalAmount - taxableSum
+  const vatAmount = taxableSum - Math.round(taxableSum / 1.1)  // 과세분(부가세포함가) 중 부가세
 
   const handleOrder = async () => {
     if (!orderForm.address) return alert('배송지를 입력해주세요.')
@@ -135,6 +140,32 @@ export default function CartPage() {
             total_price: getPrice(item.products) * item.quantity,
           }))
         )
+      }
+
+      // 증빙 자동생성 — 계좌이체(현금성)만. 카드결제는 카드매출전표로 갈음되어 별도 발행 안 함(이중과세 방지)
+      if (!isToss && newOrder && orderForm.evidence !== '발행안함') {
+        if (orderForm.evidence === '세금계산서') {
+          await supabase.from('tax_invoices').insert({
+            company_name: memberInfo?.business_name || memberInfo?.name || '',
+            business_number: memberInfo?.business_number || '',
+            manager_name: memberInfo?.name || '',
+            contact: orderForm.evidenceContact || memberInfo?.contact || '',
+            amount: totalAmount - vatAmount,   // 공급가액(과세 공급가 + 면세금액)
+            tax_amount: vatAmount,             // 면세 상품엔 0
+            total_amount: totalAmount,
+            note: `[자동] 주문 ${table} #${newOrder.id}` + (exemptSum > 0 ? ` · 면세 ${exemptSum.toLocaleString()}원 포함` : ''),
+            status: '미발행',
+          })
+        } else if (orderForm.evidence === '현금영수증') {
+          await supabase.from('cash_receipts').insert({
+            customer_name: memberInfo?.name || '',
+            contact: orderForm.evidenceContact || memberInfo?.contact || '',
+            amount: totalAmount,
+            receipt_type: isBiz ? '사업자용' : '소비자용',
+            note: `[자동] 주문 ${table} #${newOrder.id}`,
+            status: '미발행',
+          })
+        }
       }
 
       // 카드 결제 → 토스 결제창 호출 (성공 시 /shop/payment/success 에서 승인 + 장바구니 비움)
@@ -273,7 +304,7 @@ export default function CartPage() {
             </div>
 
             {/* 주문하기 버튼 */}
-            <button onClick={() => { setOrderDone(false); setOrderForm({ address: (typeof window !== 'undefined' && localStorage.getItem('onjongil_addr')) || '', note:'', payment_method:'계좌이체' }); setShowOrder(true) }}
+            <button onClick={() => { setOrderDone(false); setOrderForm({ address: (typeof window !== 'undefined' && localStorage.getItem('onjongil_addr')) || '', note:'', payment_method:'계좌이체', evidence: isBiz ? '세금계산서' : '현금영수증', evidenceContact: '' }); setShowOrder(true) }}
               style={{ width:'100%', padding:'18px', borderRadius:'16px', background:'linear-gradient(135deg,#14532d,#15803d)', color:'white', fontSize:'17px', fontWeight:900, border:'none', cursor:'pointer', boxShadow:'0 10px 28px rgba(22,163,74,0.35)' }}>
               🛒 {totalAmount.toLocaleString()}원 주문하기
             </button>
@@ -363,6 +394,46 @@ export default function CartPage() {
                       </button>
                     ))}
                   </div>
+                </div>
+
+                {/* 증빙 (세금계산서 / 현금영수증) */}
+                <div>
+                  <label style={{ display:'block', fontSize:'13px', fontWeight:800, color:D.text, marginBottom:'10px' }}>🧾 증빙</label>
+                  {orderForm.payment_method === '카드' ? (
+                    <div style={{ background:D.input, borderRadius:'12px', padding:'13px 14px', fontSize:'12px', color:D.sub, lineHeight:1.5 }}>
+                      카드결제는 <b style={{ color:D.text }}>카드매출전표</b>로 증빙이 갈음돼요. 별도 세금계산서·현금영수증은 발행되지 않습니다.
+                    </div>
+                  ) : (
+                    <>
+                      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px' }}>
+                        {[{ label: isBiz ? '세금계산서' : '현금영수증', icon:'🧾' }, { label:'발행안함', icon:'🚫' }].map(ev => (
+                          <button key={ev.label} onClick={() => setOrderForm(p => ({...p, evidence: ev.label}))}
+                            style={{ padding:'12px', borderRadius:'12px', border:`2px solid ${orderForm.evidence===ev.label ? '#14532d' : D.border}`, background:orderForm.evidence===ev.label ? 'rgba(22,163,74,0.08)' : D.input, color:orderForm.evidence===ev.label ? '#14532d' : D.sub, fontSize:'13px', fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'6px' }}>
+                            {ev.icon} {ev.label}
+                          </button>
+                        ))}
+                      </div>
+                      {orderForm.evidence === '세금계산서' && (
+                        <div style={{ marginTop:'10px' }}>
+                          <div style={{ background:D.input, borderRadius:'12px', padding:'12px 14px', fontSize:'12px', color:D.sub, marginBottom:'8px' }}>
+                            <p style={{ margin:'0 0 2px' }}>상호: <b style={{ color:D.text }}>{memberInfo?.business_name || '미등록'}</b></p>
+                            <p style={{ margin:0 }}>사업자번호: <b style={{ color:D.text }}>{memberInfo?.business_number || '미등록'}</b></p>
+                          </div>
+                          <input type="email" value={orderForm.evidenceContact} onChange={e => setOrderForm(p => ({...p, evidenceContact: e.target.value}))}
+                            placeholder="세금계산서 받을 이메일 (선택)"
+                            style={{ width:'100%', padding:'13px 16px', borderRadius:'12px', border:`2px solid ${D.border}`, background:D.input, color:D.text, fontSize:'13px', outline:'none', boxSizing:'border-box' }} />
+                        </div>
+                      )}
+                      {orderForm.evidence === '현금영수증' && (
+                        <input type="tel" value={orderForm.evidenceContact} onChange={e => setOrderForm(p => ({...p, evidenceContact: e.target.value}))}
+                          placeholder="소득공제용 휴대폰번호 (미입력 시 가입 연락처)"
+                          style={{ width:'100%', marginTop:'10px', padding:'13px 16px', borderRadius:'12px', border:`2px solid ${D.border}`, background:D.input, color:D.text, fontSize:'13px', outline:'none', boxSizing:'border-box' }} />
+                      )}
+                      {orderForm.evidence !== '발행안함' && exemptSum > 0 && taxableSum > 0 && (
+                        <p style={{ fontSize:'11px', color:D.sub, margin:'8px 2px 0' }}>과세 {taxableSum.toLocaleString()}원(부가세 {vatAmount.toLocaleString()}원 포함) · 면세 {exemptSum.toLocaleString()}원</p>
+                      )}
+                    </>
+                  )}
                 </div>
 
                 {/* 요청사항 */}

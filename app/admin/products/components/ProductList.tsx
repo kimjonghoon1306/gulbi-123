@@ -4,7 +4,7 @@ type Category = { id: string; name: string; sort_order: number }
 type Product = {
   id: string; name: string; description: string
   category_id: string; wholesale_price: number; member_price: number; retail_price: number
-  stock: number; unit: string; image_url: string; is_active: boolean
+  stock: number; unit: string; image_url: string; is_active: boolean; is_taxable: boolean
 }
 
 type Props = {

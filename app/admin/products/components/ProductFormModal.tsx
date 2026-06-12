@@ -6,13 +6,13 @@ type Category = { id: string; name: string; sort_order: number }
 type Product = {
   id: string; name: string; description: string
   category_id: string; wholesale_price: number; member_price: number; retail_price: number
-  stock: number; unit: string; image_url: string; is_active: boolean
+  stock: number; unit: string; image_url: string; is_active: boolean; is_taxable: boolean
 }
 
 export type ProductForm = {
   name: string; description: string; category_id: string
   wholesale_price: string; member_price: string; retail_price: string
-  stock: string; unit: string; image_url: string; is_active: boolean
+  stock: string; unit: string; image_url: string; is_active: boolean; is_taxable: boolean
 }
 
 export type CatForm = { name: string }
@@ -118,6 +118,21 @@ export function ProductFormModal({ show, onClose, editProduct, form, setForm, on
             <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3}
               placeholder="상품 설명을 입력하세요"
               className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-600 resize-none" />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">부가세 구분</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button type="button" onClick={() => setForm({ ...form, is_taxable: false })}
+                className={`py-2.5 rounded-xl text-sm font-semibold border transition-colors ${!form.is_taxable ? 'bg-green-600 text-white border-green-600' : 'bg-white dark:bg-gray-700 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-gray-600'}`}>
+                면세 (미가공 농수산물)
+              </button>
+              <button type="button" onClick={() => setForm({ ...form, is_taxable: true })}
+                className={`py-2.5 rounded-xl text-sm font-semibold border transition-colors ${form.is_taxable ? 'bg-green-600 text-white border-green-600' : 'bg-white dark:bg-gray-700 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-gray-600'}`}>
+                과세 (가공식품)
+              </button>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-1.5">미가공 농·축·수산물은 면세, 젓갈·조미김·밀키트 등 가공식품은 과세입니다. 세금계산서 부가세 계산에 반영됩니다.</p>
           </div>
 
           <div className="flex items-center gap-3">

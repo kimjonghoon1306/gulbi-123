@@ -11,7 +11,7 @@ type Category = { id: string; name: string; sort_order: number }
 type Product = {
   id: string; name: string; description: string
   category_id: string; wholesale_price: number; member_price: number; retail_price: number
-  stock: number; unit: string; image_url: string; is_active: boolean
+  stock: number; unit: string; image_url: string; is_active: boolean; is_taxable: boolean
 }
 type SupplierProduct = {
   id: string; name: string; description: string
@@ -24,7 +24,7 @@ type SupplierProduct = {
 
 const EMPTY_FORM: ProductForm = {
   name: '', description: '', category_id: '', wholesale_price: '',
-  member_price: '', retail_price: '', stock: '', unit: 'kg', image_url: '', is_active: true
+  member_price: '', retail_price: '', stock: '', unit: 'kg', image_url: '', is_active: true, is_taxable: false
 }
 
 export default function ProductsPage() {
@@ -79,7 +79,7 @@ export default function ProductsPage() {
 
   const openEdit = (p: Product) => {
     setEditProduct(p)
-    setForm({ name: p.name, description: p.description || '', category_id: p.category_id || '', wholesale_price: String(p.wholesale_price), member_price: String(p.member_price || 0), retail_price: String(p.retail_price), stock: String(p.stock), unit: p.unit || 'kg', image_url: p.image_url || '', is_active: p.is_active })
+    setForm({ name: p.name, description: p.description || '', category_id: p.category_id || '', wholesale_price: String(p.wholesale_price), member_price: String(p.member_price || 0), retail_price: String(p.retail_price), stock: String(p.stock), unit: p.unit || 'kg', image_url: p.image_url || '', is_active: p.is_active, is_taxable: p.is_taxable ?? false })
     setShowForm(true)
   }
 
