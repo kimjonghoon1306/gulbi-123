@@ -46,6 +46,9 @@ export default function ShopPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [reviewStats, setReviewStats] = useState<Record<string, { sum: number; count: number }>>({})
   const [sortBy, setSortBy] = useState<'추천순' | '평점순' | '최신순'>('추천순')
+  const [banners, setBanners] = useState<any[]>([])
+  const [bannerIdx, setBannerIdx] = useState(0)
+  const bannerTimer = useRef<any>(null)
   const [selectedCat, setSelectedCat] = useState('전체')
   const [search, setSearch] = useState('')
   const [searchFocus, setSearchFocus] = useState(false)
@@ -92,13 +95,23 @@ export default function ShopPage() {
 
   const fetchData = async () => {
     setLoading(true)
-    const [{ data: p }, { data: c }, { data: rv }] = await Promise.all([
+    const [{ data: p }, { data: c }, { data: rv }, { data: bn }] = await Promise.all([
       supabase.from('products').select('*').eq('is_active', true).order('created_at', { ascending: false }),
       supabase.from('categories').select('*').order('sort_order'),
-      supabase.from('reviews').select('product_id, rating')
+      supabase.from('reviews').select('product_id, rating'),
+      supabase.from('ad_banners').select('*').eq('is_active', true).order('sort_order')
     ])
     setProducts(p || [])
     setCategories(c || [])
+    // 광고 배너: 시작/종료 일시 기준 현재 노출 가능한 것만 슬라이더에 (여러 업체 동시 순환)
+    const now = Date.now()
+    const liveBanners = (bn || []).filter((b: any) => {
+      const s = b.starts_at ? new Date(b.starts_at).getTime() : -Infinity
+      const e = b.ends_at ? new Date(b.ends_at).getTime() : Infinity
+      return now >= s && now <= e
+    })
+    setBanners(liveBanners)
+    setBannerIdx(0)
     // 리뷰 통계 집계 (상품별 별점합/개수) → 베이지안 상위노출 랭킹에 사용
     const stats: Record<string, { sum: number; count: number }> = {}
     for (const r of (rv || []) as any[]) {
@@ -184,6 +197,15 @@ export default function ShopPage() {
     }, 4000)
     return () => clearInterval(gulbiTimer.current)
   }, [])
+
+  // 광고 배너 자동 순환 (여러 업체 번갈아 노출)
+  useEffect(() => {
+    if (banners.length <= 1) return
+    bannerTimer.current = setInterval(() => {
+      setBannerIdx(i => (i + 1) % banners.length)
+    }, 4500)
+    return () => clearInterval(bannerTimer.current)
+  }, [banners.length])
 
   useEffect(() => {
     if (products.length > 0) startPopupCycle()
@@ -804,6 +826,65 @@ export default function ShopPage() {
         </div>
       </section>
 
+      {/* ── 광고 배너 슬라이더 (여러 업체 자동 순환) ── */}
+      {banners.length > 0 && (
+        <section style={{ background: dark ? '#0a1c13' : '#f0faf9', padding: '30px 20px 0' }}>
+          <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+            <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '7px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '1px', color: sub, background: dark ? 'rgba(22,163,74,0.12)' : 'rgba(22,163,74,0.08)', border: '1px solid rgba(22,163,74,0.25)', borderRadius: '100px', padding: '4px 12px' }}>AD · 추천 광고</span>
+            </div>
+            <div className="ad-banner-box" style={{
+              position: 'relative', borderRadius: '24px', overflow: 'hidden',
+              boxShadow: dark ? '0 24px 55px rgba(0,0,0,0.55)' : '0 18px 45px rgba(22,163,74,0.16)',
+              background: dark ? '#102a1d' : '#fff'
+            }}>
+              {banners.map((b, i) => {
+                const active = i === (bannerIdx % banners.length)
+                const href = b.product_id ? `/shop/product/${b.product_id}` : (b.link_url || null)
+                const content = (
+                  <>
+                    <img src={b.image_url} alt={b.title || '광고'} className="ad-banner-img"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.5s ease' }} />
+                    {b.title && (
+                      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: '40px 24px 22px', background: 'linear-gradient(to top, rgba(0,0,0,0.55), transparent)' }}>
+                        <p style={{ margin: 0, color: '#fff', fontSize: 'clamp(17px,2.6vw,26px)', fontWeight: 900, letterSpacing: '-0.5px', textShadow: '0 2px 12px rgba(0,0,0,0.4)' }}>{b.title}</p>
+                      </div>
+                    )}
+                  </>
+                )
+                const slideStyle: React.CSSProperties = {
+                  position: 'absolute', inset: 0, opacity: active ? 1 : 0,
+                  transition: 'opacity 0.7s ease', pointerEvents: active ? 'auto' : 'none',
+                  textDecoration: 'none', display: 'block'
+                }
+                return href ? (
+                  <a key={b.id} href={href} style={slideStyle}>{content}</a>
+                ) : (
+                  <div key={b.id} style={slideStyle}>{content}</div>
+                )
+              })}
+            </div>
+            {/* 슬라이드 점 (여러 광고일 때만) */}
+            {banners.length > 1 && (
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '14px' }}>
+                {banners.map((_, i) => {
+                  const on = i === (bannerIdx % banners.length)
+                  return (
+                    <button key={i} onClick={() => setBannerIdx(i)} aria-label={`광고 ${i + 1}`}
+                      style={{
+                        width: on ? '26px' : '8px', height: '8px', borderRadius: '100px',
+                        border: 'none', cursor: 'pointer', padding: 0,
+                        background: on ? 'linear-gradient(135deg,#14532d,#15803d)' : (dark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.15)'),
+                        transition: 'all 0.3s ease'
+                      }} />
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* ── 프로모션 애니메이션 섹션 ── */}
       <section style={{
         padding: '80px 20px 60px',
@@ -1276,6 +1357,11 @@ export default function ShopPage() {
         }
         .search-sg { transition: background 0.15s; }
         .search-sg:hover { background: rgba(22,163,74,0.08); }
+        .ad-banner-box { aspect-ratio: 1000 / 340; }
+        .ad-banner-box:hover .ad-banner-img { transform: scale(1.04); }
+        @media (max-width: 639px) {
+          .ad-banner-box { aspect-ratio: 16 / 9; border-radius: 18px !important; }
+        }
         .header-btn {
           transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1) !important;
         }
