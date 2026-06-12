@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabase } from '@/lib/supabase-server'
 import { getUserAIKeys, callAI, extractJson } from '@/lib/ai'
-import { decryptKey } from '@/lib/crypto-keys'
 
 // ─────────────────────────────────────────────────────────────
 //  GET /api/admin-brief
@@ -11,29 +10,7 @@ import { decryptKey } from '@/lib/crypto-keys'
 export async function GET() {
   // 1) 본인 키 확보 (관리자 본인 키)
   const auth = await getUserAIKeys()
-  if (!auth.ok) {
-    // 진단: 왜 관리자 키를 못 읽는지 화면에 그대로 표시
-    let detail = ''
-    try {
-      const sb = await createServerSupabase()
-      const { data: { user } } = await sb.auth.getUser()
-      if (!user) {
-        detail = '로그인 세션 없음'
-      } else {
-        const { data: row, error: rErr } = await sb
-          .from('user_api_keys').select('openai_key_enc, gemini_key_enc')
-          .eq('user_id', user.id).maybeSingle()
-        detail = `관리자ID ${user.id.slice(0, 8)} / 키행 ${row ? '있음' : '없음'}`
-        if (rErr) detail += ` / 조회오류: ${rErr.message}`
-        detail += ` / OpenAI키 ${row?.openai_key_enc ? 'O' : 'X'} / Gemini키 ${row?.gemini_key_enc ? 'O' : 'X'}`
-        if (row?.gemini_key_enc) {
-          try { decryptKey(row.gemini_key_enc as any); detail += ' / Gemini복호화 성공' }
-          catch (e: any) { detail += ` / Gemini복호화 실패: ${e.message}` }
-        }
-      }
-    } catch (e: any) { detail = `진단 실패: ${e.message}` }
-    return NextResponse.json({ error: `${auth.error} [진단] ${detail}` }, { status: auth.status })
-  }
+  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status })
 
   // 2) 데이터 수집 (관리자 세션 권한으로)
   const supabase = await createServerSupabase()
