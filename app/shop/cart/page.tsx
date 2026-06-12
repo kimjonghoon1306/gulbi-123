@@ -36,6 +36,11 @@ export default function CartPage() {
   const [memberInfo, setMemberInfo] = useState<any>(null)
   const [userId, setUserId] = useState('')
   const [redirectCount, setRedirectCount] = useState(3)
+  // 쿠폰
+  const [couponCode, setCouponCode] = useState('')
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null)
+  const [couponMsg, setCouponMsg] = useState<{ ok: boolean; text: string } | null>(null)
+  const [couponLoading, setCouponLoading] = useState(false)
 
   useEffect(() => {
     const saved = localStorage.getItem('shop-theme')
@@ -103,6 +108,35 @@ export default function CartPage() {
   }
 
   const totalAmount = items.reduce((sum, item) => sum + getPrice(item.products) * item.quantity, 0)
+
+  // 쿠폰 할인 계산
+  const calcDiscount = (c: any, base: number) => {
+    if (!c) return 0
+    let d = c.discount_type === 'percent' ? Math.floor(base * c.discount_value / 100) : c.discount_value
+    if (c.discount_type === 'percent' && c.max_discount) d = Math.min(d, c.max_discount)
+    return Math.min(d, base) // 할인이 결제액 초과 못함
+  }
+  const discount = calcDiscount(appliedCoupon, totalAmount)
+  const finalAmount = Math.max(0, totalAmount - discount)
+
+  const applyCoupon = async () => {
+    const code = couponCode.trim().toUpperCase()
+    if (!code) return
+    setCouponLoading(true); setCouponMsg(null)
+    const { data: c } = await supabase.from('coupons').select('*').eq('code', code).maybeSingle()
+    setCouponLoading(false)
+    if (!c) { setCouponMsg({ ok: false, text: '존재하지 않는 쿠폰 코드예요.' }); return }
+    if (!c.is_active) { setCouponMsg({ ok: false, text: '사용 중지된 쿠폰이에요.' }); return }
+    if (c.starts_at && new Date(c.starts_at) > new Date()) { setCouponMsg({ ok: false, text: '아직 사용 기간이 아니에요.' }); return }
+    if (c.expires_at && new Date(c.expires_at) < new Date()) { setCouponMsg({ ok: false, text: '만료된 쿠폰이에요.' }); return }
+    if (c.usage_limit != null && c.used_count >= c.usage_limit) { setCouponMsg({ ok: false, text: '사용 가능 횟수가 모두 소진됐어요.' }); return }
+    if (totalAmount < (c.min_amount || 0)) { setCouponMsg({ ok: false, text: `${c.min_amount.toLocaleString()}원 이상 주문 시 사용 가능해요.` }); return }
+    setAppliedCoupon(c)
+    const d = calcDiscount(c, totalAmount)
+    setCouponMsg({ ok: true, text: `🎉 ${d.toLocaleString()}원 할인이 적용됐어요!` })
+  }
+  const removeCoupon = () => { setAppliedCoupon(null); setCouponCode(''); setCouponMsg(null) }
+
   const isBiz = memberType === '소매업' || memberType === '도매업'  // 사업자 회원
   // 과세(가공식품)분 / 면세(미가공 농수산물)분 분리 — 부가세는 과세분에만
   const taxableSum = items.filter(i => i.products.is_taxable).reduce((s, i) => s + getPrice(i.products) * i.quantity, 0)
@@ -125,10 +159,10 @@ export default function CartPage() {
         contact: memberInfo?.contact || '',
         user_id: userId,
         address: orderForm.address,
-        note: orderForm.note,
         payment_method: isToss ? '카드(토스)' : orderForm.payment_method,
         status: isToss ? '결제대기' : '접수',
-        total_amount: totalAmount,
+        total_amount: finalAmount,
+        note: orderForm.note + (appliedCoupon ? ` [쿠폰 ${appliedCoupon.code} -${discount.toLocaleString()}원]` : ''),
       }).select().single()
 
       if (newOrder) {
@@ -143,6 +177,11 @@ export default function CartPage() {
             total_price: getPrice(item.products) * item.quantity,
           }))
         )
+      }
+
+      // 쿠폰 사용 횟수 증가 (한도 관리)
+      if (appliedCoupon) {
+        try { await supabase.rpc('increment_coupon_usage', { coupon_code: appliedCoupon.code }) } catch {}
       }
 
       // 증빙 자동생성 — 계좌이체(현금성)만. 카드결제는 카드매출전표로 갈음되어 별도 발행 안 함(이중과세 방지)
@@ -181,7 +220,7 @@ export default function CartPage() {
           ? `${items[0].products.name} 외 ${items.length - 1}건`
           : (items[0]?.products?.name || '온종일팜 주문')
         await toss.requestPayment('카드', {
-          amount: totalAmount,
+          amount: finalAmount,
           orderId: String(newOrder.id),
           orderName,
           customerName: memberInfo?.name || '고객',
@@ -296,6 +335,30 @@ export default function CartPage() {
             </div>
 
             <div className="cart-summary">
+            {/* 쿠폰 입력 */}
+            <div style={{ background:D.card, borderRadius:'20px', padding:'18px', border:`1px solid ${D.border}`, marginBottom:'16px', boxShadow:'0 6px 24px rgba(0,0,0,0.05)' }}>
+              <p style={{ fontSize:'13px', fontWeight:800, color:D.text, margin:'0 0 10px' }}>🎟️ 할인 쿠폰</p>
+              {appliedCoupon ? (
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', background:dark?'rgba(74,222,128,0.1)':'rgba(22,163,74,0.07)', border:`1px solid ${dark?'rgba(74,222,128,0.25)':'rgba(22,163,74,0.2)'}`, borderRadius:'12px', padding:'12px 14px' }}>
+                  <div>
+                    <p style={{ fontSize:'14px', fontWeight:900, color:gtext, margin:0, letterSpacing:'0.5px' }}>{appliedCoupon.code}</p>
+                    <p style={{ fontSize:'12px', color:D.sub, margin:'2px 0 0' }}>−{discount.toLocaleString()}원 적용중</p>
+                  </div>
+                  <button onClick={removeCoupon} style={{ fontSize:'12px', fontWeight:700, color:D.sub, background:'none', border:`1px solid ${D.border}`, borderRadius:'10px', padding:'7px 12px', cursor:'pointer' }}>해제</button>
+                </div>
+              ) : (
+                <div style={{ display:'flex', gap:'8px' }}>
+                  <input value={couponCode} onChange={e => setCouponCode(e.target.value.toUpperCase())} onKeyDown={e => { if (e.key==='Enter') applyCoupon() }}
+                    placeholder="쿠폰 코드 입력" style={{ flex:1, padding:'12px 14px', borderRadius:'12px', border:`2px solid ${D.border}`, background:D.input, color:D.text, fontSize:'14px', outline:'none', boxSizing:'border-box', textTransform:'uppercase' }} />
+                  <button onClick={applyCoupon} disabled={couponLoading || !couponCode.trim()}
+                    style={{ padding:'0 18px', borderRadius:'12px', border:'none', cursor:(couponLoading||!couponCode.trim())?'not-allowed':'pointer', background:(couponLoading||!couponCode.trim())?D.input:'linear-gradient(135deg,#16a34a,#15803d)', color:(couponLoading||!couponCode.trim())?D.sub:'white', fontSize:'14px', fontWeight:800, whiteSpace:'nowrap' }}>
+                    {couponLoading ? '...' : '적용'}
+                  </button>
+                </div>
+              )}
+              {couponMsg && <p style={{ fontSize:'12px', fontWeight:700, color: couponMsg.ok ? gtext : '#ef4444', margin:'10px 0 0' }}>{couponMsg.text}</p>}
+            </div>
+
             {/* 합계 카드 */}
             <div style={{ background:D.card, borderRadius:'20px', padding:'22px', border:`1px solid ${D.border}`, marginBottom:'16px', boxShadow:'0 6px 24px rgba(0,0,0,0.05)' }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'8px' }}>
@@ -306,17 +369,23 @@ export default function CartPage() {
                 <p style={{ fontSize:'13px', color:D.sub, margin:0 }}>배송비</p>
                 <p style={{ fontSize:'13px', color:gtext, fontWeight:700, margin:0 }}>무료</p>
               </div>
+              {discount > 0 && (
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:'4px' }}>
+                  <p style={{ fontSize:'13px', color:D.sub, margin:0 }}>🎟️ 쿠폰 할인</p>
+                  <p style={{ fontSize:'13px', color:'#ef4444', fontWeight:700, margin:0 }}>−{discount.toLocaleString()}원</p>
+                </div>
+              )}
               <div style={{ height:'1px', background:D.border, margin:'14px 0' }} />
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                 <p style={{ fontSize:'15px', fontWeight:800, color:D.text, margin:0 }}>총 결제금액</p>
-                <p style={{ fontSize:'22px', fontWeight:900, color:priceColor, margin:0 }}>{totalAmount.toLocaleString()}원</p>
+                <p style={{ fontSize:'22px', fontWeight:900, color:priceColor, margin:0 }}>{finalAmount.toLocaleString()}원</p>
               </div>
             </div>
 
             {/* 주문하기 버튼 */}
             <button className="cart-order-btn" onClick={() => { setOrderDone(false); setAgreeRefund(false); setOrderForm({ address: memberInfo?.address || (typeof window !== 'undefined' && localStorage.getItem('onjongil_addr')) || '', note:'', payment_method:'계좌이체', evidence: isBiz ? '세금계산서' : '현금영수증', evidenceContact: '' }); setShowOrder(true) }}
               style={{ width:'100%', padding:'18px', borderRadius:'16px', background:'linear-gradient(135deg,#16a34a,#15803d)', color:'white', fontSize:'17px', fontWeight:900, border:'none', cursor:'pointer', boxShadow:'0 10px 28px rgba(22,163,74,0.35)' }}>
-              <span className="cart-emoji">🛒</span> {totalAmount.toLocaleString()}원 주문하기
+              <span className="cart-emoji">🛒</span> {finalAmount.toLocaleString()}원 주문하기
             </button>
             </div>
           </div>
@@ -377,10 +446,16 @@ export default function CartPage() {
                       <p style={{ fontSize:'13px', fontWeight:700, color:priceColor, margin:0 }}>{(getPrice(item.products) * item.quantity).toLocaleString()}원</p>
                     </div>
                   ))}
+                  {discount > 0 && (
+                    <div style={{ display:'flex', justifyContent:'space-between' }}>
+                      <p style={{ fontSize:'13px', color:D.sub, margin:0 }}>🎟️ 쿠폰 {appliedCoupon?.code}</p>
+                      <p style={{ fontSize:'13px', fontWeight:700, color:'#ef4444', margin:0 }}>−{discount.toLocaleString()}원</p>
+                    </div>
+                  )}
                   <div style={{ height:'1px', background:D.border }} />
                   <div style={{ display:'flex', justifyContent:'space-between' }}>
                     <p style={{ fontSize:'14px', fontWeight:800, color:D.text, margin:0 }}>합계</p>
-                    <p style={{ fontSize:'16px', fontWeight:900, color:priceColor, margin:0 }}>{totalAmount.toLocaleString()}원</p>
+                    <p style={{ fontSize:'16px', fontWeight:900, color:priceColor, margin:0 }}>{finalAmount.toLocaleString()}원</p>
                   </div>
                 </div>
 
@@ -478,7 +553,7 @@ export default function CartPage() {
 
                 <button onClick={handleOrder} disabled={orderLoading || !agreeRefund}
                   style={{ width:'100%', padding:'18px', borderRadius:'16px', background:(orderLoading || !agreeRefund) ? D.input : 'linear-gradient(135deg,#14532d,#15803d)', color:(orderLoading || !agreeRefund) ? D.sub : 'white', fontSize:'17px', fontWeight:900, border:'none', cursor:(orderLoading || !agreeRefund) ? 'not-allowed' : 'pointer', boxShadow:(orderLoading || !agreeRefund) ? 'none' : '0 10px 28px rgba(22,163,74,0.35)' }}>
-                  {orderLoading ? '⏳ 처리 중...' : <><span className="cart-emoji">🛒</span> {totalAmount.toLocaleString()}원 주문하기</>}
+                  {orderLoading ? '⏳ 처리 중...' : <><span className="cart-emoji">🛒</span> {finalAmount.toLocaleString()}원 주문하기</>}
                 </button>
               </div>
             )}
