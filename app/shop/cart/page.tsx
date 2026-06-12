@@ -154,6 +154,18 @@ export default function CartPage() {
 
       const isToss = orderForm.payment_method === '카드'  // 카드 = 토스페이먼츠 결제
 
+      // 재고 확인·차감 (원자적). 카드결제는 결제성공 후 차감하므로 여기선 계좌이체만
+      if (!isToss) {
+        const { data: stockRes } = await supabase.rpc('decrement_stock_bulk', {
+          items: items.map(i => ({ id: i.products.id, qty: i.quantity }))
+        })
+        if (stockRes && stockRes.ok === false) {
+          setOrderLoading(false)
+          alert(`재고가 부족한 상품이 있어요: ${(stockRes.fails || []).join(', ')}\n수량을 줄이거나 다른 상품을 담아주세요.`)
+          return
+        }
+      }
+
       const { data: newOrder } = await supabase.from(table).insert({
         customer_name: memberInfo?.name || '',
         contact: memberInfo?.contact || '',

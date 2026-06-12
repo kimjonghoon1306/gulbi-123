@@ -31,6 +31,14 @@ function SuccessInner() {
         try {
           // paymentKey/승인금액 저장 → 나중에 관리자 환불(토스 결제취소)에 사용
           await supabase.from(table).update({ status: '결제완료', payment_key: paymentKey, paid_amount: Number(amt) }).eq('id', orderId)
+          // 결제 완료된 주문의 상품 재고 차감
+          try {
+            const itemTable = table === 'wholesale_orders' ? 'wholesale_order_items' : table === 'retail_orders' ? 'retail_order_items' : 'general_order_items'
+            const { data: oi } = await supabase.from(itemTable).select('product_id, quantity').eq('order_id', orderId)
+            if (oi && oi.length > 0) {
+              await supabase.rpc('decrement_stock_bulk', { items: oi.map((x: any) => ({ id: x.product_id, qty: x.quantity })) })
+            }
+          } catch {}
           const { data: { user } } = await supabase.auth.getUser()
           if (user) await supabase.from('cart_items').delete().eq('user_id', user.id)
           localStorage.setItem('cart-updated', Date.now().toString())

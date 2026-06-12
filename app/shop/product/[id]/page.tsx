@@ -733,6 +733,15 @@ export default function ProductDetailPage() {
                         const table = memberType === '도매업' ? 'wholesale_orders' : memberType === '소매업' ? 'retail_orders' : 'general_orders'
                         const itemTable = memberType === '도매업' ? 'wholesale_order_items' : memberType === '소매업' ? 'retail_order_items' : 'general_order_items'
                         const isToss = orderForm.payment_method === '카드'  // 카드 = 토스페이먼츠
+                        // 계좌이체는 즉시 재고 차감(카드는 결제성공 후 차감)
+                        if (!isToss) {
+                          const { data: ok } = await supabase.rpc('decrement_stock', { p_product_id: product.id, p_qty: quantity })
+                          if (ok === false) {
+                            setOrderLoading(false)
+                            alert('죄송해요, 재고가 부족합니다. 수량을 줄여주세요.')
+                            return
+                          }
+                        }
                         const orderData = {
                           customer_name: memberInfo?.name || '',
                           contact: memberInfo?.contact || '',
