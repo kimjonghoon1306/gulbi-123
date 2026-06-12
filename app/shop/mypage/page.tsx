@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { createClient } from '@/lib/supabase'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { openPostcode } from '@/lib/postcode'
 
 type Member = {
   id: string; email: string; name: string; contact: string
@@ -712,9 +713,13 @@ function MyPageInner() {
             {/* 기본 배송지 */}
             <div style={{ background:D.card, borderRadius:'20px', padding:'22px', border:`1px solid ${D.border}` }}>
               <p style={{ fontSize:'14px', fontWeight:800, color:D.text, margin:'0 0 4px' }}>📍 기본 배송지</p>
-              <p style={{ fontSize:'12px', color:D.sub, margin:'0 0 14px' }}>저장해두면 주문할 때 자동으로 입력돼요.</p>
+              <p style={{ fontSize:'12px', color:D.sub, margin:'0 0 14px' }}>주소 검색으로 도로명/지번을 찾고, 상세주소(동·호수)는 직접 적어주세요. 저장해두면 주문할 때 자동 입력돼요.</p>
+              <button onClick={async () => { const r = await openPostcode(); if (r) { setAddrInput(r.address + ' '); setAddrMsg('') } }}
+                style={{ width:'100%', marginBottom:'10px', padding:'12px', borderRadius:'12px', border:`2px dashed ${D.border}`, background:D.input, color:D.text, fontSize:'14px', fontWeight:700, cursor:'pointer' }}>
+                🔍 주소 검색
+              </button>
               <textarea value={addrInput} onChange={e => { setAddrInput(e.target.value); setAddrMsg('') }}
-                placeholder="배송 받으실 주소를 입력해주세요"
+                placeholder="주소 검색 후 상세주소(동·호수)를 입력해주세요"
                 rows={2}
                 style={{ width:'100%', padding:'13px 14px', borderRadius:'12px', border:`2px solid ${D.border}`, background:D.input, color:D.text, fontSize:'14px', outline:'none', resize:'none', boxSizing:'border-box', lineHeight:1.6, fontFamily:'inherit' }} />
               {addrMsg && <p style={{ fontSize:'12px', fontWeight:700, color: addrMsg.startsWith('✅') ? '#16a34a' : '#ef4444', margin:'10px 0 0' }}>{addrMsg}</p>}

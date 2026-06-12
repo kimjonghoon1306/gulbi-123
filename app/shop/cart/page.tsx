@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
 import { loadToss } from '@/lib/toss'
+import { openPostcode } from '@/lib/postcode'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -383,8 +384,12 @@ export default function CartPage() {
                   <label style={{ display:'flex', alignItems:'center', gap:'6px', fontSize:'13px', fontWeight:800, color:D.text, marginBottom:'10px' }}>
                     📍 배송지 <span style={{ fontSize:'10px', color:'#14532d', background:'rgba(22,163,74,0.1)', padding:'2px 7px', borderRadius:'20px', fontWeight:700 }}>필수</span>
                   </label>
+                  <button type="button" onClick={async () => { const r = await openPostcode(); if (r) setOrderForm(p => ({...p, address: r.address + ' '})) }}
+                    style={{ width:'100%', marginBottom:'8px', padding:'12px', borderRadius:'14px', border:`2px dashed ${D.border}`, background:D.input, color:D.text, fontSize:'14px', fontWeight:700, cursor:'pointer' }}>
+                    🔍 주소 검색
+                  </button>
                   <input type="text" value={orderForm.address} onChange={e => setOrderForm(p => ({...p, address: e.target.value}))}
-                    placeholder="배송 받으실 주소를 입력해주세요"
+                    placeholder="주소 검색 후 상세주소(동·호수)를 입력해주세요"
                     style={{ width:'100%', padding:'14px 16px', borderRadius:'14px', border:`2px solid ${orderForm.address ? '#14532d' : D.border}`, background:D.input, color:D.text, fontSize:'14px', outline:'none', boxSizing:'border-box' }} />
                 </div>
 
