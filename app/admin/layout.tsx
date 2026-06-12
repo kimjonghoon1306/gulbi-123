@@ -248,17 +248,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           shadow-sm
         `}>
           <div className="flex items-center gap-2">
-            <button onClick={() => setMenuOpen(true)} aria-label="전체 메뉴"
-              className={`p-2 -ml-1 rounded-xl transition-colors ${dark ? 'text-green-200 hover:bg-green-900/40' : 'text-slate-600 hover:bg-green-50'}`}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
-            </button>
-            <FarmLogo size={30} uid="mobile" />
+            <FarmLogo size={32} uid="mobile" />
             <div>
               <p className={`font-black text-sm ${dark ? 'text-white' : 'text-slate-800'}`}>온종일팜</p>
               <p className={`text-[9px] ${dark ? 'text-green-400' : 'text-green-600'}`}>농축수산물 도매</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5">
+            <button onClick={() => setMenuOpen(true)} aria-label="전체 메뉴"
+              className={`p-2 rounded-xl transition-colors ${dark ? 'text-green-200 hover:bg-green-900/40' : 'text-slate-600 hover:bg-green-50'}`}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+            </button>
             {lowStockCount > 0 && (
               <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">
                 {lowStockCount}
