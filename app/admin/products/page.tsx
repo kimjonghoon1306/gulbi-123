@@ -160,7 +160,6 @@ export default function ProductsPage() {
       approval_status: '승인',
       is_active: true,
       rejection_reason: null,
-      updated_at: new Date().toISOString(),
     }).eq('id', reviewProduct.id)
     setReviewLoading(false)
     if (error) { alert('저장 실패: ' + error.message); return }   // 실패 시 모달 유지 + 원인 표시
@@ -177,7 +176,6 @@ export default function ProductsPage() {
       approval_status: '거절',
       is_active: false,
       rejection_reason: rejectReason.trim(),
-      updated_at: new Date().toISOString(),
     }).eq('id', reviewProduct.id)
     setReviewLoading(false)
     if (error) { alert('저장 실패: ' + error.message); return }
@@ -194,7 +192,6 @@ export default function ProductsPage() {
       approval_status: '수정요청',
       is_active: false,
       rejection_reason: rejectReason.trim(),
-      updated_at: new Date().toISOString(),
     }).eq('id', reviewProduct.id)
     setReviewLoading(false)
     if (error) { alert('저장 실패: ' + error.message); return }
