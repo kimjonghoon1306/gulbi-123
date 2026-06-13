@@ -1185,8 +1185,8 @@ export default function ShopPage() {
         }
         .search-sg { transition: background 0.15s; }
         .search-sg:hover { background: rgba(22,163,74,0.08); }
-        .ad-live-badge { animation: adBlink 1.1s ease-in-out infinite; }
-        @keyframes adBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+        .ad-live-dot { animation: adBlink 1s ease-in-out infinite; }
+        @keyframes adBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.15; } }
         .ad-banner-box { aspect-ratio: 1000 / 340; }
         .ad-banner-box:hover .ad-banner-img { transform: scale(1.04); }
         .ad-banner-box:hover .ad-banner-cta { background: #15803d !important; color: #fff !important; transform: translateY(-2px); box-shadow: 0 12px 30px rgba(21,128,61,0.45) !important; }
