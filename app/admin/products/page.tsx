@@ -122,10 +122,10 @@ export default function ProductsPage() {
       name: p.name,
       // 도매 유통가 ← 확정값 있으면 그것, 없으면 도매 공급가
       wholesale_price: String(p.wholesale_price || p.suggested_wholesale_price || ''),
-      // 소매 유통가 ← 확정값 있으면 그것, 없으면 소매 공급가 (꼬임 수정)
+      // 소매 유통가 ← 확정값 있으면 그것, 없으면 소매 공급가
       member_price: String(p.member_price || p.suggested_retail_price || ''),
-      // 일반 구매가 ← 확정값 있으면 그것, 없으면 소매 공급가 기본값
-      retail_price: String(p.retail_price || p.suggested_retail_price || ''),
+      // 일반 구매가 ← 확정값만 사용, 없으면 관리자가 직접 입력 (소매 공급가 자동 채움 안 함)
+      retail_price: String(p.retail_price || ''),
       category_id: p.category_id || '',
       unit: p.unit || 'kg',
       stock: String(p.stock || ''),

@@ -95,7 +95,7 @@ function ProductsContent() {
       reader.readAsDataURL(file)
     })
 
-  // 📸 사진 한 장 → AI가 상품명·카테고리·제안가·단위·설명 자동완성 (공급사 본인 키 사용)
+  // 📸 사진 한 장 → AI가 상품명·카테고리·공급가·단위·설명 자동완성 (공급사 본인 키 사용)
   const handleAiFill = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0]
     if (!f) return

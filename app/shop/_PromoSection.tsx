@@ -142,9 +142,9 @@ export function PromoSection({ dark, text, sub, gtext, gulbiStep, setGulbiStep, 
                 <p style={{ fontSize: '15px', color: sub, lineHeight: 1.7 }}>도매·소매·일반구매 중 내 등급에 맞는<br />가격으로 손쉽게 주문하세요.</p>
                 <div style={{ display: 'flex', gap: '8px', marginTop: '20px', flexWrap: 'wrap' as const }}>
                   {[
-                    { label: '도매가', color: '#7c3aed', bg: dark ? 'rgba(124,58,237,0.12)' : 'rgba(124,58,237,0.08)' },
-                    { label: '소매가', color: '#15803d', bg: dark ? 'rgba(21,128,61,0.12)' : 'rgba(21,128,61,0.08)' },
-                    { label: '일반구매', color: gtext, bg: dark ? 'rgba(22,163,74,0.12)' : 'rgba(22,163,74,0.08)' },
+                    { label: '도매 유통가', color: '#7c3aed', bg: dark ? 'rgba(124,58,237,0.12)' : 'rgba(124,58,237,0.08)' },
+                    { label: '소매 유통가', color: '#15803d', bg: dark ? 'rgba(21,128,61,0.12)' : 'rgba(21,128,61,0.08)' },
+                    { label: '일반 구매가', color: gtext, bg: dark ? 'rgba(22,163,74,0.12)' : 'rgba(22,163,74,0.08)' },
                   ].map((p, i) => (
                     <span key={i} style={{ padding: '7px 14px', borderRadius: '10px', fontSize: '12px', fontWeight: 700, background: p.bg, color: p.color, border: `1px solid ${p.color}40` }}>{p.label}</span>
                   ))}

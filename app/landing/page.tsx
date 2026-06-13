@@ -80,7 +80,7 @@ export default function LandingPage() {
 
   const features = [
     { icon: '📋', title: '도매·소매 주문관리', desc: '거래처별 도매주문과 개인 소매주문을 한 곳에서 관리. 주문 상태를 실시간으로 추적하세요.', gradient: 'from-green-600 to-blue-600', shadow: 'shadow-green-600/20' },
-    { icon: '🧺', title: '농축수산물 전문 상품관리', desc: 'kg, 박스, 마리 등 농축수산물 특성에 맞는 단위 관리. 도매가·소매가 분리 설정 가능.', gradient: 'from-green-500 to-teal-600', shadow: 'shadow-green-500/20' },
+    { icon: '🧺', title: '농축수산물 전문 상품관리', desc: 'kg, 박스, 마리 등 농축수산물 특성에 맞는 단위 관리. 등급별 가격(도매·소매·일반) 분리 설정 가능.', gradient: 'from-green-500 to-teal-600', shadow: 'shadow-green-500/20' },
     { icon: '📦', title: '재고관리·부족 알림', desc: '입출고 이력 자동 기록. 최소 재고 설정 시 부족 알림으로 재고 부족 사태 예방.', gradient: 'from-amber-500 to-orange-600', shadow: 'shadow-amber-500/20' },
     { icon: '👥', title: '거래처·회원 관리', desc: '도매 거래처와 소매 고객을 분리 관리. 사업자번호, 담당자, 거래이력 한눈에 확인.', gradient: 'from-violet-500 to-purple-600', shadow: 'shadow-violet-500/20' },
     { icon: '🧾', title: '세금계산서·현금영수증', desc: '발행 내역 등록 및 미발행 알림. 부가세 자동 계산으로 세무처리 편리하게.', gradient: 'from-emerald-500 to-green-600', shadow: 'shadow-emerald-500/20' },

@@ -223,10 +223,10 @@ export default function AdminSuppliersPage() {
                             setPriceForm({
                               // 도매 유통가 ← 공급업체 도매 공급가
                               wholesale_price: String(p.suggested_wholesale_price || ''),
-                              // 소매 유통가 ← 공급업체 소매 공급가 (꼬임 수정: 예전엔 일반 구매가로 들어갔음)
+                              // 소매 유통가 ← 공급업체 소매 공급가
                               member_price: String(p.suggested_retail_price || ''),
-                              // 일반 구매가 ← 소매 공급가 기본값 (관리자가 조정)
-                              retail_price: String(p.suggested_retail_price || ''),
+                              // 일반 구매가 ← 관리자가 직접 입력 (자동으로 채우지 않음)
+                              retail_price: '',
                             })
                           }} className="text-xs bg-violet-500 hover:bg-violet-400 text-white font-semibold px-3 py-1.5 rounded-lg transition-colors">
                             가격 확정

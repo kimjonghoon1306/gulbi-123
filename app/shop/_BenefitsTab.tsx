@@ -51,10 +51,10 @@ export function BenefitsTab({ D, tc, accent, member, orders, curGrade, nextGrade
                 <div style={{ background:D.card, borderRadius:'20px', padding:'20px', border:`1px solid ${D.border}` }}>
                   <p style={{ fontSize:'13px', fontWeight:800, color:D.text, margin:'0 0 14px' }}>🎁 등급별 혜택</p>
                   {[
-                    { grade:'🛒 일반', benefit:'기본 소매가 구매',         range:'0원~',     active: curGrade.name==='일반' },
-                    { grade:'🥈 실버', benefit:'소매가 3% 할인 쿠폰',      range:'50만원~',  active: curGrade.name==='실버' },
-                    { grade:'🥇 골드', benefit:'소매가 5% 할인 + 우선 배송', range:'200만원~', active: curGrade.name==='골드' },
-                    { grade:'💎 VIP',  benefit:'소매가 10% 할인 + 전담 CS', range:'500만원~', active: curGrade.name==='VIP' },
+                    { grade:'🛒 일반', benefit:'기본 일반 구매가',         range:'0원~',     active: curGrade.name==='일반' },
+                    { grade:'🥈 실버', benefit:'일반 구매가 3% 할인 쿠폰',      range:'50만원~',  active: curGrade.name==='실버' },
+                    { grade:'🥇 골드', benefit:'일반 구매가 5% 할인 + 우선 배송', range:'200만원~', active: curGrade.name==='골드' },
+                    { grade:'💎 VIP',  benefit:'일반 구매가 10% 할인 + 전담 CS', range:'500만원~', active: curGrade.name==='VIP' },
                   ].map((g, i, arr) => (
                     <div key={i} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'12px 0', borderBottom: i < arr.length-1 ? `1px solid ${D.border}` : 'none', opacity: g.active ? 1 : 0.45 }}>
                       <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
@@ -109,7 +109,7 @@ export function BenefitsTab({ D, tc, accent, member, orders, curGrade, nextGrade
                     {member.member_type==='소매업' ? '🏪 소매 유통 혜택' : '🏭 도매 유통 혜택'}
                   </p>
                   {(member.member_type === '소매업' ? [
-                    { icon:'💰', title:'소매 유통가 적용',   desc:'일반 소매가보다 저렴한 전용 유통가로 구매하실 수 있어요.' },
+                    { icon:'💰', title:'소매 유통가 적용',   desc:'일반 구매가보다 저렴한 전용 유통가로 구매하실 수 있어요.' },
                     { icon:'🚚', title:'대량 주문 우선 처리', desc:'대량 발주 시 우선 처리 및 빠른 배송을 지원합니다.' },
                     { icon:'📋', title:'세금계산서 발행',     desc:'사업자 세금계산서 발행이 가능합니다.' },
                     { icon:'📞', title:'전담 상담 배정',      desc:'소매 유통 전담 상담원이 배정되어 빠른 응대가 가능합니다.' },
