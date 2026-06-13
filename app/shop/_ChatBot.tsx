@@ -45,12 +45,27 @@ const FAQ: QA[] = [
     a: '온종일팜에 상품을 공급·판매하고 싶은 사업자(공급업체)는 입점 신청을 할 수 있어요.\n① ‘공급업체 가입’ 페이지에서 사업자등록번호 등 정보를 입력해 신청\n② 관리자 승인 후(영업일 1~2일) 로그인하면 상품을 직접 등록·판매할 수 있어요\n③ 매출·정산·송장 입력도 공급업체 페이지에서 관리해요\n자세한 입점 조건은 고객센터로 문의 주세요.',
   },
   {
+    q: '📢 광고 문의 (상단 배너)',
+    a: '쇼핑몰 상단 광고 배너에 광고를 싣고 싶으시면 이메일로 문의해 주세요.\n📧 tarry9653@daum.net\n\n[문의 시 적어주세요]\n• 업체명 / 담당자 / 연락처\n• 광고할 상품 또는 링크\n• 희망 노출 기간 (시작~종료)\n• 광고 이미지 (가로형, 있으면 첨부)\n확인 후 비용·게재 방법을 안내드릴게요.',
+  },
+  {
     q: '📞 문의하기',
     a: '챗봇으로 해결되지 않는 문의는 고객센터로 연락 주세요.\n영업시간·연락처는 화면 맨 아래 사업자 정보에서 확인하실 수 있어요.\n빠르게 도와드리겠습니다!',
   },
 ]
 
 type Msg = { from: 'bot' | 'user'; text: string }
+
+// 답변 속 이메일을 탭하면 메일 쓰기가 열리게 (mailto 링크)
+const EMAIL_SPLIT = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g
+const isEmail = (s: string) => /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(s)
+function renderText(text: string) {
+  return text.split(EMAIL_SPLIT).map((p, i) =>
+    isEmail(p)
+      ? <a key={i} href={`mailto:${p}`} style={{ color: '#15803d', fontWeight: 800, textDecoration: 'underline' }}>{p}</a>
+      : <span key={i}>{p}</span>
+  )
+}
 
 export function ChatBot() {
   const [open, setOpen] = useState(false)
@@ -127,7 +142,7 @@ export function ChatBot() {
                   color: m.from === 'user' ? '#fff' : '#1f2937',
                   border: m.from === 'user' ? 'none' : '1px solid rgba(0,0,0,0.07)',
                   boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
-                }}>{m.text}</div>
+                }}>{m.from === 'bot' ? renderText(m.text) : m.text}</div>
               </div>
             ))}
           </div>
