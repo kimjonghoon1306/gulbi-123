@@ -46,8 +46,16 @@ function ProductsContent() {
   const [showAiEditor, setShowAiEditor] = useState(false)
   const [aiFilling, setAiFilling] = useState(false)
   const [aiMsg, setAiMsg] = useState('')
+  const [okMsg, setOkMsg] = useState('')
 
   useEffect(() => { init() }, [])
+
+  // 성공 토스트 4초 후 자동 사라짐
+  useEffect(() => {
+    if (!okMsg) return
+    const id = setTimeout(() => setOkMsg(''), 4000)
+    return () => clearTimeout(id)
+  }, [okMsg])
 
   const init = async () => {
     try {
@@ -141,12 +149,20 @@ function ProductsContent() {
       image_url: form.image_url, supplier_id: supplierId,
       approval_status: '대기중', is_active: false,
     }
+    const wasResubmit = !!editProduct && (editProduct.approval_status === '거절' || editProduct.approval_status === '수정요청')
     if (editProduct) {
-      await supabase.from('products').update({ ...data, approval_status: editProduct.approval_status === '승인' ? '대기중' : editProduct.approval_status }).eq('id', editProduct.id)
+      // 공급업체가 수정하면 항상 재검토 대기열로 (거절/수정요청/승인 모두 → 대기중), 이전 거절사유 초기화
+      await supabase.from('products').update({ ...data, approval_status: '대기중', rejection_reason: null }).eq('id', editProduct.id)
     } else {
       await supabase.from('products').insert(data)
     }
-    setSaving(false); setShowForm(false); setEditProduct(null); setForm(EMPTY_FORM)
+    setSaving(false); setShowForm(false)
+    setOkMsg(
+      wasResubmit ? '✅ 재신청 되었습니다! 관리자 검토를 기다려 주세요.'
+      : editProduct ? '✅ 수정되었습니다. 관리자 재검토 후 쇼핑몰에 노출됩니다.'
+      : '✅ 상품이 등록되었습니다. 관리자 승인 후 쇼핑몰에 노출됩니다.'
+    )
+    setEditProduct(null); setForm(EMPTY_FORM)
     init()
   }
 
@@ -184,6 +200,16 @@ function ProductsContent() {
 
   return (
     <div style={{ minHeight: '100vh', padding: '20px 16px', background: t.bg }}>
+
+      {/* 성공 토스트 (등록/수정/재신청 안내) */}
+      {okMsg && (
+        <div style={{ position: 'fixed', top: '16px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000,
+          background: 'linear-gradient(135deg,#16a34a,#15803d)', color: 'white', padding: '13px 22px',
+          borderRadius: '14px', fontSize: '14px', fontWeight: 700, boxShadow: '0 8px 30px rgba(22,163,74,0.45)',
+          maxWidth: '90vw', textAlign: 'center' }}>
+          {okMsg}
+        </div>
+      )}
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', gap: '12px' }}>
         <div style={{ minWidth: 0 }}>
