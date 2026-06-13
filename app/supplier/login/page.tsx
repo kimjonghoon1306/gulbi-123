@@ -10,9 +10,9 @@ type Mode = 'login' | 'findEmail' | 'findPw'
 export default function SupplierLoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('123456')
+  const [password, setPassword] = useState('')
   const [showPw, setShowPw] = useState(false)
-  const [dark, setDark] = useState(true)
+  const [dark, setDark] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [mode, setMode] = useState<Mode>('login')
