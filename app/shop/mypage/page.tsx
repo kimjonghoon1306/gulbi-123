@@ -26,6 +26,7 @@ type Order = {
   address: string; note: string; payment_method: string; status: string
   total_amount: number; created_at: string
   courier_code?: string; tracking_number?: string
+  _type?: 'general' | 'retail' | 'wholesale'   // 주문이 속한 테이블 (등급 변경 대비)
 }
 
 type OrderItem = {
@@ -162,15 +163,23 @@ function MyPageInner() {
       }
       setMember(m)
       setAddrInput(m.address || (typeof window !== 'undefined' ? localStorage.getItem('onjongil_addr') || '' : ''))
-      const table = m.member_type === '도매업' ? 'wholesale_orders' : m.member_type === '소매업' ? 'retail_orders' : 'general_orders'
-      // user_id로 먼저 조회, 없으면 contact로 조회
-      let { data: o } = await supabase.from(table).select('*').eq('user_id', user.id).order('created_at', { ascending: false })
-      if (!o || o.length === 0) {
-        const { data: o2 } = await supabase.from(table).select('*').eq('contact', m.contact).order('created_at', { ascending: false })
-        o = o2
-      }
-      setOrders(o || [])
-      loadAllOrderItems(o || [], m.member_type)
+      // 등급이 바뀌어도 과거 주문이 사라지지 않도록 3개 주문 테이블을 모두 조회해 합침 (주문 id는 UUID라 충돌 없음)
+      const ORDER_TABLES: { t: string; type: 'general' | 'retail' | 'wholesale' }[] = [
+        { t: 'general_orders', type: 'general' },
+        { t: 'retail_orders', type: 'retail' },
+        { t: 'wholesale_orders', type: 'wholesale' },
+      ]
+      const orderResults = await Promise.all(ORDER_TABLES.map(async ({ t, type }) => {
+        let { data } = await supabase.from(t).select('*').eq('user_id', user.id)
+        if (!data || data.length === 0) {
+          const { data: byContact } = await supabase.from(t).select('*').eq('contact', m.contact)
+          data = byContact || []
+        }
+        return (data || []).map((o: any) => ({ ...o, _type: type }))
+      }))
+      const merged = orderResults.flat().sort((a, b) => (a.created_at < b.created_at ? 1 : -1))
+      setOrders(merged)
+      loadAllOrderItems(merged)
       // 찜 목록 조회
       const { data: wishes } = await supabase
         .from('wishlists')
@@ -250,16 +259,19 @@ function MyPageInner() {
   }, [])
 
   // 모든 주문의 상품을 한 번에 로드 (상세보기 없이 항상 펼쳐 보여주기 위함)
-  const loadAllOrderItems = async (orderList: Order[], memberType?: string) => {
+  const loadAllOrderItems = async (orderList: Order[]) => {
     if (!orderList || orderList.length === 0) return
-    const table = memberType === '도매업' ? 'wholesale_order_items' : memberType === '소매업' ? 'retail_order_items' : 'general_order_items'
     const ids = orderList.map(o => o.id)
-    const { data } = await supabase.from(table).select('*').in('order_id', ids)
+    // 주문 id가 UUID라 3개 item 테이블에 같은 id 목록으로 조회해도 각자 자기 것만 반환 → 합치면 됨
+    const ITEM_TABLES = ['general_order_items', 'retail_order_items', 'wholesale_order_items']
     const grouped: Record<string, OrderItem[]> = {}
-    ;(data || []).forEach((it: any) => {
-      if (!grouped[it.order_id]) grouped[it.order_id] = []
-      grouped[it.order_id].push(it)
-    })
+    await Promise.all(ITEM_TABLES.map(async (table) => {
+      const { data } = await supabase.from(table).select('*').in('order_id', ids)
+      ;(data || []).forEach((it: any) => {
+        if (!grouped[it.order_id]) grouped[it.order_id] = []
+        grouped[it.order_id].push(it)
+      })
+    }))
     setOrderItems(grouped)
   }
 

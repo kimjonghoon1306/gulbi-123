@@ -230,6 +230,14 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
                             alert('죄송해요, 재고가 부족합니다. 수량을 줄여주세요.')
                             return
                           }
+                        } else {
+                          // 카드결제는 결제성공 후 차감 → 결제 시작 전 재고 여부 확인(초과판매 방지)
+                          const { data: prod } = await supabase.from('products').select('stock').eq('id', product.id).single()
+                          if (!prod || prod.stock < quantity) {
+                            setOrderLoading(false)
+                            alert('죄송해요, 재고가 부족합니다. 수량을 줄여주세요.')
+                            return
+                          }
                         }
                         const orderData = {
                           customer_name: memberInfo?.name || '',

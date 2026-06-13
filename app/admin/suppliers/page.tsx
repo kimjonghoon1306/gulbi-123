@@ -34,6 +34,8 @@ export default function AdminSuppliersPage() {
   const [selectedProduct, setSelectedProduct] = useState<SupplierProduct | null>(null)
   const [priceForm, setPriceForm] = useState({ wholesale_price: '', retail_price: '', member_price: '' })
   const [filterStatus, setFilterStatus] = useState('전체')
+  const [rejectTarget, setRejectTarget] = useState<string | null>(null)
+  const [rejectReason, setRejectReason] = useState('')
 
   useEffect(() => { fetchAll() }, [])
 
@@ -65,15 +67,33 @@ export default function AdminSuppliersPage() {
       member_price: Number(priceForm.member_price) || 0,
       approval_status: '승인',
       is_active: true,
+      rejection_reason: null,                 // 이전 거절 사유 정리
+      updated_at: new Date().toISOString(),   // 검토 페이지(handleApprove)와 동일하게
     }).eq('id', selectedProduct.id)
 
     setSelectedProduct(null); setPriceForm({ wholesale_price: '', retail_price: '', member_price: '' })
     fetchAll()
   }
 
-  const rejectProduct = async (id: string) => {
-    await supabase.from('products').update({ approval_status: '거절', is_active: false }).eq('id', id)
-    setSelectedProduct(null); fetchAll()
+  // 거절 사유 미리보기 선택지
+  const REJECT_REASONS = [
+    '제안 가격이 적정하지 않습니다. 가격을 조정해 재신청해주세요.',
+    '상품 상세설명이 부족합니다. 내용을 보완해주세요.',
+    '상품 이미지 품질이 미흡합니다. 선명한 사진으로 교체해주세요.',
+    '카테고리·단위가 부적절합니다. 다시 설정해주세요.',
+    '취급이 어려운 품목입니다.',
+  ]
+
+  // 거절 버튼 → 사유 입력 팝업 열기 (사유 없이는 거절 불가)
+  const askReject = (id: string) => { setSelectedProduct(null); setRejectTarget(id); setRejectReason('') }
+
+  const confirmReject = async () => {
+    if (!rejectTarget) return
+    if (!rejectReason.trim()) return alert('거절 사유를 입력하거나 선택해주세요.')
+    await supabase.from('products').update({
+      approval_status: '거절', is_active: false, rejection_reason: rejectReason.trim(),
+    }).eq('id', rejectTarget)
+    setRejectTarget(null); setRejectReason(''); fetchAll()
   }
 
   const pendingSuppliers = suppliers.filter(s => s.status === '대기중').length
@@ -233,7 +253,7 @@ export default function AdminSuppliersPage() {
                           </button>
                         )}
                         {p.approval_status === '승인' && (
-                          <button onClick={() => rejectProduct(p.id)} className="text-xs text-red-400 hover:text-red-500 font-medium">
+                          <button onClick={() => askReject(p.id)} className="text-xs text-red-400 hover:text-red-500 font-medium">
                             취소
                           </button>
                         )}
@@ -324,13 +344,49 @@ export default function AdminSuppliersPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <button onClick={() => rejectProduct(selectedProduct.id)}
+                <button onClick={() => askReject(selectedProduct.id)}
                   className="py-3 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-500 border border-red-200 dark:border-red-800 text-sm font-bold hover:bg-red-100 transition-colors active:scale-95">
                   ❌ 거절
                 </button>
                 <button onClick={approveProduct}
                   className="py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-bold transition-colors active:scale-95 shadow-md shadow-emerald-500/20">
                   ✅ 가격 확정 + 노출
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 거절 사유 입력 팝업 */}
+      {rejectTarget && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md">
+            <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-gray-700">
+              <h2 className="text-lg font-bold text-slate-800 dark:text-white">거절 사유 입력</h2>
+              <button onClick={() => { setRejectTarget(null); setRejectReason('') }} className="text-slate-400 hover:text-slate-600 text-xl">✕</button>
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-sm text-slate-500 dark:text-slate-400">공급업체에 전달할 거절 사유를 선택하거나 직접 입력해주세요. 사유는 공급업체 화면에 표시됩니다.</p>
+              <div className="flex flex-wrap gap-2">
+                {REJECT_REASONS.map(r => (
+                  <button key={r} onClick={() => setRejectReason(r)}
+                    className={`text-xs px-3 py-1.5 rounded-full border transition-colors text-left ${rejectReason === r ? 'bg-red-500 text-white border-red-500' : 'bg-slate-50 dark:bg-gray-700 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-gray-600 hover:bg-slate-100'}`}>
+                    {r}
+                  </button>
+                ))}
+              </div>
+              <textarea value={rejectReason} onChange={e => setRejectReason(e.target.value)} rows={3}
+                placeholder="거절 사유를 입력해주세요 (필수)"
+                className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-400 resize-none" />
+              <div className="grid grid-cols-2 gap-3">
+                <button onClick={() => { setRejectTarget(null); setRejectReason('') }}
+                  className="py-3 rounded-xl border border-slate-200 dark:border-gray-600 text-slate-500 dark:text-slate-400 text-sm font-bold hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors active:scale-95">
+                  취소
+                </button>
+                <button onClick={confirmReject} disabled={!rejectReason.trim()}
+                  className="py-3 rounded-xl bg-red-500 hover:bg-red-400 disabled:opacity-40 text-white text-sm font-bold transition-colors active:scale-95">
+                  ❌ 거절 확정
                 </button>
               </div>
             </div>

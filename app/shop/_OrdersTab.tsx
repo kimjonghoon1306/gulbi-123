@@ -115,7 +115,9 @@ export function OrdersTab({ D, tc, accent, member, orders, orderItems, itemsLoad
                       <button
                         onClick={async () => {
                           if (!confirm('주문을 취소하시겠습니까?')) return
-                          const table = member?.member_type === '도매업' ? 'wholesale_orders' : member?.member_type === '소매업' ? 'retail_orders' : 'general_orders'
+                          // 주문이 실제로 속한 테이블(_type)을 사용 — 등급이 바뀌어도 정확
+                          const table = order._type === 'wholesale' ? 'wholesale_orders' : order._type === 'retail' ? 'retail_orders'
+                            : (member?.member_type === '도매업' ? 'wholesale_orders' : member?.member_type === '소매업' ? 'retail_orders' : 'general_orders')
                           await supabase.from(table).update({ status: '취소', updated_at: new Date().toISOString() }).eq('id', order.id)
                           setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: '취소' } : o))
                         }}

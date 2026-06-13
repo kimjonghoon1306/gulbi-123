@@ -182,6 +182,18 @@ export default function CartPage() {
           alert(`재고가 부족한 상품이 있어요: ${(stockRes.fails || []).join(', ')}\n수량을 줄이거나 다른 상품을 담아주세요.`)
           return
         }
+      } else {
+        // 카드결제는 결제성공 후 차감 → 결제 시작 전 재고 여부 확인(초과판매 방지)
+        const { data: prods } = await supabase.from('products').select('id, stock').in('id', items.map(i => i.products.id))
+        const short = items.filter(it => {
+          const ps = prods?.find((p: any) => p.id === it.products.id)
+          return !ps || ps.stock < it.quantity
+        })
+        if (short.length > 0) {
+          setOrderLoading(false)
+          alert(`재고가 부족한 상품이 있어요: ${short.map(s => s.products.name).join(', ')}\n수량을 줄이거나 다른 상품을 담아주세요.`)
+          return
+        }
       }
 
       const { data: newOrder } = await supabase.from(table).insert({
