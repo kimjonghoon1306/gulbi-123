@@ -492,7 +492,7 @@ function MyPageInner() {
                       <OrderBadge status={order.status} />
                     </div>
                     <p style={{ fontSize:'15px', fontWeight:900, color:accent, margin:'0 0 2px' }}>{order.total_amount.toLocaleString()}원</p>
-                    <p style={{ fontSize:'11px', color:D.sub, margin:0 }}>{new Date(order.created_at).toLocaleDateString('ko-KR')}</p>
+                    <p style={{ fontSize:'11px', color:D.sub, margin:0 }}>{new Date(order.created_at).toLocaleString('ko-KR', { year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' })}</p>
                   </div>
                 ))}
               </div>

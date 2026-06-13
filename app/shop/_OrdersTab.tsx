@@ -46,7 +46,7 @@ export function OrdersTab({ D, tc, accent, member, orders, orderItems, itemsLoad
                   <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'14px' }}>
                     <div>
                       <p style={{ fontSize:'13px', fontWeight:800, color:D.text, margin:'0 0 3px' }}>{order.order_number || `#${order.id.slice(0,8).toUpperCase()}`}</p>
-                      <p style={{ fontSize:'11px', color:D.sub, margin:0 }}>{new Date(order.created_at).toLocaleDateString('ko-KR', { year:'numeric', month:'long', day:'numeric' })}</p>
+                      <p style={{ fontSize:'11px', color:D.sub, margin:0 }}>{new Date(order.created_at).toLocaleString('ko-KR', { year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' })}</p>
                     </div>
                     <OrderBadge status={order.status} />
                   </div>
