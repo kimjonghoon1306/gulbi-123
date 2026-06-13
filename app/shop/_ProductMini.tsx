@@ -1,10 +1,11 @@
 'use client'
 
 import Link from 'next/link'
+import { priceFor } from './_shopConstants'
 
 // 추천/최근 본 상품 미니 카드 — 상품상세 page에서 분리
 export function ProductMini({ p, D, dark, getC, mt }: { p: any; D: any; dark: boolean; getC: () => string; mt: string }) {
-  const price = mt === '도매업' ? p.wholesale_price : mt === '소매업' ? p.member_price : p.retail_price
+  const price = priceFor(p, mt)
   return (
     <Link href={`/shop/product/${p.id}`} className="pd-mini" style={{ textDecoration:'none', display:'block', background:D.card, borderRadius:'16px', overflow:'hidden', border:`1px solid ${D.border}` }}>
       <div style={{ width:'100%', paddingTop:'100%', position:'relative', background:D.imgBg }}>

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import Link from 'next/link'
-import { CAT_ICONS, CAT_COLORS, getDefaultCatColor, POPUP_NAMES, POPUP_ACTIONS, type Product, type Category } from './_shopConstants'
+import { CAT_ICONS, CAT_COLORS, getDefaultCatColor, POPUP_NAMES, POPUP_ACTIONS, priceFor, type Product, type Category } from './_shopConstants'
 import { ProductCard } from './_ProductCard'
 import { AdBanner } from './_AdBanner'
 import { PromoSection } from './_PromoSection'
@@ -188,10 +188,7 @@ export default function ShopPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [products])
 
-  const getPrice = (product: Product) => {
-    if (memberType === '도매업') return product.wholesale_price
-    return product.retail_price
-  }
+  const getPrice = (product: Product) => priceFor(product, memberType)
 
   const getPriceLabel = () => {
     if (memberType === '도매업') return '도매 유통가'
@@ -371,7 +368,7 @@ export default function ShopPage() {
 
         {/* ── 상품 그리드 ── */}
         {loading ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: '20px' }}>
+          <div className="product-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: '20px' }}>
             {[...Array(8)].map((_, i) => (
               <div key={i} style={{
                 background: card, borderRadius: '24px', height: '340px',
@@ -401,7 +398,7 @@ export default function ShopPage() {
             )}
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: '20px' }}>
+          <div className="product-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: '20px' }}>
             {sorted.slice(0, visibleCount).map((p, i) => (
               <ProductCard
                 key={p.id}
@@ -522,6 +519,14 @@ export default function ShopPage() {
           .promo-grid { grid-template-columns: 1fr !important; gap: 20px !important; padding: 20px 16px !important; }
           .hero-stats { gap: 8px !important; }
           .hero-stats > div { padding: 10px 10px !important; border-radius: 12px !important; }
+          /* 쿠팡식 2열 그리드 + 카드 압축 */
+          .product-grid { grid-template-columns: repeat(2,1fr) !important; gap: 10px !important; }
+          .product-card { border-radius: 16px !important; }
+          .product-card .pc-info { padding: 11px !important; }
+          .product-card .pc-name { font-size: 13px !important; margin-bottom: 3px !important; }
+          .product-card .pc-unit { font-size: 11px !important; margin-bottom: 8px !important; }
+          .product-card .pc-price { font-size: 16px !important; letter-spacing: -0.5px !important; }
+          .product-card .pc-arrow { width: 30px !important; height: 30px !important; border-radius: 10px !important; font-size: 14px !important; box-shadow: 0 3px 8px rgba(22,163,74,0.3) !important; }
         }
         @media (max-width: 768px) {
           .promo-grid { grid-template-columns: 1fr !important; gap: 24px !important; padding: 24px 16px !important; }

@@ -2,10 +2,22 @@
 
 export type Product = {
   id: string; name: string; description: string; image_url: string
-  wholesale_price: number; retail_price: number; stock: number; unit: string
+  wholesale_price: number; retail_price: number; member_price: number; stock: number; unit: string
   category_id: string; is_active: boolean
 }
 export type Category = { id: string; name: string }
+
+// ★ 회원 등급별 실제 적용가 — 쇼핑몰 전 구간(목록·상세·장바구니·헤더·찜·미니카드) 단일 기준.
+//   여기만 고치면 모든 화면이 동일하게 따라온다. 단가가 어긋나는 일을 원천 차단.
+//   미설정(0)이면 일반 구매가로 폴백해 "0원" 노출을 방지.
+export function priceFor(
+  p: { wholesale_price?: number; member_price?: number; retail_price?: number },
+  memberType: string
+): number {
+  if (memberType === '도매업') return (p.wholesale_price || p.retail_price) ?? 0
+  if (memberType === '소매업') return (p.member_price || p.retail_price) ?? 0
+  return p.retail_price ?? 0
+}
 
 export const CAT_ICONS: Record<string, string> = {
   '농산물': '🥬', '과일': '🍎', '축산물': '🥩', '농축수산물': '🧺', '해조류': '🌿', '어류': '🧺', '갑각류': '🦀', '패류': '🦪',

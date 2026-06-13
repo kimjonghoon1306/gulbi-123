@@ -94,8 +94,8 @@ export function ProductCard({ p, i, dark, card, border, text, sub, gtext, member
         </div>
 
         {/* 정보 */}
-        <div style={{ padding: '18px' }}>
-          <p style={{ fontSize: '15px', fontWeight: 800, color: text, marginBottom: '4px', lineHeight: 1.3 }}>{p.name}</p>
+        <div className="pc-info" style={{ padding: '18px' }}>
+          <p className="pc-name" style={{ fontSize: '15px', fontWeight: 800, color: text, marginBottom: '4px', lineHeight: 1.3 }}>{p.name}</p>
           {/* ⭐ 별점 + 후기수 (베이지안 랭킹 기준 노출) */}
           {reviewCount > 0 ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '8px' }}>
@@ -107,26 +107,26 @@ export function ProductCard({ p, i, dark, card, border, text, sub, gtext, member
           ) : (
             <div style={{ fontSize: '12px', color: sub, fontWeight: 500, marginBottom: '8px', opacity: 0.7 }}>아직 후기 없음</div>
           )}
-          <p style={{ fontSize: '12px', color: sub, marginBottom: '14px', fontWeight: 500 }}>{p.unit} 단위</p>
+          <p className="pc-unit" style={{ fontSize: '12px', color: sub, marginBottom: '14px', fontWeight: 500 }}>{p.unit} 단위</p>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              <p style={{
+              <p className="pc-price" style={{
                 fontSize: '22px', fontWeight: 900, color: gtext,
                 letterSpacing: '-1px', margin: 0
               }}>{price.toLocaleString()}원</p>
               {memberType === '도매업' && (
                 <p style={{ fontSize: '11px', color: sub, margin: '2px 0 0', textDecoration: 'line-through' }}>
-                  소매 {p.retail_price.toLocaleString()}원
+                  일반 {p.retail_price.toLocaleString()}원
                 </p>
               )}
             </div>
-            <div style={{
+            <div className="pc-arrow" style={{
               width: '40px', height: '40px', borderRadius: '14px',
               background: 'linear-gradient(135deg,#14532d,#15803d)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: '18px', boxShadow: '0 6px 16px rgba(22,163,74,0.35)',
-              transition: 'all 0.2s'
+              transition: 'all 0.2s', flexShrink: 0
             }}>→</div>
           </div>
         </div>

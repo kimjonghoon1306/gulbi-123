@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { priceFor } from './_shopConstants'
 
 // 마이페이지 찜 목록 탭 — page.tsx에서 분리, 동작/디자인 동일
 type Props = {
@@ -32,9 +33,7 @@ export function WishlistTab({ D, tc, accent, member, dark, wishlists, removeWish
                 {wishlists.map((w: any) => {
                   const p = w.products
                   if (!p) return null
-                  const wishPrice = member.member_type === '도매업' ? (p.wholesale_price||0)
-                    : member.member_type === '소매업' ? (p.member_price||0)
-                    : (p.retail_price||0)
+                  const wishPrice = priceFor(p, member.member_type)
                   return (
                     <a key={w.id} href={`/shop/product/${p.id}`} style={{ textDecoration:'none', display:'block', background:D.card, borderRadius:'16px', overflow:'hidden', border:`1px solid ${D.border}`, transition:'transform 0.15s' }}>
                       <div style={{ width:'100%', paddingTop:'100%', position:'relative', background:dark?'#15391f':'#f8fafc' }}>

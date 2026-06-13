@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
 import { CartOrderModal } from '../_CartOrderModal'
+import { priceFor } from '../_shopConstants'
 import { loadToss } from '@/lib/toss'
 import { openPostcode } from '@/lib/postcode'
 import { useRouter } from 'next/navigation'
@@ -94,9 +95,7 @@ export default function CartPage() {
   }
 
   const getPrice = (product: CartItem['products']) => {
-    if (memberType === '도매업') return product.wholesale_price
-    if (memberType === '소매업') return product.member_price
-    return product.retail_price
+    return priceFor(product, memberType)
   }
 
   const updateQty = async (itemId: string, qty: number, stock: number) => {

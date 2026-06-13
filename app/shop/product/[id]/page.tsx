@@ -6,6 +6,7 @@ import { loadToss } from '@/lib/toss'
 import { ProductMini } from '../../_ProductMini'
 import { ReviewSection } from '../../_ReviewSection'
 import { OrderModal } from '../../_OrderModal'
+import { priceFor } from '../../_shopConstants'
 import { openPostcode } from '@/lib/postcode'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
@@ -250,9 +251,7 @@ export default function ProductDetailPage() {
 
   const getPrice = () => {
     if (!product) return 0
-    if (memberType === '도매업') return product.wholesale_price
-    if (memberType === '소매업') return product.member_price  // 소매유통가 = member_price
-    return product.retail_price // 일반소매가
+    return priceFor(product, memberType)
   }
 
   const getPriceLabel = () => {

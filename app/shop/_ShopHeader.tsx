@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { priceFor } from './_shopConstants'
 
 // 쇼핑몰 메인 헤더(검색바 포함) — page.tsx에서 분리, 동작/디자인 동일
 type Props = {
@@ -33,7 +34,7 @@ type Props = {
 
 export function ShopHeader({ dark, setDark, scrolled, headerBg, border, card, inputBg, text, sub, gtext, cartCount, visitorCount, user, memberType, search, setSearch, searchFocus, setSearchFocus, suggestions, recentSearches, popularTerms, saveRecent, removeRecent, setRecentSearches, handleLogout }: Props) {
   const sq = search.trim().toLowerCase()
-  const getPrice = (product: any) => memberType === '도매업' ? product.wholesale_price : product.retail_price
+  const getPrice = (product: any) => priceFor(product, memberType)
   return (
       <header style={{
         background: headerBg, backdropFilter: 'blur(24px)',
