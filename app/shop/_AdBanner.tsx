@@ -17,7 +17,7 @@ export function AdBanner({ banners, bannerIdx, setBannerIdx, dark }: Props) {
     <section style={{ background: dark ? '#0a1c13' : '#f0faf9', padding: '30px 20px 0' }}>
       <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
         <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '7px' }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 800, letterSpacing: '0.5px', color: '#ec4899', background: 'rgba(236,72,153,0.08)', border: '1.5px solid #ec4899', borderRadius: '100px', padding: '5px 13px' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 800, letterSpacing: '0.5px', color: '#ec4899', background: 'rgba(236,72,153,0.08)', border: '1.5px solid #ec4899', borderRadius: '9px', padding: '5px 12px' }}>
             <span className="ad-live-dot" style={{ fontSize: '9px', lineHeight: 1 }}>●</span> AD 추천 광고중
           </span>
         </div>
