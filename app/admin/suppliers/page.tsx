@@ -179,11 +179,12 @@ export default function AdminSuppliersPage() {
               <p className="text-sm text-slate-400 dark:text-slate-500">공급업체 상품이 없습니다</p>
             </div>
           ) : (
-            <table className="w-full">
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[680px]">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-gray-700">
                   {['상품명', '제안 도매가', '제안 소매가', '확정 가격', '재고', '상태', ''].map(h => (
-                    <th key={h} className="text-left text-xs font-semibold text-slate-400 dark:text-slate-500 px-5 py-4">{h}</th>
+                    <th key={h} className="text-left text-xs font-semibold text-slate-400 dark:text-slate-500 px-5 py-4 whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -195,21 +196,21 @@ export default function AdminSuppliersPage() {
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
                           {p.image_url && <img src={p.image_url} alt="" className="w-9 h-9 rounded-lg object-cover flex-shrink-0" />}
-                          <div>
-                            <p className="text-sm font-medium text-slate-800 dark:text-white">{p.name}</p>
-                            <p className="text-xs text-slate-400 dark:text-slate-500">🏭 {supplierName}</p>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-slate-800 dark:text-white whitespace-nowrap">{p.name}</p>
+                            <p className="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap">🏭 {supplierName}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-300 font-medium">{p.suggested_wholesale_price?.toLocaleString()}원</td>
-                      <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-300 font-medium">{p.suggested_retail_price?.toLocaleString()}원</td>
-                      <td className="px-5 py-4 text-sm">
+                      <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-300 font-medium whitespace-nowrap">{p.suggested_wholesale_price?.toLocaleString()}원</td>
+                      <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-300 font-medium whitespace-nowrap">{p.suggested_retail_price?.toLocaleString()}원</td>
+                      <td className="px-5 py-4 text-sm whitespace-nowrap">
                         {p.wholesale_price > 0
                           ? <span className="text-emerald-600 dark:text-emerald-400 font-medium">{p.wholesale_price.toLocaleString()}원</span>
                           : <span className="text-slate-300 dark:text-slate-600">미확정</span>
                         }
                       </td>
-                      <td className="px-5 py-4 text-sm text-slate-800 dark:text-slate-200">{p.stock}{p.unit}</td>
+                      <td className="px-5 py-4 text-sm text-slate-800 dark:text-slate-200 whitespace-nowrap">{p.stock}{p.unit}</td>
                       <td className="px-5 py-4">
                         <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${STATUS_COLOR[p.approval_status] || STATUS_COLOR['대기중']}`}>
                           {p.approval_status || '대기중'}
@@ -239,6 +240,7 @@ export default function AdminSuppliersPage() {
                 })}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       )}

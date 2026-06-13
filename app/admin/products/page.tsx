@@ -336,10 +336,10 @@ export default function ProductsPage() {
       {/* ── 공급업체 상품 검토 모달 ── */}
       {reviewProduct && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div className="bg-white dark:bg-slate-900 rounded-3xl w-full overflow-hidden flex" style={{ maxWidth: '1000px', maxHeight: '90vh', boxShadow: '0 40px 80px rgba(0,0,0,0.5)' }}>
+          <div className="bg-white dark:bg-slate-900 rounded-3xl w-full flex flex-col md:flex-row overflow-y-auto md:overflow-hidden" style={{ maxWidth: '1000px', maxHeight: '90vh', boxShadow: '0 40px 80px rgba(0,0,0,0.5)' }}>
 
             {/* 왼쪽: 상품 정보 + 수정 */}
-            <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-4" style={{ borderRight: '1px solid rgba(0,0,0,0.08)' }}>
+            <div className="flex-1 md:overflow-y-auto p-6 flex flex-col gap-4 md:border-r md:border-black/[0.08]">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-black text-slate-800 dark:text-white">🔍 상품 검토</h2>
                 <div className="flex items-center gap-2 text-xs text-slate-400">
@@ -404,9 +404,9 @@ export default function ProductsPage() {
             </div>
 
             {/* 오른쪽: 상세페이지 미리보기 + 버튼 */}
-            <div className="flex flex-col" style={{ width: '360px', flexShrink: 0 }}>
+            <div className="flex flex-col w-full md:w-[360px] md:flex-shrink-0">
               {/* 상세페이지 미리보기 */}
-              <div style={{ flex: 1, overflowY: 'auto', background: '#f0f0f0', padding: '12px', display: 'flex', justifyContent: 'center' }}>
+              <div className="min-h-[220px] md:flex-1" style={{ overflowY: 'auto', background: '#f0f0f0', padding: '12px', display: 'flex', justifyContent: 'center' }}>
                 {reviewProduct.description ? (
                   <div style={{ width: '100%', maxWidth: '320px', background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
                     {reviewProduct.image_url && (
