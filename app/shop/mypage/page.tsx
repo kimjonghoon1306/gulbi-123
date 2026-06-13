@@ -418,7 +418,7 @@ function MyPageInner() {
               <div style={{ background:'rgba(245,158,11,0.1)', border:'1px solid rgba(245,158,11,0.3)', borderRadius:'16px', padding:'16px' }}>
                 <p style={{ color:'#f59e0b', fontWeight:700, fontSize:'13px', margin:'0 0 4px' }}>⏳ 승인 대기 중</p>
                 <p style={{ color:dark?'rgba(255,200,0,0.6)':'#92400e', fontSize:'12px', margin:0, lineHeight:1.7 }}>
-                  관리자 확인 후 1~2 영업일 내에 승인 연락을 드려요. 승인 후 유통가 혜택을 이용하실 수 있습니다.
+                  관리자 확인 후 1~2 영업일 내에 승인 연락을 드려요. 승인 후 공급가 혜택을 이용하실 수 있습니다.
                 </p>
               </div>
             )}

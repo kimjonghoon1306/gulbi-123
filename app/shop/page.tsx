@@ -191,8 +191,8 @@ export default function ShopPage() {
   const getPrice = (product: Product) => priceFor(product, memberType)
 
   const getPriceLabel = () => {
-    if (memberType === '도매업') return '도매 유통가'
-    if (memberType === '소매업') return '소매 유통가'
+    if (memberType === '도매업') return '도매 공급가'
+    if (memberType === '소매업') return '소매 공급가'
     return ''
   }
 
@@ -288,7 +288,7 @@ export default function ShopPage() {
           fontSize: '13px', fontWeight: 700, color: 'white',
           letterSpacing: '0.3px'
         }}>
-          {memberType === '도매업' ? '🏭 도매업 회원 — 특별 도매 유통가 적용 중이에요!' : '🏪 소매업 회원 — 소매 유통가 적용 중이에요!'}
+          {memberType === '도매업' ? '🏭 도매업 회원 — 특별 도매 공급가 적용 중이에요!' : '🏪 소매업 회원 — 소매 공급가 적용 중이에요!'}
         </div>
       )}
 

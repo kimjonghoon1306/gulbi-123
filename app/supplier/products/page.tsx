@@ -257,7 +257,7 @@ function ProductsContent() {
                   </div>
                   <p style={{ fontSize: '11px', color: t.textMuted, margin: 0 }}>
                     도매 공급가 {p.suggested_wholesale_price?.toLocaleString()}원
-                    {p.wholesale_price > 0 && <span style={{ color: '#34d399', marginLeft: '6px' }}>→ 도매 유통가 {p.wholesale_price.toLocaleString()}원</span>}
+                    {p.wholesale_price > 0 && <span style={{ color: '#34d399', marginLeft: '6px' }}>→ 도매 공급가 {p.wholesale_price.toLocaleString()}원</span>}
                     {p.stock > 0 && <span style={{ marginLeft: '8px' }}>재고 {p.stock}{p.unit}</span>}
                   </p>
                   {(p.approval_status === '거절' || p.approval_status === '수정요청') && p.rejection_reason && (

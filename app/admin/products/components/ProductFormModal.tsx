@@ -93,8 +93,8 @@ export function ProductFormModal({ show, onClose, editProduct, form, setForm, on
           <div className="grid grid-cols-2 gap-4">
             {[
               { label: '🛒 일반 구매가 (원)', key: 'retail_price' },
-              { label: '🏪 소매 유통가 (원)', key: 'member_price' },
-              { label: '🏭 도매 유통가 (원)', key: 'wholesale_price' },
+              { label: '🏪 소매 공급가 (원)', key: 'member_price' },
+              { label: '🏭 도매 공급가 (원)', key: 'wholesale_price' },
               { label: '재고 수량', key: 'stock' },
             ].map(f => (
               <div key={f.key}>

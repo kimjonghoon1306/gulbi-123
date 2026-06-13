@@ -360,8 +360,8 @@ export default function AiLandingEditor({ show, onClose, products, onDone }: Pro
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
                       {[
                         { label: '🛒 일반 구매가', key: 'retail_price', color: '99,102,241' },
-                        { label: '🏪 소매 유통가', key: 'member_price', color: '15,118,110' },
-                        { label: '🏭 도매 유통가', key: 'wholesale_price', color: '236,72,153' },
+                        { label: '🏪 소매 공급가', key: 'member_price', color: '15,118,110' },
+                        { label: '🏭 도매 공급가', key: 'wholesale_price', color: '236,72,153' },
                       ].map(f => (
                         <div key={f.key}>
                           <p style={{ color: aiDark ? 'rgba(255,255,255,0.5)' : '#666', fontSize: '10px', fontWeight: 700, margin: '0 0 5px' }}>{f.label}</p>

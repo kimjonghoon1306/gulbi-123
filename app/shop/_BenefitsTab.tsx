@@ -96,7 +96,7 @@ export function BenefitsTab({ D, tc, accent, member, orders, curGrade, nextGrade
                   </p>
                   <p style={{ fontSize:'12px', color:D.sub, margin:0, lineHeight:1.7 }}>
                     {member.status==='승인'
-                      ? `${member.member_type} 유통가 혜택을 정상적으로 이용하실 수 있습니다.`
+                      ? `${member.member_type} 공급가 혜택을 정상적으로 이용하실 수 있습니다.`
                       : member.status==='대기중'
                       ? '관리자 확인 후 1~2 영업일 내 승인 연락을 드려요.'
                       : '이용이 거절되었습니다. 관리자에게 문의해 주세요.'}
@@ -109,12 +109,12 @@ export function BenefitsTab({ D, tc, accent, member, orders, curGrade, nextGrade
                     {member.member_type==='소매업' ? '🏪 소매 유통 혜택' : '🏭 도매 유통 혜택'}
                   </p>
                   {(member.member_type === '소매업' ? [
-                    { icon:'💰', title:'소매 유통가 적용',   desc:'일반 구매가보다 저렴한 전용 유통가로 구매하실 수 있어요.' },
+                    { icon:'💰', title:'소매 공급가 적용',   desc:'일반 구매가보다 저렴한 전용 공급가로 구매하실 수 있어요.' },
                     { icon:'🚚', title:'대량 주문 우선 처리', desc:'대량 발주 시 우선 처리 및 빠른 배송을 지원합니다.' },
                     { icon:'📋', title:'세금계산서 발행',     desc:'사업자 세금계산서 발행이 가능합니다.' },
                     { icon:'📞', title:'전담 상담 배정',      desc:'소매 유통 전담 상담원이 배정되어 빠른 응대가 가능합니다.' },
                   ] : [
-                    { icon:'💰', title:'도매 유통가 적용',    desc:'최저가 도매 유통가로 대량 구매하실 수 있어요.' },
+                    { icon:'💰', title:'도매 공급가 적용',    desc:'최저가 도매 공급가로 대량 구매하실 수 있어요.' },
                     { icon:'🏭', title:'전용 발주 라인',      desc:'도매 전용 주문 채널과 빠른 처리로 운영 효율을 높이세요.' },
                     { icon:'📋', title:'세금계산서 발행',      desc:'월별 합산 세금계산서 발행이 가능합니다.' },
                     { icon:'📊', title:'거래 명세서 제공',     desc:'월별 거래 내역 및 명세서를 발행해 드립니다.' },

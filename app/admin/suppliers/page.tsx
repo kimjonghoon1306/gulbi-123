@@ -57,7 +57,7 @@ export default function AdminSuppliersPage() {
   // ── 상품 가격 확정 + 승인 ──────────────────────────────
   const approveProduct = async () => {
     if (!selectedProduct) return
-    if (!priceForm.wholesale_price || !priceForm.retail_price) return alert('도매 유통가와 일반 구매가를 입력해주세요.')
+    if (!priceForm.wholesale_price || !priceForm.retail_price) return alert('도매 공급가와 일반 구매가를 입력해주세요.')
 
     await supabase.from('products').update({
       wholesale_price: Number(priceForm.wholesale_price),
@@ -183,7 +183,7 @@ export default function AdminSuppliersPage() {
             <table className="w-full min-w-[680px]">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-gray-700">
-                  {['상품명', '도매 공급가', '소매 공급가', '확정 도매유통가', '재고', '상태', ''].map(h => (
+                  {['상품명', '도매 공급가', '소매 공급가', '확정 도매공급가', '재고', '상태', ''].map(h => (
                     <th key={h} className="text-left text-xs font-semibold text-slate-400 dark:text-slate-500 px-5 py-4 whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
@@ -221,9 +221,9 @@ export default function AdminSuppliersPage() {
                           <button onClick={() => {
                             setSelectedProduct(p)
                             setPriceForm({
-                              // 도매 유통가 ← 공급업체 도매 공급가
+                              // 도매 공급가 ← 공급업체 도매 공급가
                               wholesale_price: String(p.suggested_wholesale_price || ''),
-                              // 소매 유통가 ← 공급업체 소매 공급가
+                              // 소매 공급가 ← 공급업체 소매 공급가
                               member_price: String(p.suggested_retail_price || ''),
                               // 일반 구매가 ← 관리자가 직접 입력 (자동으로 채우지 않음)
                               retail_price: '',
@@ -307,12 +307,12 @@ export default function AdminSuppliersPage() {
 
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">🏭 도매 유통가 (원) *</label>
+                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">🏭 도매 공급가 (원) *</label>
                   <input type="number" value={priceForm.wholesale_price} onChange={e => setPriceForm(p => ({ ...p, wholesale_price: e.target.value }))}
                     className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500" />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">🏪 소매 유통가 (원)</label>
+                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">🏪 소매 공급가 (원)</label>
                   <input type="number" value={priceForm.member_price} onChange={e => setPriceForm(p => ({ ...p, member_price: e.target.value }))}
                     className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500" />
                 </div>
