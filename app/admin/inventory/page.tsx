@@ -105,7 +105,8 @@ export default function InventoryPage() {
               <p className="text-sm text-slate-400 dark:text-slate-500">등록된 상품이 없습니다</p>
             </div>
           ) : (
-            <table className="w-full">
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[560px]">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-gray-700">
                   {['상품명', '현재 재고', '최소 재고', '단위', '상태', ''].map(h => (
@@ -140,6 +141,7 @@ export default function InventoryPage() {
                 })}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       )}

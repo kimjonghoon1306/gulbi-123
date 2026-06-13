@@ -366,7 +366,7 @@ export default function GeneralOrdersPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-white/70 text-xs mb-1">{viewOrder.order_number}</p>
-                  <h2 className="text-xl font-bold text-white">{viewOrder.customer_name}</h2>
+                  <h2 className="text-xl font-bold text-white truncate">{viewOrder.customer_name || '고객'}</h2>
                 </div>
                 <button onClick={() => setViewOrder(null)} className="text-white/70 hover:text-white text-xl w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors">✕</button>
               </div>
@@ -438,19 +438,21 @@ export default function GeneralOrdersPage() {
               {/* 송장 / 배송추적 */}
               <div>
                 <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">🚚 송장 등록</p>
-                <div className="flex gap-2">
-                  <select value={courierInput} onChange={e => setCourierInput(e.target.value)}
-                    className="w-32 px-3 py-2.5 rounded-xl text-sm border-2 border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-slate-700 dark:text-slate-200 outline-none">
-                    <option value="">택배사</option>
-                    {COURIERS.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
-                  </select>
-                  <input value={trackingInput} onChange={e => setTrackingInput(e.target.value)}
-                    placeholder="송장번호"
-                    className="flex-1 px-3 py-2.5 rounded-xl text-sm border-2 border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-slate-700 dark:text-slate-200 outline-none" />
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <select value={courierInput} onChange={e => setCourierInput(e.target.value)}
+                      className="w-28 flex-shrink-0 px-3 py-2.5 rounded-xl text-sm border-2 border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-slate-700 dark:text-slate-200 outline-none">
+                      <option value="">택배사</option>
+                      {COURIERS.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
+                    </select>
+                    <input value={trackingInput} onChange={e => setTrackingInput(e.target.value)}
+                      placeholder="송장번호"
+                      className="flex-1 min-w-0 px-3 py-2.5 rounded-xl text-sm border-2 border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-slate-700 dark:text-slate-200 outline-none" />
+                  </div>
                   <button onClick={saveTracking}
-                    className="px-4 py-2.5 rounded-xl text-sm font-bold text-white shadow-md"
+                    className="w-full py-2.5 rounded-xl text-sm font-bold text-white shadow-md"
                     style={{ background: trackSaved ? '#16a34a' : 'linear-gradient(135deg,#6366f1,#8b5cf6)' }}>
-                    {trackSaved ? '✓ 저장' : '저장'}
+                    {trackSaved ? '✓ 송장 저장됨' : '🚚 송장 저장'}
                   </button>
                 </div>
                 <p className="text-[11px] text-slate-400 mt-1.5">송장 등록 시 손님이 마이페이지에서 실시간 배송조회를 할 수 있어요.</p>
