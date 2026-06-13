@@ -801,7 +801,7 @@ export default function ShopPage() {
         <section style={{ background: dark ? '#0a1c13' : '#f0faf9', padding: '30px 20px 0' }}>
           <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
             <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '7px' }}>
-              <span className="ad-live-badge" style={{ fontSize: '11px', fontWeight: 400, letterSpacing: '1px', color: '#ec4899', background: 'transparent', border: '1px solid #ec4899', borderRadius: '100px', padding: '4px 12px' }}>● 광고중</span>
+              <span className="ad-live-badge" style={{ fontSize: '11px', fontWeight: 400, letterSpacing: '1px', color: '#ec4899', background: 'transparent', border: '1px solid #ec4899', borderRadius: '100px', padding: '4px 12px' }}>● AD 추천 광고중</span>
             </div>
             <div className="ad-banner-box" style={{
               position: 'relative', borderRadius: '24px', overflow: 'hidden',
