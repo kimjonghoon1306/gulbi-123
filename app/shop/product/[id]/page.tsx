@@ -541,7 +541,6 @@ export default function ProductDetailPage() {
                     바로 구매
                   </button>
                 </div>
-                <p style={{textAlign:'center',fontSize:'11px',color:D.sub}}>주문 접수 후 연락드려요</p>
               </div>
             )}
           </div>
