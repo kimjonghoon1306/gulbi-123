@@ -8,6 +8,8 @@ import { BenefitsTab } from '../_BenefitsTab'
 import { OrdersTab } from '../_OrdersTab'
 import { OrderBadge } from '../_OrderBadge'
 import { CouponsTab } from '../_CouponsTab'
+import { WishlistTab } from '../_WishlistTab'
+import { SettingsTab } from '../_SettingsTab'
 import { openPostcode } from '@/lib/postcode'
 import { courierName } from '@/lib/tracking'
 
@@ -496,55 +498,7 @@ function MyPageInner() {
         {tab === 'orders' && <OrdersTab D={D} tc={tc} accent={accent} member={member} orders={orders} orderItems={orderItems} itemsLoading={itemsLoading} openTracking={openTracking} setOrders={setOrders} />}
 
         {/* ════════════════ TAB: WISHLIST ════════════════ */}
-        {tab === 'wishlist' && (
-          <div style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'4px' }}>
-              <p style={{ fontSize:'15px', fontWeight:800, color:D.text, margin:0 }}>❤️ 찜한 상품 <span style={{ color:D.sub, fontSize:'13px', fontWeight:500 }}>{wishlists.length}개</span></p>
-            </div>
-            {wishlists.length === 0 ? (
-              <div style={{ background:D.card, borderRadius:'20px', padding:'48px 20px', textAlign:'center', border:`1px solid ${D.border}` }}>
-                <p style={{ fontSize:'40px', marginBottom:'12px' }}>🤍</p>
-                <p style={{ fontSize:'14px', color:D.sub, margin:'0 0 16px' }}>찜한 상품이 없어요</p>
-                <a href="/shop" style={{ display:'inline-block', padding:'10px 20px', borderRadius:'12px', background:tc.gradient, color:'white', fontSize:'13px', fontWeight:700, textDecoration:'none' }}>
-                  쇼핑하러 가기
-                </a>
-              </div>
-            ) : (
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(180px, 1fr))', gap:'14px' }}>
-                {wishlists.map((w: any) => {
-                  const p = w.products
-                  if (!p) return null
-                  const wishPrice = member.member_type === '도매업' ? (p.wholesale_price||0)
-                    : member.member_type === '소매업' ? (p.member_price||0)
-                    : (p.retail_price||0)
-                  return (
-                    <a key={w.id} href={`/shop/product/${p.id}`} style={{ textDecoration:'none', display:'block', background:D.card, borderRadius:'16px', overflow:'hidden', border:`1px solid ${D.border}`, transition:'transform 0.15s' }}>
-                      <div style={{ width:'100%', paddingTop:'100%', position:'relative', background:dark?'#15391f':'#f8fafc' }}>
-                        {p.image_url
-                          ? <img src={p.image_url} alt={p.name} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} />
-                          : <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'40px' }}>🧺</div>
-                        }
-                        {p.stock === 0 && (
-                          <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.45)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                            <span style={{ background:'rgba(0,0,0,0.7)', color:'white', fontSize:'11px', fontWeight:700, padding:'4px 10px', borderRadius:'20px' }}>품절</span>
-                          </div>
-                        )}
-                        {/* 찜 해제 */}
-                        <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); removeWishlist(w.id) }} aria-label="찜 해제"
-                          style={{ position:'absolute', top:'8px', right:'8px', width:'30px', height:'30px', borderRadius:'50%', border:'none', cursor:'pointer', background:'rgba(255,255,255,0.92)', fontSize:'15px', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 2px 8px rgba(0,0,0,0.15)', backdropFilter:'blur(4px)' }}>❤️</button>
-                      </div>
-                      <div style={{ padding:'10px 12px' }}>
-                        <p style={{ fontSize:'13px', fontWeight:700, color:D.text, margin:'0 0 4px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{p.name}</p>
-                        <p style={{ fontSize:'14px', fontWeight:900, color:accent, margin:0 }}>{wishPrice.toLocaleString()}원</p>
-                        <p style={{ fontSize:'10px', color:D.sub, margin:'2px 0 0' }}>/{p.unit}</p>
-                      </div>
-                    </a>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        )}
+        {tab === 'wishlist' && <WishlistTab D={D} tc={tc} accent={accent} member={member} dark={dark} wishlists={wishlists} removeWishlist={removeWishlist} />}
 
         {/* ════════════════ TAB: COUPONS (쿠폰함) ════════════════ */}
         {tab === 'coupons' && <CouponsTab myCoupons={myCoupons} availCoupons={availCoupons} couponBusy={couponBusy} claimCoupon={claimCoupon} D={D} tc={tc} accent={accent} />}
@@ -553,47 +507,7 @@ function MyPageInner() {
         {tab === 'benefits' && <BenefitsTab D={D} tc={tc} accent={accent} member={member} orders={orders} curGrade={curGrade} nextGrade={nextGrade} gradeProgress={gradeProgress} totalAmount={totalAmount} />}
 
         {/* ════════════════ TAB: SETTINGS ════════════════ */}
-        {tab === 'settings' && (
-          <div style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
-
-            {/* 기본 배송지 */}
-            <div style={{ background:D.card, borderRadius:'20px', padding:'22px', border:`1px solid ${D.border}` }}>
-              <p style={{ fontSize:'14px', fontWeight:800, color:D.text, margin:'0 0 4px' }}>📍 기본 배송지</p>
-              <p style={{ fontSize:'12px', color:D.sub, margin:'0 0 14px' }}>주소 검색으로 도로명/지번을 찾고, 상세주소(동·호수)는 직접 적어주세요. 저장해두면 주문할 때 자동 입력돼요.</p>
-              <button onClick={async () => { const r = await openPostcode(); if (r) { setAddrInput(r.address + ' '); setAddrMsg('') } }}
-                style={{ width:'100%', marginBottom:'10px', padding:'12px', borderRadius:'12px', border:`2px dashed ${D.border}`, background:D.input, color:D.text, fontSize:'14px', fontWeight:700, cursor:'pointer' }}>
-                🔍 주소 검색
-              </button>
-              <textarea value={addrInput} onChange={e => { setAddrInput(e.target.value); setAddrMsg('') }}
-                placeholder="주소 검색 후 상세주소(동·호수)를 입력해주세요"
-                rows={2}
-                style={{ width:'100%', padding:'13px 14px', borderRadius:'12px', border:`2px solid ${D.border}`, background:D.input, color:D.text, fontSize:'14px', outline:'none', resize:'none', boxSizing:'border-box', lineHeight:1.6, fontFamily:'inherit' }} />
-              {addrMsg && <p style={{ fontSize:'12px', fontWeight:700, color: addrMsg.startsWith('✅') ? '#16a34a' : '#ef4444', margin:'10px 0 0' }}>{addrMsg}</p>}
-              <button onClick={saveAddress} disabled={addrSaving}
-                style={{ width:'100%', marginTop:'12px', padding:'13px', borderRadius:'12px', border:'none', cursor: addrSaving ? 'not-allowed' : 'pointer', background: addrSaving ? D.input : tc.gradient, color: addrSaving ? D.sub : 'white', fontSize:'14px', fontWeight:800 }}>
-                {addrSaving ? '저장 중...' : '배송지 저장'}
-              </button>
-            </div>
-
-            {/* 비밀번호 변경 */}
-            <div style={{ background:D.card, borderRadius:'20px', padding:'22px', border:`1px solid ${D.border}` }}>
-              <p style={{ fontSize:'14px', fontWeight:800, color:D.text, margin:'0 0 4px' }}>🔑 비밀번호 변경</p>
-              <p style={{ fontSize:'12px', color:D.sub, margin:'0 0 14px' }}>새 비밀번호를 두 번 입력하면 바로 변경돼요. (6자 이상)</p>
-              <input type="password" value={pw1} onChange={e => { setPw1(e.target.value); setPwMsg('') }}
-                placeholder="새 비밀번호"
-                style={{ width:'100%', padding:'13px 14px', borderRadius:'12px', border:`2px solid ${D.border}`, background:D.input, color:D.text, fontSize:'14px', outline:'none', boxSizing:'border-box', marginBottom:'10px' }} />
-              <input type="password" value={pw2} onChange={e => { setPw2(e.target.value); setPwMsg('') }}
-                placeholder="새 비밀번호 확인"
-                style={{ width:'100%', padding:'13px 14px', borderRadius:'12px', border:`2px solid ${D.border}`, background:D.input, color:D.text, fontSize:'14px', outline:'none', boxSizing:'border-box' }} />
-              {pwMsg && <p style={{ fontSize:'12px', fontWeight:700, color: pwMsg.startsWith('✅') ? '#16a34a' : '#ef4444', margin:'10px 0 0' }}>{pwMsg}</p>}
-              <button onClick={changePassword} disabled={pwSaving}
-                style={{ width:'100%', marginTop:'12px', padding:'13px', borderRadius:'12px', border:'none', cursor: pwSaving ? 'not-allowed' : 'pointer', background: pwSaving ? D.input : tc.gradient, color: pwSaving ? D.sub : 'white', fontSize:'14px', fontWeight:800 }}>
-                {pwSaving ? '변경 중...' : '비밀번호 변경'}
-              </button>
-            </div>
-
-          </div>
-        )}
+        {tab === 'settings' && <SettingsTab D={D} tc={tc} addrInput={addrInput} setAddrInput={setAddrInput} addrSaving={addrSaving} saveAddress={saveAddress} addrMsg={addrMsg} setAddrMsg={setAddrMsg} pw1={pw1} pw2={pw2} setPw1={setPw1} setPw2={setPw2} pwSaving={pwSaving} pwMsg={pwMsg} setPwMsg={setPwMsg} changePassword={changePassword} />}
 
       </div>
 
