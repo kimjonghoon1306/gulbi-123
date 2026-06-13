@@ -58,8 +58,16 @@ export default function ProductsPage() {
   const [rejectReason, setRejectReason] = useState('')
   const [reviewLoading, setReviewLoading] = useState(false)
   const [showRejectInput, setShowRejectInput] = useState(false)
+  const [okMsg, setOkMsg] = useState('')
 
   useEffect(() => { fetchAll() }, [])
+
+  // 성공 토스트 4초 후 자동 사라짐
+  useEffect(() => {
+    if (!okMsg) return
+    const id = setTimeout(() => setOkMsg(''), 4000)
+    return () => clearTimeout(id)
+  }, [okMsg])
 
   const fetchAll = async () => {
     setLoading(true)
@@ -138,8 +146,9 @@ export default function ProductsPage() {
   // ── 승인 ──
   const handleApprove = async () => {
     if (!reviewProduct) return
+    if (!reviewForm.retail_price || Number(reviewForm.retail_price) <= 0) { alert('일반 구매가를 입력해주세요.'); return }
     setReviewLoading(true)
-    await supabase.from('products').update({
+    const { error } = await supabase.from('products').update({
       name: reviewForm.name,
       wholesale_price: Number(reviewForm.wholesale_price) || 0,
       retail_price: Number(reviewForm.retail_price) || 0,
@@ -150,35 +159,48 @@ export default function ProductsPage() {
       description: reviewForm.description,
       approval_status: '승인',
       is_active: true,
+      rejection_reason: null,
       updated_at: new Date().toISOString(),
     }).eq('id', reviewProduct.id)
-    setReviewProduct(null); setReviewLoading(false); fetchAll()
+    setReviewLoading(false)
+    if (error) { alert('저장 실패: ' + error.message); return }   // 실패 시 모달 유지 + 원인 표시
+    setReviewProduct(null)
+    setOkMsg('✅ 가격이 확정되어 쇼핑몰에 노출되었습니다.')
+    fetchAll()
   }
 
   // ── 거절 ──
   const handleReject = async () => {
     if (!reviewProduct || !rejectReason.trim()) return
     setReviewLoading(true)
-    await supabase.from('products').update({
+    const { error } = await supabase.from('products').update({
       approval_status: '거절',
       is_active: false,
       rejection_reason: rejectReason.trim(),
       updated_at: new Date().toISOString(),
     }).eq('id', reviewProduct.id)
-    setReviewProduct(null); setReviewLoading(false); setShowRejectInput(false); fetchAll()
+    setReviewLoading(false)
+    if (error) { alert('저장 실패: ' + error.message); return }
+    setReviewProduct(null); setShowRejectInput(false)
+    setOkMsg('거절 처리되었습니다. 공급업체에 사유가 전달됩니다.')
+    fetchAll()
   }
 
   // ── 수정요청 ──
   const handleRequestRevision = async () => {
     if (!reviewProduct || !rejectReason.trim()) return
     setReviewLoading(true)
-    await supabase.from('products').update({
+    const { error } = await supabase.from('products').update({
       approval_status: '수정요청',
       is_active: false,
       rejection_reason: rejectReason.trim(),
       updated_at: new Date().toISOString(),
     }).eq('id', reviewProduct.id)
-    setReviewProduct(null); setReviewLoading(false); setShowRejectInput(false); fetchAll()
+    setReviewLoading(false)
+    if (error) { alert('저장 실패: ' + error.message); return }
+    setReviewProduct(null); setShowRejectInput(false)
+    setOkMsg('수정요청을 보냈습니다. 공급업체가 수정 후 재신청합니다.')
+    fetchAll()
   }
 
   const filteredSupplierProducts = supplierProducts.filter(p => p.approval_status === approvalFilter)
@@ -192,6 +214,14 @@ export default function ProductsPage() {
 
   return (
     <div className="animate-fadeIn">
+      {/* 성공 토스트 (가격 확정/거절/수정요청 안내) */}
+      {okMsg && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[1000] px-6 py-3 rounded-xl text-sm font-bold text-white shadow-lg"
+          style={{ background: 'linear-gradient(135deg,#16a34a,#15803d)', boxShadow: '0 8px 30px rgba(22,163,74,0.45)', maxWidth: '90vw', textAlign: 'center' }}>
+          {okMsg}
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white">상품관리</h1>
