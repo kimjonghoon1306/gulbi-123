@@ -57,7 +57,7 @@ export default function AdminSuppliersPage() {
   // ── 상품 가격 확정 + 승인 ──────────────────────────────
   const approveProduct = async () => {
     if (!selectedProduct) return
-    if (!priceForm.wholesale_price || !priceForm.retail_price) return alert('도매가와 소매가를 입력해주세요.')
+    if (!priceForm.wholesale_price || !priceForm.retail_price) return alert('도매 유통가와 일반 구매가를 입력해주세요.')
 
     await supabase.from('products').update({
       wholesale_price: Number(priceForm.wholesale_price),
@@ -183,7 +183,7 @@ export default function AdminSuppliersPage() {
             <table className="w-full min-w-[680px]">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-gray-700">
-                  {['상품명', '제안 도매가', '제안 소매가', '확정 가격', '재고', '상태', ''].map(h => (
+                  {['상품명', '도매 공급가', '소매 공급가', '확정 도매유통가', '재고', '상태', ''].map(h => (
                     <th key={h} className="text-left text-xs font-semibold text-slate-400 dark:text-slate-500 px-5 py-4 whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
@@ -297,14 +297,14 @@ export default function AdminSuppliersPage() {
                 <div>
                   <p className="font-bold text-slate-800 dark:text-white">{selectedProduct.name}</p>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    공급업체 제안 — 도매 {selectedProduct.suggested_wholesale_price?.toLocaleString()}원 / 소매 {selectedProduct.suggested_retail_price?.toLocaleString()}원
+                    공급업체 공급가 — 도매 {selectedProduct.suggested_wholesale_price?.toLocaleString()}원 / 소매 {selectedProduct.suggested_retail_price?.toLocaleString()}원
                   </p>
                 </div>
               </div>
 
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">🏭 확정 도매가 (원) *</label>
+                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">🏭 도매 유통가 (원) *</label>
                   <input type="number" value={priceForm.wholesale_price} onChange={e => setPriceForm(p => ({ ...p, wholesale_price: e.target.value }))}
                     className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500" />
                 </div>
@@ -314,7 +314,7 @@ export default function AdminSuppliersPage() {
                     className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500" />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">🛒 확정 소매가 (원) *</label>
+                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">🛒 일반 구매가 (원) *</label>
                   <input type="number" value={priceForm.retail_price} onChange={e => setPriceForm(p => ({ ...p, retail_price: e.target.value }))}
                     className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500" />
                 </div>

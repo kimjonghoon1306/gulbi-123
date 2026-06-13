@@ -258,7 +258,7 @@ export default function ProductDetailPage() {
   const getPriceLabel = () => {
     if (memberType === '도매업') return '도매 유통가'
     if (memberType === '소매업') return '소매 유통가'
-    return '일반 소매가'
+    return '일반 구매가'
   }
 
   const getPriceColor = () => {
@@ -432,7 +432,7 @@ export default function ProductDetailPage() {
             {/* 회원 유형별 가격 탭 - 표시 전용 */}
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'6px',marginBottom:'14px'}}>
               {([
-                {type:'일반',   label:'일반 소매가', emoji:'🛒', color:D.gtext},
+                {type:'일반',   label:'일반 구매가', emoji:'🛒', color:D.gtext},
                 {type:'소매업', label:'소매 유통가',  emoji:'🏪', color:D.gtext},
                 {type:'도매업', label:'도매 유통가',  emoji:'🏭', color:D.gtext},
               ] as const).map(t => (

@@ -54,7 +54,7 @@ export default function ProductList({
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-slate-100 dark:border-gray-700">
-                      {['상품명', '카테고리', '도매가', '소매가', '재고', '단위', '상태', ''].map(h => (
+                      {['상품명', '카테고리', '도매 유통가', '일반 구매가', '재고', '단위', '상태', ''].map(h => (
                         <th key={h} className="text-left text-xs font-semibold text-slate-400 dark:text-slate-500 px-5 py-4">{h}</th>
                       ))}
                     </tr>
@@ -96,7 +96,7 @@ export default function ProductList({
                         </span>
                       </div>
                       <p className="text-xs text-slate-400 dark:text-slate-500">{getCatName(p.category_id)} · {p.stock}{p.unit}</p>
-                      <p className="text-xs text-green-600 dark:text-green-400 font-semibold mt-0.5">도매 {p.wholesale_price.toLocaleString()}원 / 소매 {p.retail_price.toLocaleString()}원</p>
+                      <p className="text-xs text-green-600 dark:text-green-400 font-semibold mt-0.5">도매 유통가 {p.wholesale_price.toLocaleString()}원 / 일반 구매가 {p.retail_price.toLocaleString()}원</p>
                     </div>
                     <div className="flex flex-col gap-1.5 flex-shrink-0">
                       <button onClick={() => onEdit(p)} className="text-xs bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold px-3 py-1.5 rounded-lg">수정</button>

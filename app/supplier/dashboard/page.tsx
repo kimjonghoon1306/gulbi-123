@@ -177,8 +177,8 @@ function DashboardContent() {
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ fontSize: '13px', fontWeight: 600, color: t.text, margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</p>
               <p style={{ fontSize: '11px', color: t.textMuted, margin: 0 }}>
-                제안가 {p.suggested_wholesale_price?.toLocaleString()}원
-                {p.wholesale_price > 0 && <span style={{ color: '#34d399', marginLeft: '6px' }}>→ {p.wholesale_price.toLocaleString()}원</span>}
+                도매 공급가 {p.suggested_wholesale_price?.toLocaleString()}원
+                {p.wholesale_price > 0 && <span style={{ color: '#34d399', marginLeft: '6px' }}>→ 도매 유통가 {p.wholesale_price.toLocaleString()}원</span>}
               </p>
             </div>
             <span style={{ fontSize: '10px', fontWeight: 600, padding: '3px 9px', borderRadius: '20px', flexShrink: 0, background: statusBg[p.approval_status] || t.input, color: statusColor[p.approval_status] || t.textMuted }}>

@@ -324,7 +324,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
                         {p.image_url ? <img src={p.image_url} alt="" style={{ width: '36px', height: '36px', borderRadius: '6px', objectFit: 'cover', flexShrink: 0 }} /> : <div style={{ width: '36px', height: '36px', borderRadius: '6px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>🧺</div>}
                         <div style={{ minWidth: 0 }}>
                           <p style={{ color: aiDark ? 'white' : '#111', fontSize: '12px', fontWeight: 700, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</p>
-                          <p style={{ color: aiDark ? 'rgba(255,255,255,0.4)' : '#666', fontSize: '10px', margin: '2px 0 0' }}>제안가 {p.suggested_retail_price?.toLocaleString()}원</p>
+                          <p style={{ color: aiDark ? 'rgba(255,255,255,0.4)' : '#666', fontSize: '10px', margin: '2px 0 0' }}>소매 공급가 {p.suggested_retail_price?.toLocaleString()}원</p>
                         </div>
                       </div>
                     </button>
@@ -367,8 +367,8 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                   {[
                     { label: '상품명', key: 'name', placeholder: '예) 온종일팜 신선상품', full: true },
-                    { label: '도매 제안가', key: 'suggested_wholesale_price', placeholder: '원' },
-                    { label: '소매 제안가', key: 'suggested_retail_price', placeholder: '원' },
+                    { label: '도매 공급가', key: 'suggested_wholesale_price', placeholder: '원' },
+                    { label: '소매 공급가', key: 'suggested_retail_price', placeholder: '원' },
                     { label: '재고', key: 'stock', placeholder: '수량' },
                   ].map(f => (
                     <div key={f.key} style={{ gridColumn: f.full ? '1 / -1' : undefined }}>

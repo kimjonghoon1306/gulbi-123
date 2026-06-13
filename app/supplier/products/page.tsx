@@ -128,7 +128,7 @@ function ProductsContent() {
 
   const handleSave = async () => {
     if (!form.name || !form.suggested_wholesale_price || !form.suggested_retail_price) {
-      return setError('상품명, 도매 제안가, 소매 제안가는 필수입니다.')
+      return setError('상품명, 도매 공급가, 소매 공급가는 필수입니다.')
     }
     setSaving(true); setError('')
     const data = {
@@ -230,8 +230,8 @@ function ProductsContent() {
                     <span style={{ fontSize: '10px', fontWeight: 600, padding: '2px 8px', borderRadius: '20px', flexShrink: 0, background: s.bg, color: s.color }}>{s.label}</span>
                   </div>
                   <p style={{ fontSize: '11px', color: t.textMuted, margin: 0 }}>
-                    제안가 {p.suggested_wholesale_price?.toLocaleString()}원
-                    {p.wholesale_price > 0 && <span style={{ color: '#34d399', marginLeft: '6px' }}>→ 확정가 {p.wholesale_price.toLocaleString()}원</span>}
+                    도매 공급가 {p.suggested_wholesale_price?.toLocaleString()}원
+                    {p.wholesale_price > 0 && <span style={{ color: '#34d399', marginLeft: '6px' }}>→ 도매 유통가 {p.wholesale_price.toLocaleString()}원</span>}
                     {p.stock > 0 && <span style={{ marginLeft: '8px' }}>재고 {p.stock}{p.unit}</span>}
                   </p>
                   {(p.approval_status === '거절' || p.approval_status === '수정요청') && p.rejection_reason && (
@@ -271,7 +271,7 @@ function ProductsContent() {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
                   <div>
                     <p style={{ fontSize: '13px', fontWeight: 800, color: '#a78bfa', margin: '0 0 2px' }}>✨ 사진으로 자동 채우기</p>
-                    <p style={{ fontSize: '11px', color: t.textMuted, margin: 0 }}>상품 사진 한 장이면 이름·카테고리·제안가·설명을 AI가 채워줘요</p>
+                    <p style={{ fontSize: '11px', color: t.textMuted, margin: 0 }}>상품 사진 한 장이면 이름·카테고리·공급가·설명을 AI가 채워줘요</p>
                   </div>
                   <button onClick={() => document.getElementById('sup-ai-img')?.click()} disabled={aiFilling}
                     style={{ flexShrink: 0, padding: '11px 16px', borderRadius: '12px', border: 'none', background: 'linear-gradient(135deg,#7c3aed,#6366f1)', color: 'white', fontSize: '13px', fontWeight: 700, cursor: aiFilling ? 'default' : 'pointer', opacity: aiFilling ? 0.6 : 1, whiteSpace: 'nowrap' }}>
@@ -317,11 +317,11 @@ function ProductsContent() {
               </div>
 
               <div style={{ background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.2)', borderRadius: '14px', padding: '16px' }}>
-                <p style={{ fontSize: '12px', fontWeight: 700, color: '#a78bfa', margin: '0 0 12px' }}>💡 가격 제안 (관리자가 최종 확정합니다)</p>
+                <p style={{ fontSize: '12px', fontWeight: 700, color: '#a78bfa', margin: '0 0 12px' }}>💡 공급가 입력 (관리자가 최종 판매가를 확정합니다)</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                   {[
-                    { label: '🏭 도매 제안가 (원) *', key: 'suggested_wholesale_price' },
-                    { label: '🛒 소매 제안가 (원) *', key: 'suggested_retail_price' },
+                    { label: '🏭 도매 공급가 (원) *', key: 'suggested_wholesale_price' },
+                    { label: '🛒 소매 공급가 (원) *', key: 'suggested_retail_price' },
                   ].map(({ label, key }) => (
                     <div key={key}>
                       <label style={{ display: 'block', fontSize: '10px', color: t.textMuted, marginBottom: '6px' }}>{label}</label>

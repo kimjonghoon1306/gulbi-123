@@ -281,8 +281,8 @@ export default function ProductsPage() {
                     </div>
                     <p className="text-xs text-slate-400">
                       공급업체: {(p.suppliers as any)?.company_name || '-'}
-                      {' · '}도매 제안가 {p.suggested_wholesale_price?.toLocaleString()}원
-                      {' · '}소매 제안가 {p.suggested_retail_price?.toLocaleString()}원
+                      {' · '}도매 공급가 {p.suggested_wholesale_price?.toLocaleString()}원
+                      {' · '}소매 공급가 {p.suggested_retail_price?.toLocaleString()}원
                     </p>
                     <p className="text-xs text-slate-300 dark:text-slate-500 mt-0.5">
                       등록일 {new Date(p.created_at).toLocaleDateString('ko-KR')}
@@ -356,9 +356,9 @@ export default function ProductsPage() {
                 </div>
               )}
 
-              {/* 제안가 표시 */}
+              {/* 공급가 표시 */}
               <div className="rounded-xl p-3 text-xs" style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)' }}>
-                <p className="font-bold text-purple-400 mb-1">💡 공급업체 제안가 (참고용)</p>
+                <p className="font-bold text-purple-400 mb-1">💡 공급업체 공급가 (참고용)</p>
                 <p className="text-slate-400">
                   도매 {reviewProduct.suggested_wholesale_price?.toLocaleString()}원
                   {' · '}소매 {reviewProduct.suggested_retail_price?.toLocaleString()}원
@@ -368,9 +368,9 @@ export default function ProductsPage() {
               {/* 수정 가능 필드들 */}
               {[
                 { label: '상품명', key: 'name', type: 'text', full: true },
-                { label: '도매가 (원)', key: 'wholesale_price', type: 'number' },
-                { label: '소매가 (원)', key: 'retail_price', type: 'number' },
-                { label: '회원가 (원)', key: 'member_price', type: 'number' },
+                { label: '일반 구매가 (원)', key: 'retail_price', type: 'number' },
+                { label: '소매 유통가 (원)', key: 'member_price', type: 'number' },
+                { label: '도매 유통가 (원)', key: 'wholesale_price', type: 'number' },
                 { label: '재고', key: 'stock', type: 'number' },
               ].map(f => (
                 <div key={f.key} style={{ gridColumn: f.full ? '1/-1' : undefined }}>
