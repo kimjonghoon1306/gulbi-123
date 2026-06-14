@@ -54,18 +54,36 @@ export function extractJson(text: string): any | null {
 const GEMINI_MODELS = ['gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-2.5-flash-lite']
 const OPENAI_MODELS = ['gpt-4o-mini', 'gpt-4o']
 
+// 모델별 fetch에 타임아웃을 걸어, 응답이 늘어지면 끊고 다음 모델/폴백으로 넘어간다.
+// (타임아웃이 없으면 Gemini 과부하 시 함수가 통째로 멈춰 Vercel 제한에 걸려 죽는다 = 간헐적 실패의 주범)
+const AI_FETCH_TIMEOUT_MS = 8000
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = AI_FETCH_TIMEOUT_MS) {
+  const controller = new AbortController()
+  const t = setTimeout(() => controller.abort(), timeoutMs)
+  try {
+    return await fetch(url, { ...init, signal: controller.signal })
+  } finally {
+    clearTimeout(t)
+  }
+}
+
 async function callGemini(
   key: string, system: string, prompt: string, images: AIImage[], maxTokens: number, jsonMode: boolean,
 ): Promise<{ ok: true; text: string } | { ok: false; error: string }> {
   const parts: any[] = images.map((img) => ({ inlineData: { mimeType: img.mimeType, data: img.base64 } }))
   parts.push({ text: prompt })
-  const generationConfig: any = { maxOutputTokens: maxTokens }
-  if (jsonMode) generationConfig.responseMimeType = 'application/json'
+  const baseGenConfig: any = { maxOutputTokens: maxTokens }
+  if (jsonMode) baseGenConfig.responseMimeType = 'application/json'
 
   let lastError = ''
   for (const model of GEMINI_MODELS) {
+    // 2.5 계열은 thinking이 기본 켜져 있어 maxOutputTokens를 사고에 다 써버리고
+    // 빈 응답을 줄 때가 있다 → thinking을 꺼서 응답 누락/지연을 막는다.
+    const generationConfig = model.startsWith('gemini-2.5')
+      ? { ...baseGenConfig, thinkingConfig: { thinkingBudget: 0 } }
+      : baseGenConfig
     try {
-      const res = await fetch(
+      const res = await fetchWithTimeout(
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
         {
           method: 'POST',
@@ -92,7 +110,7 @@ async function callGemini(
       if (!text) { lastError = `${model} 빈 응답`; continue }
       return { ok: true, text }
     } catch (e: any) {
-      lastError = `${model} 네트워크 오류: ${e.message}`; continue
+      lastError = e?.name === 'AbortError' ? `${model} 응답 지연(타임아웃)` : `${model} 네트워크 오류: ${e.message}`; continue
     }
   }
   return { ok: false, error: `Gemini 실패: ${lastError}` }
@@ -117,7 +135,7 @@ async function callOpenAI(
   let lastError = ''
   for (const model of OPENAI_MODELS) {
     try {
-      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      const res = await fetchWithTimeout('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
         body: JSON.stringify({ ...body, model }),
@@ -134,7 +152,7 @@ async function callOpenAI(
       if (!text) { lastError = `${model} 빈 응답`; continue }
       return { ok: true, text }
     } catch (e: any) {
-      lastError = `${model} 네트워크 오류: ${e.message}`; continue
+      lastError = e?.name === 'AbortError' ? `${model} 응답 지연(타임아웃)` : `${model} 네트워크 오류: ${e.message}`; continue
     }
   }
   return { ok: false, error: `OpenAI 실패: ${lastError}` }

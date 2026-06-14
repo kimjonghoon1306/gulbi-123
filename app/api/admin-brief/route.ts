@@ -9,6 +9,8 @@ import { getUserAIKeys, callAI, extractJson } from '@/lib/ai'
 // ─────────────────────────────────────────────────────────────
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+// AI 호출(모델 폴백 포함)이 늘어져도 함수가 Vercel 기본 제한(10초)에 걸려 죽지 않도록 여유를 둔다.
+export const maxDuration = 30
 
 export async function GET() {
  try {
