@@ -30,19 +30,29 @@ export default function TaxPage() {
   const [editReceipt, setEditReceipt] = useState<CashReceipt | null>(null)
   const [iForm, setIForm] = useState({ company_name: '', business_number: '', manager_name: '', contact: '', amount: '', note: '', status: '미발행' })
   const [rForm, setRForm] = useState({ customer_name: '', contact: '', amount: '', receipt_type: '소비자용', note: '', status: '미발행' })
+  const [autoIssue, setAutoIssue] = useState(false)
   const supabase = createClient()
 
   useEffect(() => { fetchAll() }, [])
 
   const fetchAll = async () => {
     setLoading(true)
-    const [{ data: inv }, { data: rec }] = await Promise.all([
+    const [{ data: inv }, { data: rec }, { data: setting }] = await Promise.all([
       supabase.from('tax_invoices').select('*').order('created_at', { ascending: false }),
-      supabase.from('cash_receipts').select('*').order('created_at', { ascending: false })
+      supabase.from('cash_receipts').select('*').order('created_at', { ascending: false }),
+      supabase.from('system_settings').select('value').eq('key', 'auto_issue').maybeSingle(),
     ])
     setInvoices(inv || [])
     setReceipts(rec || [])
+    setAutoIssue(setting?.value === 'on')
     setLoading(false)
+  }
+
+  const toggleAutoIssue = async () => {
+    const next = autoIssue ? 'off' : 'on'
+    setAutoIssue(!autoIssue)
+    await supabase.from('system_settings').delete().eq('key', 'auto_issue')
+    await supabase.from('system_settings').insert({ key: 'auto_issue', value: next, updated_at: new Date().toISOString() })
   }
 
   const resetForm = () => {
@@ -187,6 +197,23 @@ export default function TaxPage() {
         <button onClick={() => { resetForm(); setShowForm(true) }}
           className="bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95 shadow-md shadow-indigo-500/20">
           + 발행 등록
+        </button>
+      </div>
+
+      {/* 자동발행 설정 */}
+      <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-4 mb-4 flex items-center justify-between gap-4">
+        <div>
+          <p className="text-sm font-bold text-slate-800 dark:text-white">⚡ 증빙 자동발행</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+            {autoIssue
+              ? '켜짐 — 가상계좌 입금이 확인되면 손님이 고른 증빙(현금영수증·세금계산서)을 자동으로 발행해요.'
+              : '꺼짐 — 증빙은 미발행으로 쌓이고, 관리자가 직접 발행하기 버튼을 눌러요.'}
+          </p>
+          <p className="text-[11px] text-slate-300 dark:text-slate-600 mt-0.5">※ 발행안함을 고른 손님은 자동발행 대상이 아니에요. 발행 실패 건은 미발행으로 남아 직접 발행할 수 있어요.</p>
+        </div>
+        <button onClick={toggleAutoIssue}
+          className={`relative w-14 h-8 rounded-full transition-colors flex-shrink-0 ${autoIssue ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-gray-600'}`}>
+          <span className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow transition-transform ${autoIssue ? 'translate-x-6' : ''}`} />
         </button>
       </div>
 

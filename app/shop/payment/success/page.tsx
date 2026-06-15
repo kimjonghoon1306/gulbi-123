@@ -47,6 +47,8 @@ function SuccessInner() {
             status: isWaiting ? '입금대기' : '결제완료',
             payment_key: paymentKey,
             paid_amount: Number(amt),
+            // 가상계좌 입금통보 웹훅 검증용 secret 저장
+            ...(va?.secret ? { vbank_secret: va.secret } : {}),
           }).eq('id', orderId)
 
           // 재고 차감 (주문 확정 — 가상계좌는 발급 시점에 예약 차감)
