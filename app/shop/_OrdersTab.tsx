@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase'
 import { courierName } from '@/lib/tracking'
 import { OrderBadge } from './_OrderBadge'
 
-const STATUS_STEP: Record<string, number> = { '접수': 0, '준비중': 1, '출고': 2, '완료': 3 }
+const STATUS_STEP: Record<string, number> = { '입금대기': -1, '입금완료': 0, '접수': 0, '준비중': 1, '출고': 2, '완료': 3 }
 const STATUS_LABEL = ['접수', '준비중', '출고', '완료']
 const STATUS_ICON = ['📋', '📦', '🚚', '✅']
 

@@ -63,7 +63,7 @@ export default function DashboardPage() {
 
     const allOrders = [...(gOrders || []), ...(wOrders || []), ...(rOrders || [])]
     const todayOrders = allOrders.filter(o => o.created_at?.startsWith(today)).length
-    const unshipped = allOrders.filter(o => o.status === '접수' || o.status === '준비중').length
+    const unshipped = allOrders.filter(o => o.status === '입금완료' || o.status === '접수' || o.status === '준비중').length
     const lowStockList = (products || []).filter(p => p.min_stock > 0 && p.stock <= p.min_stock)
     const monthRevenue = allOrders.filter(o => o.created_at >= firstDay && o.status === '완료').reduce((s, o) => s + (o.total_amount || 0), 0)
 
