@@ -25,7 +25,7 @@ const STATUS_CONFIG: Record<string, { color: string; bg: string; icon: string }>
   '완료':  { color: 'text-emerald-600 dark:text-emerald-400',bg: 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-800',icon: '✅' },
   '환불':  { color: 'text-red-500 dark:text-red-400',         bg: 'bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-900',          icon: '↩️' },
 }
-const PAYMENT_LIST = ['계좌이체', '현금', '카드', '외상']
+const PAYMENT_LIST = ['가상계좌', '현금', '카드', '외상']
 
 export default function GeneralOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
@@ -42,7 +42,7 @@ export default function GeneralOrdersPage() {
   const [search, setSearch] = useState('')
   const [form, setForm] = useState({
     customer_name: '', contact: '', address: '', note: '',
-    payment_method: '계좌이체', status: '접수', courier_code: '', tracking_number: ''
+    payment_method: '가상계좌', status: '접수', courier_code: '', tracking_number: ''
   })
   const [items, setItems] = useState<OrderItem[]>([
     { product_id: '', product_name: '', quantity: 1, unit: 'kg', unit_price: 0, total_price: 0 }
@@ -63,7 +63,7 @@ export default function GeneralOrdersPage() {
   }
 
   const resetForm = () => {
-    setForm({ customer_name: '', contact: '', address: '', note: '', payment_method: '계좌이체', status: '접수', courier_code: '', tracking_number: '' })
+    setForm({ customer_name: '', contact: '', address: '', note: '', payment_method: '가상계좌', status: '접수', courier_code: '', tracking_number: '' })
     setItems([{ product_id: '', product_name: '', quantity: 1, unit: 'kg', unit_price: 0, total_price: 0 }])
     setEditOrder(null)
     setShowForm(false)
@@ -186,11 +186,11 @@ export default function GeneralOrdersPage() {
     fetchAll()
   }
 
-  // 환불: 카드(토스)결제는 토스 결제취소 호출, 그 외(계좌이체/현금)는 수동 환불 후 상태만 변경
+  // 환불: 카드(토스)결제는 토스 결제취소 호출, 그 외(가상계좌/현금)는 수동 환불 후 상태만 변경
   const refundOrder = async (o: Order) => {
     if (o.status === '환불') return
     const isCard = (o.payment_method || '').includes('카드')
-    if (!confirm(`${o.customer_name} 주문(${o.total_amount.toLocaleString()}원)을 환불 처리할까요?` + (isCard ? '\n카드결제 → 토스 결제취소가 즉시 실행됩니다.' : '\n계좌이체/현금 → 환불 송금 후 상태만 변경됩니다.'))) return
+    if (!confirm(`${o.customer_name} 주문(${o.total_amount.toLocaleString()}원)을 환불 처리할까요?` + (isCard ? '\n카드결제 → 토스 결제취소가 즉시 실행됩니다.' : '\n가상계좌/현금 → 환불 송금 후 상태만 변경됩니다.'))) return
     if (isCard) {
       if (!o.payment_key) { alert('결제키(paymentKey)가 없어 자동취소가 불가합니다. 토스 콘솔에서 직접 취소 후 상태를 변경하세요.'); return }
       const res = await fetch('/api/payments/cancel', {

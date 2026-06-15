@@ -252,19 +252,14 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
                       try {
                         const table = memberType === '도매업' ? 'wholesale_orders' : memberType === '소매업' ? 'retail_orders' : 'general_orders'
                         const itemTable = memberType === '도매업' ? 'wholesale_order_items' : memberType === '소매업' ? 'retail_order_items' : 'general_order_items'
-                        const isToss = orderForm.payment_method === '카드'  // 카드 = 토스페이먼츠
-                        // 계좌이체는 즉시 재고 차감(카드는 결제성공 후 차감)
-                        if (!isToss) {
-                          const { data: ok } = await supabase.rpc('decrement_stock', { p_product_id: product.id, p_qty: quantity })
-                          if (ok === false) {
-                            setOrderLoading(false)
-                            alert('죄송해요, 재고가 부족합니다. 수량을 줄여주세요.')
-                            return
-                          }
-                        } else {
-                          // 카드결제는 결제성공 후 차감 → 결제 시작 전 재고 여부 확인(초과판매 방지)
+                        const isBiz = memberType !== '일반'
+                        const isCard = orderForm.payment_method === '카드'      // 카드 = 토스 카드결제
+                        const isVbank = orderForm.payment_method === '가상계좌' // 가상계좌 = 토스 가상계좌
+                        const isToss = isCard || isVbank                       // 둘 다 토스 결제창 사용
+                        // 재고는 결제/입금 성공 후 차감 → 시작 전 재고 여부만 확인(초과판매 방지)
+                        {
                           const { data: prod } = await supabase.from('products').select('stock').eq('id', product.id).single()
-                          if (!prod || prod.stock < quantity) {
+                          if (prod && prod.stock != null && prod.stock < quantity) {
                             setOrderLoading(false)
                             alert('죄송해요, 재고가 부족합니다. 수량을 줄여주세요.')
                             return
@@ -276,8 +271,8 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
                           user_id: user?.id || '',
                           address: orderForm.address,
                           note: orderForm.note,
-                          payment_method: isToss ? '카드(토스)' : orderForm.payment_method,
-                          status: isToss ? '결제대기' : '접수',
+                          payment_method: isCard ? '카드(토스)' : isVbank ? '가상계좌(토스)' : orderForm.payment_method,
+                          status: isCard ? '결제대기' : isVbank ? '입금대기' : '접수',
                           total_amount: finalPrice,
                           coupon_code: appliedCoupon?.code || null,
                           coupon_owner: appliedCoupon?.created_by_role === 'supplier' ? appliedCoupon.created_by : null,
@@ -300,11 +295,40 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
                             try { await supabase.rpc('increment_coupon_usage', { coupon_code: appliedCoupon.code }) } catch {}
                             if (appliedUcId) { try { await supabase.from('user_coupons').update({ used: true, used_at: new Date().toISOString(), order_ref: `${table}#${newOrder.id}` }).eq('id', appliedUcId) } catch {} }
                           }
+                          // 증빙 자동생성 — 가상계좌(현금성)만. 카드는 카드매출전표 갈음(이중과세 방지)
+                          if (isVbank && orderForm.evidence !== '발행안함') {
+                            const vat = product.is_taxable ? finalPrice - Math.round(finalPrice / 1.1) : 0
+                            if (orderForm.evidence === '세금계산서') {
+                              await supabase.from('tax_invoices').insert({
+                                company_name: memberInfo?.business_name || memberInfo?.name || '',
+                                business_number: memberInfo?.business_number || '',
+                                manager_name: memberInfo?.name || '',
+                                contact: memberInfo?.contact || '',
+                                invoicee_ceo_name: memberInfo?.business_ceo || memberInfo?.name || '',
+                                invoicee_addr: memberInfo?.business_address || '',
+                                invoicee_email: orderForm.evidenceContact || memberInfo?.email || '',
+                                amount: finalPrice - vat,
+                                tax_amount: vat,
+                                total_amount: finalPrice,
+                                note: `[자동] 주문 ${table} #${newOrder.id}`,
+                                status: '미발행',
+                              })
+                            } else if (orderForm.evidence === '현금영수증') {
+                              await supabase.from('cash_receipts').insert({
+                                customer_name: memberInfo?.name || '',
+                                contact: orderForm.evidenceContact || memberInfo?.contact || '',
+                                amount: finalPrice,
+                                receipt_type: isBiz ? '사업자용' : '소비자용',
+                                note: `[자동] 주문 ${table} #${newOrder.id}`,
+                                status: '미발행',
+                              })
+                            }
+                          }
                         }
-                        // 카드 결제 → 토스 결제창 호출
+                        // 카드/가상계좌 → 토스 결제창 호출
                         if (isToss && newOrder) {
                           const toss = await loadToss()
-                          await toss.requestPayment('카드', {
+                          await toss.requestPayment(isCard ? '카드' : '가상계좌', {
                             amount: finalPrice,
                             orderId: String(newOrder.id),
                             orderName: product.name,
