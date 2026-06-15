@@ -31,7 +31,7 @@ export default function CartPage() {
   const [dark, setDark] = useState(false)
   const [updating, setUpdating] = useState<string | null>(null)
   const [showOrder, setShowOrder] = useState(false)
-  const [orderForm, setOrderForm] = useState({ address: '', note: '', payment_method: '계좌이체', evidence: '현금영수증', evidenceContact: '' })
+  const [orderForm, setOrderForm] = useState({ address: '', note: '', payment_method: '가상계좌', evidence: '현금영수증', evidenceContact: '' })
   const [orderLoading, setOrderLoading] = useState(false)
   const [orderDone, setOrderDone] = useState(false)
   const [agreeRefund, setAgreeRefund] = useState(false)  // 청약철회·반품 안내 동의(신선식품 반품제한 고지)
@@ -170,24 +170,16 @@ export default function CartPage() {
       const table = memberType === '도매업' ? 'wholesale_orders' : memberType === '소매업' ? 'retail_orders' : 'general_orders'
       const itemTable = memberType === '도매업' ? 'wholesale_order_items' : memberType === '소매업' ? 'retail_order_items' : 'general_order_items'
 
-      const isToss = orderForm.payment_method === '카드'  // 카드 = 토스페이먼츠 결제
+      const isCard = orderForm.payment_method === '카드'        // 카드 = 토스페이먼츠 카드결제
+      const isVbank = orderForm.payment_method === '가상계좌'    // 가상계좌 = 토스페이먼츠 가상계좌 발급
+      const isToss = isCard || isVbank                          // 둘 다 토스 결제창 사용
 
-      // 재고 확인·차감 (원자적). 카드결제는 결제성공 후 차감하므로 여기선 계좌이체만
-      if (!isToss) {
-        const { data: stockRes } = await supabase.rpc('decrement_stock_bulk', {
-          items: items.map(i => ({ id: i.products.id, qty: i.quantity }))
-        })
-        if (stockRes && stockRes.ok === false) {
-          setOrderLoading(false)
-          alert(`재고가 부족한 상품이 있어요: ${(stockRes.fails || []).join(', ')}\n수량을 줄이거나 다른 상품을 담아주세요.`)
-          return
-        }
-      } else {
-        // 카드결제는 결제성공 후 차감 → 결제 시작 전 재고 여부 확인(초과판매 방지)
+      // 재고는 결제/입금 성공 후 차감 → 결제 시작 전 재고 여부만 확인(초과판매 방지)
+      {
         const { data: prods } = await supabase.from('products').select('id, stock').in('id', items.map(i => i.products.id))
         const short = items.filter(it => {
           const ps = prods?.find((p: any) => p.id === it.products.id)
-          return !ps || ps.stock < it.quantity
+          return ps && ps.stock != null && ps.stock < it.quantity
         })
         if (short.length > 0) {
           setOrderLoading(false)
@@ -201,8 +193,8 @@ export default function CartPage() {
         contact: memberInfo?.contact || '',
         user_id: userId,
         address: orderForm.address,
-        payment_method: isToss ? '카드(토스)' : orderForm.payment_method,
-        status: isToss ? '결제대기' : '접수',
+        payment_method: isCard ? '카드(토스)' : isVbank ? '가상계좌(토스)' : orderForm.payment_method,
+        status: isCard ? '결제대기' : isVbank ? '입금대기' : '접수',
         total_amount: finalAmount,
         coupon_code: appliedCoupon?.code || null,   // 서버 결제금액 검증용
         coupon_owner: appliedCoupon?.created_by_role === 'supplier' ? appliedCoupon.created_by : null, // 부담주체(공급사id/null=본사)
@@ -233,8 +225,8 @@ export default function CartPage() {
         }
       }
 
-      // 증빙 자동생성 — 계좌이체(현금성)만. 카드결제는 카드매출전표로 갈음되어 별도 발행 안 함(이중과세 방지)
-      if (!isToss && newOrder && orderForm.evidence !== '발행안함') {
+      // 증빙 자동생성 — 가상계좌(현금성)만. 카드결제는 카드매출전표로 갈음되어 별도 발행 안 함(이중과세 방지)
+      if (isVbank && newOrder && orderForm.evidence !== '발행안함') {
         if (orderForm.evidence === '세금계산서') {
           await supabase.from('tax_invoices').insert({
             company_name: memberInfo?.business_name || memberInfo?.name || '',
@@ -262,13 +254,13 @@ export default function CartPage() {
         }
       }
 
-      // 카드 결제 → 토스 결제창 호출 (성공 시 /shop/payment/success 에서 승인 + 장바구니 비움)
+      // 카드/가상계좌 → 토스 결제창 호출 (성공 시 /shop/payment/success 에서 승인 + 장바구니 비움)
       if (isToss && newOrder) {
         const toss = await loadToss()
         const orderName = items.length > 1
           ? `${items[0].products.name} 외 ${items.length - 1}건`
           : (items[0]?.products?.name || '온종일팜 주문')
-        await toss.requestPayment('카드', {
+        await toss.requestPayment(isCard ? '카드' : '가상계좌', {
           amount: finalAmount,
           orderId: String(newOrder.id),
           orderName,
@@ -449,7 +441,7 @@ export default function CartPage() {
             </div>
 
             {/* 주문하기 버튼 */}
-            <button className="cart-order-btn" onClick={() => { setOrderDone(false); setAgreeRefund(false); setOrderForm({ address: memberInfo?.address || (typeof window !== 'undefined' && localStorage.getItem('onjongil_addr')) || '', note:'', payment_method:'계좌이체', evidence: isBiz ? '세금계산서' : '현금영수증', evidenceContact: '' }); setShowOrder(true) }}
+            <button className="cart-order-btn" onClick={() => { setOrderDone(false); setAgreeRefund(false); setOrderForm({ address: memberInfo?.address || (typeof window !== 'undefined' && localStorage.getItem('onjongil_addr')) || '', note:'', payment_method:'가상계좌', evidence: isBiz ? '세금계산서' : '현금영수증', evidenceContact: '' }); setShowOrder(true) }}
               style={{ width:'100%', padding:'18px', borderRadius:'16px', background:'linear-gradient(135deg,#16a34a,#15803d)', color:'white', fontSize:'17px', fontWeight:900, border:'none', cursor:'pointer', boxShadow:'0 10px 28px rgba(22,163,74,0.35)' }}>
               <span className="cart-emoji">🛒</span> {finalAmount.toLocaleString()}원 주문하기
             </button>

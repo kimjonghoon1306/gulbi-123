@@ -7,7 +7,7 @@ import { loadToss } from '@/lib/toss'
 import { openPostcode } from '@/lib/postcode'
 
 // 상품상세 주문 폼 모달 — page에서 분리. 주문/결제 로직은 그대로(verbatim).
-type OrderForm = { address: string; note: string; payment_method: string }
+type OrderForm = { address: string; note: string; payment_method: string; evidence: string; evidenceContact: string }
 type Props = {
   product: any
   quantity: number
@@ -147,7 +147,7 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
                     <label style={{display:'block',fontSize:'13px',fontWeight:800,color:D.text,marginBottom:'10px'}}>💳 결제방법</label>
                     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
                       {[
-                        {label:'계좌이체', icon:'🏦'},
+                        {label:'가상계좌', icon:'🏦'},
                         {label:'카드',    icon:'💳'},
                       ].map(pm => (
                         <button key={pm.label} onClick={() => setOrderForm(p => ({...p, payment_method: pm.label}))}
@@ -156,6 +156,37 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
                         </button>
                       ))}
                     </div>
+                  </div>
+
+                  {/* 증빙 (가상계좌만 — 카드는 카드매출전표 갈음) */}
+                  <div>
+                    <label style={{display:'block',fontSize:'13px',fontWeight:800,color:D.text,marginBottom:'10px'}}>🧾 증빙</label>
+                    {orderForm.payment_method === '카드' ? (
+                      <div style={{background:D.input,borderRadius:'12px',padding:'13px 14px',fontSize:'12px',color:D.sub,lineHeight:1.5}}>
+                        카드결제는 <b style={{color:D.text}}>카드매출전표</b>로 증빙이 갈음돼요.
+                      </div>
+                    ) : (
+                      <>
+                        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'8px'}}>
+                          {[{label:'세금계산서',icon:'🧾'},{label:'현금영수증',icon:'🧾'},{label:'발행안함',icon:'🚫'}].map(ev => (
+                            <button key={ev.label} onClick={() => setOrderForm(p => ({...p, evidence: ev.label}))}
+                              style={{padding:'12px 6px',borderRadius:'12px',border:`2px solid ${orderForm.evidence===ev.label ? '#15803d' : D.border}`,background:orderForm.evidence===ev.label ? 'rgba(22,163,74,0.08)' : D.input,color:orderForm.evidence===ev.label ? '#15803d' : D.sub,fontSize:'12px',fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'4px'}}>
+                              {ev.icon} {ev.label}
+                            </button>
+                          ))}
+                        </div>
+                        {orderForm.evidence === '세금계산서' && (
+                          <input type="email" value={orderForm.evidenceContact} onChange={e => setOrderForm(p => ({...p, evidenceContact: e.target.value}))}
+                            placeholder="세금계산서 받을 이메일 (선택)"
+                            style={{width:'100%',marginTop:'10px',padding:'13px 16px',borderRadius:'12px',border:`2px solid ${D.border}`,background:D.input,color:D.text,fontSize:'13px',outline:'none',boxSizing:'border-box'}} />
+                        )}
+                        {orderForm.evidence === '현금영수증' && (
+                          <input type="tel" value={orderForm.evidenceContact} onChange={e => setOrderForm(p => ({...p, evidenceContact: e.target.value}))}
+                            placeholder="소득공제용 휴대폰번호 (미입력 시 가입 연락처)"
+                            style={{width:'100%',marginTop:'10px',padding:'13px 16px',borderRadius:'12px',border:`2px solid ${D.border}`,background:D.input,color:D.text,fontSize:'13px',outline:'none',boxSizing:'border-box'}} />
+                        )}
+                      </>
+                    )}
                   </div>
 
                   {/* 요청사항 */}

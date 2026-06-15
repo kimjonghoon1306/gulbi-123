@@ -117,7 +117,7 @@ export function CartOrderModal({ orderForm, setOrderForm, orderDone, handleOrder
                 <div>
                   <label style={{ display:'block', fontSize:'13px', fontWeight:800, color:D.text, marginBottom:'10px' }}>💳 결제방법</label>
                   <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px' }}>
-                    {[{label:'계좌이체',icon:'🏦'},{label:'카드',icon:'💳'}].map(pm => (
+                    {[{label:'가상계좌',icon:'🏦'},{label:'카드',icon:'💳'}].map(pm => (
                       <button key={pm.label} onClick={() => setOrderForm(p => ({...p, payment_method: pm.label}))}
                         style={{ padding:'12px', borderRadius:'12px', border:`2px solid ${orderForm.payment_method===pm.label ? '#14532d' : D.border}`, background:orderForm.payment_method===pm.label ? 'rgba(22,163,74,0.08)' : D.input, color:orderForm.payment_method===pm.label ? '#14532d' : D.sub, fontSize:'13px', fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'6px' }}>
                         {pm.icon} {pm.label}
@@ -135,9 +135,9 @@ export function CartOrderModal({ orderForm, setOrderForm, orderDone, handleOrder
                     </div>
                   ) : (
                     <>
-                      <p style={{ fontSize:'11.5px', color:D.sub, margin:'0 0 8px' }}>증빙(세금계산서·현금영수증)이 필요 없으면 <b style={{ color:D.text }}>발행안함</b>을 선택하세요.</p>
-                      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px' }}>
-                        {[{ label: isBiz ? '세금계산서' : '현금영수증', icon:'🧾' }, { label:'발행안함', icon:'🚫' }].map(ev => (
+                      <p style={{ fontSize:'11.5px', color:D.sub, margin:'0 0 8px' }}>증빙이 필요 없으면 <b style={{ color:D.text }}>발행안함</b>을 선택하세요.</p>
+                      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'8px' }}>
+                        {[{ label:'세금계산서', icon:'🧾' }, { label:'현금영수증', icon:'🧾' }, { label:'발행안함', icon:'🚫' }].map(ev => (
                           <button key={ev.label} onClick={() => setOrderForm(p => ({...p, evidence: ev.label}))}
                             style={{ padding:'12px', borderRadius:'12px', border:`2px solid ${orderForm.evidence===ev.label ? '#14532d' : D.border}`, background:orderForm.evidence===ev.label ? 'rgba(22,163,74,0.08)' : D.input, color:orderForm.evidence===ev.label ? '#14532d' : D.sub, fontSize:'13px', fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'6px' }}>
                             {ev.icon} {ev.label}
