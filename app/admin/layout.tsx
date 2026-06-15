@@ -34,6 +34,7 @@ const menuGroups = [
     items: [
       { href: '/admin/members',   icon: '👥', label: '회원관리' },
       { href: '/admin/suppliers', icon: '🏭', label: '공급업체' },
+      { href: '/admin/settlements', icon: '💰', label: '공급사 정산' },
     ],
   },
   {
