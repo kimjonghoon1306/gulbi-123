@@ -219,7 +219,7 @@ export default function TaxPage() {
       {/* ── 가상계좌 결제 자동화 설정 (상태등 + 자동확인 + 자동발행) ── */}
       <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5 mb-4">
         <p className="text-base font-bold text-slate-800 dark:text-white mb-1">🏦 가상계좌 결제 자동화</p>
-        <p className="text-xs text-slate-400 dark:text-slate-500 mb-4">손님이 가상계좌로 입금하면, 토스가 우리 쇼핑몰에 알려주고 → 주문이 자동으로 처리되는 기능이에요.</p>
+        <p className="text-xs text-slate-600 dark:text-slate-300 mb-4">손님이 가상계좌로 입금하면, 토스가 우리 쇼핑몰에 알려주고 → 주문이 자동으로 처리되는 기능이에요.</p>
 
         {/* 연결 상태등 */}
         {(() => {
@@ -250,7 +250,7 @@ export default function TaxPage() {
         <div className="flex items-center justify-between gap-4 py-3 border-t border-slate-100 dark:border-gray-700">
           <div>
             <p className="text-sm font-bold text-slate-800 dark:text-white">① 입금 자동확인 {autoDeposit ? '(자동)' : '(수동)'}</p>
-            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
               {autoDeposit
                 ? '켜짐 — 손님이 입금하면 주문이 자동으로 ‘입금완료’로 바뀌어요. (손 안 대도 됨)'
                 : '꺼짐 — 입금돼도 그대로 두고, 관리자가 주문관리에서 ‘입금완료’ 버튼을 직접 눌러요.'}
@@ -266,12 +266,12 @@ export default function TaxPage() {
         <div className="flex items-center justify-between gap-4 py-3 border-t border-slate-100 dark:border-gray-700">
           <div>
             <p className="text-sm font-bold text-slate-800 dark:text-white">② 증빙 자동발행 {autoIssue ? '(자동)' : '(수동)'}</p>
-            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
               {autoIssue
                 ? '켜짐 — 입금이 확인되면 손님이 고른 증빙(현금영수증·세금계산서)을 자동으로 발행해요.'
                 : '꺼짐 — 증빙은 ‘미발행’으로 쌓이고, 관리자가 아래에서 ‘발행하기’ 버튼을 직접 눌러요.'}
             </p>
-            <p className="text-[11px] text-slate-300 dark:text-slate-600 mt-1">※ 손님이 ‘발행안함’을 고르면 발행 대상이 아니에요. 발행 실패 건은 미발행으로 남아 직접 발행할 수 있어요.</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">※ 손님이 ‘발행안함’을 고르면 발행 대상이 아니에요. 발행 실패 건은 미발행으로 남아 직접 발행할 수 있어요.</p>
           </div>
           <button onClick={toggleAutoIssue}
             className={`relative w-14 h-8 rounded-full transition-colors flex-shrink-0 ${autoIssue ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-gray-600'}`}>
