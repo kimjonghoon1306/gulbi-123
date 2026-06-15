@@ -19,10 +19,19 @@ export async function POST(req: NextRequest) {
   let body: any = {}
   try { body = await req.json() } catch {}
 
+  // 웹훅이 호출됐다는 기록 남기기(육안 확인용 — 관리자 화면 표시등). 실패해도 본 처리 진행.
+  const stamp = async (note: string) => {
+    try {
+      await supabase.from('system_settings').delete().eq('key', 'webhook_last')
+      await supabase.from('system_settings').insert({ key: 'webhook_last', value: `${new Date().toISOString()}|${note}`, updated_at: new Date().toISOString() })
+    } catch {}
+  }
+
   // 토스 가상계좌 입금통보 형식: { status: 'DONE'|'CANCELED'|'WAITING_FOR_DEPOSIT', orderId, secret, ... }
   const status: string = body?.status || body?.data?.status || ''
   const orderId: string = String(body?.orderId || body?.data?.orderId || '')
   const secret: string = body?.secret || body?.data?.secret || ''
+  await stamp(`수신 status=${status || '?'}`)
   if (!orderId) return NextResponse.json({ ok: true, skip: 'no-orderId' })
 
   // 주문 찾기 (3개 테이블 중)
@@ -53,8 +62,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, skip: 'already-paid' })
   }
 
+  // 가상계좌 자동확인 설정 — 'off'면 신호는 기록하되 주문은 그대로(관리자 수동 처리)
+  const { data: autoChk } = await supabase.from('system_settings').select('value').eq('key', 'auto_deposit').maybeSingle()
+  if (autoChk?.value === 'off') {
+    await stamp(`입금신호 수신(수동모드) 주문#${orderId}`)
+    return NextResponse.json({ ok: true, skip: 'manual-mode' })
+  }
+
   // 1) 주문 입금완료 처리
   await supabase.from(table).update({ status: '입금완료', updated_at: new Date().toISOString() }).eq('id', orderId)
+  await stamp(`입금완료 주문#${orderId}`)
 
   // 2) 자동발행 설정 확인 (system_settings.auto_issue === 'on')
   const { data: setting } = await supabase.from('system_settings').select('value').eq('key', 'auto_issue').maybeSingle()

@@ -8,3 +8,8 @@ alter table wholesale_orders add column if not exists vbank_secret text;
 insert into system_settings (key, value, updated_at)
 select 'auto_issue', 'off', now()
 where not exists (select 1 from system_settings where key = 'auto_issue');
+
+-- 가상계좌 입금 자동확인 기본값(자동 ON). 관리자 화면 토글로 변경됨.
+insert into system_settings (key, value, updated_at)
+select 'auto_deposit', 'on', now()
+where not exists (select 1 from system_settings where key = 'auto_deposit');
