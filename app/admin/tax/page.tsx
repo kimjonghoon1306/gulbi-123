@@ -31,29 +31,20 @@ export default function TaxPage() {
   const [iForm, setIForm] = useState({ company_name: '', business_number: '', manager_name: '', contact: '', amount: '', note: '', status: '미발행' })
   const [rForm, setRForm] = useState({ customer_name: '', contact: '', amount: '', receipt_type: '소비자용', note: '', status: '미발행' })
   const [autoIssue, setAutoIssue] = useState(false)
-  const [autoDeposit, setAutoDeposit] = useState(true)
-  const [webhookLast, setWebhookLast] = useState<{ at: string; note: string } | null>(null)
   const supabase = createClient()
 
   useEffect(() => { fetchAll() }, [])
 
   const fetchAll = async () => {
     setLoading(true)
-    const [{ data: inv }, { data: rec }, { data: setting }, { data: wh }, { data: dep }] = await Promise.all([
+    const [{ data: inv }, { data: rec }, { data: setting }] = await Promise.all([
       supabase.from('tax_invoices').select('*').order('created_at', { ascending: false }),
       supabase.from('cash_receipts').select('*').order('created_at', { ascending: false }),
       supabase.from('system_settings').select('value').eq('key', 'auto_issue').maybeSingle(),
-      supabase.from('system_settings').select('value').eq('key', 'webhook_last').maybeSingle(),
-      supabase.from('system_settings').select('value').eq('key', 'auto_deposit').maybeSingle(),
     ])
     setInvoices(inv || [])
     setReceipts(rec || [])
     setAutoIssue(setting?.value === 'on')
-    setAutoDeposit(dep?.value !== 'off')
-    if (wh?.value) {
-      const [at, ...rest] = String(wh.value).split('|')
-      setWebhookLast({ at, note: rest.join('|') })
-    }
     setLoading(false)
   }
 
@@ -62,13 +53,6 @@ export default function TaxPage() {
     setAutoIssue(!autoIssue)
     await supabase.from('system_settings').delete().eq('key', 'auto_issue')
     await supabase.from('system_settings').insert({ key: 'auto_issue', value: next, updated_at: new Date().toISOString() })
-  }
-
-  const toggleAutoDeposit = async () => {
-    const next = autoDeposit ? 'off' : 'on'
-    setAutoDeposit(!autoDeposit)
-    await supabase.from('system_settings').delete().eq('key', 'auto_deposit')
-    await supabase.from('system_settings').insert({ key: 'auto_deposit', value: next, updated_at: new Date().toISOString() })
   }
 
   const resetForm = () => {
@@ -216,56 +200,11 @@ export default function TaxPage() {
         </button>
       </div>
 
-      {/* ── 가상계좌 결제 자동화 설정 (상태등 + 자동확인 + 자동발행) ── */}
-      <div className="bg-white dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl p-5 mb-4">
-        <p className="text-base font-bold text-slate-800 dark:text-white mb-1">🏦 가상계좌 결제 자동화</p>
-        <p className="text-xs text-slate-600 dark:text-slate-300 mb-4">손님이 가상계좌로 입금하면, 토스가 우리 쇼핑몰에 알려주고 → 주문이 자동으로 처리되는 기능이에요.</p>
-
-        {/* 연결 상태등 */}
-        {(() => {
-          const last = webhookLast ? new Date(webhookLast.at) : null
-          const fmt = (d: Date) => `${d.getMonth() + 1}월 ${d.getDate()}일 ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`
-          return (
-            <div className={`rounded-xl p-3.5 mb-4 flex items-center gap-3 border ${last ? 'bg-emerald-50 dark:bg-emerald-900/15 border-emerald-200 dark:border-emerald-800' : 'bg-slate-50 dark:bg-gray-900/40 border-slate-200 dark:border-gray-700'}`}>
-              <span className="relative flex h-3 w-3 flex-shrink-0">
-                {last && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />}
-                <span className={`relative inline-flex rounded-full h-3 w-3 ${last ? 'bg-emerald-500' : 'bg-slate-400'}`} />
-              </span>
-              <div className="flex-1">
-                <p className={`text-sm font-bold ${last ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`}>
-                  {last ? '🟢 토스 연결됨 — 입금 신호를 받고 있어요' : '⚪ 연결 대기 중 — 아직 입금 신호가 없어요'}
-                </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  {last
-                    ? `마지막 신호: ${fmt(last)} · ${webhookLast?.note}`
-                    : '토스 웹훅 등록 후 첫 입금이 오면 초록불이 켜져요. (등록은 토스 개발자센터에서)'}
-                </p>
-              </div>
-              <button onClick={fetchAll} className="text-xs text-slate-400 hover:text-slate-600 border border-slate-200 dark:border-gray-600 rounded-lg px-3 py-1.5 flex-shrink-0">새로고침</button>
-            </div>
-          )
-        })()}
-
-        {/* 1. 입금 자동확인 토글 */}
-        <div className="flex items-center justify-between gap-4 py-3 border-t border-slate-100 dark:border-gray-700">
+      {/* 증빙 자동발행 설정 */}
+      <div className="bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-2xl p-5 mb-4">
+        <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-sm font-bold text-slate-800 dark:text-white">① 입금 자동확인 {autoDeposit ? '(자동)' : '(수동)'}</p>
-            <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
-              {autoDeposit
-                ? '켜짐 — 손님이 입금하면 주문이 자동으로 ‘입금완료’로 바뀌어요. (손 안 대도 됨)'
-                : '꺼짐 — 입금돼도 그대로 두고, 관리자가 주문관리에서 ‘입금완료’ 버튼을 직접 눌러요.'}
-            </p>
-          </div>
-          <button onClick={toggleAutoDeposit}
-            className={`relative w-14 h-8 rounded-full transition-colors flex-shrink-0 ${autoDeposit ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-gray-600'}`}>
-            <span className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow transition-transform ${autoDeposit ? 'translate-x-6' : ''}`} />
-          </button>
-        </div>
-
-        {/* 2. 증빙 자동발행 토글 */}
-        <div className="flex items-center justify-between gap-4 py-3 border-t border-slate-100 dark:border-gray-700">
-          <div>
-            <p className="text-sm font-bold text-slate-800 dark:text-white">② 증빙 자동발행 {autoIssue ? '(자동)' : '(수동)'}</p>
+            <p className="text-sm font-bold text-slate-800 dark:text-white">⚡ 증빙 자동발행 <span className={autoIssue ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}>{autoIssue ? '(자동)' : '(수동)'}</span></p>
             <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
               {autoIssue
                 ? '켜짐 — 입금이 확인되면 손님이 고른 증빙(현금영수증·세금계산서)을 자동으로 발행해요.'

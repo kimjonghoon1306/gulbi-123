@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
 import { COURIERS } from '@/lib/tracking'
 import TrackingInline from '../TrackingInline'
+import DepositAutoBar from '../DepositAutoBar'
 
 type Order = {
   id: string; order_number: string; customer_name: string; contact: string
@@ -224,6 +225,9 @@ export default function GeneralOrdersPage() {
 
   return (
     <div className="animate-fadeIn overflow-x-hidden">
+
+      {/* 가상계좌 입금 자동확인 (도매·소매·일반 공용) */}
+      <DepositAutoBar />
 
       {/* 헤더 */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5">
