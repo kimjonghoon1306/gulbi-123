@@ -249,13 +249,26 @@ export default function TaxPage() {
                 </div>
               </div>
               <div className="flex gap-2 mt-4 pt-4 border-t border-slate-50 dark:border-gray-700">
-                {['미발행', '발행완료', '발행안함', '발행취소'].map(s => (
-                  <button key={s} onClick={() => updateInvoiceStatus(inv.id, s)}
-                    className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all duration-150
-                      ${inv.status === s ? 'bg-indigo-500 text-white' : 'bg-slate-50 dark:bg-gray-700 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-gray-600'}`}>
-                    {s}
-                  </button>
-                ))}
+                {inv.status !== '발행완료' ? (
+                  <>
+                    <button onClick={() => { if (confirm('이 세금계산서를 국세청에 발행할까요?\n(팝빌로 즉시 발행됩니다)')) updateInvoiceStatus(inv.id, '발행완료') }}
+                      className="flex-[2] py-2 rounded-lg text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition-all">
+                      🧾 세금계산서 발행하기
+                    </button>
+                    <button onClick={() => updateInvoiceStatus(inv.id, '발행안함')}
+                      className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${inv.status === '발행안함' ? 'bg-slate-400 text-white' : 'bg-slate-50 dark:bg-gray-700 text-slate-400 hover:bg-slate-100'}`}>
+                      발행안함
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <span className="flex-[2] py-2 rounded-lg text-xs font-bold bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 text-center">✅ 발행완료</span>
+                    <button onClick={() => { if (confirm('발행된 세금계산서를 취소할까요?\n(팝빌로 취소 발행됩니다)')) updateInvoiceStatus(inv.id, '발행취소') }}
+                      className="flex-1 py-2 rounded-lg text-xs font-medium bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-100 transition-all">
+                      발행취소
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           ))}
@@ -294,13 +307,26 @@ export default function TaxPage() {
                 </div>
               </div>
               <div className="flex gap-2 mt-4 pt-4 border-t border-slate-50 dark:border-gray-700">
-                {['미발행', '발행완료', '발행안함', '발행취소'].map(s => (
-                  <button key={s} onClick={() => updateReceiptStatus(rec.id, s)}
-                    className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all duration-150
-                      ${rec.status === s ? 'bg-indigo-500 text-white' : 'bg-slate-50 dark:bg-gray-700 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-gray-600'}`}>
-                    {s}
-                  </button>
-                ))}
+                {rec.status !== '발행완료' ? (
+                  <>
+                    <button onClick={() => { if (confirm('이 현금영수증을 국세청에 발행할까요?\n(팝빌로 즉시 발행됩니다)')) updateReceiptStatus(rec.id, '발행완료') }}
+                      className="flex-[2] py-2 rounded-lg text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition-all">
+                      🧾 현금영수증 발행하기
+                    </button>
+                    <button onClick={() => updateReceiptStatus(rec.id, '발행안함')}
+                      className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${rec.status === '발행안함' ? 'bg-slate-400 text-white' : 'bg-slate-50 dark:bg-gray-700 text-slate-400 hover:bg-slate-100'}`}>
+                      발행안함
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <span className="flex-[2] py-2 rounded-lg text-xs font-bold bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 text-center">✅ 발행완료</span>
+                    <button onClick={() => { if (confirm('발행된 현금영수증을 취소할까요?\n(팝빌로 취소 발행됩니다)')) updateReceiptStatus(rec.id, '발행취소') }}
+                      className="flex-1 py-2 rounded-lg text-xs font-medium bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-100 transition-all">
+                      발행취소
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           ))}

@@ -17,8 +17,10 @@ type OrderItem = {
 }
 type Product = { id: string; name: string; retail_price: number; unit: string }
 
-const STATUS_LIST = ['접수', '준비중', '출고', '완료']
+const STATUS_LIST = ['입금대기', '입금완료', '접수', '준비중', '출고', '완료']
 const STATUS_CONFIG: Record<string, { color: string; bg: string; icon: string }> = {
+  '입금대기':{ color: 'text-orange-600 dark:text-orange-400', bg: 'bg-orange-50 dark:bg-orange-900/20 border-orange-100 dark:border-orange-800', icon: '⏳' },
+  '입금완료':{ color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800', icon: '💰' },
   '접수':  { color: 'text-green-700 dark:text-green-500',     bg: 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800',     icon: '📋' },
   '준비중':{ color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800', icon: '📦' },
   '출고':  { color: 'text-violet-600 dark:text-violet-400',bg: 'bg-violet-50 dark:bg-violet-900/20 border-violet-100 dark:border-violet-800',icon: '🚚' },
