@@ -153,12 +153,16 @@ export function CartOrderModal({ orderForm, setOrderForm, orderDone, handleOrder
                           <input type="email" value={orderForm.evidenceContact} onChange={e => setOrderForm(p => ({...p, evidenceContact: e.target.value}))}
                             placeholder="세금계산서 받을 이메일 (선택)"
                             style={{ width:'100%', padding:'13px 16px', borderRadius:'12px', border:`2px solid ${D.border}`, background:D.input, color:D.text, fontSize:'13px', outline:'none', boxSizing:'border-box' }} />
+                          <p style={{ fontSize:'11.5px', color:D.sub, margin:'6px 2px 0', lineHeight:1.5 }}>📧 입금이 확인되면 <b style={{ color:D.text }}>여기 적은 이메일</b>(미입력 시 가입 이메일)로 세금계산서가 발송돼요. 홈택스에서도 조회할 수 있어요.</p>
                         </div>
                       )}
                       {orderForm.evidence === '현금영수증' && (
-                        <input type="tel" value={orderForm.evidenceContact} onChange={e => setOrderForm(p => ({...p, evidenceContact: e.target.value}))}
-                          placeholder="소득공제용 휴대폰번호 (미입력 시 가입 연락처)"
-                          style={{ width:'100%', marginTop:'10px', padding:'13px 16px', borderRadius:'12px', border:`2px solid ${D.border}`, background:D.input, color:D.text, fontSize:'13px', outline:'none', boxSizing:'border-box' }} />
+                        <div style={{ marginTop:'10px' }}>
+                          <input type="tel" value={orderForm.evidenceContact} onChange={e => setOrderForm(p => ({...p, evidenceContact: e.target.value}))}
+                            placeholder="소득공제용 휴대폰번호 (미입력 시 가입 연락처)"
+                            style={{ width:'100%', padding:'13px 16px', borderRadius:'12px', border:`2px solid ${D.border}`, background:D.input, color:D.text, fontSize:'13px', outline:'none', boxSizing:'border-box' }} />
+                          <p style={{ fontSize:'11.5px', color:D.sub, margin:'6px 2px 0', lineHeight:1.5 }}>📱 입금이 확인되면 <b style={{ color:D.text }}>이 번호로 국세청에 등록</b>돼요. 홈택스·손택스에서 조회되고 연말정산에 자동 반영돼요.</p>
+                        </div>
                       )}
                       {orderForm.evidence !== '발행안함' && exemptSum > 0 && taxableSum > 0 && (
                         <p style={{ fontSize:'11px', color:D.sub, margin:'8px 2px 0' }}>과세 {taxableSum.toLocaleString()}원(부가세 {vatAmount.toLocaleString()}원 포함) · 면세 {exemptSum.toLocaleString()}원</p>
