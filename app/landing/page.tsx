@@ -243,6 +243,24 @@ export default function LandingPage() {
         ))}
       </section>
 
+      {/* ── 홍보 영상 ── */}
+      <section className="py-16 sm:py-24 px-4 sm:px-6" style={{ background: dark ? '#0a2a10' : '#dcfce7' }}>
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-green-500 text-sm font-bold mb-3 tracking-widest uppercase">🎬 온종일팜</p>
+          <h2 className="text-2xl sm:text-4xl font-black mb-8" style={{ color: landingText }}>산지의 신선함, 그대로</h2>
+          <div className="rounded-3xl overflow-hidden shadow-2xl mx-auto" style={{ maxWidth: 880, border: `1px solid ${dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}` }}>
+            <video
+              src="/promo.mp4"
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="w-full h-auto block"
+            />
+          </div>
+        </div>
+      </section>
+
       {/* ── 프로모션 애니메이션 ── */}
       <section className="py-20 px-4 sm:px-6" style={{ background: dark ? '#071a0e' : '#f0fdf4' }}>
         <div className="max-w-5xl mx-auto text-center">
