@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import Link from 'next/link'
-import { CAT_ICONS, CAT_COLORS, getDefaultCatColor, POPUP_NAMES, POPUP_ACTIONS, priceFor, type Product, type Category } from './_shopConstants'
+import { CAT_ICONS, CAT_PHOTOS, CAT_COLORS, getDefaultCatColor, POPUP_NAMES, POPUP_ACTIONS, priceFor, type Product, type Category } from './_shopConstants'
 import { ProductCard } from './_ProductCard'
 import { AdBanner } from './_AdBanner'
 import { PromoSection } from './_PromoSection'
@@ -303,6 +303,33 @@ export default function ShopPage() {
 
       <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '40px 20px 120px' }}>
 
+        {/* ── 신선식품 둘러보기 (사진 네비) ── */}
+        {(() => {
+          const photoCats = categories.filter(c => CAT_PHOTOS[c.name])
+          if (photoCats.length < 2) return null
+          return (
+            <div style={{ marginBottom: '40px' }}>
+              <h2 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '16px', letterSpacing: '-0.5px' }}>
+                🍃 신선식품 둘러보기
+              </h2>
+              <div className="fresh-nav" style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(photoCats.length, 6)},1fr)`, gap: '12px' }}>
+                {photoCats.slice(0, 6).map(c => (
+                  <button key={c.id} onClick={() => { setSelectedCat(c.name); window.scrollTo({ top: 0, behavior: 'smooth' }) }} style={{
+                    position: 'relative', borderRadius: '18px', overflow: 'hidden', aspectRatio: '1/1',
+                    border: `1px solid ${border}`, cursor: 'pointer', padding: 0, background: card,
+                    boxShadow: '0 6px 20px rgba(0,0,0,0.08)',
+                  }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={CAT_PHOTOS[c.name]} alt={c.name} loading="lazy" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <span style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(0,0,0,0.72),transparent 55%)' }} />
+                    <span style={{ position: 'absolute', left: 0, right: 0, bottom: '10px', textAlign: 'center', color: '#fff', fontSize: '14px', fontWeight: 800, textShadow: '0 1px 8px rgba(0,0,0,0.6)' }}>{c.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )
+        })()}
+
         {/* ── 카테고리 ── */}
         <div style={{ marginBottom: '40px' }}>
           <h2 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '16px', letterSpacing: '-0.5px' }}>
@@ -519,6 +546,7 @@ export default function ShopPage() {
           .promo-grid { grid-template-columns: 1fr !important; gap: 20px !important; padding: 20px 16px !important; }
           .hero-stats { gap: 8px !important; }
           .hero-stats > div { padding: 10px 10px !important; border-radius: 12px !important; }
+          .fresh-nav { grid-template-columns: repeat(3,1fr) !important; }
           /* 쿠팡식 2열 그리드 + 카드 압축 */
           .product-grid { grid-template-columns: repeat(2,1fr) !important; gap: 10px !important; }
           .product-card { border-radius: 16px !important; }

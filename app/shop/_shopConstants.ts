@@ -24,6 +24,17 @@ export const CAT_ICONS: Record<string, string> = {
   '건어물/염장류': '🐠', '기타': '🐙', '전체': '🛒'
 }
 
+// 카테고리 대표 사진(둘러보기 네비용). 없으면 노출 안 함.
+export const CAT_PHOTOS: Record<string, string> = {
+  '농산물': '/demo-food/produce_ssam.webp',
+  '과일': '/demo-food/fruit_strawberry.webp',
+  '축산물': '/demo-food/meat_beef.webp',
+  '어류': '/demo-food/seafood_hairtail.webp',
+  '갑각류': '/demo-food/seafood_prawn.webp',
+  '패류': '/demo-food/seafood_oyster.webp',
+  '건어물/염장류': '/demo-food/seafood_driedshrimp.webp',
+}
+
 export const CAT_COLORS: Record<string, { bg: string; border: string; shadow: string }> = {
   '전체':           { bg: 'linear-gradient(135deg,#14532d,#15803d)', border: '#14532d', shadow: 'rgba(22,163,74,0.4)' },
   '어류':           { bg: 'linear-gradient(135deg,#3b82f6,#6366f1)', border: '#3b82f6', shadow: 'rgba(59,130,246,0.4)' },
