@@ -333,10 +333,10 @@ export default function LandingPage() {
                   </div>
                   <div className="space-y-3">
                     {[
-                      { name: '한우 갈비', warn: false, emoji: '🥩' },
-                      { name: '돼지 삼겹살', warn: true,  emoji: '🥓' },
-                      { name: '유기농 채소', warn: false, emoji: '🥬' },
-                      { name: '제주 감귤', warn: true,  emoji: '🍎' },
+                      { name: '한우 갈비', warn: false, emoji: '🥩', img: '/demo-food/meat_beef.webp' },
+                      { name: '돼지 삼겹살', warn: true,  emoji: '🥓', img: '/demo-food/meat_porkbelly.webp' },
+                      { name: '유기농 채소', warn: false, emoji: '🥬', img: '/demo-food/produce_ssam.webp' },
+                      { name: '제주 감귤', warn: true,  emoji: '🍎', img: '/demo-food/fruit_tangerine.webp' },
                     ].map((item, i) => (
                       <div key={i} className="flex items-center gap-3 p-3 rounded-xl" style={{
                         background: 'rgba(255,255,255,0.04)',
@@ -345,7 +345,8 @@ export default function LandingPage() {
                         transform: barWidths[i] > 0 ? 'translateX(0)' : 'translateX(16px)',
                         transition: 'opacity 0.4s ease, transform 0.4s ease',
                       }}>
-                        <span className="text-xl flex-shrink-0">{item.emoji}</span>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={item.img} alt="" className="w-7 h-7 rounded-md object-cover flex-shrink-0" />
                         <div className="flex-1 min-w-0">
                           <div className="flex justify-between items-center mb-1.5">
                             <span className="text-xs font-bold text-white">{item.name}</span>
@@ -430,10 +431,10 @@ export default function LandingPage() {
                     <div className="text-xs font-bold text-slate-400 mb-3">🏆 이번 달 베스트 상품</div>
                     <div className="space-y-2.5">
                       {[
-                        { rank: '1', name: '온종일팜 신선상품', sales: '₩19,500,000', change: '+32%', emoji: '🌾' },
-                        { rank: '2', name: '한우 갈비 특대', sales: '₩8,400,000', change: '+18%', emoji: '🥩' },
-                        { rank: '3', name: '유기농 채소 세트', sales: '₩6,200,000', change: '+41%', emoji: '🥬' },
-                        { rank: '4', name: '제주 감귤 1kg', sales: '₩4,800,000', change: '-5%', emoji: '🍎' },
+                        { rank: '1', name: '온종일팜 신선상품', sales: '₩19,500,000', change: '+32%', emoji: '🌾', img: '/demo-food/produce_spinach.webp' },
+                        { rank: '2', name: '한우 갈비 특대', sales: '₩8,400,000', change: '+18%', emoji: '🥩', img: '/demo-food/meat_beef.webp' },
+                        { rank: '3', name: '유기농 채소 세트', sales: '₩6,200,000', change: '+41%', emoji: '🥬', img: '/demo-food/produce_ssam.webp' },
+                        { rank: '4', name: '제주 감귤 1kg', sales: '₩4,800,000', change: '-5%', emoji: '🍎', img: '/demo-food/fruit_tangerine.webp' },
                       ].map((p, i) => (
                         <div key={i} className="flex items-center gap-3 py-2" style={{
                           borderBottom: '1px solid rgba(255,255,255,0.06)',
@@ -442,7 +443,8 @@ export default function LandingPage() {
                           transition: 'all 0.35s ease',
                         }}>
                           <span className="text-xs font-black w-4 text-slate-500">{p.rank}</span>
-                          <span className="text-base">{p.emoji}</span>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={p.img} alt="" className="w-6 h-6 rounded-md object-cover flex-shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="text-xs font-bold text-white truncate">{p.name}</div>
                             <div className="text-xs text-green-400 font-bold">{p.sales}</div>
