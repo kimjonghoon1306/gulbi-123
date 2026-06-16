@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
+import { IMAGE_LIBRARY } from './_imageLibrary'
 
 type Banner = {
   id: string
@@ -66,6 +67,8 @@ export default function AdminAdsPage() {
   const [form, setForm] = useState(EMPTY)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [showLibrary, setShowLibrary] = useState(false)
+  const [libCat, setLibCat] = useState(IMAGE_LIBRARY[0].key)
   const supabase = createClient()
 
   useEffect(() => { fetchAll() }, [])
@@ -307,11 +310,17 @@ export default function AdminAdsPage() {
               {/* 이미지 업로드 */}
               <div>
                 <label className="block text-sm font-bold text-slate-600 dark:text-slate-300 mb-2">배너 이미지 <span className="text-red-400">*</span></label>
-                <label className={`flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed cursor-pointer transition-colors ${uploading ? 'opacity-60 pointer-events-none' : 'border-green-200 dark:border-green-900/40 hover:bg-green-50 dark:hover:bg-green-900/10'}`}>
-                  <span className="text-green-600 font-bold text-sm">{uploading ? '⏳ 올리는 중...' : '📤 이미지 선택 / 변경'}</span>
-                  <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-                </label>
-                <p className="text-[11px] text-slate-400 mt-1.5">가로로 긴 이미지(권장 비율 5:2, 예: 1000×400)가 가장 예쁘게 나와요.</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <label className={`flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed cursor-pointer transition-colors ${uploading ? 'opacity-60 pointer-events-none' : 'border-green-200 dark:border-green-900/40 hover:bg-green-50 dark:hover:bg-green-900/10'}`}>
+                    <span className="text-green-600 font-bold text-sm">{uploading ? '⏳ 올리는 중...' : '📤 직접 업로드'}</span>
+                    <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                  </label>
+                  <button type="button" onClick={() => setShowLibrary(true)}
+                    className="flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-amber-200 dark:border-amber-900/40 hover:bg-amber-50 dark:hover:bg-amber-900/10 transition-colors">
+                    <span className="text-amber-600 font-bold text-sm">📚 이미지 라이브러리</span>
+                  </button>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-1.5">넣을 이미지가 없으면 <b className="text-amber-600">📚 라이브러리</b>에서 골라 쓰세요. 가로로 긴 이미지(권장 5:2)가 예뻐요.</p>
               </div>
 
               {/* 문구 (라벨/제목/부제/버튼) */}
@@ -410,6 +419,47 @@ export default function AdminAdsPage() {
                 style={{ background: 'linear-gradient(135deg,#16a34a,#15803d)', boxShadow: '0 4px 15px rgba(22,163,74,0.35)' }}>
                 {saving ? '저장 중...' : editId ? '수정 저장' : '광고 등록하기'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── 이미지 라이브러리 모달 ── */}
+      {showLibrary && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          onClick={() => setShowLibrary(false)}>
+          <div className="w-full max-w-2xl max-h-[85vh] flex flex-col rounded-3xl bg-white dark:bg-gray-800 shadow-2xl overflow-hidden"
+            onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-gray-700">
+              <div>
+                <h3 className="font-black text-lg text-slate-800 dark:text-slate-100">📚 이미지 라이브러리</h3>
+                <p className="text-xs text-slate-400 mt-0.5">카테고리를 고르고 이미지를 누르면 배너에 들어가요.</p>
+              </div>
+              <button onClick={() => setShowLibrary(false)}
+                className="w-9 h-9 rounded-full grid place-items-center text-slate-400 hover:bg-slate-100 dark:hover:bg-gray-700 text-lg">✕</button>
+            </div>
+            {/* 카테고리 탭 */}
+            <div className="flex gap-2 overflow-x-auto px-5 py-3 border-b border-slate-100 dark:border-gray-700">
+              {IMAGE_LIBRARY.map(g => (
+                <button key={g.key} onClick={() => setLibCat(g.key)}
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors ${libCat === g.key ? 'bg-green-600 text-white' : 'bg-slate-100 dark:bg-gray-700 text-slate-500 dark:text-slate-300 hover:bg-slate-200'}`}>
+                  <span>{g.emoji}</span><span>{g.name}</span>
+                </button>
+              ))}
+            </div>
+            {/* 이미지 그리드 */}
+            <div className="flex-1 overflow-y-auto p-5">
+              <div className="grid grid-cols-3 gap-3">
+                {(IMAGE_LIBRARY.find(g => g.key === libCat) || IMAGE_LIBRARY[0]).images.map(img => (
+                  <button key={img.file} type="button"
+                    onClick={() => { setForm(prev => ({ ...prev, image_url: img.file })); setShowLibrary(false) }}
+                    className="group relative rounded-2xl overflow-hidden aspect-square border border-slate-200 dark:border-gray-700 hover:border-green-500 hover:ring-2 hover:ring-green-500/30 transition-all active:scale-95">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={img.file} alt={img.label} loading="lazy" className="absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-105" />
+                    <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent text-white text-xs font-bold text-center py-1.5 pt-4">{img.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
