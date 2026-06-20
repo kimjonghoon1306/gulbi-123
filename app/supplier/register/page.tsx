@@ -15,10 +15,12 @@ export default function SupplierRegisterPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [done, setDone] = useState(false)
+  const [agree, setAgree] = useState(false)
 
   const handleSubmit = async () => {
     if (!form.email || !form.password || !form.company_name) return setError('이메일, 비밀번호, 업체명은 필수입니다.')
     if (form.password.length < 6) return setError('비밀번호는 6자 이상이어야 합니다.')
+    if (!agree) return setError('이용약관·개인정보 수집·이용에 동의해주세요.')
     setLoading(true); setError('')
     const supabase = createClient()
 
@@ -199,6 +201,15 @@ export default function SupplierRegisterPage() {
                 <span className="notice-icon">📌</span>
                 <p>쇼핑몰 회원과 공급업체 계정은 이메일을 각각 다르게 사용해주세요. 각각의 회원을 분리하여 관리하기 위함이니 양해 바랍니다.</p>
               </div>
+
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '9px', marginTop: '16px', fontSize: '13px', lineHeight: 1.5, opacity: 0.85, cursor: 'pointer' }}>
+                <input type="checkbox" checked={agree} onChange={e => setAgree(e.target.checked)}
+                  style={{ marginTop: '2px', flexShrink: 0, width: '17px', height: '17px', cursor: 'pointer' }} />
+                <span>
+                  <Link href="/shop/terms" target="_blank" style={{ color: '#10b981', fontWeight: 700 }}>이용약관</Link> 및{' '}
+                  <Link href="/shop/privacy" target="_blank" style={{ color: '#10b981', fontWeight: 700 }}>개인정보 수집·이용</Link>에 동의합니다. (필수)
+                </span>
+              </label>
 
               {error && (
                 <div className="msg-box msg-err" style={{marginTop:'12px'}}>

@@ -15,6 +15,7 @@ export default function ShopRegisterPage() {
     businessName: '', businessNumber: '', businessCeo: '', businessAddress: ''
   })
   const [showPw, setShowPw] = useState(false)
+  const [agree, setAgree] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [dark, setDark] = useState(false)
@@ -44,6 +45,9 @@ export default function ShopRegisterPage() {
     }
     if ((memberType === '소매업' || memberType === '도매업') && (!form.businessName || !form.businessNumber || !form.businessCeo || !form.businessAddress)) {
       return setError('업체명·사업자번호·대표자명·사업장 주소를 모두 입력해주세요. (세금계산서 발행에 필요)')
+    }
+    if (!agree) {
+      return setError('이용약관·개인정보 수집·이용에 동의해주세요.')
     }
     setLoading(true)
     setError('')
@@ -274,6 +278,15 @@ export default function ShopRegisterPage() {
                     <p className="text-red-400 text-sm">{error}</p>
                   </div>
                 )}
+
+                <label className="flex items-start gap-2.5 mt-1 cursor-pointer" style={{ fontSize: '13px', lineHeight: 1.5, color: D.sub }}>
+                  <input type="checkbox" checked={agree} onChange={e => setAgree(e.target.checked)}
+                    style={{ marginTop: '2px', flexShrink: 0, width: '17px', height: '17px', accentColor: '#16a34a', cursor: 'pointer' }} />
+                  <span>
+                    <Link href="/shop/terms" target="_blank" style={{ color: '#16a34a', fontWeight: 700 }}>이용약관</Link> 및{' '}
+                    <Link href="/shop/privacy" target="_blank" style={{ color: '#16a34a', fontWeight: 700 }}>개인정보 수집·이용</Link>에 동의합니다. (필수)
+                  </span>
+                </label>
 
                 <button onClick={handleRegister} disabled={loading}
                   className="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-4 rounded-2xl transition-all duration-200 hover:scale-[1.02] active:scale-95 disabled:opacity-50 shadow-lg shadow-green-600/20 mt-2">
