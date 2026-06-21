@@ -185,30 +185,25 @@ export function ChatBot() {
     <>
       {/* 플로팅 온봇 버튼 */}
       {!open && (
-        <button onClick={() => setOpen(true)} aria-label="온봇 열기" className="chatbot-fab"
+        <button onClick={() => setOpen(true)} aria-label="온봇 열기" className="chatbot-fab onbot-hero-wrap"
           style={{
-            position: 'fixed', right: '18px', bottom: 'calc(90px + env(safe-area-inset-bottom))',
-            zIndex: 9998, display: 'flex', alignItems: 'center', gap: '9px',
-            background: T.fabBg, border: `1px solid ${T.border}`, cursor: 'pointer',
-            padding: '8px 12px 8px 8px', borderRadius: '999px',
-            boxShadow: dark
-              ? `0 14px 34px rgba(0,0,0,0.4), 0 0 0 1px ${T.accent}`
-              : '0 14px 34px rgba(20,83,45,0.22)',
+            position: 'fixed', right: '14px', bottom: 'calc(86px + env(safe-area-inset-bottom))',
+            zIndex: 9998, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0,
+            background: 'transparent', border: 'none', boxShadow: 'none', cursor: 'pointer', padding: 0,
           }}>
-          <span style={{
-            width: '48px', height: '48px', borderRadius: '16px',
-            background: T.heroBg,
-            display: 'grid', placeItems: 'center',
-            boxShadow: 'inset 0 -8px 14px rgba(21,128,61,0.12)',
-            border: `1px solid ${T.heroBorder}`,
-            overflow: 'hidden',
-          }}>
-            <img src={HERO_IMAGE} alt="온봇" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          </span>
-          <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1.1 }}>
-            <span style={{ fontSize: '13px', fontWeight: 900, color: T.fabText }}>온봇</span>
-            <span style={{ fontSize: '10px', fontWeight: 700, color: T.fabSub, marginTop: '3px' }}>빠른 문의</span>
-          </span>
+          {/* 캐릭터 위 — 시간차로 떴다 사라지는 문구(hover 시 고정) */}
+          <span className="onbot-blink" style={{
+            fontSize: '11px', fontWeight: 800, color: T.fabSub, whiteSpace: 'nowrap',
+            background: T.panelBg, padding: '4px 9px', borderRadius: '12px',
+            boxShadow: '0 3px 10px rgba(20,83,45,0.18)', marginBottom: '4px',
+          }}>궁금하신 거 클릭하세요</span>
+          {/* 캐릭터 — 틀 없이 이미지만 */}
+          <img src={HERO_IMAGE} alt="온봇" style={{
+            width: '84px', height: '84px', objectFit: 'contain',
+            filter: 'drop-shadow(0 7px 11px rgba(20,83,45,0.28))',
+          }} />
+          {/* 캐릭터 밑 — 온봇 */}
+          <span style={{ fontSize: '14px', fontWeight: 900, color: T.fabText, marginTop: '-4px' }}>온봇</span>
         </button>
       )}
 
