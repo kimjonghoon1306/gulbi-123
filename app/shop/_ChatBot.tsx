@@ -218,7 +218,7 @@ export function ChatBot() {
       {open && (
         <div className="chatbot-panel" style={{
           position: 'fixed', right: '18px', bottom: 'calc(90px + env(safe-area-inset-bottom))',
-          width: 'min(360px, calc(100vw - 36px))', height: 'min(560px, 70vh)',
+          width: 'min(408px, calc(100vw - 24px))', height: 'min(680px, 78vh)',
           zIndex: 9999, background: T.panelBg, borderRadius: '20px', overflow: 'hidden',
           display: 'flex', flexDirection: 'column',
           boxShadow: dark ? '0 24px 60px rgba(0,0,0,0.42)' : '0 24px 60px rgba(20,83,45,0.28)', border: `1px solid ${T.border}`,
@@ -249,7 +249,7 @@ export function ChatBot() {
 
           <div style={{ padding: '14px 16px 8px', background: T.pageBg }}>
             <div className="onbot-float" style={{
-              height: '208px',
+              height: '214px',
               borderRadius: '18px',
               background: T.heroBg,
               border: `1px solid ${T.heroBorder}`,
@@ -270,7 +270,7 @@ export function ChatBot() {
           </div>
 
           {/* 메시지 */}
-          <div ref={bodyRef} style={{ flex: 1, overflowY: 'auto', padding: '10px 16px 16px', background: T.pageBg, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div ref={bodyRef} style={{ flex: 1, overflowY: 'auto', padding: '10px 16px 16px', background: T.pageBg, display: 'flex', flexDirection: 'column', gap: '10px', minHeight: 0 }}>
             {msgs.map((m, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: m.from === 'user' ? 'flex-end' : 'flex-start' }}>
                 <div style={{
