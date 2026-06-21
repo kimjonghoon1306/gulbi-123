@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabase } from '@/lib/supabase-server'
+import { createAdminSupabase } from '@/lib/supabase-admin'
 
-// 토스 시크릿 키 — 실 결제 시 Vercel 환경변수 TOSS_SECRET_KEY 로 교체하세요. (테스트 키 기본값)
-const TOSS_SECRET_KEY = process.env.TOSS_SECRET_KEY || 'test_sk_pP2YxJ4K87Z02Z904ZDJrRGZwXLO'
+export const runtime = 'nodejs'
 
 const ORDER_TABLES = ['general_orders', 'retail_orders', 'wholesale_orders'] as const
 type OrderTable = (typeof ORDER_TABLES)[number]
@@ -20,9 +19,7 @@ const calcDiscount = (c: any, base: number) => {
 }
 
 // 서버에서 DB 실가격으로 주문의 정당한 결제금액을 재계산
-async function expectedAmount(table: OrderTable, orderId: string): Promise<number | null> {
-  const supabase = await createServerSupabase()
-
+async function expectedAmount(supabase: any, table: OrderTable, orderId: string): Promise<number | null> {
   const { data: order } = await supabase.from(table).select('coupon_code').eq('id', orderId).single()
   if (!order) return null
 
@@ -52,26 +49,66 @@ async function expectedAmount(table: OrderTable, orderId: string): Promise<numbe
   return Math.max(0, subtotal - discount)
 }
 
+async function markOrderPaid(supabase: any, table: OrderTable, orderId: string, paymentKey: string, amount: number, payment: any) {
+  const { data: order } = await supabase.from(table).select('id, status').eq('id', orderId).maybeSingle()
+  if (!order) return
+
+  const alreadyProcessed = ['결제완료', '입금대기', '입금완료'].includes(order.status)
+  const isWaiting = payment.status === 'WAITING_FOR_DEPOSIT' || payment.method === '가상계좌'
+  const status = isWaiting ? '입금대기' : '결제완료'
+  const virtualAccount = payment.virtualAccount
+
+  await supabase.from(table).update({
+    status,
+    payment_key: paymentKey,
+    paid_amount: amount,
+    ...(virtualAccount?.secret ? { vbank_secret: virtualAccount.secret } : {}),
+    updated_at: new Date().toISOString(),
+  }).eq('id', orderId)
+
+  if (alreadyProcessed) return
+
+  const itemTable = table === 'wholesale_orders'
+    ? 'wholesale_order_items'
+    : table === 'retail_orders'
+      ? 'retail_order_items'
+      : 'general_order_items'
+  const { data: items } = await supabase.from(itemTable).select('product_id, quantity').eq('order_id', orderId)
+  if (items && items.length > 0) {
+    await supabase.rpc('decrement_stock_bulk', {
+      items: items.map((x: any) => ({ id: x.product_id, qty: x.quantity })),
+    })
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
+    const TOSS_SECRET_KEY = process.env.TOSS_SECRET_KEY
+    if (!TOSS_SECRET_KEY) {
+      return NextResponse.json({ message: 'TOSS_SECRET_KEY 환경변수가 설정되지 않았습니다.' }, { status: 500 })
+    }
+
     const { paymentKey, orderId, amount, table } = await req.json()
-    if (!paymentKey || !orderId || !amount) {
+    if (!paymentKey || !orderId || !amount || !ORDER_TABLES.includes(table)) {
       return NextResponse.json({ message: '필수 값 누락' }, { status: 400 })
     }
 
+    const adminSupabase = createAdminSupabase()
+    if (!adminSupabase) {
+      return NextResponse.json({ message: 'SUPABASE_SERVICE_ROLE_KEY 환경변수가 설정되지 않았습니다.' }, { status: 500 })
+    }
+
     // ── 서버 측 결제금액 검증: 클라이언트가 보낸 금액을 그대로 믿지 않고 DB 실가격으로 재계산 ──
-    if (ORDER_TABLES.includes(table)) {
-      const expected = await expectedAmount(table as OrderTable, String(orderId))
-      if (expected === null) {
-        return NextResponse.json({ message: '주문 내역을 확인할 수 없습니다.' }, { status: 400 })
-      }
-      // 정당한 금액보다 적게 결제 시도 → 승인 거부(결제는 자동 취소됨)
-      if (Number(amount) < expected) {
-        return NextResponse.json(
-          { message: '결제 금액이 주문 내역과 일치하지 않습니다. 다시 시도해주세요.' },
-          { status: 400 }
-        )
-      }
+    const expected = await expectedAmount(adminSupabase, table as OrderTable, String(orderId))
+    if (expected === null) {
+      return NextResponse.json({ message: '주문 내역을 확인할 수 없습니다.' }, { status: 400 })
+    }
+    // 정당한 금액보다 적게 결제 시도 → 승인 거부(결제는 자동 취소됨)
+    if (Number(amount) < expected) {
+      return NextResponse.json(
+        { message: '결제 금액이 주문 내역과 일치하지 않습니다. 다시 시도해주세요.' },
+        { status: 400 }
+      )
     }
 
     const res = await fetch('https://api.tosspayments.com/v1/payments/confirm', {
@@ -83,6 +120,9 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({ paymentKey, orderId, amount: Number(amount) }),
     })
     const data = await res.json()
+    if (res.ok) {
+      await markOrderPaid(adminSupabase, table as OrderTable, String(orderId), String(paymentKey), Number(amount), data)
+    }
     return NextResponse.json(data, { status: res.status })
   } catch (e: any) {
     return NextResponse.json({ message: e?.message || '서버 오류' }, { status: 500 })

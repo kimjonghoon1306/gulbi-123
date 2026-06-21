@@ -38,27 +38,11 @@ function SuccessInner() {
         const data = await res.json()
         if (!res.ok) { setState('fail'); setMsg(data.message || '결제 승인에 실패했습니다.'); return }
 
-        // 가상계좌 = 입금대기 / 카드 = 결제완료
+        // 가상계좌 = 입금대기 / 카드 = 결제완료. 주문 상태/재고 반영은 서버 confirm API에서 처리한다.
         const isWaiting = data.status === 'WAITING_FOR_DEPOSIT' || data.method === '가상계좌'
         const va = data.virtualAccount
 
         try {
-          await supabase.from(table).update({
-            status: isWaiting ? '입금대기' : '결제완료',
-            payment_key: paymentKey,
-            paid_amount: Number(amt),
-            // 가상계좌 입금통보 웹훅 검증용 secret 저장
-            ...(va?.secret ? { vbank_secret: va.secret } : {}),
-          }).eq('id', orderId)
-
-          // 재고 차감 (주문 확정 — 가상계좌는 발급 시점에 예약 차감)
-          try {
-            const itemTable = table === 'wholesale_orders' ? 'wholesale_order_items' : table === 'retail_orders' ? 'retail_order_items' : 'general_order_items'
-            const { data: oi } = await supabase.from(itemTable).select('product_id, quantity').eq('order_id', orderId)
-            if (oi && oi.length > 0) {
-              await supabase.rpc('decrement_stock_bulk', { items: oi.map((x: any) => ({ id: x.product_id, qty: x.quantity })) })
-            }
-          } catch {}
           const { data: { user } } = await supabase.auth.getUser()
           if (user) await supabase.from('cart_items').delete().eq('user_id', user.id)
           localStorage.setItem('cart-updated', Date.now().toString())
