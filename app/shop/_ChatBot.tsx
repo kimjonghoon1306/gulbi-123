@@ -103,6 +103,35 @@ function renderText(text: string) {
   )
 }
 
+function OnbotMark({ size = 46 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="onbot-body" x1="12" y1="10" x2="52" y2="56">
+          <stop offset="0%" stopColor="#fefce8" />
+          <stop offset="42%" stopColor="#dcfce7" />
+          <stop offset="100%" stopColor="#16a34a" />
+        </linearGradient>
+        <linearGradient id="onbot-leaf" x1="20" y1="6" x2="46" y2="24">
+          <stop offset="0%" stopColor="#86efac" />
+          <stop offset="100%" stopColor="#22c55e" />
+        </linearGradient>
+      </defs>
+      <circle cx="32" cy="33" r="22" fill="url(#onbot-body)" />
+      <path d="M24 16c2.5-5 7-7 8-7s5.5 2 8 7c-2.5 2.2-5.3 3.3-8 3.3S26.5 18.2 24 16Z" fill="url(#onbot-leaf)" />
+      <path d="M25.5 18.5c2.1 1.8 4.2 2.7 6.5 2.7s4.4-.9 6.5-2.7" stroke="#166534" strokeWidth="1.5" strokeLinecap="round" opacity="0.7" />
+      <circle cx="24" cy="32" r="2.6" fill="#14532d" />
+      <circle cx="40" cy="32" r="2.6" fill="#14532d" />
+      <path d="M24 39c2.7 2.7 6.4 4.1 8 4.1s5.3-1.4 8-4.1" stroke="#14532d" strokeWidth="2.3" strokeLinecap="round" />
+      <path d="M18 24c1.7-2.7 4.3-4.3 7.4-4.7" stroke="#86efac" strokeWidth="2.4" strokeLinecap="round" />
+      <path d="M46 24c-1.7-2.7-4.3-4.3-7.4-4.7" stroke="#86efac" strokeWidth="2.4" strokeLinecap="round" />
+      <circle cx="20.5" cy="26.5" r="1.4" fill="#fff" opacity="0.85" />
+      <circle cx="36.5" cy="26.5" r="1.4" fill="#fff" opacity="0.85" />
+      <path d="M27 47.5c2.2 1.2 7.8 1.2 10 0" stroke="#14532d" strokeWidth="1.5" strokeLinecap="round" opacity="0.55" />
+    </svg>
+  )
+}
+
 export function ChatBot() {
   const [open, setOpen] = useState(false)
   const [msgs, setMsgs] = useState<Msg[]>([
@@ -132,11 +161,13 @@ export function ChatBot() {
           }}>
           <span style={{
             width: '46px', height: '46px', borderRadius: '50%',
-            background: 'radial-gradient(circle at 35% 25%, #f7fee7 0 18%, #bbf7d0 19% 36%, #16a34a 37% 100%)',
+            background: 'linear-gradient(135deg,#fefce8,#dcfce7 50%,#bbf7d0)',
             display: 'grid', placeItems: 'center',
-            boxShadow: 'inset 0 -8px 14px rgba(21,128,61,0.18)',
-            color: '#fff', fontSize: '22px', fontWeight: 900,
-          }}>온</span>
+            boxShadow: 'inset 0 -8px 14px rgba(21,128,61,0.12)',
+            border: '1px solid rgba(21,128,61,0.15)',
+          }}>
+            <OnbotMark size={30} />
+          </span>
           <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1.1 }}>
             <span style={{ fontSize: '13px', fontWeight: 900, color: '#14532d' }}>온봇</span>
             <span style={{ fontSize: '10px', fontWeight: 700, color: '#16a34a', marginTop: '3px' }}>빠른 문의</span>
@@ -160,10 +191,13 @@ export function ChatBot() {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span style={{
-                width: 38, height: 38, borderRadius: '50%', background: 'rgba(255,255,255,0.18)',
-                display: 'grid', placeItems: 'center', fontSize: '18px', fontWeight: 900,
-                border: '1px solid rgba(255,255,255,0.22)',
-              }}>온</span>
+                width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.16)',
+                display: 'grid', placeItems: 'center',
+                border: '1px solid rgba(255,255,255,0.24)',
+                boxShadow: 'inset 0 -6px 12px rgba(255,255,255,0.08)',
+              }}>
+                <OnbotMark size={28} />
+              </span>
               <div>
                 <p style={{ margin: 0, fontWeight: 900, fontSize: '15px' }}>온봇</p>
                 <p style={{ margin: '2px 0 0', fontSize: '11px', opacity: 0.88 }}>온종일팜 문의 도우미</p>
