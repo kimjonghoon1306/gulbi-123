@@ -142,11 +142,11 @@ export function ChatBot() {
         pageBg: '#081710',
         panelBg: '#102a1d',
         headerBg: 'linear-gradient(135deg,#0d2a1d 0%,#123823 58%,#1f4d2e 140%)',
-        heroBg: 'linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))',
-        heroBorder: 'rgba(74,222,128,0.16)',
+        heroBg: 'linear-gradient(180deg,rgba(244,114,182,0.07),rgba(255,255,255,0.02))',
+        heroBorder: 'rgba(244,114,182,0.16)',
         text: '#eaf5ee',
         sub: '#86a394',
-        border: 'rgba(74,222,128,0.14)',
+        border: 'rgba(244,114,182,0.14)',
         botBubble: '#0d2a1d',
         botBorder: 'rgba(74,222,128,0.12)',
         botText: '#eaf5ee',
@@ -157,7 +157,8 @@ export function ChatBot() {
         chipText: '#86efac',
         fabBg: '#fff',
         fabText: '#14532d',
-        fabSub: '#16a34a',
+        fabSub: '#f472b6',
+        accent: 'rgba(244,114,182,0.24)',
       }
     : {
         pageBg: '#f8fafc',
@@ -179,6 +180,7 @@ export function ChatBot() {
         fabBg: '#fff',
         fabText: '#14532d',
         fabSub: '#16a34a',
+        accent: 'rgba(21,128,61,0.16)',
       }
 
   return (
@@ -191,10 +193,12 @@ export function ChatBot() {
             zIndex: 9998, display: 'flex', alignItems: 'center', gap: '9px',
             background: T.fabBg, border: `1px solid ${T.border}`, cursor: 'pointer',
             padding: '8px 12px 8px 8px', borderRadius: '999px',
-            boxShadow: dark ? '0 14px 34px rgba(0,0,0,0.4)' : '0 14px 34px rgba(20,83,45,0.22)',
+            boxShadow: dark
+              ? `0 14px 34px rgba(0,0,0,0.4), 0 0 0 1px ${T.accent}`
+              : '0 14px 34px rgba(20,83,45,0.22)',
           }}>
           <span style={{
-            width: '46px', height: '46px', borderRadius: '16px',
+            width: '48px', height: '48px', borderRadius: '16px',
             background: T.heroBg,
             display: 'grid', placeItems: 'center',
             boxShadow: 'inset 0 -8px 14px rgba(21,128,61,0.12)',
@@ -245,19 +249,22 @@ export function ChatBot() {
 
           <div style={{ padding: '14px 16px 8px', background: T.pageBg }}>
             <div className="onbot-float" style={{
-              height: '152px',
+              height: '208px',
               borderRadius: '18px',
               background: T.heroBg,
               border: `1px solid ${T.heroBorder}`,
               overflow: 'hidden',
               display: 'grid',
               placeItems: 'center',
-              boxShadow: dark ? '0 10px 24px rgba(0,0,0,0.18)' : '0 10px 24px rgba(20,83,45,0.10)',
+              padding: '6px 10px 8px',
+              boxShadow: dark
+                ? `0 10px 24px rgba(0,0,0,0.18), 0 0 0 1px ${T.accent}`
+                : '0 10px 24px rgba(20,83,45,0.10)',
             }}>
               <img
                 src={HERO_IMAGE}
                 alt="온봇"
-                style={{ width: '100%', height: '100%', objectFit: 'contain', transform: 'scale(1.04)' }}
+                style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center 46%', transform: 'scale(1.08)' }}
               />
             </div>
           </div>
