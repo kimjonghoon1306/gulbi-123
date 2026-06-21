@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
+import { sanitizeHtml } from '@/lib/sanitize-html'
 import ProductList from './components/ProductList'
 import { ProductFormModal, CategoryFormModal } from './components/ProductFormModal'
 import type { ProductForm } from './components/ProductFormModal'
@@ -444,7 +445,7 @@ export default function ProductsPage() {
                         <img src={reviewProduct.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       </div>
                     )}
-                    <div dangerouslySetInnerHTML={{ __html: reviewProduct.description }}
+                    <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(reviewProduct.description) }}
                       style={{ pointerEvents: 'none', userSelect: 'none', fontSize: '12px' }} />
                   </div>
                 ) : (

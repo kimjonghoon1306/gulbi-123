@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
+import { sanitizeHtml } from '@/lib/sanitize-html'
 import { loadToss } from '@/lib/toss'
 import { ProductMini } from '../../_ProductMini'
 import { ReviewSection } from '../../_ReviewSection'
@@ -556,7 +557,7 @@ export default function ProductDetailPage() {
                 <div style={{width:'32px',height:'32px',background:'linear-gradient(135deg,#15803d,#16a34a)',borderRadius:'10px',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'16px'}}>✦</div>
                 <h2 style={{fontSize:'16px',fontWeight:900,letterSpacing:'-0.3px'}}>상품 상세</h2>
               </div>
-              <div dangerouslySetInnerHTML={{__html: product.description}} style={{lineHeight:1.8, pointerEvents:'none', userSelect:'none'}} />
+              <div dangerouslySetInnerHTML={{__html: sanitizeHtml(product.description)}} style={{lineHeight:1.8, pointerEvents:'none', userSelect:'none'}} />
             </div>
           </div>
         )}
