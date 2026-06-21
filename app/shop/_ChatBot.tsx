@@ -9,12 +9,24 @@ type QA = { q: string; a: string }
 
 const FAQ: QA[] = [
   {
+    q: '🔐 회원가입·로그인',
+    a: '상품 주문, 장바구니, 쿠폰, 찜, 주문조회는 로그인 후 이용할 수 있어요.\n회원가입할 때 일반 구매자·소매업·도매업 중 유형을 선택합니다.\n사업자 회원은 관리자 승인 후 전용 가격과 주문 기능을 사용할 수 있어요.',
+  },
+  {
     q: '📦 주문하는 방법',
     a: '① 원하는 상품을 골라 [바로 구매] 또는 [장바구니 담기]\n② 장바구니에서 여러 상품을 한 번에 주문할 수도 있어요\n③ 배송지·결제수단을 입력하고 주문하면 끝!\n로그인(회원가입) 후 이용하실 수 있어요.',
   },
   {
+    q: '🛒 장바구니·수량 변경',
+    a: '여러 상품을 한 번에 주문하려면 [장바구니 담기]를 이용하세요.\n장바구니에서 + / - 버튼으로 수량을 바꿀 수 있고, 재고보다 많은 수량은 주문할 수 없어요.\n상품별 회원 등급 가격과 쿠폰 할인은 주문 전 결제 요약에서 확인할 수 있어요.',
+  },
+  {
     q: '💳 결제 방법',
     a: '가상계좌와 카드결제를 지원해요.\n• 가상계좌: 주문하면 전용 입금계좌가 발급돼요. 그 계좌로 입금하면 주문이 처리됩니다\n• 카드결제: 바로 결제가 완료돼요\n결제 금액과 할인은 주문서에서 미리 확인할 수 있어요.',
+  },
+  {
+    q: '🏦 입금확인·주문상태',
+    a: '가상계좌 주문은 처음에 [입금대기]로 표시돼요.\n입금이 확인되면 [입금완료]로 바뀌고, 이후 [접수] → [준비중] → [출고] → [완료] 순서로 진행됩니다.\n토스 입금 자동확인이 연결된 경우 입금 후 자동으로 반영되고, 상황에 따라 관리자가 수동 확인할 수도 있어요.',
   },
   {
     q: '🧾 현금영수증·세금계산서',
@@ -29,12 +41,24 @@ const FAQ: QA[] = [
     a: '마이페이지 > 주문/배송 탭에서 주문을 확인하고,\n[🚚 실시간 배송조회] 버튼을 누르면 택배 위치를 단계별로 볼 수 있어요.\n(판매자가 송장을 입력한 후부터 조회돼요.)',
   },
   {
+    q: '📮 배송비·출고 안내',
+    a: '현재 쇼핑몰 주문 화면에서는 배송비가 무료로 표시돼요.\n신선식품 특성상 상품 준비 상태, 산지 출고 일정, 택배사 사정에 따라 출고 시간이 달라질 수 있어요.\n송장번호가 등록되면 마이페이지 주문/배송 탭에서 배송조회가 가능합니다.',
+  },
+  {
     q: '👤 회원 등급 (일반/소매/도매)',
     a: '회원 유형에 따라 가격이 달라요.\n• 일반 구매자 · 소매 유통 · 도매 유통\n가입할 때 유형을 선택하며, 사업자(소매/도매)는 승인 후 전용 가격으로 구매할 수 있어요.\n내 등급은 마이페이지 > 등급/혜택에서 확인하세요.',
   },
   {
+    q: '🏢 사업자 회원 승인',
+    a: '소매업·도매업 회원은 가입 후 관리자 심사를 거쳐 승인됩니다.\n승인 전에는 일부 전용 가격·주문 기능 이용이 제한될 수 있어요.\n승인에는 보통 영업일 기준 1~2일 정도 걸리며, 입력한 사업자 정보가 정확해야 빠르게 확인됩니다.',
+  },
+  {
     q: '↩️ 취소·환불·반품',
     a: '• 주문 취소: 마이페이지 주문에서 ‘접수’ 상태일 때 취소할 수 있어요\n• 환불: 결제수단으로 환불해 드려요\n• ⚠️ 신선식품은 단순 변심에 의한 반품이 제한될 수 있어요(전자상거래법). 상품 하자·오배송은 당연히 교환·환불됩니다.',
+  },
+  {
+    q: '🔔 품절·재입고 알림',
+    a: '품절 상품은 상품 상세페이지에서 재입고 알림을 신청할 수 있어요.\n알림 신청 후 상품 재고가 준비되면 관리자가 확인해 안내할 수 있습니다.\n인기 상품은 재입고 후에도 빠르게 품절될 수 있어요.',
   },
   {
     q: '⭐ 리뷰·찜',
@@ -54,7 +78,11 @@ const FAQ: QA[] = [
   },
   {
     q: '📞 문의하기',
-    a: '챗봇으로 해결되지 않는 문의는 고객센터로 연락 주세요.\n영업시간·연락처는 화면 맨 아래 사업자 정보에서 확인하실 수 있어요.\n빠르게 도와드리겠습니다!',
+    a: '온봇으로 해결되지 않는 문의는 고객센터로 연락 주세요.\n전화: 010-7432-3888\n이메일: tarry9653@daum.net\n영업시간·사업자 정보는 화면 맨 아래에서 확인할 수 있어요.',
+  },
+  {
+    q: '🛡️ 개인정보·안전거래',
+    a: '회원정보, 배송지, 주문내역은 주문 처리와 고객 응대에 필요한 범위에서만 사용됩니다.\n결제는 토스페이먼츠 결제창을 통해 진행되며, 카드 정보는 온종일팜 서버에 직접 저장되지 않아요.\n자세한 내용은 쇼핑몰 하단의 개인정보처리방침을 확인해 주세요.',
   },
 ]
 
@@ -74,7 +102,7 @@ function renderText(text: string) {
 export function ChatBot() {
   const [open, setOpen] = useState(false)
   const [msgs, setMsgs] = useState<Msg[]>([
-    { from: 'bot', text: '안녕하세요! 온종일팜 챗봇이에요 🤖\n궁금한 걸 아래에서 골라주세요.' },
+    { from: 'bot', text: '안녕하세요! 온종일팜 도우미 온봇이에요.\n궁금한 걸 아래에서 골라주세요.' },
   ])
   const bodyRef = useRef<HTMLDivElement>(null)
 
@@ -88,47 +116,53 @@ export function ChatBot() {
 
   return (
     <>
-      {/* 플로팅 로봇 버튼 */}
+      {/* 플로팅 온봇 버튼 */}
       {!open && (
-        <button onClick={() => setOpen(true)} aria-label="챗봇 열기" className="chatbot-fab"
+        <button onClick={() => setOpen(true)} aria-label="온봇 열기" className="chatbot-fab"
           style={{
             position: 'fixed', right: '18px', bottom: 'calc(90px + env(safe-area-inset-bottom))',
-            zIndex: 9998, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px',
-            background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+            zIndex: 9998, display: 'flex', alignItems: 'center', gap: '9px',
+            background: '#fff', border: '1px solid rgba(21,128,61,0.14)', cursor: 'pointer',
+            padding: '8px 12px 8px 8px', borderRadius: '999px',
+            boxShadow: '0 14px 34px rgba(20,83,45,0.22)',
           }}>
           <span style={{
-            width: '58px', height: '58px', borderRadius: '50%',
-            background: 'linear-gradient(135deg,#16a34a,#15803d)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '30px', boxShadow: '0 8px 24px rgba(22,163,74,0.45)',
-          }}>🤖</span>
-          <span style={{
-            fontSize: '11px', fontWeight: 800, color: '#15803d',
-            background: '#fff', padding: '2px 9px', borderRadius: '100px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
-          }}>챗봇</span>
+            width: '46px', height: '46px', borderRadius: '50%',
+            background: 'radial-gradient(circle at 35% 25%, #f7fee7 0 18%, #bbf7d0 19% 36%, #16a34a 37% 100%)',
+            display: 'grid', placeItems: 'center',
+            boxShadow: 'inset 0 -8px 14px rgba(21,128,61,0.18)',
+            color: '#fff', fontSize: '22px', fontWeight: 900,
+          }}>온</span>
+          <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1.1 }}>
+            <span style={{ fontSize: '13px', fontWeight: 900, color: '#14532d' }}>온봇</span>
+            <span style={{ fontSize: '10px', fontWeight: 700, color: '#16a34a', marginTop: '3px' }}>빠른 문의</span>
+          </span>
         </button>
       )}
 
-      {/* 챗봇 패널 */}
+      {/* 온봇 패널 */}
       {open && (
         <div className="chatbot-panel" style={{
           position: 'fixed', right: '18px', bottom: 'calc(90px + env(safe-area-inset-bottom))',
           width: 'min(360px, calc(100vw - 36px))', height: 'min(560px, 70vh)',
-          zIndex: 9999, background: '#fff', borderRadius: '22px', overflow: 'hidden',
+          zIndex: 9999, background: '#fff', borderRadius: '20px', overflow: 'hidden',
           display: 'flex', flexDirection: 'column',
-          boxShadow: '0 24px 60px rgba(0,0,0,0.28)', border: '1px solid rgba(0,0,0,0.06)',
+          boxShadow: '0 24px 60px rgba(20,83,45,0.28)', border: '1px solid rgba(21,128,61,0.13)',
         }}>
           {/* 헤더 */}
           <div style={{
-            background: 'linear-gradient(135deg,#14532d,#15803d)', color: '#fff',
-            padding: '16px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            background: 'linear-gradient(135deg,#14532d 0%,#15803d 58%,#84cc16 140%)', color: '#fff',
+            padding: '15px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '26px' }}>🤖</span>
+              <span style={{
+                width: 38, height: 38, borderRadius: '50%', background: 'rgba(255,255,255,0.18)',
+                display: 'grid', placeItems: 'center', fontSize: '18px', fontWeight: 900,
+                border: '1px solid rgba(255,255,255,0.22)',
+              }}>온</span>
               <div>
-                <p style={{ margin: 0, fontWeight: 900, fontSize: '15px' }}>온종일팜 챗봇</p>
-                <p style={{ margin: '2px 0 0', fontSize: '11px', opacity: 0.85 }}>자주 묻는 질문을 빠르게 안내해요</p>
+                <p style={{ margin: 0, fontWeight: 900, fontSize: '15px' }}>온봇</p>
+                <p style={{ margin: '2px 0 0', fontSize: '11px', opacity: 0.88 }}>온종일팜 문의 도우미</p>
               </div>
             </div>
             <button onClick={() => setOpen(false)} aria-label="닫기"
@@ -136,7 +170,7 @@ export function ChatBot() {
           </div>
 
           {/* 메시지 */}
-          <div ref={bodyRef} style={{ flex: 1, overflowY: 'auto', padding: '16px', background: '#f6faf8', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div ref={bodyRef} style={{ flex: 1, overflowY: 'auto', padding: '16px', background: 'linear-gradient(180deg,#f7fcf9,#f1f8f3)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {msgs.map((m, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: m.from === 'user' ? 'flex-end' : 'flex-start' }}>
                 <div style={{
@@ -144,7 +178,7 @@ export function ChatBot() {
                   fontSize: '13px', padding: '11px 14px', borderRadius: m.from === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
                   background: m.from === 'user' ? 'linear-gradient(135deg,#16a34a,#15803d)' : '#fff',
                   color: m.from === 'user' ? '#fff' : '#1f2937',
-                  border: m.from === 'user' ? 'none' : '1px solid rgba(0,0,0,0.07)',
+                  border: m.from === 'user' ? 'none' : '1px solid rgba(21,128,61,0.09)',
                   boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
                 }}>{m.from === 'bot' ? renderText(m.text) : m.text}</div>
               </div>
@@ -153,13 +187,13 @@ export function ChatBot() {
 
           {/* 질문 버튼 */}
           <div style={{ borderTop: '1px solid rgba(0,0,0,0.07)', background: '#fff', padding: '10px 12px', maxHeight: '168px', overflowY: 'auto' }}>
-            <p style={{ margin: '0 0 8px 2px', fontSize: '11px', fontWeight: 700, color: '#94a3b8' }}>질문을 눌러보세요 👇</p>
+            <p style={{ margin: '0 0 8px 2px', fontSize: '11px', fontWeight: 800, color: '#86a394' }}>궁금한 항목을 선택하세요</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px' }}>
               {FAQ.map((item, i) => (
                 <button key={i} onClick={() => ask(item)}
                   style={{
                     fontSize: '12px', fontWeight: 700, color: '#15803d',
-                    background: 'rgba(22,163,74,0.08)', border: '1px solid rgba(22,163,74,0.25)',
+                    background: 'rgba(22,163,74,0.07)', border: '1px solid rgba(22,163,74,0.2)',
                     borderRadius: '100px', padding: '7px 12px', cursor: 'pointer',
                   }}>{item.q}</button>
               ))}
@@ -169,7 +203,8 @@ export function ChatBot() {
       )}
 
       <style>{`
-        .chatbot-fab:hover span:first-child { transform: translateY(-2px) scale(1.05); transition: transform 0.2s; }
+        .chatbot-fab { transition: transform 0.2s, box-shadow 0.2s; }
+        .chatbot-fab:hover { transform: translateY(-2px); box-shadow: 0 18px 38px rgba(20,83,45,0.26) !important; }
         @media (min-width: 640px) {
           .chatbot-fab { bottom: 24px !important; }
           .chatbot-panel { bottom: 24px !important; }
