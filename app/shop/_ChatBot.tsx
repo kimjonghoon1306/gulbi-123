@@ -218,7 +218,7 @@ export function ChatBot() {
       {open && (
         <div className="chatbot-panel" style={{
           position: 'fixed', right: '18px', bottom: 'calc(90px + env(safe-area-inset-bottom))',
-          width: 'min(408px, calc(100vw - 24px))', height: 'min(680px, 78vh)',
+          width: 'min(384px, calc(100vw - 24px))', height: 'min(560px, 72vh)',
           zIndex: 9999, background: T.panelBg, borderRadius: '20px', overflow: 'hidden',
           display: 'flex', flexDirection: 'column',
           boxShadow: dark ? '0 24px 60px rgba(0,0,0,0.42)' : '0 24px 60px rgba(20,83,45,0.28)', border: `1px solid ${T.border}`,
@@ -247,30 +247,8 @@ export function ChatBot() {
               style={{ background: 'rgba(255,255,255,0.18)', border: 'none', color: T.text, width: '30px', height: '30px', borderRadius: '50%', cursor: 'pointer', fontSize: '16px' }}>✕</button>
           </div>
 
-          <div style={{ padding: '14px 16px 8px', background: T.pageBg }}>
-            <div className="onbot-float" style={{
-              height: '214px',
-              borderRadius: '18px',
-              background: T.heroBg,
-              border: `1px solid ${T.heroBorder}`,
-              overflow: 'hidden',
-              display: 'grid',
-              placeItems: 'center',
-              padding: '6px 10px 8px',
-              boxShadow: dark
-                ? `0 10px 24px rgba(0,0,0,0.18), 0 0 0 1px ${T.accent}`
-                : '0 10px 24px rgba(20,83,45,0.10)',
-            }}>
-              <img
-                src={HERO_IMAGE}
-                alt="온봇"
-                style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center 46%', transform: 'scale(1.08)' }}
-              />
-            </div>
-          </div>
-
           {/* 메시지 */}
-          <div ref={bodyRef} style={{ flex: 1, overflowY: 'auto', padding: '10px 16px 16px', background: T.pageBg, display: 'flex', flexDirection: 'column', gap: '10px', minHeight: 0 }}>
+          <div ref={bodyRef} style={{ flex: 1, overflowY: 'auto', padding: '16px 16px', background: T.pageBg, display: 'flex', flexDirection: 'column', gap: '10px', minHeight: 0 }}>
             {msgs.map((m, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: m.from === 'user' ? 'flex-end' : 'flex-start' }}>
                 <div style={{
@@ -305,11 +283,6 @@ export function ChatBot() {
       <style>{`
         .chatbot-fab { transition: transform 0.2s, box-shadow 0.2s; }
         .chatbot-fab:hover { transform: translateY(-2px); box-shadow: 0 18px 38px rgba(20,83,45,0.26) !important; }
-        .onbot-float { animation: onbotFloat 4.2s ease-in-out infinite; transform-origin: center; }
-        @keyframes onbotFloat {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-7px); }
-        }
         @media (min-width: 640px) {
           .chatbot-fab { bottom: 24px !important; }
           .chatbot-panel { bottom: 24px !important; }
