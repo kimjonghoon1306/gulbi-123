@@ -103,7 +103,7 @@ function renderText(text: string) {
   )
 }
 
-const HERO_IMAGE = '/onbot/onbot-mascot.png'
+const HERO_IMAGE = '/onbot/onbot.svg'
 
 const readTheme = () => {
   if (typeof window === 'undefined') return 'light'
@@ -154,7 +154,7 @@ export function ChatBot() {
         chipBorder: 'rgba(74,222,128,0.2)',
         chipText: '#86efac',
         fabBg: '#fff',
-        fabText: '#14532d',
+        fabText: '#86efac',
         fabSub: '#f472b6',
         accent: 'rgba(244,114,182,0.24)',
       }
@@ -197,13 +197,16 @@ export function ChatBot() {
             background: T.panelBg, padding: '4px 9px', borderRadius: '12px',
             boxShadow: '0 3px 10px rgba(20,83,45,0.18)', marginBottom: '4px',
           }}>궁금하신 거 클릭하세요</span>
-          {/* 캐릭터 — 틀 없이 이미지만 */}
+          {/* 캐릭터 — 틀 없이 이미지만, 큼직하게 */}
           <img src={HERO_IMAGE} alt="온봇" style={{
-            width: '84px', height: '84px', objectFit: 'contain',
-            filter: 'drop-shadow(0 7px 11px rgba(20,83,45,0.28))',
+            width: '116px', height: '116px', objectFit: 'contain',
+            filter: 'drop-shadow(0 8px 13px rgba(20,83,45,0.3))',
           }} />
-          {/* 캐릭터 밑 — 온봇 */}
-          <span style={{ fontSize: '14px', fontWeight: 900, color: T.fabText, marginTop: '-4px' }}>온봇</span>
+          {/* 캐릭터 밑 — 온봇 (다크모드에서도 또렷하게) */}
+          <span style={{
+            fontSize: '17px', fontWeight: 900, color: T.fabText, marginTop: '-4px',
+            textShadow: dark ? '0 1px 4px rgba(0,0,0,0.6)' : '0 1px 2px rgba(255,255,255,0.8)',
+          }}>온봇</span>
         </button>
       )}
 
@@ -229,7 +232,7 @@ export function ChatBot() {
             {/* 캐릭터 히어로 — 박스 없이 캐릭터만 크게 */}
             <div className="onbot-hero-wrap" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', flexShrink: 0 }}>
               <p className="onbot-blink" style={{ margin: '0 0 2px', fontSize: '13px', fontWeight: 800, color: T.sub }}>궁금하신 거 클릭하세요 👇</p>
-              <img className="onbot-hero" src={HERO_IMAGE} alt="온봇" style={{ width: '208px', height: '208px', objectFit: 'contain' }} />
+              <img className="onbot-hero" src={HERO_IMAGE} alt="온봇" style={{ width: '124px', height: '124px', objectFit: 'contain' }} />
               <p style={{ margin: '-6px 0 4px', fontSize: '26px', fontWeight: 900, letterSpacing: '-0.5px', color: dark ? '#86efac' : '#15803d' }}>온봇</p>
             </div>
             {msgs.map((m, i) => (
