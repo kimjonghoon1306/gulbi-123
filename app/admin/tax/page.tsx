@@ -110,7 +110,7 @@ export default function TaxPage() {
         if (!confirm('이미 발행된 세금계산서입니다. 국세청에 취소발행을 요청할까요?')) return
         const res = await fetch('/api/tax/issue', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: 'cancel-invoice', record: inv }),
+          body: JSON.stringify({ type: 'cancel-invoice', id }),
         })
         const data = await res.json().catch(() => ({}))
         if (!res.ok) { alert('팝빌 세금계산서 취소 실패:\n' + (data.message || '오류')); return }
@@ -124,7 +124,7 @@ export default function TaxPage() {
       if (inv && inv.status !== '발행완료') {
         const res = await fetch('/api/tax/issue', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: 'invoice', record: inv }),
+          body: JSON.stringify({ type: 'invoice', id }),
         })
         const data = await res.json().catch(() => ({}))
         if (!res.ok) { alert('팝빌 세금계산서 발행 실패:\n' + (data.message || '오류')); return }
@@ -145,7 +145,7 @@ export default function TaxPage() {
         if (!confirm('이미 발행된 현금영수증입니다. 국세청에 취소발행을 요청할까요?')) return
         const res = await fetch('/api/tax/issue', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: 'cancel-receipt', record: rec }),
+          body: JSON.stringify({ type: 'cancel-receipt', id }),
         })
         const data = await res.json().catch(() => ({}))
         if (!res.ok) { alert('팝빌 현금영수증 취소 실패:\n' + (data.message || '오류')); return }
@@ -159,7 +159,7 @@ export default function TaxPage() {
       if (rec && rec.status !== '발행완료') {
         const res = await fetch('/api/tax/issue', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: 'receipt', record: rec }),
+          body: JSON.stringify({ type: 'receipt', id }),
         })
         const data = await res.json().catch(() => ({}))
         if (!res.ok) { alert('팝빌 현금영수증 발행 실패:\n' + (data.message || '오류')); return }
