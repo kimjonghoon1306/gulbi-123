@@ -43,8 +43,9 @@ export async function POST(req: NextRequest) {
   }
   if (!table || !order) return NextResponse.json({ ok: true, skip: 'order-not-found' })
 
-  // 위변조 검증: 발급 시 저장해 둔 secret과 일치해야 함
-  if (order.vbank_secret && secret && order.vbank_secret !== secret) {
+  // 위변조 검증: 발급 시 저장해 둔 secret과 요청 secret이 모두 존재하고 정확히 일치해야 함
+  if (!order.vbank_secret || !secret || order.vbank_secret !== secret) {
+    await stamp(`secret 검증 실패 주문#${orderId}`)
     return NextResponse.json({ ok: false, reason: 'secret-mismatch' }, { status: 403 })
   }
 
