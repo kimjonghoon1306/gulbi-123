@@ -232,8 +232,8 @@ export function ChatBot() {
           {/* 캐릭터 + 메시지 (스크롤 영역) */}
           <div ref={bodyRef} style={{ flex: 1, overflowY: 'auto', padding: '20px 16px 16px', background: T.pageBg, display: 'flex', flexDirection: 'column', gap: '10px', minHeight: 0 }}>
             {/* 캐릭터 히어로 — 박스 없이 캐릭터만 크게 */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', flexShrink: 0 }}>
-              <p style={{ margin: '0 0 2px', fontSize: '13px', fontWeight: 800, color: T.sub }}>궁금하신 거 클릭하세요 👇</p>
+            <div className="onbot-hero-wrap" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', flexShrink: 0 }}>
+              <p className="onbot-blink" style={{ margin: '0 0 2px', fontSize: '13px', fontWeight: 800, color: T.sub }}>궁금하신 거 클릭하세요 👇</p>
               <img className="onbot-hero" src={HERO_IMAGE} alt="온봇" style={{ width: '208px', height: '208px', objectFit: 'contain' }} />
               <p style={{ margin: '-6px 0 4px', fontSize: '26px', fontWeight: 900, letterSpacing: '-0.5px', color: dark ? '#86efac' : '#15803d' }}>온봇</p>
             </div>
@@ -271,6 +271,9 @@ export function ChatBot() {
       <style>{`
         .chatbot-fab { transition: transform 0.2s, box-shadow 0.2s; }
         .chatbot-fab:hover { transform: translateY(-2px); box-shadow: 0 18px 38px rgba(20,83,45,0.26) !important; }
+        .onbot-blink { animation: onbotBlink 2.6s ease-in-out infinite; }
+        @keyframes onbotBlink { 0%, 70%, 100% { opacity: 0; } 20%, 50% { opacity: 1; } }
+        .onbot-hero-wrap:hover .onbot-blink { animation: none; opacity: 1; }
         @media (min-width: 640px) {
           .chatbot-fab { bottom: 24px !important; }
           .chatbot-panel { bottom: 24px !important; }
