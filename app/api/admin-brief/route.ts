@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createServerSupabase } from '@/lib/supabase-server'
+import { requireAdminUser } from '@/lib/supabase-server'
 import { getUserAIKeys, callAI, extractJson } from '@/lib/ai'
 
 // ─────────────────────────────────────────────────────────────
@@ -14,12 +14,15 @@ export const maxDuration = 30
 
 export async function GET() {
  try {
+  const admin = await requireAdminUser()
+  if (!admin.ok) return NextResponse.json({ error: admin.error }, { status: admin.status })
+
   // 1) 본인 키 확보. 비로그인(401)만 에러, 키 없음(400)은 기본 브리핑으로 진행
   const auth = await getUserAIKeys()
   if (!auth.ok && auth.status === 401) return NextResponse.json({ error: auth.error }, { status: 401 })
 
   // 2) 데이터 수집 (관리자 세션 권한으로)
-  const supabase = await createServerSupabase()
+  const supabase = admin.supabase
   const today = new Date()
   const ymd = (d: Date) => d.toISOString().split('T')[0]
   const todayStr = ymd(today)
