@@ -111,3 +111,18 @@ export async function getAuthUser() {
   const { data: { user } } = await supabase.auth.getUser()
   return user
 }
+
+export async function requireAdminUser() {
+  const supabase = await createServerSupabase()
+  const { data: { user }, error: authErr } = await supabase.auth.getUser()
+  if (authErr || !user) {
+    return { ok: false as const, status: 401, error: '로그인이 필요합니다.', supabase, user: null }
+  }
+
+  const { data: isAdmin, error: adminErr } = await supabase.rpc('is_admin')
+  if (adminErr || isAdmin !== true) {
+    return { ok: false as const, status: 403, error: '관리자 권한이 필요합니다.', supabase, user }
+  }
+
+  return { ok: true as const, supabase, user }
+}
