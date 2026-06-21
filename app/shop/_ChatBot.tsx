@@ -113,9 +113,7 @@ const readTheme = () => {
 export function ChatBot() {
   const [open, setOpen] = useState(false)
   const [dark, setDark] = useState(false)
-  const [msgs, setMsgs] = useState<Msg[]>([
-    { from: 'bot', text: '안녕하세요! 온종일팜 도우미 온봇이에요.\n궁금한 걸 아래에서 골라주세요.' },
-  ])
+  const [msgs, setMsgs] = useState<Msg[]>([])
   const bodyRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -223,32 +221,22 @@ export function ChatBot() {
           display: 'flex', flexDirection: 'column',
           boxShadow: dark ? '0 24px 60px rgba(0,0,0,0.42)' : '0 24px 60px rgba(20,83,45,0.28)', border: `1px solid ${T.border}`,
         }}>
-          {/* 헤더 */}
-          <div style={{
-            background: T.headerBg, color: T.text,
-            padding: '15px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            borderBottom: `1px solid ${T.border}`,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{
-                width: 40, height: 40, borderRadius: '14px', background: 'rgba(255,255,255,0.18)',
-                display: 'grid', placeItems: 'center', overflow: 'hidden',
-                border: '1px solid rgba(255,255,255,0.26)',
-                boxShadow: 'inset 0 -6px 12px rgba(255,255,255,0.08)',
-              }}>
-                <img src={HERO_IMAGE} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              </span>
-              <div>
-                <p style={{ margin: 0, fontWeight: 900, fontSize: '15px', color: T.text }}>온봇</p>
-                <p style={{ margin: '2px 0 0', fontSize: '11px', color: dark ? 'rgba(234,245,238,0.82)' : '#4b5563' }}>온종일팜 문의 도우미</p>
-              </div>
-            </div>
-            <button onClick={() => setOpen(false)} aria-label="닫기"
-              style={{ background: 'rgba(255,255,255,0.18)', border: 'none', color: T.text, width: '30px', height: '30px', borderRadius: '50%', cursor: 'pointer', fontSize: '16px' }}>✕</button>
-          </div>
+          {/* 닫기 버튼 (틀 없이 떠있게) */}
+          <button onClick={() => setOpen(false)} aria-label="닫기"
+            style={{
+              position: 'absolute', top: '12px', right: '12px', zIndex: 3,
+              background: dark ? 'rgba(255,255,255,0.12)' : 'rgba(20,83,45,0.07)', border: 'none',
+              color: T.sub, width: '30px', height: '30px', borderRadius: '50%', cursor: 'pointer', fontSize: '15px',
+            }}>✕</button>
 
-          {/* 메시지 */}
-          <div ref={bodyRef} style={{ flex: 1, overflowY: 'auto', padding: '16px 16px', background: T.pageBg, display: 'flex', flexDirection: 'column', gap: '10px', minHeight: 0 }}>
+          {/* 캐릭터 + 메시지 (스크롤 영역) */}
+          <div ref={bodyRef} style={{ flex: 1, overflowY: 'auto', padding: '20px 16px 16px', background: T.pageBg, display: 'flex', flexDirection: 'column', gap: '10px', minHeight: 0 }}>
+            {/* 캐릭터 히어로 — 박스 없이 캐릭터만 크게 */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', flexShrink: 0 }}>
+              <p style={{ margin: '0 0 2px', fontSize: '13px', fontWeight: 800, color: T.sub }}>궁금하신 거 클릭하세요 👇</p>
+              <img className="onbot-hero" src={HERO_IMAGE} alt="온봇" style={{ width: '208px', height: '208px', objectFit: 'contain' }} />
+              <p style={{ margin: '-6px 0 4px', fontSize: '26px', fontWeight: 900, letterSpacing: '-0.5px', color: dark ? '#86efac' : '#15803d' }}>온봇</p>
+            </div>
             {msgs.map((m, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: m.from === 'user' ? 'flex-end' : 'flex-start' }}>
                 <div style={{
