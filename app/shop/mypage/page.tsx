@@ -284,6 +284,7 @@ function MyPageInner() {
     const next = !dark
     setDark(next)
     localStorage.setItem('shop-theme', next ? 'dark' : 'light')
+    window.dispatchEvent(new Event('shop-theme-change'))
   }
 
   // Derived values
@@ -707,4 +708,3 @@ function MyPageInner() {
 }
 
 // ── 배지 컴포넌트 ──
-

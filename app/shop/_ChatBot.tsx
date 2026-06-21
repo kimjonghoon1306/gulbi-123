@@ -103,37 +103,16 @@ function renderText(text: string) {
   )
 }
 
-function OnbotMark({ size = 46 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" aria-hidden="true">
-      <defs>
-        <linearGradient id="onbot-body" x1="12" y1="10" x2="52" y2="56">
-          <stop offset="0%" stopColor="#fefce8" />
-          <stop offset="42%" stopColor="#dcfce7" />
-          <stop offset="100%" stopColor="#16a34a" />
-        </linearGradient>
-        <linearGradient id="onbot-leaf" x1="20" y1="6" x2="46" y2="24">
-          <stop offset="0%" stopColor="#86efac" />
-          <stop offset="100%" stopColor="#22c55e" />
-        </linearGradient>
-      </defs>
-      <circle cx="32" cy="33" r="22" fill="url(#onbot-body)" />
-      <path d="M24 16c2.5-5 7-7 8-7s5.5 2 8 7c-2.5 2.2-5.3 3.3-8 3.3S26.5 18.2 24 16Z" fill="url(#onbot-leaf)" />
-      <path d="M25.5 18.5c2.1 1.8 4.2 2.7 6.5 2.7s4.4-.9 6.5-2.7" stroke="#166534" strokeWidth="1.5" strokeLinecap="round" opacity="0.7" />
-      <circle cx="24" cy="32" r="2.6" fill="#14532d" />
-      <circle cx="40" cy="32" r="2.6" fill="#14532d" />
-      <path d="M24 39c2.7 2.7 6.4 4.1 8 4.1s5.3-1.4 8-4.1" stroke="#14532d" strokeWidth="2.3" strokeLinecap="round" />
-      <path d="M18 24c1.7-2.7 4.3-4.3 7.4-4.7" stroke="#86efac" strokeWidth="2.4" strokeLinecap="round" />
-      <path d="M46 24c-1.7-2.7-4.3-4.3-7.4-4.7" stroke="#86efac" strokeWidth="2.4" strokeLinecap="round" />
-      <circle cx="20.5" cy="26.5" r="1.4" fill="#fff" opacity="0.85" />
-      <circle cx="36.5" cy="26.5" r="1.4" fill="#fff" opacity="0.85" />
-      <path d="M27 47.5c2.2 1.2 7.8 1.2 10 0" stroke="#14532d" strokeWidth="1.5" strokeLinecap="round" opacity="0.55" />
-    </svg>
-  )
+const HERO_IMAGE = '/onbot/onbot-mascot.png'
+
+const readTheme = () => {
+  if (typeof window === 'undefined') return 'light'
+  return localStorage.getItem('shop-theme') === 'dark' ? 'dark' : 'light'
 }
 
 export function ChatBot() {
   const [open, setOpen] = useState(false)
+  const [dark, setDark] = useState(false)
   const [msgs, setMsgs] = useState<Msg[]>([
     { from: 'bot', text: '안녕하세요! 온종일팜 도우미 온봇이에요.\n궁금한 걸 아래에서 골라주세요.' },
   ])
@@ -143,9 +122,64 @@ export function ChatBot() {
     if (open && bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight
   }, [msgs, open])
 
+  useEffect(() => {
+    const syncTheme = () => setDark(readTheme() === 'dark')
+    syncTheme()
+    window.addEventListener('shop-theme-change', syncTheme)
+    window.addEventListener('storage', syncTheme)
+    return () => {
+      window.removeEventListener('shop-theme-change', syncTheme)
+      window.removeEventListener('storage', syncTheme)
+    }
+  }, [])
+
   const ask = (item: QA) => {
     setMsgs(prev => [...prev, { from: 'user', text: item.q }, { from: 'bot', text: item.a }])
   }
+
+  const T = dark
+    ? {
+        pageBg: '#081710',
+        panelBg: '#102a1d',
+        headerBg: 'linear-gradient(135deg,#0d2a1d 0%,#123823 58%,#1f4d2e 140%)',
+        heroBg: 'linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))',
+        heroBorder: 'rgba(74,222,128,0.16)',
+        text: '#eaf5ee',
+        sub: '#86a394',
+        border: 'rgba(74,222,128,0.14)',
+        botBubble: '#0d2a1d',
+        botBorder: 'rgba(74,222,128,0.12)',
+        botText: '#eaf5ee',
+        userBubble: 'linear-gradient(135deg,#16a34a,#15803d)',
+        userText: '#fff',
+        chipBg: 'rgba(74,222,128,0.08)',
+        chipBorder: 'rgba(74,222,128,0.2)',
+        chipText: '#86efac',
+        fabBg: '#fff',
+        fabText: '#14532d',
+        fabSub: '#16a34a',
+      }
+    : {
+        pageBg: '#f8fafc',
+        panelBg: '#fff',
+        headerBg: 'linear-gradient(135deg,#f0fdf4 0%,#dcfce7 58%,#bbf7d0 140%)',
+        heroBg: 'linear-gradient(180deg,#ffffff 0%,#f7fcf9 100%)',
+        heroBorder: 'rgba(21,128,61,0.12)',
+        text: '#1f2937',
+        sub: '#6b7280',
+        border: 'rgba(21,128,61,0.13)',
+        botBubble: '#fff',
+        botBorder: 'rgba(21,128,61,0.09)',
+        botText: '#1f2937',
+        userBubble: 'linear-gradient(135deg,#16a34a,#15803d)',
+        userText: '#fff',
+        chipBg: 'rgba(22,163,74,0.07)',
+        chipBorder: 'rgba(22,163,74,0.2)',
+        chipText: '#15803d',
+        fabBg: '#fff',
+        fabText: '#14532d',
+        fabSub: '#16a34a',
+      }
 
   return (
     <>
@@ -155,22 +189,23 @@ export function ChatBot() {
           style={{
             position: 'fixed', right: '18px', bottom: 'calc(90px + env(safe-area-inset-bottom))',
             zIndex: 9998, display: 'flex', alignItems: 'center', gap: '9px',
-            background: '#fff', border: '1px solid rgba(21,128,61,0.14)', cursor: 'pointer',
+            background: T.fabBg, border: `1px solid ${T.border}`, cursor: 'pointer',
             padding: '8px 12px 8px 8px', borderRadius: '999px',
-            boxShadow: '0 14px 34px rgba(20,83,45,0.22)',
+            boxShadow: dark ? '0 14px 34px rgba(0,0,0,0.4)' : '0 14px 34px rgba(20,83,45,0.22)',
           }}>
           <span style={{
-            width: '46px', height: '46px', borderRadius: '50%',
-            background: 'linear-gradient(135deg,#fefce8,#dcfce7 50%,#bbf7d0)',
+            width: '46px', height: '46px', borderRadius: '16px',
+            background: T.heroBg,
             display: 'grid', placeItems: 'center',
             boxShadow: 'inset 0 -8px 14px rgba(21,128,61,0.12)',
-            border: '1px solid rgba(21,128,61,0.15)',
+            border: `1px solid ${T.heroBorder}`,
+            overflow: 'hidden',
           }}>
-            <OnbotMark size={30} />
+            <img src={HERO_IMAGE} alt="온봇" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </span>
           <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1.1 }}>
-            <span style={{ fontSize: '13px', fontWeight: 900, color: '#14532d' }}>온봇</span>
-            <span style={{ fontSize: '10px', fontWeight: 700, color: '#16a34a', marginTop: '3px' }}>빠른 문의</span>
+            <span style={{ fontSize: '13px', fontWeight: 900, color: T.fabText }}>온봇</span>
+            <span style={{ fontSize: '10px', fontWeight: 700, color: T.fabSub, marginTop: '3px' }}>빠른 문의</span>
           </span>
         </button>
       )}
@@ -180,43 +215,63 @@ export function ChatBot() {
         <div className="chatbot-panel" style={{
           position: 'fixed', right: '18px', bottom: 'calc(90px + env(safe-area-inset-bottom))',
           width: 'min(360px, calc(100vw - 36px))', height: 'min(560px, 70vh)',
-          zIndex: 9999, background: '#fff', borderRadius: '20px', overflow: 'hidden',
+          zIndex: 9999, background: T.panelBg, borderRadius: '20px', overflow: 'hidden',
           display: 'flex', flexDirection: 'column',
-          boxShadow: '0 24px 60px rgba(20,83,45,0.28)', border: '1px solid rgba(21,128,61,0.13)',
+          boxShadow: dark ? '0 24px 60px rgba(0,0,0,0.42)' : '0 24px 60px rgba(20,83,45,0.28)', border: `1px solid ${T.border}`,
         }}>
           {/* 헤더 */}
           <div style={{
-            background: 'linear-gradient(135deg,#14532d 0%,#15803d 58%,#84cc16 140%)', color: '#fff',
+            background: T.headerBg, color: T.text,
             padding: '15px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            borderBottom: `1px solid ${T.border}`,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span style={{
-                width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.16)',
-                display: 'grid', placeItems: 'center',
-                border: '1px solid rgba(255,255,255,0.24)',
+                width: 40, height: 40, borderRadius: '14px', background: 'rgba(255,255,255,0.18)',
+                display: 'grid', placeItems: 'center', overflow: 'hidden',
+                border: '1px solid rgba(255,255,255,0.26)',
                 boxShadow: 'inset 0 -6px 12px rgba(255,255,255,0.08)',
               }}>
-                <OnbotMark size={28} />
+                <img src={HERO_IMAGE} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </span>
               <div>
-                <p style={{ margin: 0, fontWeight: 900, fontSize: '15px' }}>온봇</p>
-                <p style={{ margin: '2px 0 0', fontSize: '11px', opacity: 0.88 }}>온종일팜 문의 도우미</p>
+                <p style={{ margin: 0, fontWeight: 900, fontSize: '15px', color: T.text }}>온봇</p>
+                <p style={{ margin: '2px 0 0', fontSize: '11px', color: dark ? 'rgba(234,245,238,0.82)' : '#4b5563' }}>온종일팜 문의 도우미</p>
               </div>
             </div>
             <button onClick={() => setOpen(false)} aria-label="닫기"
-              style={{ background: 'rgba(255,255,255,0.18)', border: 'none', color: '#fff', width: '30px', height: '30px', borderRadius: '50%', cursor: 'pointer', fontSize: '16px' }}>✕</button>
+              style={{ background: 'rgba(255,255,255,0.18)', border: 'none', color: T.text, width: '30px', height: '30px', borderRadius: '50%', cursor: 'pointer', fontSize: '16px' }}>✕</button>
+          </div>
+
+          <div style={{ padding: '14px 16px 8px', background: T.pageBg }}>
+            <div className="onbot-float" style={{
+              height: '152px',
+              borderRadius: '18px',
+              background: T.heroBg,
+              border: `1px solid ${T.heroBorder}`,
+              overflow: 'hidden',
+              display: 'grid',
+              placeItems: 'center',
+              boxShadow: dark ? '0 10px 24px rgba(0,0,0,0.18)' : '0 10px 24px rgba(20,83,45,0.10)',
+            }}>
+              <img
+                src={HERO_IMAGE}
+                alt="온봇"
+                style={{ width: '100%', height: '100%', objectFit: 'contain', transform: 'scale(1.04)' }}
+              />
+            </div>
           </div>
 
           {/* 메시지 */}
-          <div ref={bodyRef} style={{ flex: 1, overflowY: 'auto', padding: '16px', background: 'linear-gradient(180deg,#f7fcf9,#f1f8f3)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div ref={bodyRef} style={{ flex: 1, overflowY: 'auto', padding: '10px 16px 16px', background: T.pageBg, display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {msgs.map((m, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: m.from === 'user' ? 'flex-end' : 'flex-start' }}>
                 <div style={{
                   maxWidth: '80%', whiteSpace: 'pre-line', lineHeight: 1.55,
                   fontSize: '13px', padding: '11px 14px', borderRadius: m.from === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                  background: m.from === 'user' ? 'linear-gradient(135deg,#16a34a,#15803d)' : '#fff',
-                  color: m.from === 'user' ? '#fff' : '#1f2937',
-                  border: m.from === 'user' ? 'none' : '1px solid rgba(21,128,61,0.09)',
+                  background: m.from === 'user' ? T.userBubble : T.botBubble,
+                  color: m.from === 'user' ? T.userText : T.botText,
+                  border: m.from === 'user' ? 'none' : `1px solid ${T.botBorder}`,
                   boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
                 }}>{m.from === 'bot' ? renderText(m.text) : m.text}</div>
               </div>
@@ -224,14 +279,14 @@ export function ChatBot() {
           </div>
 
           {/* 질문 버튼 */}
-          <div style={{ borderTop: '1px solid rgba(0,0,0,0.07)', background: '#fff', padding: '10px 12px', maxHeight: '168px', overflowY: 'auto' }}>
-            <p style={{ margin: '0 0 8px 2px', fontSize: '11px', fontWeight: 800, color: '#86a394' }}>궁금한 항목을 선택하세요</p>
+          <div style={{ borderTop: `1px solid ${T.border}`, background: T.panelBg, padding: '10px 12px', maxHeight: '168px', overflowY: 'auto' }}>
+            <p style={{ margin: '0 0 8px 2px', fontSize: '11px', fontWeight: 800, color: T.sub }}>궁금한 항목을 선택하세요</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px' }}>
               {FAQ.map((item, i) => (
                 <button key={i} onClick={() => ask(item)}
                   style={{
-                    fontSize: '12px', fontWeight: 700, color: '#15803d',
-                    background: 'rgba(22,163,74,0.07)', border: '1px solid rgba(22,163,74,0.2)',
+                    fontSize: '12px', fontWeight: 700, color: T.chipText,
+                    background: T.chipBg, border: `1px solid ${T.chipBorder}`,
                     borderRadius: '100px', padding: '7px 12px', cursor: 'pointer',
                   }}>{item.q}</button>
               ))}
@@ -243,6 +298,11 @@ export function ChatBot() {
       <style>{`
         .chatbot-fab { transition: transform 0.2s, box-shadow 0.2s; }
         .chatbot-fab:hover { transform: translateY(-2px); box-shadow: 0 18px 38px rgba(20,83,45,0.26) !important; }
+        .onbot-float { animation: onbotFloat 4.2s ease-in-out infinite; transform-origin: center; }
+        @keyframes onbotFloat {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-7px); }
+        }
         @media (min-width: 640px) {
           .chatbot-fab { bottom: 24px !important; }
           .chatbot-panel { bottom: 24px !important; }

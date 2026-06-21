@@ -160,7 +160,7 @@ export function ShopHeader({ dark, setDark, scrolled, headerBg, border, card, in
               {/* PC에서만 보이는 로그인/회원등급 */}
               <div className="header-user-btns">
                 {/* PC 토글 버튼 */}
-                <button onClick={() => { const n = !dark; setDark(n); localStorage.setItem('shop-theme', n ? 'dark' : 'light') }}
+                <button onClick={() => { const n = !dark; setDark(n); localStorage.setItem('shop-theme', n ? 'dark' : 'light'); window.dispatchEvent(new Event('shop-theme-change')) }}
                   style={{ width:'44px', height:'44px', borderRadius:'12px', border:'none', cursor:'pointer',
                     background: dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.07)',
                     fontSize:'22px', display:'flex', alignItems:'center', justifyContent:'center',

@@ -368,7 +368,7 @@ export default function ProductDetailPage() {
                 <span style={{fontSize:'11px',fontWeight:700,color:D.gtext}}>{visitorCount}명 방문중</span>
               </div>
             )}
-            <button onClick={() => { const n = !dark; setDark(n); localStorage.setItem('shop-theme', n ? 'dark' : 'light') }}
+            <button onClick={() => { const n = !dark; setDark(n); localStorage.setItem('shop-theme', n ? 'dark' : 'light'); window.dispatchEvent(new Event('shop-theme-change')) }}
               style={{width:'44px',height:'44px',borderRadius:'12px',border:'none',cursor:'pointer',
                 background: dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.07)',
                 fontSize:'22px',display:'flex',alignItems:'center',justifyContent:'center',

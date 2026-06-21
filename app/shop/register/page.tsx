@@ -133,7 +133,7 @@ export default function ShopRegisterPage() {
           <span className="font-bold text-lg">온종일팜</span>
         </Link>
         <div className="flex items-center gap-2">
-          <button onClick={() => { const n = !dark; setDark(n); localStorage.setItem('shop-theme', n ? 'dark' : 'light') }}
+          <button onClick={() => { const n = !dark; setDark(n); localStorage.setItem('shop-theme', n ? 'dark' : 'light'); window.dispatchEvent(new Event('shop-theme-change')) }}
             style={{ width: '44px', height: '44px', borderRadius: '12px', border: 'none', cursor: 'pointer',
               background: dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.07)',
               fontSize: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center',

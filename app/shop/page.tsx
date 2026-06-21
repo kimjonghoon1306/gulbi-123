@@ -160,7 +160,10 @@ export default function ShopPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  useEffect(() => { localStorage.setItem('shop-theme', dark ? 'dark' : 'light') }, [dark])
+  useEffect(() => {
+    localStorage.setItem('shop-theme', dark ? 'dark' : 'light')
+    window.dispatchEvent(new Event('shop-theme-change'))
+  }, [dark])
 
   // 프로모 자동 슬라이드
   useEffect(() => {
