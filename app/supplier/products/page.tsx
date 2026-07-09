@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
+import StockImagePicker from '@/components/StockImagePicker'
 import { useRouter } from 'next/navigation'
 import SupplierLayout from '../_layout/layout'
 import { useSupplierTheme } from '../_layout/theme-context'
@@ -331,6 +332,7 @@ function ProductsContent() {
                       </div>
                   }
                 </div>
+                <StockImagePicker onPick={(url) => setForm(p => ({ ...p, image_url: url }))} />
               </div>
 
               <div>

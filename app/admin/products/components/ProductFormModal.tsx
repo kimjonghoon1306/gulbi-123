@@ -1,6 +1,7 @@
 'use client'
 
 import { createClient } from '@/lib/supabase'
+import StockImagePicker from '@/components/StockImagePicker'
 
 type Category = { id: string; name: string; sort_order: number }
 type Product = {
@@ -79,6 +80,7 @@ export function ProductFormModal({ show, onClose, editProduct, form, setForm, on
                 : <p style={{ color: '#94a3b8', fontSize: '13px', margin: 0 }}>📸 클릭해서 이미지 올리기</p>
               }
             </div>
+            <StockImagePicker onPick={(url) => setForm({ ...form, image_url: url })} />
           </div>
 
           <div>
