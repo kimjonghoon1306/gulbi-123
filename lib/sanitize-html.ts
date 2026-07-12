@@ -4,6 +4,11 @@ const ALLOWED_TAGS = new Set([
   'table', 'tbody', 'td', 'th', 'thead', 'tr', 'u', 'ul',
 ])
 
+// 이 태그들은 자식(텍스트) 째로 통째 제거한다. 태그만 벗기면 CSS/JS 코드가 본문에 텍스트로 새어나온다.
+const DROP_WITH_CONTENT = new Set([
+  'style', 'script', 'head', 'title', 'meta', 'link', 'noscript', 'template',
+])
+
 const GLOBAL_ATTRS = new Set(['class', 'id', 'style', 'title', 'aria-label', 'role'])
 const TAG_ATTRS: Record<string, Set<string>> = {
   a: new Set(['href', 'target', 'rel']),
@@ -42,6 +47,10 @@ export function sanitizeHtml(html: string) {
 
       const el = child as HTMLElement
       const tag = el.tagName.toLowerCase()
+      if (DROP_WITH_CONTENT.has(tag)) {
+        el.remove()
+        continue
+      }
       if (!ALLOWED_TAGS.has(tag)) {
         el.replaceWith(...Array.from(el.childNodes))
         continue
