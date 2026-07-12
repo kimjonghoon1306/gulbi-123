@@ -3,9 +3,10 @@
 import React from 'react'
 import { useRouter } from 'next/navigation'
 import { openPostcode } from '@/lib/postcode'
+import { AddressBookPicker } from './_AddressBookPicker'
 
 // 장바구니 주문 모달 — page에서 분리. handleOrder(주문로직)는 page에 그대로, JSX만 이동.
-type CartOrderForm = { address: string; note: string; payment_method: string; evidence: string; evidenceContact: string }
+type CartOrderForm = { address: string; recipient: string; phone: string; note: string; payment_method: string; evidence: string; evidenceContact: string }
 type Props = {
   orderForm: CartOrderForm
   setOrderForm: React.Dispatch<React.SetStateAction<CartOrderForm>>
@@ -17,8 +18,10 @@ type Props = {
   discount: number
   appliedCoupon: any
   memberInfo: any
+  addresses: any[]
   isBiz: boolean
   D: any
+  dark: boolean
   redirectCount: number
   agreeRefund: boolean
   setAgreeRefund: (v: boolean) => void
@@ -31,7 +34,7 @@ type Props = {
   priceColor: string
 }
 
-export function CartOrderModal({ orderForm, setOrderForm, orderDone, handleOrder, orderLoading, items, finalAmount, discount, appliedCoupon, memberInfo, isBiz, D, redirectCount, agreeRefund, setAgreeRefund, vatAmount, exemptSum, taxableSum, getPrice, setShowOrder, gtext, priceColor }: Props) {
+export function CartOrderModal({ orderForm, setOrderForm, orderDone, handleOrder, orderLoading, items, finalAmount, discount, appliedCoupon, memberInfo, addresses, isBiz, D, dark, redirectCount, agreeRefund, setAgreeRefund, vatAmount, exemptSum, taxableSum, getPrice, setShowOrder, gtext, priceColor }: Props) {
   const router = useRouter()
   return (
         <div onClick={() => !orderLoading && setShowOrder(false)}
@@ -104,6 +107,14 @@ export function CartOrderModal({ orderForm, setOrderForm, orderDone, handleOrder
                   <label style={{ display:'flex', alignItems:'center', gap:'6px', fontSize:'13px', fontWeight:800, color:D.text, marginBottom:'10px' }}>
                     📍 배송지 <span style={{ fontSize:'10px', color:gtext, background:'rgba(22,163,74,0.1)', padding:'2px 7px', borderRadius:'20px', fontWeight:700 }}>필수</span>
                   </label>
+                  <AddressBookPicker
+                    addresses={addresses}
+                    selectedAddress={orderForm.address}
+                    onSelect={(address, selected) => setOrderForm(p => ({ ...p, address, recipient: selected.recipient || '', phone: selected.phone || '' }))}
+                    D={D}
+                    dark={dark}
+                    accent={gtext}
+                  />
                   <button type="button" onClick={async () => { const r = await openPostcode(); if (r) setOrderForm(p => ({...p, address: r.address + ' '})) }}
                     style={{ width:'100%', marginBottom:'8px', padding:'12px', borderRadius:'14px', border:`2px dashed ${D.border}`, background:D.input, color:D.text, fontSize:'14px', fontWeight:700, cursor:'pointer' }}>
                     🔍 주소 검색

@@ -10,7 +10,6 @@ import { CouponsTab } from '../_CouponsTab'
 import { WishlistTab } from '../_WishlistTab'
 import { SettingsTab } from '../_SettingsTab'
 import { HomeTab } from './_HomeTab'
-import { openPostcode } from '@/lib/postcode'
 import { courierName } from '@/lib/tracking'
 
 type Member = {
@@ -34,6 +33,28 @@ type OrderItem = {
   unit_price: number; total_price: number
 }
 
+type Address = {
+  id: string
+  label: string
+  recipient?: string | null
+  phone?: string | null
+  postcode?: string | null
+  address1: string
+  address2?: string | null
+  is_default?: boolean
+  created_at?: string
+}
+
+type AddressForm = {
+  label: string
+  recipient: string
+  phone: string
+  postcode: string
+  address1: string
+  address2: string
+  is_default: boolean
+}
+
 const STATUS_STEP: Record<string, number> = { '입금대기': -1, '입금완료': 0, '접수': 0, '준비중': 1, '출고': 2, '완료': 3 }
 const STATUS_LABEL = ['접수', '준비중', '출고', '완료']
 const STATUS_ICON = ['📋', '📦', '🚚', '✅']
@@ -50,6 +71,18 @@ const GRADE_INFO = [
   { name: '골드', icon: '🥇', min: 2000000, max: 5000000,  color: '#f59e0b' },
   { name: 'VIP',  icon: '💎', min: 5000000, max: Infinity, color: '#ec4899' },
 ]
+
+const EMPTY_ADDRESS_FORM: AddressForm = {
+  label: '',
+  recipient: '',
+  phone: '',
+  postcode: '',
+  address1: '',
+  address2: '',
+  is_default: false,
+}
+
+const addressToText = (a: Address) => [a.address1, a.address2].filter(Boolean).join(' ').trim()
 
 export default function MyPage() {
   return (
@@ -81,20 +114,139 @@ function MyPageInner() {
   const [addrInput, setAddrInput]     = useState('')
   const [addrSaving, setAddrSaving]   = useState(false)
   const [addrMsg, setAddrMsg]         = useState('')
+  const [addresses, setAddresses]     = useState<Address[]>([])
+  const [addressForm, setAddressForm] = useState<AddressForm>(EMPTY_ADDRESS_FORM)
+  const [editingAddressId, setEditingAddressId] = useState<string | null>(null)
   const [pw1, setPw1]                 = useState('')
   const [pw2, setPw2]                 = useState('')
   const [pwSaving, setPwSaving]       = useState(false)
   const [pwMsg, setPwMsg]             = useState('')
 
+  const loadAddresses = async (uid: string) => {
+    const { data, error } = await supabase
+      .from('addresses')
+      .select('*')
+      .eq('user_id', uid)
+      .order('is_default', { ascending: false })
+      .order('created_at', { ascending: false })
+    if (!error) setAddresses((data as Address[]) || [])
+  }
+
+  const syncDefaultAddress = async (address: string) => {
+    if (!member) return
+    try { localStorage.setItem('onjongil_addr', address) } catch {}
+    await supabase.from('shop_members').update({ address }).eq('id', member.id)
+    setMember({ ...member, address })
+    setAddrInput(address)
+  }
+
+  const resetAddressForm = () => {
+    setAddressForm(EMPTY_ADDRESS_FORM)
+    setEditingAddressId(null)
+  }
+
   const saveAddress = async () => {
     if (!member) return
     setAddrSaving(true); setAddrMsg('')
-    const { error } = await supabase.from('shop_members').update({ address: addrInput.trim() }).eq('id', member.id)
+    const form = {
+      ...addressForm,
+      label: addressForm.label.trim() || '배송지',
+      recipient: addressForm.recipient.trim() || member.name || '',
+      phone: addressForm.phone.trim() || member.contact || '',
+      postcode: addressForm.postcode.trim(),
+      address1: addressForm.address1.trim(),
+      address2: addressForm.address2.trim(),
+      is_default: addressForm.is_default || addresses.length === 0,
+    }
+    if (!form.address1) {
+      setAddrMsg('주소 검색 후 배송지를 입력해주세요.')
+      setAddrSaving(false)
+      return
+    }
+    if (form.is_default) await supabase.from('addresses').update({ is_default: false }).eq('user_id', member.id)
+    const payload = { user_id: member.id, ...form }
+    const { error } = editingAddressId
+      ? await supabase.from('addresses').update(payload).eq('id', editingAddressId)
+      : await supabase.from('addresses').insert(payload)
     if (error) { setAddrMsg('저장 실패: ' + error.message) }
     else {
-      try { localStorage.setItem('onjongil_addr', addrInput.trim()) } catch {}  // 체크아웃 자동입력 동기화
-      setMember({ ...member, address: addrInput.trim() })
-      setAddrMsg('✅ 기본 배송지가 저장됐어요')
+      if (form.is_default) await syncDefaultAddress([form.address1, form.address2].filter(Boolean).join(' '))
+      await loadAddresses(member.id)
+      resetAddressForm()
+      setAddrMsg('✅ 배송지가 저장됐어요')
+    }
+    setAddrSaving(false)
+  }
+
+  const editAddress = (a: Address) => {
+    setEditingAddressId(a.id)
+    setAddressForm({
+      label: a.label || '',
+      recipient: a.recipient || '',
+      phone: a.phone || '',
+      postcode: a.postcode || '',
+      address1: a.address1 || '',
+      address2: a.address2 || '',
+      is_default: !!a.is_default,
+    })
+    setAddrMsg('')
+  }
+
+  const cancelAddressEdit = () => {
+    resetAddressForm()
+    setAddrMsg('')
+  }
+
+  const setDefaultAddress = async (id: string) => {
+    if (!member) return
+    const target = addresses.find(a => a.id === id)
+    if (!target) return
+    setAddrSaving(true); setAddrMsg('')
+    await supabase.from('addresses').update({ is_default: false }).eq('user_id', member.id)
+    const { error } = await supabase.from('addresses').update({ is_default: true }).eq('id', id)
+    if (error) setAddrMsg('기본 배송지 지정 실패: ' + error.message)
+    else {
+      await syncDefaultAddress(addressToText(target))
+      await loadAddresses(member.id)
+      setAddrMsg('✅ 기본 배송지로 지정했어요')
+    }
+    setAddrSaving(false)
+  }
+
+  const deleteAddress = async (id: string) => {
+    if (!member) return
+    if (!confirm('이 배송지를 삭제할까요?')) return
+    const { error } = await supabase.from('addresses').delete().eq('id', id)
+    if (error) { setAddrMsg('삭제 실패: ' + error.message); return }
+    const remaining = addresses.filter(a => a.id !== id)
+    if (remaining.length > 0 && !remaining.some(a => a.is_default)) {
+      await supabase.from('addresses').update({ is_default: true }).eq('id', remaining[0].id)
+      await syncDefaultAddress(addressToText(remaining[0]))
+    }
+    await loadAddresses(member.id)
+    if (editingAddressId === id) resetAddressForm()
+    setAddrMsg('✅ 배송지를 삭제했어요')
+  }
+
+  const importLegacyAddress = async () => {
+    if (!member || !addrInput.trim()) return
+    setAddrSaving(true); setAddrMsg('')
+    await supabase.from('addresses').update({ is_default: false }).eq('user_id', member.id)
+    const payload = {
+      user_id: member.id,
+      label: '기본 배송지',
+      recipient: member.name || '',
+      phone: member.contact || '',
+      postcode: '',
+      address1: addrInput.trim(),
+      address2: '',
+      is_default: true,
+    }
+    const { error } = await supabase.from('addresses').insert(payload)
+    if (error) setAddrMsg('저장 실패: ' + error.message)
+    else {
+      await loadAddresses(member.id)
+      setAddrMsg('✅ 기존 배송지를 주소록에 저장했어요')
     }
     setAddrSaving(false)
   }
@@ -158,11 +310,13 @@ function MyPageInner() {
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
         setOrders(o || [])
+        await loadAddresses(user.id)
         setLoading(false)
         return
       }
       setMember(m)
       setAddrInput(m.address || (typeof window !== 'undefined' ? localStorage.getItem('onjongil_addr') || '' : ''))
+      await loadAddresses(user.id)
       // 등급이 바뀌어도 과거 주문이 사라지지 않도록 3개 주문 테이블을 모두 조회해 합침 (주문 id는 UUID라 충돌 없음)
       const ORDER_TABLES: { t: string; type: 'general' | 'retail' | 'wholesale' }[] = [
         { t: 'general_orders', type: 'general' },
@@ -438,7 +592,7 @@ function MyPageInner() {
         {tab === 'benefits' && <BenefitsTab D={D} tc={tc} accent={accent} member={member} orders={orders} curGrade={curGrade} nextGrade={nextGrade} gradeProgress={gradeProgress} totalAmount={totalAmount} />}
 
         {/* ════════════════ TAB: SETTINGS ════════════════ */}
-        {tab === 'settings' && <SettingsTab D={D} tc={tc} addrInput={addrInput} setAddrInput={setAddrInput} addrSaving={addrSaving} saveAddress={saveAddress} addrMsg={addrMsg} setAddrMsg={setAddrMsg} pw1={pw1} pw2={pw2} setPw1={setPw1} setPw2={setPw2} pwSaving={pwSaving} pwMsg={pwMsg} setPwMsg={setPwMsg} changePassword={changePassword} />}
+        {tab === 'settings' && <SettingsTab D={D} tc={tc} addresses={addresses} addressForm={addressForm} setAddressForm={setAddressForm} editingAddressId={editingAddressId} editAddress={editAddress} cancelAddressEdit={cancelAddressEdit} saveAddress={saveAddress} deleteAddress={deleteAddress} setDefaultAddress={setDefaultAddress} addrSaving={addrSaving} addrMsg={addrMsg} setAddrMsg={setAddrMsg} legacyAddress={addrInput} importLegacyAddress={importLegacyAddress} pw1={pw1} pw2={pw2} setPw1={setPw1} setPw2={setPw2} pwSaving={pwSaving} pwMsg={pwMsg} setPwMsg={setPwMsg} changePassword={changePassword} />}
 
       </div>
 

@@ -5,15 +5,17 @@ import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import { loadToss } from '@/lib/toss'
 import { openPostcode } from '@/lib/postcode'
+import { AddressBookPicker } from './_AddressBookPicker'
 
 // 상품상세 주문 폼 모달 — page에서 분리. 주문/결제 로직은 그대로(verbatim).
-type OrderForm = { address: string; note: string; payment_method: string; evidence: string; evidenceContact: string }
+type OrderForm = { address: string; recipient: string; phone: string; note: string; payment_method: string; evidence: string; evidenceContact: string }
 type Props = {
   product: any
   quantity: number
   memberType: string
   memberInfo: any
   user: any
+  addresses: any[]
   orderForm: OrderForm
   setOrderForm: React.Dispatch<React.SetStateAction<OrderForm>>
   orderLoading: boolean
@@ -36,7 +38,7 @@ type Props = {
   dark: boolean
 }
 
-export function OrderModal({ product, quantity, orderDone, memberType, memberInfo, user, orderForm, setOrderForm, orderLoading, setOrderLoading, setOrderDone, setShowOrderForm, getPrice, totalPrice, finalPrice, couponDiscount, couponBase, appliedCoupon, appliedUcId, ownedCoupons, selectCoupon, removeCoupon, couponMsg, D, dark }: Props) {
+export function OrderModal({ product, quantity, orderDone, memberType, memberInfo, user, addresses, orderForm, setOrderForm, orderLoading, setOrderLoading, setOrderDone, setShowOrderForm, getPrice, totalPrice, finalPrice, couponDiscount, couponBase, appliedCoupon, appliedUcId, ownedCoupons, selectCoupon, removeCoupon, couponMsg, D, dark }: Props) {
   const supabase = createClient()
   const router = useRouter()
   const id = product.id
@@ -133,6 +135,14 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
                       📍 배송지
                       <span style={{fontSize:'10px',fontWeight:700,color:D.gtext,background:'rgba(22,163,74,0.1)',padding:'2px 7px',borderRadius:'20px'}}>필수</span>
                     </label>
+                    <AddressBookPicker
+                      addresses={addresses}
+                      selectedAddress={orderForm.address}
+                      onSelect={(address, selected) => setOrderForm(p => ({ ...p, address, recipient: selected.recipient || '', phone: selected.phone || '' }))}
+                      D={D}
+                      dark={dark}
+                      accent={D.gtext}
+                    />
                     <button type="button" onClick={async () => { const r = await openPostcode(); if (r) setOrderForm(p => ({...p, address: r.address + ' '})) }}
                       style={{width:'100%',marginBottom:'8px',padding:'12px',borderRadius:'14px',border:`2px dashed ${D.border}`,background:D.input,color:D.text,fontSize:'14px',fontWeight:700,cursor:'pointer'}}>
                       🔍 주소 검색
@@ -272,8 +282,8 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
                           }
                         }
                         const orderData = {
-                          customer_name: memberInfo?.name || '',
-                          contact: memberInfo?.contact || '',
+                          customer_name: orderForm.recipient || memberInfo?.name || '',
+                          contact: orderForm.phone || memberInfo?.contact || '',
                           user_id: user?.id || '',
                           address: orderForm.address,
                           note: orderForm.note,
@@ -338,7 +348,7 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
                             amount: finalPrice,
                             orderId: String(newOrder.id),
                             orderName: product.name,
-                            customerName: memberInfo?.name || '고객',
+                            customerName: orderForm.recipient || memberInfo?.name || '고객',
                             successUrl: `${window.location.origin}/shop/payment/success?table=${table}`,
                             failUrl: `${window.location.origin}/shop/payment/fail`,
                           })

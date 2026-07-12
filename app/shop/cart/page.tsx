@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase'
 import { CartOrderModal } from '../_CartOrderModal'
 import { priceFor } from '../_shopConstants'
 import { loadToss } from '@/lib/toss'
-import { openPostcode } from '@/lib/postcode'
+import { addressToText } from '../_AddressBookPicker'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -21,6 +21,16 @@ type CartItem = {
 }
 
 type MemberType = '일반' | '소매업' | '도매업'
+type Address = {
+  id: string
+  label: string
+  recipient?: string | null
+  phone?: string | null
+  postcode?: string | null
+  address1: string
+  address2?: string | null
+  is_default?: boolean
+}
 
 export default function CartPage() {
   const router = useRouter()
@@ -31,11 +41,12 @@ export default function CartPage() {
   const [dark, setDark] = useState(false)
   const [updating, setUpdating] = useState<string | null>(null)
   const [showOrder, setShowOrder] = useState(false)
-  const [orderForm, setOrderForm] = useState({ address: '', note: '', payment_method: '가상계좌', evidence: '현금영수증', evidenceContact: '' })
+  const [orderForm, setOrderForm] = useState({ address: '', recipient: '', phone: '', note: '', payment_method: '가상계좌', evidence: '현금영수증', evidenceContact: '' })
   const [orderLoading, setOrderLoading] = useState(false)
   const [orderDone, setOrderDone] = useState(false)
   const [agreeRefund, setAgreeRefund] = useState(false)  // 청약철회·반품 안내 동의(신선식품 반품제한 고지)
   const [memberInfo, setMemberInfo] = useState<any>(null)
+  const [addresses, setAddresses] = useState<Address[]>([])
   const [userId, setUserId] = useState('')
   const [redirectCount, setRedirectCount] = useState(3)
   // 쿠폰 (쿠폰함에서 받은 쿠폰을 선택해서 사용)
@@ -74,6 +85,14 @@ export default function CartPage() {
 
     const { data: member } = await supabase.from('shop_members').select('*').eq('id', user.id).single()
     if (member) { setMemberType(member.member_type); setMemberInfo(member) }
+
+    const { data: addrData } = await supabase
+      .from('addresses')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('is_default', { ascending: false })
+      .order('created_at', { ascending: false })
+    setAddresses((addrData as Address[]) || [])
 
     const { data: cartData } = await supabase
       .from('cart_items')
@@ -161,6 +180,16 @@ export default function CartPage() {
   const exemptSum = totalAmount - taxableSum
   const vatAmount = taxableSum - Math.round(taxableSum / 1.1)  // 과세분(부가세포함가) 중 부가세
 
+  const defaultCheckoutAddress = () => {
+    const saved = addresses.find(a => a.is_default) || addresses[0]
+    if (saved) return { address: addressToText(saved), recipient: saved.recipient || '', phone: saved.phone || '' }
+    return {
+      address: memberInfo?.address || (typeof window !== 'undefined' && localStorage.getItem('onjongil_addr')) || '',
+      recipient: memberInfo?.name || '',
+      phone: memberInfo?.contact || '',
+    }
+  }
+
   const handleOrder = async () => {
     if (!orderForm.address) return alert('배송지를 입력해주세요.')
     if (!agreeRefund) return alert('청약철회·반품 안내를 확인하고 동의해주세요.')
@@ -189,8 +218,8 @@ export default function CartPage() {
       }
 
       const { data: newOrder } = await supabase.from(table).insert({
-        customer_name: memberInfo?.name || '',
-        contact: memberInfo?.contact || '',
+        customer_name: orderForm.recipient || memberInfo?.name || '',
+        contact: orderForm.phone || memberInfo?.contact || '',
         user_id: userId,
         address: orderForm.address,
         payment_method: isCard ? '카드(토스)' : isVbank ? '가상계좌(토스)' : orderForm.payment_method,
@@ -264,7 +293,7 @@ export default function CartPage() {
           amount: finalAmount,
           orderId: String(newOrder.id),
           orderName,
-          customerName: memberInfo?.name || '고객',
+          customerName: orderForm.recipient || memberInfo?.name || '고객',
           successUrl: `${window.location.origin}/shop/payment/success?table=${table}`,
           failUrl: `${window.location.origin}/shop/payment/fail`,
         })
@@ -441,7 +470,7 @@ export default function CartPage() {
             </div>
 
             {/* 주문하기 버튼 */}
-            <button className="cart-order-btn" onClick={() => { setOrderDone(false); setAgreeRefund(false); setOrderForm({ address: memberInfo?.address || (typeof window !== 'undefined' && localStorage.getItem('onjongil_addr')) || '', note:'', payment_method:'가상계좌', evidence: isBiz ? '세금계산서' : '현금영수증', evidenceContact: '' }); setShowOrder(true) }}
+            <button className="cart-order-btn" onClick={() => { const delivery = defaultCheckoutAddress(); setOrderDone(false); setAgreeRefund(false); setOrderForm({ address: delivery.address, recipient: delivery.recipient, phone: delivery.phone, note:'', payment_method:'가상계좌', evidence: isBiz ? '세금계산서' : '현금영수증', evidenceContact: '' }); setShowOrder(true) }}
               style={{ width:'100%', padding:'18px', borderRadius:'16px', background:'linear-gradient(135deg,#16a34a,#15803d)', color:'white', fontSize:'17px', fontWeight:900, border:'none', cursor:'pointer', boxShadow:'0 10px 28px rgba(22,163,74,0.35)' }}>
               <span className="cart-emoji">🛒</span> {finalAmount.toLocaleString()}원 주문하기
             </button>
@@ -451,7 +480,7 @@ export default function CartPage() {
       </div>
 
       {/* 주문 모달 */}
-      {showOrder && <CartOrderModal orderForm={orderForm} setOrderForm={setOrderForm} orderDone={orderDone} handleOrder={handleOrder} orderLoading={orderLoading} items={items} finalAmount={finalAmount} discount={discount} appliedCoupon={appliedCoupon} memberInfo={memberInfo} isBiz={isBiz} D={D} redirectCount={redirectCount} agreeRefund={agreeRefund} setAgreeRefund={setAgreeRefund} vatAmount={vatAmount} exemptSum={exemptSum} taxableSum={taxableSum} getPrice={getPrice} setShowOrder={setShowOrder} gtext={gtext} priceColor={priceColor} />}
+      {showOrder && <CartOrderModal orderForm={orderForm} setOrderForm={setOrderForm} orderDone={orderDone} handleOrder={handleOrder} orderLoading={orderLoading} items={items} finalAmount={finalAmount} discount={discount} appliedCoupon={appliedCoupon} memberInfo={memberInfo} addresses={addresses} isBiz={isBiz} D={D} dark={dark} redirectCount={redirectCount} agreeRefund={agreeRefund} setAgreeRefund={setAgreeRefund} vatAmount={vatAmount} exemptSum={exemptSum} taxableSum={taxableSum} getPrice={getPrice} setShowOrder={setShowOrder} gtext={gtext} priceColor={priceColor} />}
 
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}
@@ -472,4 +501,3 @@ export default function CartPage() {
     </div>
   )
 }
-

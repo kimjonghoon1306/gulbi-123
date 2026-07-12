@@ -8,6 +8,7 @@ import { ProductMini } from '../../_ProductMini'
 import { ReviewSection } from '../../_ReviewSection'
 import { OrderModal } from '../../_OrderModal'
 import { priceFor } from '../../_shopConstants'
+import { addressToText } from '../../_AddressBookPicker'
 import { openPostcode } from '@/lib/postcode'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
@@ -31,9 +32,10 @@ export default function ProductDetailPage() {
   const [visitorCount, setVisitorCount] = useState(0)
   const [socialComments, setSocialComments] = useState<any[]>([])
   const [memberInfo, setMemberInfo] = useState<any>(null)
+  const [addresses, setAddresses] = useState<any[]>([])
   const [isAdmin, setIsAdmin] = useState(false)
   const [showOrderForm, setShowOrderForm] = useState(false)
-  const [orderForm, setOrderForm] = useState({ address: '', note: '', payment_method: '가상계좌', evidence: '현금영수증', evidenceContact: '' })
+  const [orderForm, setOrderForm] = useState({ address: '', recipient: '', phone: '', note: '', payment_method: '가상계좌', evidence: '현금영수증', evidenceContact: '' })
   const [orderLoading, setOrderLoading] = useState(false)
   const [orderDone, setOrderDone] = useState(false)
   // 쿠폰 (쿠폰함에서 받은 쿠폰 선택 사용)
@@ -179,6 +181,8 @@ export default function ProductDetailPage() {
       // 쿠폰함: 받은 쿠폰 중 미사용만
       const { data: ucs } = await supabase.from('user_coupons').select('id, coupons(*)').eq('user_id', user.id).eq('used', false)
       setOwnedCoupons((ucs as any) || [])
+      const { data: addrData } = await supabase.from('addresses').select('*').eq('user_id', user.id).order('is_default', { ascending: false }).order('created_at', { ascending: false })
+      setAddresses((addrData as any) || [])
       const { data: wish } = await supabase.from('wishlists').select('id').eq('user_id', user.id).eq('product_id', id).single()
       setLiked(!!wish)
       fetchReviews(user.id)
@@ -306,6 +310,16 @@ export default function ProductDetailPage() {
   )
 
   const totalPrice = getPrice() * quantity
+
+  const defaultCheckoutAddress = () => {
+    const saved = addresses.find((a: any) => a.is_default) || addresses[0]
+    if (saved) return { address: addressToText(saved), recipient: saved.recipient || '', phone: saved.phone || '' }
+    return {
+      address: memberInfo?.address || (typeof window !== 'undefined' && localStorage.getItem('onjongil_addr')) || '',
+      recipient: memberInfo?.name || '',
+      phone: memberInfo?.contact || '',
+    }
+  }
 
   // 쿠폰 할인 (cart와 동일 공식)
   const calcDiscount = (c: any, base: number) => {
@@ -544,7 +558,7 @@ export default function ProductDetailPage() {
                     style={{padding:'16px',borderRadius:'14px',background:cartAdded?'rgba(34,197,94,0.15)':D.input,color:cartAdded?'#22c55e':D.text,fontSize:'14px',fontWeight:700,border:`2px solid ${cartAdded?'#22c55e':D.border}`,cursor:user?'pointer':'not-allowed',transition:'all 0.3s'}}>
                     {cartAdded ? '✓ 담김' : cartLoading ? '...' : '🛒 담기'}
                   </button>
-                  <button onClick={() => { setOrderDone(false); setOrderForm({ address: memberInfo?.address || (typeof window !== 'undefined' && localStorage.getItem('onjongil_addr')) || '', note: '', payment_method: '가상계좌', evidence: '현금영수증', evidenceContact: '' }); setShowOrderForm(true) }}
+                  <button onClick={() => { const delivery = defaultCheckoutAddress(); setOrderDone(false); setOrderForm({ address: delivery.address, recipient: delivery.recipient, phone: delivery.phone, note: '', payment_method: '가상계좌', evidence: '현금영수증', evidenceContact: '' }); setShowOrderForm(true) }}
                     style={{padding:'16px',borderRadius:'14px',background:'linear-gradient(135deg,#15803d,#16a34a)',color:'white',fontSize:'15px',fontWeight:900,border:'none',cursor:'pointer',boxShadow:'0 8px 20px rgba(22,163,74,0.35)'}}>
                     바로 구매
                   </button>
@@ -620,8 +634,8 @@ export default function ProductDetailPage() {
         )}
       </div>
 
-      {/* 주문 폼 모달 */}
-      {showOrderForm && product && <OrderModal product={product} quantity={quantity} orderDone={orderDone} memberType={memberType} memberInfo={memberInfo} user={user} orderForm={orderForm} setOrderForm={setOrderForm} orderLoading={orderLoading} setOrderLoading={setOrderLoading} setOrderDone={setOrderDone} setShowOrderForm={setShowOrderForm} getPrice={getPrice} totalPrice={totalPrice} finalPrice={finalPrice} couponDiscount={couponDiscount} couponBase={couponBase} appliedCoupon={appliedCoupon} appliedUcId={appliedUcId} ownedCoupons={ownedCoupons} selectCoupon={selectCoupon} removeCoupon={removeCoupon} couponMsg={couponMsg} D={D} dark={dark} />}
+        {/* 주문 폼 모달 */}
+      {showOrderForm && product && <OrderModal product={product} quantity={quantity} orderDone={orderDone} memberType={memberType} memberInfo={memberInfo} user={user} addresses={addresses} orderForm={orderForm} setOrderForm={setOrderForm} orderLoading={orderLoading} setOrderLoading={setOrderLoading} setOrderDone={setOrderDone} setShowOrderForm={setShowOrderForm} getPrice={getPrice} totalPrice={totalPrice} finalPrice={finalPrice} couponDiscount={couponDiscount} couponBase={couponBase} appliedCoupon={appliedCoupon} appliedUcId={appliedUcId} ownedCoupons={ownedCoupons} selectCoupon={selectCoupon} removeCoupon={removeCoupon} couponMsg={couponMsg} D={D} dark={dark} />}
 
       {/* ── 모바일 전용 하단 고정 구매바 ── */}
       {!showOrderForm && (
@@ -638,7 +652,7 @@ export default function ProductDetailPage() {
           ) : product.stock === 0 ? (
             <button disabled style={{flex:1,padding:'15px',borderRadius:'14px',background:D.input,color:D.sub,fontSize:'15px',fontWeight:700,border:'none'}}>품절</button>
           ) : (
-            <button onClick={() => { setOrderDone(false); setOrderForm({ address: memberInfo?.address || (typeof window !== 'undefined' && localStorage.getItem('onjongil_addr')) || '', note: '', payment_method: '가상계좌', evidence: '현금영수증', evidenceContact: '' }); setShowOrderForm(true) }}
+            <button onClick={() => { const delivery = defaultCheckoutAddress(); setOrderDone(false); setOrderForm({ address: delivery.address, recipient: delivery.recipient, phone: delivery.phone, note: '', payment_method: '가상계좌', evidence: '현금영수증', evidenceContact: '' }); setShowOrderForm(true) }}
               style={{flex:1,padding:'15px',borderRadius:'14px',background:'linear-gradient(135deg,#15803d,#16a34a)',color:'white',fontWeight:900,fontSize:'15px',border:'none',cursor:'pointer',boxShadow:'0 6px 18px rgba(22,163,74,0.35)'}}>
               🛒 바로 구매
             </button>
