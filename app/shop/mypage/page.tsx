@@ -33,6 +33,20 @@ type OrderItem = {
   unit_price: number; total_price: number
 }
 
+type OrderReturn = {
+  id: string
+  order_id: string
+  order_type: 'general' | 'retail' | 'wholesale'
+  user_id: string
+  type: '반품' | '교환'
+  reason: string
+  image_urls: string[]
+  status: string
+  admin_memo?: string | null
+  created_at: string
+  updated_at: string
+}
+
 type Address = {
   id: string
   label: string
@@ -100,6 +114,7 @@ function MyPageInner() {
   const [member, setMember]           = useState<Member | null>(null)
   const [orders, setOrders]           = useState<Order[]>([])
   const [orderItems, setOrderItems]   = useState<Record<string, OrderItem[]>>({})
+  const [orderReturns, setOrderReturns] = useState<OrderReturn[]>([])
   const [loading, setLoading]         = useState(true)
   const [tab, setTab]                 = useState<'home' | 'orders' | 'coupons' | 'benefits' | 'wishlist' | 'settings'>('home')
   const [wishlists, setWishlists]     = useState<any[]>([])
@@ -130,6 +145,15 @@ function MyPageInner() {
       .order('is_default', { ascending: false })
       .order('created_at', { ascending: false })
     if (!error) setAddresses((data as Address[]) || [])
+  }
+
+  const loadOrderReturns = async (uid: string) => {
+    const { data, error } = await supabase
+      .from('order_returns')
+      .select('*')
+      .eq('user_id', uid)
+      .order('created_at', { ascending: false })
+    if (!error) setOrderReturns((data as OrderReturn[]) || [])
   }
 
   const syncDefaultAddress = async (address: string) => {
@@ -310,6 +334,7 @@ function MyPageInner() {
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
         setOrders(o || [])
+        await loadOrderReturns(user.id)
         await loadAddresses(user.id)
         setLoading(false)
         return
@@ -334,6 +359,7 @@ function MyPageInner() {
       const merged = orderResults.flat().sort((a, b) => (a.created_at < b.created_at ? 1 : -1))
       setOrders(merged)
       loadAllOrderItems(merged)
+      await loadOrderReturns(user.id)
       // 찜 목록 조회
       const { data: wishes } = await supabase
         .from('wishlists')
@@ -580,7 +606,7 @@ function MyPageInner() {
         {tab === 'home' && <HomeTab D={D} accent={accent} member={member} orders={orders} totalAmount={totalAmount} curGrade={curGrade} dark={dark} setTab={setTab} onShopClick={() => router.push('/shop')} handleLogout={handleLogout} />}
 
         {/* ════════════════ TAB: ORDERS ════════════════ */}
-        {tab === 'orders' && <OrdersTab D={D} tc={tc} accent={accent} member={member} orders={orders} orderItems={orderItems} itemsLoading={itemsLoading} openTracking={openTracking} setOrders={setOrders} />}
+        {tab === 'orders' && <OrdersTab D={D} tc={tc} accent={accent} member={member} orders={orders} orderItems={orderItems} orderReturns={orderReturns} setOrderReturns={setOrderReturns} itemsLoading={itemsLoading} openTracking={openTracking} setOrders={setOrders} />}
 
         {/* ════════════════ TAB: WISHLIST ════════════════ */}
         {tab === 'wishlist' && <WishlistTab D={D} tc={tc} accent={accent} member={member} dark={dark} wishlists={wishlists} removeWishlist={removeWishlist} />}

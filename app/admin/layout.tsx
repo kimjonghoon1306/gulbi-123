@@ -28,6 +28,7 @@ const menuGroups = [
       { href: '/admin/orders/wholesale', icon: '📋', label: '도매주문' },
       { href: '/admin/orders/retail',    icon: '🛒', label: '소매주문' },
       { href: '/admin/orders/general',   icon: '📝', label: '일반주문' },
+      { href: '/admin/returns',          icon: '↩️', label: '반품/교환' },
     ],
   },
   {
@@ -54,7 +55,7 @@ const mobileMenus = [
   { href: '/admin/dashboard',        icon: '🏠', label: '홈' },
   { href: '/admin/products',         icon: '🧺', label: '상품' },
   { href: '/admin/orders/general',   icon: '📝', label: '주문' },
-  { href: '/admin/questions',        icon: '💬', label: '문의' },
+  { href: '/admin/returns',          icon: '↩️', label: '반품' },
   { href: '/admin/members',          icon: '👥', label: '회원' },
 ]
 
