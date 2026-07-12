@@ -84,15 +84,20 @@ export default function ProductDetailPage() {
     if (!user) { router.push('/shop/login'); return }
     setReviewSubmitting(true)
     try {
-      await supabase.from('reviews').upsert({
-        product_id: id, user_id: user.id,
-        author_name: memberInfo?.name || '익명',
-        rating: reviewRating, content: reviewContent.trim(),
-        image_urls: reviewImages,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'product_id,user_id' })
+      const res = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          product_id: id,
+          author_name: memberInfo?.name || '익명',
+          rating: reviewRating, content: reviewContent.trim(),
+          image_urls: reviewImages,
+        }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data?.error || '리뷰 저장 중 오류가 발생했어요.')
       await fetchReviews(user.id)
-    } catch { alert('리뷰 저장 중 오류가 발생했어요.') }
+    } catch (e: any) { alert(e?.message || '리뷰 저장 중 오류가 발생했어요.') }
     finally { setReviewSubmitting(false) }
   }
 

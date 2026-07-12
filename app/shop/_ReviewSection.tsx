@@ -106,8 +106,14 @@ export function ReviewSection({ reviews, myReview, reviewRating, setReviewRating
                       {(r.author_name||'익')[0]}
                     </div>
                     <div>
-                      <div style={{display:'flex',alignItems:'center',gap:'6px'}}>
+                      <div style={{display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap'}}>
                         <p style={{fontSize:'13px',fontWeight:700,color:D.text,margin:0}}>{r.author_name||'익명'}</p>
+                        {r.verified_purchase && (
+                          <span style={{display:'inline-flex',alignItems:'center',gap:'5px',fontSize:'13px',fontWeight:900,color:dark?'#bbf7d0':'#166534',background:dark?'rgba(34,197,94,0.18)':'#dcfce7',border:`2px solid ${dark?'rgba(74,222,128,0.35)':'#86efac'}`,padding:'5px 10px',borderRadius:'999px',lineHeight:1,whiteSpace:'nowrap'}}>
+                            <span style={{width:'18px',height:'18px',borderRadius:'50%',background:dark?'#4ade80':'#16a34a',color:dark?'#052e16':'white',display:'inline-flex',alignItems:'center',justifyContent:'center',fontSize:'13px',fontWeight:900}}>✓</span>
+                            구매인증
+                          </span>
+                        )}
                         {r.user_id===user?.id && <span style={{fontSize:'10px',fontWeight:700,color:D.gtext,background:'rgba(22,163,74,0.1)',padding:'1px 7px',borderRadius:'20px'}}>내 리뷰</span>}
                       </div>
                       <p style={{fontSize:'11px',color:D.sub,margin:0}}>{r.created_at ? new Date(r.created_at).toLocaleDateString('ko-KR') : ''}</p>
