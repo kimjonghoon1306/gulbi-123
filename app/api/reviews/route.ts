@@ -84,10 +84,14 @@ export async function POST(req: NextRequest) {
       .select('*')
       .single()
 
-    if (error) return NextResponse.json({ error: `리뷰 저장 실패: ${error.message}` }, { status: 500 })
+    if (error) {
+      console.error('[reviews] save failed', error)
+      return NextResponse.json({ error: '리뷰 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.' }, { status: 500 })
+    }
 
     return NextResponse.json({ ok: true, review })
   } catch (e: any) {
-    return NextResponse.json({ error: e?.message || '리뷰 저장 중 오류가 발생했어요.' }, { status: 500 })
+    console.error('[reviews] unexpected error', e)
+    return NextResponse.json({ error: '리뷰 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.' }, { status: 500 })
   }
 }

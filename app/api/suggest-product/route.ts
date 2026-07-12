@@ -9,7 +9,10 @@ import { getUserAIKeys, callAI, extractJson } from '@/lib/ai'
 // ─────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
   const auth = await getUserAIKeys()
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status })
+  if (!auth.ok) {
+    console.error('[suggest-product] auth/key failed', auth.error)
+    return NextResponse.json({ error: 'AI 분석 설정을 확인해 주세요.' }, { status: auth.status })
+  }
 
   const body = await req.json().catch(() => ({}))
   const { base64, mimeType, categories } = body
@@ -54,7 +57,10 @@ ${units.join(', ')}
     maxTokens: 800,
     jsonMode: true,
   })
-  if (!ai.ok) return NextResponse.json({ error: ai.error }, { status: 502 })
+  if (!ai.ok) {
+    console.error('[suggest-product] ai failed', ai.error)
+    return NextResponse.json({ error: '사진 분석에 실패했습니다. 잠시 후 다시 시도해 주세요.' }, { status: 502 })
+  }
 
   const p = extractJson(ai.text) || {}
   // 카테고리 이름 → id 매핑은 클라이언트에서 처리 (categoryName 그대로 반환)

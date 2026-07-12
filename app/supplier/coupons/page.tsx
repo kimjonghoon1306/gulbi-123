@@ -93,7 +93,11 @@ function CouponsContent() {
       is_active: true, created_by: uid, created_by_role: 'supplier',
     })
     setSaving(false)
-    if (error) { alert(error.message.includes('duplicate') ? '이미 있는 코드예요. 다른 코드를 쓰세요.' : '저장 실패: ' + error.message); return }
+    if (error) {
+      console.error('[supplier coupon save] failed', error)
+      alert(error.message.includes('duplicate') ? '이미 있는 코드예요. 다른 코드를 쓰세요.' : '쿠폰 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+      return
+    }
     setForm(EMPTY); setShowForm(false); init()
   }
 

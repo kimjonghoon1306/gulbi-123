@@ -102,9 +102,15 @@ export default function ProductDetailPage() {
         }),
       })
       const data = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(data?.error || '리뷰 저장 중 오류가 발생했어요.')
+      if (!res.ok) {
+        console.error('[review submit] failed', data)
+        throw new Error('리뷰 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+      }
       await fetchReviews(user.id)
-    } catch (e: any) { alert(e?.message || '리뷰 저장 중 오류가 발생했어요.') }
+    } catch (e: any) {
+      console.error('[review submit] unexpected error', e)
+      alert('리뷰 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+    }
     finally { setReviewSubmitting(false) }
   }
 
@@ -138,12 +144,16 @@ export default function ProductDetailPage() {
         question: questionText.trim(),
         is_secret: questionSecret,
       })
-      if (error) throw error
+      if (error) {
+        console.error('[question submit] failed', error)
+        throw error
+      }
       setQuestionText('')
       setQuestionSecret(false)
       await fetchQuestions()
     } catch (e: any) {
-      alert(e?.message || '문의 등록 중 오류가 발생했어요.')
+      console.error('[question submit] unexpected error', e)
+      alert('문의 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.')
     } finally {
       setQuestionSubmitting(false)
     }

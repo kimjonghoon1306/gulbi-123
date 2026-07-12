@@ -15,11 +15,17 @@ export const maxDuration = 30
 export async function GET() {
  try {
   const admin = await requireAdminUser()
-  if (!admin.ok) return NextResponse.json({ error: admin.error }, { status: admin.status })
+  if (!admin.ok) {
+    console.error('[admin-brief] admin auth failed', admin.error)
+    return NextResponse.json({ error: '관리자 권한을 확인할 수 없습니다. 다시 로그인해 주세요.' }, { status: admin.status })
+  }
 
   // 1) 본인 키 확보. 비로그인(401)만 에러, 키 없음(400)은 기본 브리핑으로 진행
   const auth = await getUserAIKeys()
-  if (!auth.ok && auth.status === 401) return NextResponse.json({ error: auth.error }, { status: 401 })
+  if (!auth.ok && auth.status === 401) {
+    console.error('[admin-brief] user key auth failed', auth.error)
+    return NextResponse.json({ error: '관리자 권한을 확인할 수 없습니다. 다시 로그인해 주세요.' }, { status: 401 })
+  }
 
   // 2) 데이터 수집 (관리자 세션 권한으로)
   const supabase = admin.supabase
@@ -141,7 +147,10 @@ actions는 데이터에 근거해 1~4개. 위 '처리 대기' 항목 중 건수�
 
   const ai = await callAI({ keys: auth.keys, system, prompt, maxTokens: 1024, jsonMode: true })
   // AI 실패(키 오류·쿼터 초과 등) 시에도 기본 브리핑으로 항상 내용 표시
-  if (!ai.ok) return NextResponse.json(buildFallback(`AI 요약을 불러오지 못해 기본 브리핑으로 표시합니다. (${ai.error})`))
+  if (!ai.ok) {
+    console.error('[admin-brief] ai failed', ai.error)
+    return NextResponse.json(buildFallback('AI 요약을 불러오지 못해 기본 브리핑으로 표시합니다. 서버 로그를 확인해 주세요.'))
+  }
 
   const parsed = extractJson(ai.text) || {}
   return NextResponse.json({
@@ -153,13 +162,14 @@ actions는 데이터에 근거해 1~4개. 위 '처리 대기' 항목 중 건수�
     date: todayStr,
   })
  } catch (e: any) {
+  console.error('[admin-brief] unexpected error', e)
   // 어떤 오류가 나도 화면이 비지 않도록 최소 브리핑을 200으로 반환
   return NextResponse.json({
     headline: '오늘의 브리핑 ☀️',
     summary: '브리핑 데이터를 불러오는 중 문제가 있었어요. 잠시 후 다시 시도해 주세요.',
     actions: [],
     provider: '기본',
-    note: '오류: ' + (e?.message || '알 수 없는 오류'),
+    note: '브리핑 생성 중 오류가 발생했습니다. 서버 로그를 확인해 주세요.',
   })
  }
 }

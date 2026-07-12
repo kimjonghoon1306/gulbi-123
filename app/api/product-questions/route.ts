@@ -3,6 +3,7 @@ import { createAdminSupabase } from '@/lib/supabase-admin'
 import { getAuthUser } from '@/lib/supabase-server'
 
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
   try {
@@ -11,7 +12,8 @@ export async function GET(req: NextRequest) {
 
     const adminSupabase = createAdminSupabase()
     if (!adminSupabase) {
-      return NextResponse.json({ error: 'SUPABASE_SERVICE_ROLE_KEY 환경변수가 설정되지 않았습니다.' }, { status: 500 })
+      console.error('[product-questions] admin supabase is not configured')
+      return NextResponse.json({ error: '문의 내용을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.' }, { status: 500 })
     }
 
     const user = await getAuthUser()
@@ -27,7 +29,10 @@ export async function GET(req: NextRequest) {
       .eq('product_id', productId)
       .order('created_at', { ascending: false })
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) {
+      console.error('[product-questions] load failed', error)
+      return NextResponse.json({ error: '문의 내용을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.' }, { status: 500 })
+    }
 
     const questions = (data || []).map((q: any) => {
       const canRead = !q.is_secret || isAdmin || q.user_id === user?.id
@@ -46,6 +51,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ questions })
   } catch (e: any) {
-    return NextResponse.json({ error: e?.message || '문의 조회 중 오류가 발생했어요.' }, { status: 500 })
+    console.error('[product-questions] unexpected error', e)
+    return NextResponse.json({ error: '문의 내용을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.' }, { status: 500 })
   }
 }

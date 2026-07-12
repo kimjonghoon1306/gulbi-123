@@ -93,7 +93,8 @@ export default function AdminAdsPage() {
       const url = supabase.storage.from('products').getPublicUrl(fn).data.publicUrl
       setForm(prev => ({ ...prev, image_url: url }))
     } else {
-      alert('이미지 업로드 실패: ' + error.message)
+      console.error('[admin ad image upload] failed', error)
+      alert('이미지 업로드에 실패했습니다. 서버 로그를 확인해 주세요.')
     }
     setUploading(false)
   }
@@ -125,7 +126,11 @@ export default function AdminAdsPage() {
       ;({ error } = await supabase.from('ad_banners').insert(payload))
     }
     setSaving(false)
-    if (error) { alert('저장 실패: ' + error.message); return }
+    if (error) {
+      console.error('[admin ad save] failed', error)
+      alert('배너 저장에 실패했습니다. 서버 로그를 확인해 주세요.')
+      return
+    }
     setShowForm(false); setForm(EMPTY); setEditId(null); fetchAll()
   }
 

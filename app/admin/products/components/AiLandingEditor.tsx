@@ -135,12 +135,18 @@ export default function AiLandingEditor({ show, onClose, products, onDone }: Pro
         body: JSON.stringify({ base64, mimeType, persona: aiPersona, theme: 'premium', productName: aiMeta.name, retailPrice: aiMeta.retail_price, wholesalePrice: aiMeta.wholesale_price, unit: aiMeta.unit })
       })
       const data = await res.json()
-      if (data.error) return setAiError(data.error)
+      if (data.error) {
+        console.error('[admin landing generate] failed', data)
+        return setAiError('상세페이지 생성에 실패했습니다. 서버 로그를 확인해 주세요.')
+      }
       setAiLandingData(data.data || null)
       setAiLandingHtml(data.html)
       setAiPresetKey('gold' as PresetKey); setAiTemplateKey('premium')
       setAiStep(3)
-    } catch (e: any) { setAiError('오류: ' + e.message) }
+    } catch (e: any) {
+      console.error('[admin landing generate] unexpected error', e)
+      setAiError('상세페이지 생성 중 오류가 발생했습니다. 서버 로그를 확인해 주세요.')
+    }
     finally { setAiLoading(false); clearInterval(aiLoadingTimer.current); setAiLoadingMsg('') }
   }
 
@@ -180,7 +186,10 @@ export default function AiLandingEditor({ show, onClose, products, onDone }: Pro
         await supabase.from('products').insert({ name: aiMeta.name || '상품', description: finalHtml, category_id: aiMeta.category_id || null, wholesale_price: Number(aiMeta.wholesale_price) || 0, retail_price: Number(aiMeta.retail_price) || 0, stock: Number(aiMeta.stock) || 0, unit: aiMeta.unit || '개', member_price: Number(aiMeta.member_price) || 0, image_url: mainImgUrl, is_active: true })
       }
       reset(); onDone()
-    } catch (e: any) { setAiError('등록 오류: ' + e.message) }
+    } catch (e: any) {
+      console.error('[admin landing save] failed', e)
+      setAiError('상세페이지 저장에 실패했습니다. 서버 로그를 확인해 주세요.')
+    }
     finally { setAiLoading(false) }
   }
 
@@ -204,7 +213,10 @@ export default function AiLandingEditor({ show, onClose, products, onDone }: Pro
       }).filter(Boolean).join('')
       await supabase.from('products').update({ description: html }).eq('id', selectedProduct.id)
       reset(); onDone()
-    } catch (e: any) { setAiError('저장 오류: ' + e.message) }
+    } catch (e: any) {
+      console.error('[admin manual landing save] failed', e)
+      setAiError('상세페이지 저장에 실패했습니다. 서버 로그를 확인해 주세요.')
+    }
     finally { setAiLoading(false) }
   }
 
@@ -636,7 +648,10 @@ export default function AiLandingEditor({ show, onClose, products, onDone }: Pro
                   try {
                     await supabase.from('products').update({ description: htmlCode }).eq('id', htmlProduct.id)
                     reset(); onDone()
-                  } catch (e: any) { setAiError('저장 오류: ' + e.message) }
+                  } catch (e: any) {
+                    console.error('[admin html save] failed', e)
+                    setAiError('상세페이지 저장에 실패했습니다. 서버 로그를 확인해 주세요.')
+                  }
                   finally { setAiLoading(false) }
                 }}
                 disabled={aiLoading || !htmlProduct || !htmlCode.trim()}

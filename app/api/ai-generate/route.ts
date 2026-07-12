@@ -10,7 +10,10 @@ const GEMINI_MODELS = [
 export async function POST(req: NextRequest) {
   try {
     const auth = await getAuthAndGeminiKey()
-    if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status })
+    if (!auth.ok) {
+      console.error('[ai-generate] auth/key failed', auth.error)
+      return NextResponse.json({ error: 'AI 분석 설정을 확인해 주세요.' }, { status: auth.status })
+    }
 
     const { base64, mimeType } = await req.json()
     if (!base64 || !mimeType)
@@ -64,13 +67,16 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({ text })
       } catch (e: any) {
+        console.error('[ai-generate] model request failed', { model, error: e })
         lastError = `${model} 네트워크 오류: ${e.message}`
         continue
       }
     }
 
-    return NextResponse.json({ error: `모든 모델 실패: ${lastError}` }, { status: 500 })
+    console.error('[ai-generate] all models failed', lastError)
+    return NextResponse.json({ error: 'AI 분석에 실패했습니다. 잠시 후 다시 시도해 주세요.' }, { status: 500 })
   } catch (e: any) {
-    return NextResponse.json({ error: `오류: ${e.message}` }, { status: 500 })
+    console.error('[ai-generate] unexpected error', e)
+    return NextResponse.json({ error: 'AI 분석 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.' }, { status: 500 })
   }
 }

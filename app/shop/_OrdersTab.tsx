@@ -92,7 +92,11 @@ export function OrdersTab({ D, tc, accent, member, orders, orderItems, orderRetu
       status: '접수',
     }).select().single()
     setReturnSubmitting(false)
-    if (error) { alert('신청 중 오류가 발생했어요: ' + error.message); return }
+    if (error) {
+      console.error('[return request] failed', error)
+      alert('반품/교환 신청에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+      return
+    }
     setOrderReturns(prev => [data, ...prev])
     setReturnModalOrder(null)
   }

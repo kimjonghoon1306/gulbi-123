@@ -192,7 +192,10 @@ function MyPageInner() {
     const { error } = editingAddressId
       ? await supabase.from('addresses').update(payload).eq('id', editingAddressId)
       : await supabase.from('addresses').insert(payload)
-    if (error) { setAddrMsg('저장 실패: ' + error.message) }
+    if (error) {
+      console.error('[address save] failed', error)
+      setAddrMsg('배송지 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+    }
     else {
       if (form.is_default) await syncDefaultAddress([form.address1, form.address2].filter(Boolean).join(' '))
       await loadAddresses(member.id)
@@ -228,7 +231,10 @@ function MyPageInner() {
     setAddrSaving(true); setAddrMsg('')
     await supabase.from('addresses').update({ is_default: false }).eq('user_id', member.id)
     const { error } = await supabase.from('addresses').update({ is_default: true }).eq('id', id)
-    if (error) setAddrMsg('기본 배송지 지정 실패: ' + error.message)
+    if (error) {
+      console.error('[address default] failed', error)
+      setAddrMsg('기본 배송지 지정에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+    }
     else {
       await syncDefaultAddress(addressToText(target))
       await loadAddresses(member.id)
@@ -241,7 +247,11 @@ function MyPageInner() {
     if (!member) return
     if (!confirm('이 배송지를 삭제할까요?')) return
     const { error } = await supabase.from('addresses').delete().eq('id', id)
-    if (error) { setAddrMsg('삭제 실패: ' + error.message); return }
+    if (error) {
+      console.error('[address delete] failed', error)
+      setAddrMsg('배송지 삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+      return
+    }
     const remaining = addresses.filter(a => a.id !== id)
     if (remaining.length > 0 && !remaining.some(a => a.is_default)) {
       await supabase.from('addresses').update({ is_default: true }).eq('id', remaining[0].id)
@@ -267,7 +277,10 @@ function MyPageInner() {
       is_default: true,
     }
     const { error } = await supabase.from('addresses').insert(payload)
-    if (error) setAddrMsg('저장 실패: ' + error.message)
+    if (error) {
+      console.error('[legacy address import] failed', error)
+      setAddrMsg('기존 배송지 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+    }
     else {
       await loadAddresses(member.id)
       setAddrMsg('✅ 기존 배송지를 주소록에 저장했어요')
@@ -301,7 +314,10 @@ function MyPageInner() {
     if (pw1 !== pw2) { setPwMsg('두 비밀번호가 일치하지 않아요.'); return }
     setPwSaving(true)
     const { error } = await supabase.auth.updateUser({ password: pw1 })
-    if (error) { setPwMsg('변경 실패: ' + error.message) }
+    if (error) {
+      console.error('[password change] failed', error)
+      setPwMsg('비밀번호 변경에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+    }
     else { setPw1(''); setPw2(''); setPwMsg('✅ 비밀번호가 변경됐어요') }
     setPwSaving(false)
   }

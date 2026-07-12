@@ -47,7 +47,11 @@ export default function AdminQuestionsPage() {
       .update({ answer, answered_at: new Date().toISOString() })
       .eq('id', q.id)
     setSaving('')
-    if (error) { alert('답변 저장 실패: ' + error.message); return }
+    if (error) {
+      console.error('[admin question answer save] failed', error)
+      alert('답변 저장에 실패했습니다. 서버 로그를 확인해 주세요.')
+      return
+    }
     await fetchAll()
   }
 
@@ -59,7 +63,11 @@ export default function AdminQuestionsPage() {
       .update({ answer: null, answered_at: null })
       .eq('id', q.id)
     setSaving('')
-    if (error) { alert('수정 실패: ' + error.message); return }
+    if (error) {
+      console.error('[admin question answer clear] failed', error)
+      alert('답변 수정에 실패했습니다. 서버 로그를 확인해 주세요.')
+      return
+    }
     await fetchAll()
   }
 

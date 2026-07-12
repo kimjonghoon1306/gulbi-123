@@ -22,11 +22,15 @@ async function findOrderByPaymentKey(supabase: any, paymentKey: string) {
 export async function POST(req: NextRequest) {
   try {
     const auth = await requireAdminUser()
-    if (!auth.ok) return NextResponse.json({ message: auth.error }, { status: auth.status })
+    if (!auth.ok) {
+      console.error('[payments/cancel] auth failed', auth.error)
+      return NextResponse.json({ message: '관리자 권한을 확인할 수 없습니다. 다시 로그인해 주세요.' }, { status: auth.status })
+    }
 
     const TOSS_SECRET_KEY = process.env.TOSS_SECRET_KEY
     if (!TOSS_SECRET_KEY) {
-      return NextResponse.json({ message: 'TOSS_SECRET_KEY 환경변수가 설정되지 않았습니다.' }, { status: 500 })
+      console.error('[payments/cancel] TOSS_SECRET_KEY missing')
+      return NextResponse.json({ message: '토스 환불 설정을 확인할 수 없습니다. 서버 설정을 확인해 주세요.' }, { status: 500 })
     }
 
     const { paymentKey, cancelReason, cancelAmount } = await req.json()
@@ -67,9 +71,12 @@ export async function POST(req: NextRequest) {
         .from(table)
         .update({ status: '환불', updated_at: new Date().toISOString() })
         .eq('id', order.id)
+      return NextResponse.json(data, { status: res.status })
     }
-    return NextResponse.json(data, { status: res.status })
+    console.error('[payments/cancel] toss cancel failed', { status: res.status, data })
+    return NextResponse.json({ message: '토스 환불 처리에 실패했습니다. 서버 로그를 확인해 주세요.' }, { status: res.status })
   } catch (e: any) {
-    return NextResponse.json({ message: e?.message || '서버 오류' }, { status: 500 })
+    console.error('[payments/cancel] unexpected error', e)
+    return NextResponse.json({ message: '환불 처리 중 오류가 발생했습니다. 서버 로그를 확인해 주세요.' }, { status: 500 })
   }
 }

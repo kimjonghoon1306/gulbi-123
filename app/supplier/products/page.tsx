@@ -116,7 +116,11 @@ function ProductsContent() {
         body: JSON.stringify({ base64, mimeType, categories }),
       })
       const data = await res.json()
-      if (!res.ok) { setError(data.error || 'AI 분석에 실패했어요.'); return }
+      if (!res.ok) {
+        console.error('[supplier product ai fill] failed', data)
+        setError('사진 분석에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+        return
+      }
       const cat = categories.find(c => c.name === data.categoryName)
       setForm(p => ({
         ...p,
@@ -129,7 +133,8 @@ function ProductsContent() {
         image_url: imageUrl || p.image_url,
       }))
       setAiMsg(`✨ ${data.provider === 'openai' ? 'GPT' : 'Gemini'}가 자동으로 채웠어요. 가격은 제안 초안이니 꼭 확인하세요.`)
-    } catch {
+    } catch (e) {
+      console.error('[supplier product ai fill] unexpected error', e)
       setError('사진 분석 중 오류가 발생했어요.')
     } finally {
       setAiFilling(false)

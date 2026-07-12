@@ -16,7 +16,10 @@ export async function GET() {
     .eq('user_id', user.id)
     .maybeSingle()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[user-key] load failed', error)
+    return NextResponse.json({ error: 'API 키 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.' }, { status: 500 })
+  }
 
   return NextResponse.json({
     hasKey: !!data,
@@ -59,19 +62,22 @@ export async function POST(req: NextRequest) {
         isValid = true
       } else {
         const errBody = await res.json().catch(() => ({}))
-        validationError = errBody?.error?.message || `검증 실패 (HTTP ${res.status})`
+        console.error('[user-key] openai validation failed', { status: res.status, error: errBody?.error })
+        validationError = '입력한 API 키를 확인해 주세요.'
       }
     } catch (e: any) {
-      validationError = `검증 중 네트워크 오류: ${e.message}`
+      console.error('[user-key] openai validation request failed', e)
+      validationError = '키 확인 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.'
     }
 
     if (!isValid) {
-      return NextResponse.json({ error: `유효하지 않은 API 키입니다: ${validationError}` }, { status: 400 })
+      return NextResponse.json({ error: validationError || '입력한 API 키를 확인해 주세요.' }, { status: 400 })
     }
 
     let encrypted: string
     try { encrypted = encryptKey(trimmed) } catch (e: any) {
-      return NextResponse.json({ error: `암호화 실패: ${e.message}` }, { status: 500 })
+      console.error('[user-key] openai encrypt failed', e)
+      return NextResponse.json({ error: 'API 키 저장 준비 중 문제가 발생했습니다. 고객센터로 문의해 주세요.' }, { status: 500 })
     }
 
     const { data: existing } = await supabase.from('user_api_keys').select('user_id').eq('user_id', user.id).maybeSingle()
@@ -85,7 +91,10 @@ export async function POST(req: NextRequest) {
     const { error } = existing
       ? await supabase.from('user_api_keys').update(openaiData).eq('user_id', user.id)
       : await supabase.from('user_api_keys').insert({ user_id: user.id, ...openaiData })
-    if (error) return NextResponse.json({ error: `저장 실패: ${error.message}` }, { status: 500 })
+    if (error) {
+      console.error('[user-key] openai save failed', error)
+      return NextResponse.json({ error: 'API 키 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.' }, { status: 500 })
+    }
 
     return NextResponse.json({ ok: true, keyHint: makeKeyHint(trimmed), isValid: true })
   }
@@ -111,19 +120,22 @@ export async function POST(req: NextRequest) {
         isValid = true
       } else {
         const errBody = await res.json().catch(() => ({}))
-        validationError = errBody?.error?.message || `검증 실패 (HTTP ${res.status})`
+        console.error('[user-key] gemini validation failed', { status: res.status, error: errBody?.error })
+        validationError = '입력한 Gemini 키를 확인해 주세요.'
       }
     } catch (e: any) {
-      validationError = `검증 중 네트워크 오류: ${e.message}`
+      console.error('[user-key] gemini validation request failed', e)
+      validationError = '키 확인 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.'
     }
 
     if (!isValid) {
-      return NextResponse.json({ error: `유효하지 않은 Gemini 키입니다: ${validationError}` }, { status: 400 })
+      return NextResponse.json({ error: validationError || '입력한 Gemini 키를 확인해 주세요.' }, { status: 400 })
     }
 
     let encrypted: string
     try { encrypted = encryptKey(trimmed) } catch (e: any) {
-      return NextResponse.json({ error: `암호화 실패: ${e.message}` }, { status: 500 })
+      console.error('[user-key] gemini encrypt failed', e)
+      return NextResponse.json({ error: 'API 키 저장 준비 중 문제가 발생했습니다. 고객센터로 문의해 주세요.' }, { status: 500 })
     }
 
     const { data: existingG } = await supabase.from('user_api_keys').select('user_id').eq('user_id', user.id).maybeSingle()
@@ -135,7 +147,10 @@ export async function POST(req: NextRequest) {
     const { error } = existingG
       ? await supabase.from('user_api_keys').update(geminiData).eq('user_id', user.id)
       : await supabase.from('user_api_keys').insert({ user_id: user.id, ...geminiData })
-    if (error) return NextResponse.json({ error: `저장 실패: ${error.message}` }, { status: 500 })
+    if (error) {
+      console.error('[user-key] gemini save failed', error)
+      return NextResponse.json({ error: 'API 키 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.' }, { status: 500 })
+    }
 
     return NextResponse.json({ ok: true, geminiKeyHint: makeKeyHint(trimmed) })
   }
@@ -152,7 +167,10 @@ export async function DELETE() {
 
   const supabase = await createServerSupabase()
   const { error } = await supabase.from('user_api_keys').delete().eq('user_id', user.id)
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[user-key] delete failed', error)
+    return NextResponse.json({ error: 'API 키 삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.' }, { status: 500 })
+  }
 
   return NextResponse.json({ ok: true })
 }

@@ -36,7 +36,12 @@ function SuccessInner() {
           body: JSON.stringify({ paymentKey, orderId, amount: amt, table }),
         })
         const data = await res.json()
-        if (!res.ok) { setState('fail'); setMsg(data.message || '결제 승인에 실패했습니다.'); return }
+        if (!res.ok) {
+          console.error('[payment confirm] failed', data)
+          setState('fail')
+          setMsg('결제 승인에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+          return
+        }
 
         // 가상계좌 = 입금대기 / 카드 = 결제완료. 주문 상태/재고 반영은 서버 confirm API에서 처리한다.
         const isWaiting = data.status === 'WAITING_FOR_DEPOSIT' || data.method === '가상계좌'
@@ -60,8 +65,9 @@ function SuccessInner() {
         } else {
           setState('ok'); setMsg('결제가 완료되었습니다!')
         }
-      } catch {
-        setState('fail'); setMsg('결제 확인 중 오류가 발생했습니다.')
+      } catch (e) {
+        console.error('[payment confirm] unexpected error', e)
+        setState('fail'); setMsg('결제 확인 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.')
       }
     })()
   }, [sp, supabase])

@@ -14,11 +14,15 @@ async function loadRecord(supabase: any, table: 'tax_invoices' | 'cash_receipts'
 // 관리자 '발행완료' 클릭 시 호출 → 팝빌로 세금계산서/현금영수증 국세청 발행
 export async function POST(req: NextRequest) {
   const auth = await requireAdminUser()
-  if (!auth.ok) return NextResponse.json({ message: auth.error }, { status: auth.status })
+  if (!auth.ok) {
+    console.error('[tax/issue] auth failed', auth.error)
+    return NextResponse.json({ message: '관리자 권한을 확인할 수 없습니다. 다시 로그인해 주세요.' }, { status: auth.status })
+  }
 
   if (!popbillReady()) {
+    console.error('[tax/issue] popbill env missing')
     return NextResponse.json({
-      message: '팝빌 환경변수가 설정되지 않았습니다. POPBILL_LINK_ID / POPBILL_SECRET_KEY / POPBILL_CORP_NUM(및 공급자 정보)를 Vercel에 등록하세요.',
+      message: '팝빌 설정을 확인할 수 없습니다. 서버 설정을 확인해 주세요.',
     }, { status: 500 })
   }
   try {
@@ -72,6 +76,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: 'type은 invoice / receipt / cancel-invoice / cancel-receipt 여야 합니다.' }, { status: 400 })
   } catch (e: any) {
     // 팝빌 에러는 { code, message } 형태
-    return NextResponse.json({ message: e?.message || e?.code || '팝빌 발행 실패' }, { status: 500 })
+    console.error('[tax/issue] popbill failed', e)
+    return NextResponse.json({ message: '팝빌 처리에 실패했습니다. 서버 로그를 확인해 주세요.' }, { status: 500 })
   }
 }

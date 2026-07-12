@@ -108,7 +108,7 @@ export default function TaxPage() {
           body: JSON.stringify({ type: 'cancel-invoice', id }),
         })
         const data = await res.json().catch(() => ({}))
-        if (!res.ok) { alert('팝빌 세금계산서 취소 실패:\n' + (data.message || '오류')); return }
+        if (!res.ok) { console.error('[admin tax cancel invoice] failed', data); alert('팝빌 세금계산서 취소에 실패했습니다. 서버 로그를 확인해 주세요.'); return }
       }
       await supabase.from('tax_invoices').update({ status: '발행취소' }).eq('id', id)
       fetchAll(); return
@@ -122,7 +122,7 @@ export default function TaxPage() {
           body: JSON.stringify({ type: 'invoice', id }),
         })
         const data = await res.json().catch(() => ({}))
-        if (!res.ok) { alert('팝빌 세금계산서 발행 실패:\n' + (data.message || '오류')); return }
+        if (!res.ok) { console.error('[admin tax issue invoice] failed', data); alert('팝빌 세금계산서 발행에 실패했습니다. 서버 로그를 확인해 주세요.'); return }
         await supabase.from('tax_invoices').update({ status, issued_at: new Date().toISOString(), invoice_number: data.mgtKey || inv.invoice_number }).eq('id', id)
         fetchAll(); return
       }
@@ -143,7 +143,7 @@ export default function TaxPage() {
           body: JSON.stringify({ type: 'cancel-receipt', id }),
         })
         const data = await res.json().catch(() => ({}))
-        if (!res.ok) { alert('팝빌 현금영수증 취소 실패:\n' + (data.message || '오류')); return }
+        if (!res.ok) { console.error('[admin tax cancel receipt] failed', data); alert('팝빌 현금영수증 취소에 실패했습니다. 서버 로그를 확인해 주세요.'); return }
       }
       await supabase.from('cash_receipts').update({ status: '발행취소' }).eq('id', id)
       fetchAll(); return
@@ -157,7 +157,7 @@ export default function TaxPage() {
           body: JSON.stringify({ type: 'receipt', id }),
         })
         const data = await res.json().catch(() => ({}))
-        if (!res.ok) { alert('팝빌 현금영수증 발행 실패:\n' + (data.message || '오류')); return }
+        if (!res.ok) { console.error('[admin tax issue receipt] failed', data); alert('팝빌 현금영수증 발행에 실패했습니다. 서버 로그를 확인해 주세요.'); return }
         await supabase.from('cash_receipts').update({ status, issued_at: new Date().toISOString(), receipt_number: data.mgtKey || rec.receipt_number }).eq('id', id)
         fetchAll(); return
       }

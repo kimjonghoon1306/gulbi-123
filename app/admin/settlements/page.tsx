@@ -95,7 +95,11 @@ export default function SettlementsPage() {
       note: null,
     })
     setBusy(false)
-    if (error) { setMsg('정산 생성 실패: ' + error.message); return }
+    if (error) {
+      console.error('[admin settlement create] failed', error)
+      setMsg('정산 생성에 실패했습니다. 서버 로그를 확인해 주세요.')
+      return
+    }
     setMsg('✅ 정산을 생성했어요. 공급사 매출 화면에 표시됩니다.')
     setCalc(null)
     fetchAll()

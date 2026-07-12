@@ -100,7 +100,11 @@ export default function AdminCouponsPage() {
     }
     const { error } = await supabase.from('coupons').insert(payload)
     setSaving(false)
-    if (error) { alert(error.message.includes('duplicate') ? '이미 있는 코드예요. 다른 코드를 쓰세요.' : '저장 실패: ' + error.message); return }
+    if (error) {
+      console.error('[admin coupon save] failed', error)
+      alert(error.message.includes('duplicate') ? '이미 있는 코드예요. 다른 코드를 쓰세요.' : '쿠폰 저장에 실패했습니다. 서버 로그를 확인해 주세요.')
+      return
+    }
     setForm(EMPTY); setShowForm(false); fetchAll()
   }
 

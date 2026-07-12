@@ -85,17 +85,20 @@ export async function POST(req: NextRequest) {
   try {
     const TOSS_SECRET_KEY = process.env.TOSS_SECRET_KEY
     if (!TOSS_SECRET_KEY) {
-      return NextResponse.json({ message: 'TOSS_SECRET_KEY 환경변수가 설정되지 않았습니다.' }, { status: 500 })
+      console.error('[payments/confirm] TOSS_SECRET_KEY missing')
+      return NextResponse.json({ message: '결제 설정을 확인할 수 없습니다. 고객센터로 문의해 주세요.' }, { status: 500 })
     }
 
     const { paymentKey, orderId, amount, table } = await req.json()
     if (!paymentKey || !orderId || !amount || !ORDER_TABLES.includes(table)) {
-      return NextResponse.json({ message: '필수 값 누락' }, { status: 400 })
+      console.error('[payments/confirm] invalid request', { hasPaymentKey: !!paymentKey, hasOrderId: !!orderId, hasAmount: !!amount, table })
+      return NextResponse.json({ message: '결제 정보가 올바르지 않습니다. 다시 주문해 주세요.' }, { status: 400 })
     }
 
     const adminSupabase = createAdminSupabase()
     if (!adminSupabase) {
-      return NextResponse.json({ message: 'SUPABASE_SERVICE_ROLE_KEY 환경변수가 설정되지 않았습니다.' }, { status: 500 })
+      console.error('[payments/confirm] SUPABASE_SERVICE_ROLE_KEY missing')
+      return NextResponse.json({ message: '주문 확인 중 문제가 발생했습니다. 고객센터로 문의해 주세요.' }, { status: 500 })
     }
 
     // ── 서버 측 결제금액 검증: 클라이언트가 보낸 금액을 그대로 믿지 않고 DB 실가격으로 재계산 ──
@@ -122,9 +125,15 @@ export async function POST(req: NextRequest) {
     const data = await res.json()
     if (res.ok) {
       await markOrderPaid(adminSupabase, table as OrderTable, String(orderId), String(paymentKey), Number(amount), data)
+      return NextResponse.json(data, { status: res.status })
     }
-    return NextResponse.json(data, { status: res.status })
+    console.error('[payments/confirm] toss confirm failed', { status: res.status, data, orderId, table })
+    return NextResponse.json(
+      { message: '결제 승인에 실패했습니다. 잠시 후 다시 시도해 주세요.' },
+      { status: res.status }
+    )
   } catch (e: any) {
-    return NextResponse.json({ message: e?.message || '서버 오류' }, { status: 500 })
+    console.error('[payments/confirm] unexpected error', e)
+    return NextResponse.json({ message: '결제 확인 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.' }, { status: 500 })
   }
 }

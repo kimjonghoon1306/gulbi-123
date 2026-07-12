@@ -63,7 +63,8 @@ export default function SettingsPage() {
       })
       const data = await res.json()
       if (!res.ok) {
-        setOpenaiKeyMsg({ type: 'error', text: data.error || '저장 실패' })
+        console.error('[admin settings] openai key save failed', data)
+        setOpenaiKeyMsg({ type: 'error', text: 'API 키 저장에 실패했습니다. 입력한 키를 확인해 주세요.' })
       } else {
         setOpenaiKeyMsg({ type: 'success', text: '✅ API 키가 저장됐어요!' })
         setOpenaiSaved(data.keyHint || null)
@@ -71,7 +72,8 @@ export default function SettingsPage() {
         setTimeout(() => setOpenaiKeyMsg(null), 3000)
       }
     } catch (e: any) {
-      setOpenaiKeyMsg({ type: 'error', text: e.message })
+      console.error('[admin settings] openai key save failed', e)
+      setOpenaiKeyMsg({ type: 'error', text: 'API 키 저장에 실패했습니다. 서버 로그를 확인해 주세요.' })
     }
     setOpenaiKeyLoading(false)
   }
@@ -91,7 +93,8 @@ export default function SettingsPage() {
       })
       const data = await res.json()
       if (!res.ok) {
-        setGeminiKeyMsg({ type: 'error', text: data.error || '저장 실패' })
+        console.error('[admin settings] gemini key save failed', data)
+        setGeminiKeyMsg({ type: 'error', text: 'Gemini 키 저장에 실패했습니다. 입력한 키를 확인해 주세요.' })
       } else {
         setGeminiKeyMsg({ type: 'success', text: '✅ Gemini API 키가 저장됐어요!' })
         setGeminiSaved(data.geminiKeyHint || null)
@@ -99,7 +102,8 @@ export default function SettingsPage() {
         setTimeout(() => setGeminiKeyMsg(null), 3000)
       }
     } catch (e: any) {
-      setGeminiKeyMsg({ type: 'error', text: e.message })
+      console.error('[admin settings] gemini key save failed', e)
+      setGeminiKeyMsg({ type: 'error', text: 'Gemini 키 저장에 실패했습니다. 서버 로그를 확인해 주세요.' })
     }
     setGeminiKeyLoading(false)
   }
@@ -132,7 +136,8 @@ export default function SettingsPage() {
     const { error } = await supabase.auth.updateUser({ password: newPw })
     if (error) {
       setFishMood('😢')
-      setPwMsg({ type: 'error', text: `오류: ${error.message}` })
+      console.error('[admin settings] password change failed', error)
+      setPwMsg({ type: 'error', text: '비밀번호 변경에 실패했습니다. 서버 로그를 확인해 주세요.' })
     } else {
       setFishMood('🥳')
       setPwMsg({ type: 'success', text: '비밀번호가 변경됐어요!' })

@@ -259,7 +259,11 @@ export default function OrdersAdmin({ config }: { config: OrdersAdminConfig }) {
         body: JSON.stringify({ paymentKey: o.payment_key, cancelReason: '관리자 환불' }),
       })
       const data = await res.json().catch(() => ({}))
-      if (!res.ok) { alert('토스 환불 실패: ' + (data.message || '오류')); return }
+      if (!res.ok) {
+        console.error('[admin order refund] failed', data)
+        alert('토스 환불 처리에 실패했습니다. 서버 로그를 확인해 주세요.')
+        return
+      }
     }
     await supabase.from(config.tableName).update({ status: '환불', updated_at: new Date().toISOString() }).eq('id', o.id)
     if (viewOrder?.id === o.id) setViewOrder({ ...viewOrder, status: '환불' })

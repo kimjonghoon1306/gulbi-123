@@ -164,7 +164,11 @@ export default function ProductsPage() {
       rejection_reason: null,
     }).eq('id', reviewProduct.id)
     setReviewLoading(false)
-    if (error) { alert('저장 실패: ' + error.message); return }   // 실패 시 모달 유지 + 원인 표시
+    if (error) {
+      console.error('[admin product approve] failed', error)
+      alert('상품 승인 저장에 실패했습니다. 서버 로그를 확인해 주세요.')
+      return
+    }   // 실패 시 모달 유지 + 원인 표시
     setReviewProduct(null)
     setOkMsg('✅ 가격이 확정되어 쇼핑몰에 노출되었습니다.')
     fetchAll()
@@ -180,7 +184,11 @@ export default function ProductsPage() {
       rejection_reason: rejectReason.trim(),
     }).eq('id', reviewProduct.id)
     setReviewLoading(false)
-    if (error) { alert('저장 실패: ' + error.message); return }
+    if (error) {
+      console.error('[admin product reject] failed', error)
+      alert('상품 거절 처리에 실패했습니다. 서버 로그를 확인해 주세요.')
+      return
+    }
     setReviewProduct(null); setShowRejectInput(false)
     setOkMsg('거절 처리되었습니다. 공급업체에 사유가 전달됩니다.')
     fetchAll()
@@ -196,7 +204,11 @@ export default function ProductsPage() {
       rejection_reason: rejectReason.trim(),
     }).eq('id', reviewProduct.id)
     setReviewLoading(false)
-    if (error) { alert('저장 실패: ' + error.message); return }
+    if (error) {
+      console.error('[admin product revision request] failed', error)
+      alert('수정요청 저장에 실패했습니다. 서버 로그를 확인해 주세요.')
+      return
+    }
     setReviewProduct(null); setShowRejectInput(false)
     setOkMsg('수정요청을 보냈습니다. 공급업체가 수정 후 재신청합니다.')
     fetchAll()

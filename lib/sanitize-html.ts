@@ -6,7 +6,7 @@ const ALLOWED_TAGS = new Set([
 
 // 이 태그들은 자식(텍스트) 째로 통째 제거한다. 태그만 벗기면 CSS/JS 코드가 본문에 텍스트로 새어나온다.
 const DROP_WITH_CONTENT = new Set([
-  'style', 'script', 'head', 'title', 'meta', 'link', 'noscript', 'template',
+  'style', 'script', 'head', 'title', 'meta', 'link', 'noscript', 'template', 'pre', 'code',
 ])
 
 const GLOBAL_ATTRS = new Set(['class', 'id', 'style', 'title', 'aria-label', 'role'])
@@ -31,16 +31,41 @@ function isSafeStyle(value: string) {
   return !/(expression|javascript:|vbscript:|data:text\/html|@import|behavior\s*:)/i.test(value)
 }
 
+function unwrapCodeFences(html: string) {
+  return html.replace(/```(?:html|css|javascript|js)?\s*([\s\S]*?)```/gi, (_, body) => String(body).trim())
+}
+
+function stripEscapedDroppedBlocks(html: string) {
+  return html
+    .replace(/&lt;(style|script)[^&]*?&gt;[\s\S]*?&lt;\/\1&gt;/gi, '')
+    .replace(/&lt;\/?(style|script)[^&]*?&gt;/gi, '')
+}
+
+function isLikelyRawCodeText(value: string) {
+  const text = value.trim()
+  if (!text) return false
+  if (/^```/.test(text)) return true
+  if (/^<\/?(style|script|html|head|body)\b/i.test(text)) return true
+  if (/@import\s+url\(|<\/?script\b|<\/?style\b/i.test(text)) return true
+  if (/(^|\n)\s*(body|html|\[[^\]]+\]|[#.][A-Za-z0-9_-]+)[^{\n]*\{[^}]*:[^}]*}/.test(text)) return true
+  if (/(console\.|function\s*\(|=>\s*\{|document\.|window\.)/.test(text) && /[{};]/.test(text)) return true
+  return false
+}
+
 export function sanitizeHtml(html: string) {
   if (typeof window === 'undefined' || !html) return ''
 
   const template = document.createElement('template')
-  template.innerHTML = html
+  template.innerHTML = stripEscapedDroppedBlocks(unwrapCodeFences(html))
 
   const walk = (node: Node) => {
     for (const child of Array.from(node.childNodes)) {
       if (child.nodeType === Node.COMMENT_NODE) {
         child.remove()
+        continue
+      }
+      if (child.nodeType === Node.TEXT_NODE) {
+        if (isLikelyRawCodeText(child.textContent || '')) child.remove()
         continue
       }
       if (child.nodeType !== Node.ELEMENT_NODE) continue

@@ -86,7 +86,11 @@ export default function AdminReturnsPage() {
       updated_at: new Date().toISOString(),
     }).eq('id', r.id)
     setSaving('')
-    if (error) { alert('저장 실패: ' + error.message); return }
+    if (error) {
+      console.error('[admin return save] failed', error)
+      alert('반품/교환 상태 저장에 실패했습니다. 서버 로그를 확인해 주세요.')
+      return
+    }
     await fetchAll()
   }
 

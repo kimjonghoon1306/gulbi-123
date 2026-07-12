@@ -76,7 +76,8 @@ export default function ShopRegisterPage() {
           return setError('이메일 형식이 올바르지 않아요.')
         if (msg.includes('password') && msg.includes('short'))
           return setError('비밀번호는 6자 이상이어야 해요.')
-        return setError(`오류가 발생했어요: ${msg}`)
+        console.error('[shop register] sign up failed', signUpError)
+        return setError('가입 처리 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.')
       }
       if (data.user) {
         // signUp 직후 세션이 없는 경우(이메일 인증 설정 등) → 즉시 로그인으로 세션 확보
@@ -104,11 +105,15 @@ export default function ShopRegisterPage() {
           business_address: form.businessAddress || null,
           status,
         }, { onConflict: 'id' })
-        if (insertError) return setError(`정보 저장 중 오류가 발생했어요: ${insertError.message}`)
+        if (insertError) {
+          console.error('[shop register] member upsert failed', insertError)
+          return setError('회원 정보 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+        }
         setStep(3)
       }
     } catch (e: any) {
-      setError(`오류가 발생했어요: ${e.message}`)
+      console.error('[shop register] unexpected error', e)
+      setError('가입 처리 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.')
     } finally {
       setLoading(false)
     }

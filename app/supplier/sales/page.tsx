@@ -100,7 +100,11 @@ function SalesContent() {
   const saveSupplierTracking = async (orderType: string, orderId: string, courier: string, tracking: string) => {
     const patch = { courier_code: courier || null, tracking_number: tracking.trim() || null }
     const { error } = await supabase.from(ORDER_TABLE[orderType]).update(patch).eq('id', orderId)
-    if (error) { alert('송장 저장 실패: ' + error.message); return false }
+    if (error) {
+      console.error('[supplier tracking save] failed', error)
+      alert('송장 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+      return false
+    }
     setOrders(prev => prev.map(o => o.order_id === orderId
       ? { ...o, courier_code: patch.courier_code || '', tracking_number: patch.tracking_number || '' } : o))
     return true

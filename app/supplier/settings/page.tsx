@@ -54,7 +54,8 @@ function SettingsContent() {
       })
       const data = await res.json()
       if (!res.ok) {
-        setKeyMsg({ type: 'error', text: data.error || '저장 실패' })
+        console.error('[supplier settings] openai key save failed', data)
+        setKeyMsg({ type: 'error', text: 'API 키 저장에 실패했습니다. 입력한 키를 확인해 주세요.' })
       } else {
         setKeyMsg({ type: 'success', text: '✅ API 키가 저장됐어요!' })
         setKeyInput('')
@@ -62,7 +63,8 @@ function SettingsContent() {
         setTimeout(() => setKeyMsg(null), 3000)
       }
     } catch (e: any) {
-      setKeyMsg({ type: 'error', text: e.message })
+      console.error('[supplier settings] openai key save failed', e)
+      setKeyMsg({ type: 'error', text: 'API 키 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.' })
     }
     setKeyLoading(false)
   }
@@ -78,7 +80,8 @@ function SettingsContent() {
       })
       const data = await res.json()
       if (!res.ok) {
-        setGeminiMsg({ type: 'error', text: data.error || '저장 실패' })
+        console.error('[supplier settings] gemini key save failed', data)
+        setGeminiMsg({ type: 'error', text: 'Gemini 키 저장에 실패했습니다. 입력한 키를 확인해 주세요.' })
       } else {
         setGeminiMsg({ type: 'success', text: '✅ Gemini 키가 저장됐어요!' })
         setGeminiInput('')
@@ -86,7 +89,8 @@ function SettingsContent() {
         setTimeout(() => setGeminiMsg(null), 3000)
       }
     } catch (e: any) {
-      setGeminiMsg({ type: 'error', text: e.message })
+      console.error('[supplier settings] gemini key save failed', e)
+      setGeminiMsg({ type: 'error', text: 'Gemini 키 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.' })
     }
     setGeminiLoading(false)
   }
@@ -117,7 +121,8 @@ function SettingsContent() {
     }
     const { error } = await supabase.auth.updateUser({ password: newPw })
     if (error) {
-      setPwMsg({ type: 'error', text: `오류: ${error.message}` })
+      console.error('[supplier settings] password change failed', error)
+      setPwMsg({ type: 'error', text: '비밀번호 변경에 실패했습니다. 잠시 후 다시 시도해 주세요.' })
     } else {
       setPwMsg({ type: 'success', text: '✅ 비밀번호가 변경됐어요!' })
       setCurPw(''); setNewPw(''); setConfirmPw('')

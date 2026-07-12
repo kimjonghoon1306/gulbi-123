@@ -26,7 +26,11 @@ export default function DashboardPage() {
     try {
       const res = await fetch('/api/admin-brief')
       const data = await res.json()
-      if (!res.ok) { setBriefError(data.error || 'AI 브리핑을 불러오지 못했어요.'); return }
+      if (!res.ok) {
+        console.error('[admin brief] failed', data)
+        setBriefError('AI 브리핑을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.')
+        return
+      }
       setBrief(data)
     } catch {
       setBriefError('네트워크 오류로 브리핑을 불러오지 못했어요.')

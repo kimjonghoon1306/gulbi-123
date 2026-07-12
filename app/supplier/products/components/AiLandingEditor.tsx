@@ -180,12 +180,18 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
         })
       })
       const data = await res.json()
-      if (data.error) return setAiError(data.error)
+      if (data.error) {
+        console.error('[supplier landing generate] failed', data)
+        return setAiError('상세페이지 생성에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+      }
       setAiLandingData(data.data || null)
       setAiLandingHtml(data.html)
       setAiPresetKey('gold' as PresetKey); setAiTemplateKey('premium')
       setAiStep(3)
-    } catch (e: any) { setAiError('오류: ' + e.message) }
+    } catch (e: any) {
+      console.error('[supplier landing generate] unexpected error', e)
+      setAiError('상세페이지 생성 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.')
+    }
     finally { setAiLoading(false); clearInterval(aiLoadingTimer.current); setAiLoadingMsg('') }
   }
 
@@ -222,7 +228,10 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
       if (mainImgUrl) updateData.image_url = mainImgUrl
       await supabase.from('products').update(updateData).eq('id', selectedProduct.id)
       reset(); onDone()
-    } catch (e: any) { setAiError('등록 오류: ' + e.message) }
+    } catch (e: any) {
+      console.error('[supplier landing save] failed', e)
+      setAiError('상세페이지 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+    }
     finally { setAiLoading(false) }
   }
 
@@ -246,7 +255,10 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
       }).filter(Boolean).join('')
       await supabase.from('products').update({ description: html }).eq('id', selectedProduct.id)
       reset(); onDone()
-    } catch (e: any) { setAiError('저장 오류: ' + e.message) }
+    } catch (e: any) {
+      console.error('[supplier manual landing save] failed', e)
+      setAiError('상세페이지 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+    }
     finally { setAiLoading(false) }
   }
 
@@ -620,7 +632,10 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
                   try {
                     await supabase.from('products').update({ description: htmlCode }).eq('id', htmlProduct.id)
                     reset(); onDone()
-                  } catch (e: any) { setAiError('저장 오류: ' + e.message) }
+                  } catch (e: any) {
+                    console.error('[supplier html save] failed', e)
+                    setAiError('상세페이지 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+                  }
                   finally { setAiLoading(false) }
                 }}
                 disabled={aiLoading || !htmlProduct || !htmlCode.trim()}
@@ -734,7 +749,10 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
                     ).join('')
                     await supabase.from('products').update({ description: html }).eq('id', imgProduct.id)
                     reset(); onDone()
-                  } catch (e: any) { setAiError('저장 오류: ' + e.message) }
+                  } catch (e: any) {
+                    console.error('[supplier image landing save] failed', e)
+                    setAiError('상세페이지 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+                  }
                   finally { setAiLoading(false) }
                 }}
                 disabled={aiLoading || !imgProduct || imgFiles.length === 0}

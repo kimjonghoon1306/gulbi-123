@@ -5,7 +5,11 @@ import { useSearchParams, useRouter } from 'next/navigation'
 function FailInner() {
   const sp = useSearchParams()
   const router = useRouter()
-  const message = sp.get('message') || '결제가 취소되었거나 실패했습니다.'
+  const code = (sp.get('code') || '').toUpperCase()
+  const message =
+    code.includes('USER_CANCEL') || code.includes('PAY_PROCESS_CANCELED')
+      ? '결제가 취소되었습니다. 다시 주문하시려면 장바구니에서 결제를 진행해 주세요.'
+      : '결제가 정상적으로 완료되지 않았습니다. 잠시 후 다시 시도해 주세요.'
   return (
     <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#fef2f2', padding: 20, fontFamily: '-apple-system,sans-serif' }}>
       <div style={{ background: '#fff', borderRadius: 24, padding: '44px 32px', maxWidth: 440, width: '100%', textAlign: 'center', boxShadow: '0 24px 60px -28px rgba(0,0,0,.2)' }}>
