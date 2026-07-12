@@ -6,6 +6,7 @@ import { sanitizeHtml } from '@/lib/sanitize-html'
 import { loadToss } from '@/lib/toss'
 import { ProductMini } from '../../_ProductMini'
 import { ReviewSection } from '../../_ReviewSection'
+import { QuestionSection } from '../../_QuestionSection'
 import { OrderModal } from '../../_OrderModal'
 import { priceFor } from '../../_shopConstants'
 import { addressToText } from '../../_AddressBookPicker'
@@ -55,6 +56,10 @@ export default function ProductDetailPage() {
   const [reviewSubmitting, setReviewSubmitting] = useState(false)
   const [reviewImages, setReviewImages] = useState<string[]>([])
   const [reviewUploading, setReviewUploading] = useState(false)
+  const [questions, setQuestions] = useState<any[]>([])
+  const [questionText, setQuestionText] = useState('')
+  const [questionSecret, setQuestionSecret] = useState(false)
+  const [questionSubmitting, setQuestionSubmitting] = useState(false)
 
   const uploadReviewImages = async (files: FileList | null) => {
     if (!files || files.length === 0 || !user) return
@@ -112,6 +117,37 @@ export default function ProductDetailPage() {
   }
 
   const reviewAvg = reviews.length ? reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length : 0
+
+  const fetchQuestions = async () => {
+    try {
+      const res = await fetch(`/api/product-questions?productId=${encodeURIComponent(String(id))}`)
+      const data = await res.json().catch(() => ({}))
+      if (res.ok) setQuestions(data.questions || [])
+    } catch {}
+  }
+
+  const submitQuestion = async () => {
+    if (!user) { router.push('/shop/login'); return }
+    if (!questionText.trim()) return
+    setQuestionSubmitting(true)
+    try {
+      const { error } = await supabase.from('product_questions').insert({
+        product_id: id,
+        user_id: user.id,
+        author_name: memberInfo?.name || user.email?.split('@')[0] || '익명',
+        question: questionText.trim(),
+        is_secret: questionSecret,
+      })
+      if (error) throw error
+      setQuestionText('')
+      setQuestionSecret(false)
+      await fetchQuestions()
+    } catch (e: any) {
+      alert(e?.message || '문의 등록 중 오류가 발생했어요.')
+    } finally {
+      setQuestionSubmitting(false)
+    }
+  }
 
   const fetchProduct = async () => {
     const { data } = await supabase.from('products').select('*').eq('id', id).single()
@@ -186,6 +222,7 @@ export default function ProductDetailPage() {
       const { data: wish } = await supabase.from('wishlists').select('id').eq('user_id', user.id).eq('product_id', id).single()
       setLiked(!!wish)
       fetchReviews(user.id)
+      fetchQuestions()
     }
   }
 
@@ -251,6 +288,7 @@ export default function ProductDetailPage() {
     fetchRecentProducts()
     checkUser()
     fetchReviews()
+    fetchQuestions()
     const saved = localStorage.getItem('shop-theme')
     if (saved === 'dark') setDark(true)
     fetchSocialData()
@@ -612,6 +650,9 @@ export default function ProductDetailPage() {
 
         {/* ── 상품 리뷰 (실제 구매자) ── */}
         <ReviewSection reviews={reviews} myReview={myReview} reviewRating={reviewRating} setReviewRating={setReviewRating} reviewContent={reviewContent} setReviewContent={setReviewContent} reviewSubmitting={reviewSubmitting} submitReview={submitReview} deleteReview={deleteReview} reviewImages={reviewImages} setReviewImages={setReviewImages} reviewUploading={reviewUploading} uploadReviewImages={uploadReviewImages} reviewAvg={reviewAvg} D={D} dark={dark} user={user} />
+
+        {/* ── 상품 Q&A ── */}
+        <QuestionSection questions={questions} questionText={questionText} setQuestionText={setQuestionText} questionSecret={questionSecret} setQuestionSecret={setQuestionSecret} submitting={questionSubmitting} submitQuestion={submitQuestion} D={D} dark={dark} user={user} />
 
         {/* ── 추천 상품 (같은 카테고리) ── */}
         {related.length > 0 && (

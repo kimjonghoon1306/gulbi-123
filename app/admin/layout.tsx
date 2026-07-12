@@ -19,6 +19,7 @@ const menuGroups = [
       { href: '/admin/products',  icon: '🧺', label: '상품관리' },
       { href: '/admin/inventory', icon: '📦', label: '재고관리', badge: true },
       { href: '/admin/restock',   icon: '🔔', label: '재입고알림' },
+      { href: '/admin/questions', icon: '💬', label: '상품문의' },
     ],
   },
   {
@@ -53,8 +54,8 @@ const mobileMenus = [
   { href: '/admin/dashboard',        icon: '🏠', label: '홈' },
   { href: '/admin/products',         icon: '🧺', label: '상품' },
   { href: '/admin/orders/general',   icon: '📝', label: '주문' },
+  { href: '/admin/questions',        icon: '💬', label: '문의' },
   { href: '/admin/members',          icon: '👥', label: '회원' },
-  { href: '/admin/settings',         icon: '⚙️', label: '설정' },
 ]
 
 // SVG 로고 컴포넌트
