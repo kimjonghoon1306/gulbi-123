@@ -33,6 +33,7 @@ export default function MembersPage() {
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<ShopMember | null>(null)
   const [note, setNote] = useState('')
+  const [deletingId, setDeletingId] = useState('')
 
   useEffect(() => { fetchAll() }, [])
 
@@ -50,10 +51,27 @@ export default function MembersPage() {
 
   const deleteMember = async (id: string) => {
     if (!confirm('정말 삭제하시겠습니까?')) return
-    await supabase.from('cart_items').delete().eq('user_id', id)
-    await supabase.from('shop_members').delete().eq('id', id)
-    await supabase.rpc('delete_auth_user', { user_id: id })
-    setSelected(null); fetchAll()
+    setDeletingId(id)
+    try {
+      const res = await fetch('/api/admin/delete-member', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: id }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        console.error('[admin members] delete member failed', data)
+        alert('회원 삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+        return
+      }
+      setSelected(null)
+      fetchAll()
+    } catch (e) {
+      console.error('[admin members] delete member unexpected error', e)
+      alert('회원 삭제 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.')
+    } finally {
+      setDeletingId('')
+    }
   }
 
   const downloadExcel = () => {
@@ -188,9 +206,9 @@ ${rows.map(r => `<Row>${r.map(c => `<Cell><Data ss:Type="String">${String(c).rep
                   {m.status === '대기중' ? '심사하기' : '수정'}
                 </button>
               )}
-              <button onClick={() => deleteMember(m.id)}
+              <button onClick={() => deleteMember(m.id)} disabled={deletingId === m.id}
                 className="text-xs text-red-400 hover:text-red-500 font-medium px-2 py-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-                삭제
+                {deletingId === m.id ? '삭제 중...' : '삭제'}
               </button>
             </div>
           </div>
