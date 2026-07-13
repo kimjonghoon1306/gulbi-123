@@ -64,6 +64,14 @@ function SuccessInner() {
           setState('vbank'); setMsg('가상계좌가 발급됐어요!')
         } else {
           setState('ok'); setMsg('결제가 완료되었습니다!')
+          // 온파트너 제휴 전환 추적 (파트너 링크로 유입된 구매만 적립됨)
+          try {
+            ;(window as any).Partnering?.track({
+              orderId,
+              amount: Number(amt),
+              orderType: (table || 'general_orders').replace('_orders', ''),
+            })
+          } catch {}
         }
       } catch (e) {
         console.error('[payment confirm] unexpected error', e)
