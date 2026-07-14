@@ -42,6 +42,28 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
   const supabase = createClient()
   const router = useRouter()
   const id = product.id
+  const [pointBalance, setPointBalance] = React.useState(0)
+  const [pointUsed, setPointUsed] = React.useState(0)
+  const pointLimit = Math.max(0, Math.min(pointBalance, finalPrice))
+  const payAmount = Math.max(0, finalPrice - pointUsed)
+
+  React.useEffect(() => {
+    if (!user?.id) return
+    ;(async () => {
+      const { data } = await supabase.from('cash_accounts').select('point_balance').eq('user_id', user.id).maybeSingle()
+      setPointBalance(Number(data?.point_balance || 0))
+    })()
+  }, [user?.id])
+
+  React.useEffect(() => {
+    setPointUsed(prev => Math.max(0, Math.min(prev, pointLimit)))
+  }, [pointLimit])
+
+  const onPointChange = (value: string) => {
+    const next = Math.floor(Number(value.replace(/[^\d]/g, '')) || 0)
+    setPointUsed(Math.max(0, Math.min(next, pointLimit)))
+  }
+
   return (
         <div
           onClick={() => !orderLoading && setShowOrderForm(false)}
@@ -250,14 +272,35 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
                     {couponMsg && <p style={{fontSize:'12px',fontWeight:700,color:couponMsg.ok?'#16a34a':'#ef4444',margin:'10px 0 0'}}>{couponMsg.text}</p>}
                   </div>
 
-                  {/* 결제 요약 (쿠폰 적용 시 차감 표시) */}
-                  {appliedCoupon && (
-                    <div style={{background:D.input,borderRadius:'14px',padding:'14px 16px',display:'flex',flexDirection:'column',gap:'6px'}}>
-                      <div style={{display:'flex',justifyContent:'space-between',fontSize:'13px',color:D.sub}}><span>상품 금액</span><span>{totalPrice.toLocaleString()}원</span></div>
-                      <div style={{display:'flex',justifyContent:'space-between',fontSize:'13px',color:'#16a34a',fontWeight:700}}><span>쿠폰 할인</span><span>−{couponDiscount.toLocaleString()}원</span></div>
-                      <div style={{display:'flex',justifyContent:'space-between',fontSize:'15px',color:D.text,fontWeight:900,borderTop:`1px solid ${D.border}`,paddingTop:'6px',marginTop:'2px'}}><span>최종 결제액</span><span>{finalPrice.toLocaleString()}원</span></div>
+                  <div>
+                    <label style={{display:'block',fontSize:'13px',fontWeight:800,color:D.text,marginBottom:'10px'}}>💰 포인트 사용</label>
+                    <div style={{background:D.input,borderRadius:'14px',padding:'12px 14px'}}>
+                      <div style={{display:'flex',justifyContent:'space-between',fontSize:'12px',color:D.sub,marginBottom:'8px'}}>
+                        <span>보유 포인트</span><b style={{color:D.text}}>{pointBalance.toLocaleString()} P</b>
+                      </div>
+                      <div style={{display:'flex',gap:'8px'}}>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          value={pointUsed ? pointUsed.toLocaleString() : ''}
+                          onChange={e => onPointChange(e.target.value)}
+                          placeholder="0"
+                          style={{flex:1,minWidth:0,padding:'12px 14px',borderRadius:'12px',border:`2px solid ${D.border}`,background:D.card,color:D.text,fontSize:'14px',fontWeight:800,outline:'none',boxSizing:'border-box'}}
+                        />
+                        <button type="button" onClick={() => setPointUsed(pointLimit)}
+                          style={{padding:'0 14px',borderRadius:'12px',border:`1px solid ${D.border}`,background:D.card,color:D.text,fontSize:'12px',fontWeight:800,cursor:'pointer',whiteSpace:'nowrap'}}>
+                          모두 사용
+                        </button>
+                      </div>
                     </div>
-                  )}
+                  </div>
+
+                  <div style={{background:D.input,borderRadius:'14px',padding:'14px 16px',display:'flex',flexDirection:'column',gap:'6px'}}>
+                    <div style={{display:'flex',justifyContent:'space-between',fontSize:'13px',color:D.sub}}><span>상품 금액</span><span>{totalPrice.toLocaleString()}원</span></div>
+                    {couponDiscount > 0 && <div style={{display:'flex',justifyContent:'space-between',fontSize:'13px',color:'#16a34a',fontWeight:700}}><span>쿠폰 할인</span><span>−{couponDiscount.toLocaleString()}원</span></div>}
+                    {pointUsed > 0 && <div style={{display:'flex',justifyContent:'space-between',fontSize:'13px',color:'#16a34a',fontWeight:700}}><span>포인트 사용</span><span>−{pointUsed.toLocaleString()}원</span></div>}
+                    <div style={{display:'flex',justifyContent:'space-between',fontSize:'15px',color:D.text,fontWeight:900,borderTop:`1px solid ${D.border}`,paddingTop:'6px',marginTop:'2px'}}><span>최종 결제액</span><span>{payAmount.toLocaleString()}원</span></div>
+                  </div>
 
                   {/* 주문하기 버튼 */}
                   <button
@@ -289,7 +332,8 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
                           note: orderForm.note,
                           payment_method: isCard ? '카드(토스)' : isVbank ? '가상계좌(토스)' : orderForm.payment_method,
                           status: isCard ? '결제대기' : isVbank ? '입금대기' : '접수',
-                          total_amount: finalPrice,
+                          total_amount: payAmount,
+                          point_used: pointUsed,
                           coupon_code: appliedCoupon?.code || null,
                           coupon_owner: appliedCoupon?.created_by_role === 'supplier' ? appliedCoupon.created_by : null,
                           coupon_discount: couponDiscount,
@@ -313,7 +357,7 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
                           }
                           // 증빙 자동생성 — 가상계좌(현금성)만. 카드는 카드매출전표 갈음(이중과세 방지)
                           if (isVbank && orderForm.evidence !== '발행안함') {
-                            const vat = product.is_taxable ? finalPrice - Math.round(finalPrice / 1.1) : 0
+                            const vat = product.is_taxable ? payAmount - Math.round(payAmount / 1.1) : 0
                             if (orderForm.evidence === '세금계산서') {
                               await supabase.from('tax_invoices').insert({
                                 company_name: memberInfo?.business_name || memberInfo?.name || '',
@@ -323,9 +367,9 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
                                 invoicee_ceo_name: memberInfo?.business_ceo || memberInfo?.name || '',
                                 invoicee_addr: memberInfo?.business_address || '',
                                 invoicee_email: orderForm.evidenceContact || memberInfo?.email || '',
-                                amount: finalPrice - vat,
+                                amount: payAmount - vat,
                                 tax_amount: vat,
-                                total_amount: finalPrice,
+                                total_amount: payAmount,
                                 note: `[자동] 주문 ${table} #${newOrder.id}`,
                                 status: '미발행',
                               })
@@ -333,7 +377,7 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
                               await supabase.from('cash_receipts').insert({
                                 customer_name: memberInfo?.name || '',
                                 contact: orderForm.evidenceContact || memberInfo?.contact || '',
-                                amount: finalPrice,
+                                amount: payAmount,
                                 receipt_type: isBiz ? '사업자용' : '소비자용',
                                 note: `[자동] 주문 ${table} #${newOrder.id}`,
                                 status: '미발행',
@@ -341,11 +385,23 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
                             }
                           }
                         }
+                        if (newOrder && payAmount === 0) {
+                          const res = await fetch('/api/orders/point-pay', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ orderId: newOrder.id, table }),
+                          })
+                          const data = await res.json().catch(() => ({}))
+                          if (!res.ok) throw new Error(data.message || 'point pay failed')
+                          setOrderDone(true)
+                          return
+                        }
+
                         // 카드/가상계좌 → 토스 결제창 호출
                         if (isToss && newOrder) {
                           const toss = await loadToss()
                           await toss.requestPayment(isCard ? '카드' : '가상계좌', {
-                            amount: finalPrice,
+                            amount: payAmount,
                             orderId: String(newOrder.id),
                             orderName: product.name,
                             customerName: orderForm.recipient || memberInfo?.name || '고객',
@@ -360,7 +416,7 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
                     }}
                     disabled={orderLoading}
                     style={{width:'100%',padding:'18px',borderRadius:'16px',background:orderLoading ? D.input : 'linear-gradient(135deg,#15803d,#16a34a)',color:orderLoading ? D.sub : 'white',fontSize:'17px',fontWeight:900,border:'none',cursor:orderLoading ? 'not-allowed' : 'pointer',boxShadow:orderLoading ? 'none' : '0 10px 28px rgba(22,163,74,0.4)',transition:'all 0.2s',letterSpacing:'-0.3px'}}>
-                    {orderLoading ? '⏳ 주문 처리 중...' : `🛒 ${finalPrice.toLocaleString()}원 주문하기`}
+                    {orderLoading ? '⏳ 주문 처리 중...' : `🛒 ${payAmount.toLocaleString()}원 주문하기`}
                   </button>
                 </div>
               </>

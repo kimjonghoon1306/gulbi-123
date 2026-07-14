@@ -54,6 +54,8 @@ export default function CartPage() {
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null)    // 선택된 coupons 행
   const [appliedUcId, setAppliedUcId] = useState<string | null>(null) // 선택된 user_coupons.id (사용처리용)
   const [couponMsg, setCouponMsg] = useState<{ ok: boolean; text: string } | null>(null)
+  const [pointBalance, setPointBalance] = useState(0)
+  const [pointUsed, setPointUsed] = useState(0)
 
   useEffect(() => {
     const saved = localStorage.getItem('shop-theme')
@@ -85,6 +87,9 @@ export default function CartPage() {
 
     const { data: member } = await supabase.from('shop_members').select('*').eq('id', user.id).single()
     if (member) { setMemberType(member.member_type); setMemberInfo(member) }
+
+    const { data: account } = await supabase.from('cash_accounts').select('point_balance').eq('user_id', user.id).maybeSingle()
+    setPointBalance(Number(account?.point_balance || 0))
 
     const { data: addrData } = await supabase
       .from('addresses')
@@ -154,6 +159,16 @@ export default function CartPage() {
   }
   const discount = calcDiscount(appliedCoupon, couponBase(appliedCoupon))
   const finalAmount = Math.max(0, totalAmount - discount)
+  const pointLimit = Math.max(0, Math.min(pointBalance, finalAmount))
+  const payAmount = Math.max(0, finalAmount - pointUsed)
+
+  useEffect(() => {
+    setPointUsed(prev => Math.max(0, Math.min(prev, pointLimit)))
+  }, [pointLimit])
+
+  const updatePointUsed = (value: number) => {
+    setPointUsed(Math.max(0, Math.min(Math.floor(value || 0), pointLimit)))
+  }
 
   // 쿠폰함에서 받은 쿠폰을 선택해서 사용
   const selectCoupon = (uc: any) => {
@@ -224,7 +239,8 @@ export default function CartPage() {
         address: orderForm.address,
         payment_method: isCard ? '카드(토스)' : isVbank ? '가상계좌(토스)' : orderForm.payment_method,
         status: isCard ? '결제대기' : isVbank ? '입금대기' : '접수',
-        total_amount: finalAmount,
+        total_amount: payAmount,
+        point_used: pointUsed,
         coupon_code: appliedCoupon?.code || null,   // 서버 결제금액 검증용
         coupon_owner: appliedCoupon?.created_by_role === 'supplier' ? appliedCoupon.created_by : null, // 부담주체(공급사id/null=본사)
         coupon_discount: discount,
@@ -284,13 +300,27 @@ export default function CartPage() {
       }
 
       // 카드/가상계좌 → 토스 결제창 호출 (성공 시 /shop/payment/success 에서 승인 + 장바구니 비움)
+      if (newOrder && payAmount === 0) {
+        const res = await fetch('/api/orders/point-pay', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId: newOrder.id, table }),
+        })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) throw new Error(data.message || 'point pay failed')
+        await clearCart()
+        localStorage.setItem('cart-updated', Date.now().toString())
+        setOrderDone(true)
+        return
+      }
+
       if (isToss && newOrder) {
         const toss = await loadToss()
         const orderName = items.length > 1
           ? `${items[0].products.name} 외 ${items.length - 1}건`
           : (items[0]?.products?.name || '온종일팜 주문')
         await toss.requestPayment(isCard ? '카드' : '가상계좌', {
-          amount: finalAmount,
+          amount: payAmount,
           orderId: String(newOrder.id),
           orderName,
           customerName: orderForm.recipient || memberInfo?.name || '고객',
@@ -462,17 +492,23 @@ export default function CartPage() {
                   <p style={{ fontSize:'13px', color:'#ef4444', fontWeight:700, margin:0 }}>−{discount.toLocaleString()}원</p>
                 </div>
               )}
+              {pointUsed > 0 && (
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:'4px' }}>
+                  <p style={{ fontSize:'13px', color:D.sub, margin:0 }}>💰 포인트 사용</p>
+                  <p style={{ fontSize:'13px', color:'#16a34a', fontWeight:700, margin:0 }}>−{pointUsed.toLocaleString()}원</p>
+                </div>
+              )}
               <div style={{ height:'1px', background:D.border, margin:'14px 0' }} />
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                 <p style={{ fontSize:'15px', fontWeight:800, color:D.text, margin:0 }}>총 결제금액</p>
-                <p style={{ fontSize:'22px', fontWeight:900, color:priceColor, margin:0 }}>{finalAmount.toLocaleString()}원</p>
+                <p style={{ fontSize:'22px', fontWeight:900, color:priceColor, margin:0 }}>{payAmount.toLocaleString()}원</p>
               </div>
             </div>
 
             {/* 주문하기 버튼 */}
             <button className="cart-order-btn" onClick={() => { const delivery = defaultCheckoutAddress(); setOrderDone(false); setAgreeRefund(false); setOrderForm({ address: delivery.address, recipient: delivery.recipient, phone: delivery.phone, note:'', payment_method:'가상계좌', evidence: isBiz ? '세금계산서' : '현금영수증', evidenceContact: '' }); setShowOrder(true) }}
               style={{ width:'100%', padding:'18px', borderRadius:'16px', background:'linear-gradient(135deg,#16a34a,#15803d)', color:'white', fontSize:'17px', fontWeight:900, border:'none', cursor:'pointer', boxShadow:'0 10px 28px rgba(22,163,74,0.35)' }}>
-              <span className="cart-emoji">🛒</span> {finalAmount.toLocaleString()}원 주문하기
+              <span className="cart-emoji">🛒</span> {payAmount.toLocaleString()}원 주문하기
             </button>
             </div>
           </div>
@@ -480,7 +516,7 @@ export default function CartPage() {
       </div>
 
       {/* 주문 모달 */}
-      {showOrder && <CartOrderModal orderForm={orderForm} setOrderForm={setOrderForm} orderDone={orderDone} handleOrder={handleOrder} orderLoading={orderLoading} items={items} finalAmount={finalAmount} discount={discount} appliedCoupon={appliedCoupon} memberInfo={memberInfo} addresses={addresses} isBiz={isBiz} D={D} dark={dark} redirectCount={redirectCount} agreeRefund={agreeRefund} setAgreeRefund={setAgreeRefund} vatAmount={vatAmount} exemptSum={exemptSum} taxableSum={taxableSum} getPrice={getPrice} setShowOrder={setShowOrder} gtext={gtext} priceColor={priceColor} />}
+      {showOrder && <CartOrderModal orderForm={orderForm} setOrderForm={setOrderForm} orderDone={orderDone} handleOrder={handleOrder} orderLoading={orderLoading} items={items} finalAmount={finalAmount} discount={discount} appliedCoupon={appliedCoupon} memberInfo={memberInfo} addresses={addresses} isBiz={isBiz} D={D} dark={dark} redirectCount={redirectCount} agreeRefund={agreeRefund} setAgreeRefund={setAgreeRefund} vatAmount={vatAmount} exemptSum={exemptSum} taxableSum={taxableSum} getPrice={getPrice} setShowOrder={setShowOrder} gtext={gtext} priceColor={priceColor} pointBalance={pointBalance} pointUsed={pointUsed} pointLimit={pointLimit} payAmount={payAmount} setPointUsed={updatePointUsed} />}
 
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}

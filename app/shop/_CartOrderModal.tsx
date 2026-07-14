@@ -32,10 +32,18 @@ type Props = {
   setShowOrder: (v: boolean) => void
   gtext: string
   priceColor: string
+  pointBalance: number
+  pointUsed: number
+  pointLimit: number
+  payAmount: number
+  setPointUsed: (v: number) => void
 }
 
-export function CartOrderModal({ orderForm, setOrderForm, orderDone, handleOrder, orderLoading, items, finalAmount, discount, appliedCoupon, memberInfo, addresses, isBiz, D, dark, redirectCount, agreeRefund, setAgreeRefund, vatAmount, exemptSum, taxableSum, getPrice, setShowOrder, gtext, priceColor }: Props) {
+export function CartOrderModal({ orderForm, setOrderForm, orderDone, handleOrder, orderLoading, items, finalAmount, discount, appliedCoupon, memberInfo, addresses, isBiz, D, dark, redirectCount, agreeRefund, setAgreeRefund, vatAmount, exemptSum, taxableSum, getPrice, setShowOrder, gtext, priceColor, pointBalance, pointUsed, pointLimit, payAmount, setPointUsed }: Props) {
   const router = useRouter()
+  const onPointChange = (value: string) => {
+    setPointUsed(Number(value.replace(/[^\d]/g, '')) || 0)
+  }
   return (
         <div onClick={() => !orderLoading && setShowOrder(false)}
           style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.65)', backdropFilter:'blur(10px)', zIndex:9999, display:'flex', alignItems:'flex-end' }}>
@@ -95,10 +103,43 @@ export function CartOrderModal({ orderForm, setOrderForm, orderDone, handleOrder
                       <p style={{ fontSize:'13px', fontWeight:700, color:'#ef4444', margin:0 }}>−{discount.toLocaleString()}원</p>
                     </div>
                   )}
+                  {pointUsed > 0 && (
+                    <div style={{ display:'flex', justifyContent:'space-between' }}>
+                      <p style={{ fontSize:'13px', color:D.sub, margin:0 }}>💰 포인트 사용</p>
+                      <p style={{ fontSize:'13px', fontWeight:700, color:gtext, margin:0 }}>−{pointUsed.toLocaleString()}원</p>
+                    </div>
+                  )}
                   <div style={{ height:'1px', background:D.border }} />
                   <div style={{ display:'flex', justifyContent:'space-between' }}>
-                    <p style={{ fontSize:'14px', fontWeight:800, color:D.text, margin:0 }}>합계</p>
-                    <p style={{ fontSize:'16px', fontWeight:900, color:priceColor, margin:0 }}>{finalAmount.toLocaleString()}원</p>
+                    <p style={{ fontSize:'14px', fontWeight:800, color:D.text, margin:0 }}>최종 결제액</p>
+                    <p style={{ fontSize:'16px', fontWeight:900, color:priceColor, margin:0 }}>{payAmount.toLocaleString()}원</p>
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display:'block', fontSize:'13px', fontWeight:800, color:D.text, marginBottom:'10px' }}>💰 포인트 사용</label>
+                  <div style={{ background:D.input, borderRadius:'14px', padding:'12px 14px' }}>
+                    <div style={{ display:'flex', justifyContent:'space-between', fontSize:'12px', color:D.sub, marginBottom:'8px' }}>
+                      <span>보유 포인트</span><b style={{ color:D.text }}>{pointBalance.toLocaleString()} P</b>
+                    </div>
+                    <div style={{ display:'flex', gap:'8px' }}>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={pointUsed ? pointUsed.toLocaleString() : ''}
+                        onChange={e => onPointChange(e.target.value)}
+                        placeholder="0"
+                        style={{ flex:1, minWidth:0, padding:'12px 14px', borderRadius:'12px', border:`2px solid ${D.border}`, background:D.card, color:D.text, fontSize:'14px', fontWeight:800, outline:'none', boxSizing:'border-box' }}
+                      />
+                      <button type="button" onClick={() => setPointUsed(pointLimit)}
+                        style={{ padding:'0 14px', borderRadius:'12px', border:`1px solid ${D.border}`, background:D.card, color:D.text, fontSize:'12px', fontWeight:800, cursor:'pointer', whiteSpace:'nowrap' }}>
+                        모두 사용
+                      </button>
+                    </div>
+                    <div style={{ display:'flex', justifyContent:'space-between', borderTop:`1px solid ${D.border}`, marginTop:'12px', paddingTop:'10px' }}>
+                      <span style={{ fontSize:'13px', fontWeight:800, color:D.text }}>최종 결제액</span>
+                      <b style={{ fontSize:'15px', color:priceColor }}>{payAmount.toLocaleString()}원</b>
+                    </div>
                   </div>
                 </div>
 
@@ -208,7 +249,7 @@ export function CartOrderModal({ orderForm, setOrderForm, orderDone, handleOrder
 
                 <button onClick={handleOrder} disabled={orderLoading || !agreeRefund}
                   style={{ width:'100%', padding:'18px', borderRadius:'16px', background:(orderLoading || !agreeRefund) ? D.input : 'linear-gradient(135deg,#14532d,#15803d)', color:(orderLoading || !agreeRefund) ? D.sub : 'white', fontSize:'17px', fontWeight:900, border:'none', cursor:(orderLoading || !agreeRefund) ? 'not-allowed' : 'pointer', boxShadow:(orderLoading || !agreeRefund) ? 'none' : '0 10px 28px rgba(22,163,74,0.35)' }}>
-                  {orderLoading ? '⏳ 처리 중...' : <><span className="cart-emoji">🛒</span> {finalAmount.toLocaleString()}원 주문하기</>}
+                  {orderLoading ? '⏳ 처리 중...' : <><span className="cart-emoji">🛒</span> {payAmount.toLocaleString()}원 주문하기</>}
                 </button>
               </div>
             )}
