@@ -4,6 +4,16 @@ export type OrderTable = (typeof ORDER_TABLES)[number]
 type PaymentResult = {
   found: boolean
   alreadyProcessed: boolean
+  error?: string
+}
+
+type PointSpendResult = {
+  ok: boolean
+  alreadyProcessed: boolean
+  spent: boolean
+  message?: string
+  userId?: string
+  pointUsed?: number
 }
 
 const priceField = (table: OrderTable): 'retail_price' | 'member_price' | 'wholesale_price' =>
@@ -84,14 +94,14 @@ export async function getOrderPointInfo(supabase: any, table: OrderTable, orderI
   return order
 }
 
-export async function spendOrderPoints(supabase: any, table: OrderTable, orderId: string) {
+export async function spendOrderPoints(supabase: any, table: OrderTable, orderId: string): Promise<PointSpendResult> {
   const order = await getOrderPointInfo(supabase, table, orderId)
-  if (!order) return { ok: false, alreadyProcessed: false, message: '주문 내역을 확인할 수 없습니다.' }
+  if (!order) return { ok: false, alreadyProcessed: false, spent: false, message: '주문 내역을 확인할 수 없습니다.' }
 
   const alreadyProcessed = ['결제완료', '입금완료'].includes(order.status) || (order.status === '입금대기' && !!order.payment_key)
   const pointUsed = Number(order.point_used || 0)
-  if (alreadyProcessed || pointUsed <= 0) return { ok: true, alreadyProcessed }
-  if (!order.user_id) return { ok: false, alreadyProcessed: false, message: '주문 회원 정보를 확인할 수 없습니다.' }
+  if (alreadyProcessed || pointUsed <= 0) return { ok: true, alreadyProcessed, spent: false, userId: order.user_id, pointUsed }
+  if (!order.user_id) return { ok: false, alreadyProcessed: false, spent: false, message: '주문 회원 정보를 확인할 수 없습니다.' }
 
   const { error } = await supabase.rpc('cp_spend_point', {
     p_user: order.user_id,
@@ -101,9 +111,27 @@ export async function spendOrderPoints(supabase: any, table: OrderTable, orderId
   })
   if (error) {
     console.error('[order-payment] point spend failed', { table, orderId, error })
-    return { ok: false, alreadyProcessed: false, message: '포인트 차감에 실패했습니다. 보유 포인트를 확인해 주세요.' }
+    return { ok: false, alreadyProcessed: false, spent: false, message: '포인트 차감에 실패했습니다. 보유 포인트를 확인해 주세요.' }
   }
-  return { ok: true, alreadyProcessed: false }
+  return { ok: true, alreadyProcessed: false, spent: true, userId: order.user_id, pointUsed }
+}
+
+export async function refundOrderPoints(supabase: any, table: OrderTable, orderId: string, reason = 'order payment rollback') {
+  const order = await getOrderPointInfo(supabase, table, orderId)
+  const pointUsed = Number(order?.point_used || 0)
+  if (!order?.user_id || pointUsed <= 0) return { ok: true }
+
+  const { error } = await supabase.rpc('cp_refund_point', {
+    p_user: order.user_id,
+    p_amount: pointUsed,
+    p_ref_type: 'order_refund',
+    p_ref_id: orderId,
+  })
+  if (error) {
+    console.error('[order-payment] point refund failed', { table, orderId, reason, error })
+    return { ok: false, message: '포인트 환불에 실패했습니다. 고객센터 확인이 필요합니다.' }
+  }
+  return { ok: true }
 }
 
 export async function markOrderPaid(
@@ -118,19 +146,32 @@ export async function markOrderPaid(
   if (!order) return { found: false, alreadyProcessed: false }
 
   const alreadyProcessed = ['결제완료', '입금완료'].includes(order.status) || (order.status === '입금대기' && !!order.payment_key)
+  if (alreadyProcessed) return { found: true, alreadyProcessed: true }
+
   const isWaiting = payment.status === 'WAITING_FOR_DEPOSIT' || payment.method === '가상계좌'
   const status = isWaiting ? '입금대기' : '결제완료'
   const virtualAccount = payment.virtualAccount
 
-  await supabase.from(table).update({
-    status,
-    payment_key: paymentKey,
-    paid_amount: amount,
-    ...(virtualAccount?.secret ? { vbank_secret: virtualAccount.secret } : {}),
-    updated_at: new Date().toISOString(),
-  }).eq('id', orderId)
+  const { data: updatedOrder, error: updateError } = await supabase
+    .from(table)
+    .update({
+      status,
+      payment_key: paymentKey,
+      paid_amount: amount,
+      ...(virtualAccount?.secret ? { vbank_secret: virtualAccount.secret } : {}),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', orderId)
+    .not('status', 'in', '("결제완료","입금완료")')
+    .or('status.neq.입금대기,payment_key.is.null')
+    .select('id')
+    .maybeSingle()
 
-  if (alreadyProcessed) return { found: true, alreadyProcessed: true }
+  if (updateError) {
+    console.error('[order-payment] mark paid failed', { table, orderId, updateError })
+    return { found: true, alreadyProcessed: false, error: '주문 결제 상태 반영에 실패했습니다.' }
+  }
+  if (!updatedOrder) return { found: true, alreadyProcessed: true }
 
   const { data: items } = await supabase
     .from(orderItemTable(table))

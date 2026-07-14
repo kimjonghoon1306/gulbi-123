@@ -36,6 +36,10 @@ create table if not exists cash_ledger (
 create index if not exists cash_ledger_user_created_idx
   on cash_ledger(user_id, created_at desc);
 
+create unique index if not exists cash_ledger_point_spend_once_idx
+  on cash_ledger(user_id, kind, ref_type, ref_id)
+  where kind = 'point_spend' and ref_type is not null and ref_id is not null;
+
 create table if not exists cash_withdrawals (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -448,6 +452,17 @@ begin
 
   if p_amount is null or p_amount <= 0 then
     raise exception 'amount must be positive';
+  end if;
+
+  if exists (
+    select 1
+    from cash_ledger
+    where user_id = p_user
+      and kind = 'point_spend'
+      and ref_type = p_ref_type
+      and ref_id = p_ref_id
+  ) then
+    return;
   end if;
 
   insert into cash_accounts (user_id)
