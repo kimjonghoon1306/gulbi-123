@@ -47,6 +47,26 @@ type OrderReturn = {
   updated_at: string
 }
 
+type CashAccount = {
+  user_id: string
+  cash_balance: number | null
+  point_balance: number | null
+}
+
+type CashLedger = {
+  id: string
+  kind: string
+  cash_delta: number | null
+  point_delta: number | null
+  cash_after: number | null
+  point_after: number | null
+  source: string | null
+  ref_type: string | null
+  ref_id: string | null
+  memo: string | null
+  created_at: string
+}
+
 type Address = {
   id: string
   label: string
@@ -98,6 +118,96 @@ const EMPTY_ADDRESS_FORM: AddressForm = {
 
 const addressToText = (a: Address) => [a.address1, a.address2].filter(Boolean).join(' ').trim()
 
+const LEDGER_KIND_LABEL: Record<string, string> = {
+  partner_settlement: '온파트너 정산',
+  cash_withdraw_request: '출금 신청',
+  cash_withdraw_approved: '출금 승인',
+  cash_withdraw_paid: '출금 지급',
+  cash_withdraw_rejected: '출금 반려',
+  cash_to_point: '캐시→쇼핑포인트 전환',
+  point_earn: '온종일팜 포인트 적립',
+  point_use: '쇼핑포인트 사용',
+  point_refund: '쇼핑포인트 환불',
+  admin_adjust: '관리자 조정',
+}
+
+function ledgerKindLabel(kind: string) {
+  return LEDGER_KIND_LABEL[kind] || kind
+}
+
+function formatSignedPoint(value: number | null | undefined) {
+  const n = Number(value || 0)
+  if (n === 0) return '0 P'
+  return `${n > 0 ? '+' : ''}${n.toLocaleString()} P`
+}
+
+function formatSignedCash(value: number | null | undefined) {
+  const n = Number(value || 0)
+  if (n === 0) return '0원'
+  return `${n > 0 ? '+' : ''}${n.toLocaleString()}원`
+}
+
+function PointDetailTab({ D, accent, account, ledgers }: { D: any; accent: string; account: CashAccount | null; ledgers: CashLedger[] }) {
+  const pointBalance = Number(account?.point_balance || 0)
+  const cashBalance = Number(account?.cash_balance || 0)
+
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
+      <div style={{ background:D.card, border:`1px solid ${D.border}`, borderRadius:'22px', padding:'24px' }}>
+        <p style={{ fontSize:'13px', color:D.sub, fontWeight:800, margin:'0 0 8px' }}>쇼핑포인트 잔액</p>
+        <p style={{ fontSize:'36px', lineHeight:1.1, color:accent, fontWeight:900, margin:'0 0 10px' }}>{pointBalance.toLocaleString()} P</p>
+        <p style={{ fontSize:'12px', color:D.sub, lineHeight:1.7, margin:0 }}>
+          참고 캐시 잔액: {cashBalance.toLocaleString()}원 · 캐시 관리와 쇼핑포인트 전환은 온파트너 대시보드에서 할 수 있어요.
+        </p>
+      </div>
+
+      <div style={{ background:D.card, border:`1px solid ${D.border}`, borderRadius:'22px', padding:'20px' }}>
+        <p style={{ fontSize:'15px', color:D.text, fontWeight:900, margin:'0 0 12px' }}>쇼핑포인트 안내</p>
+        {[
+          '쇼핑포인트는 온종일팜에서 상품 구매에 사용할 수 있어요.',
+          '포인트는 온종일팜 자체 적립분과 온파트너에서 전환한 분이 있으며, 결제 시 양쪽이 합산되어 사용됩니다.',
+          '온파트너에서 상품을 판매해 쌓인 캐시를 쇼핑포인트로 전환하면 여기서 사용할 수 있어요.',
+        ].map((text) => (
+          <p key={text} style={{ fontSize:'13px', color:D.sub, lineHeight:1.75, margin:'8px 0 0', fontWeight: text.includes('결제 시') ? 800 : 600 }}>
+            {text}
+          </p>
+        ))}
+      </div>
+
+      <div style={{ background:D.card, border:`1px solid ${D.border}`, borderRadius:'22px', overflow:'hidden' }}>
+        <div style={{ padding:'18px 20px', borderBottom:`1px solid ${D.border}`, display:'flex', alignItems:'center', justifyContent:'space-between', gap:'12px' }}>
+          <p style={{ fontSize:'15px', color:D.text, fontWeight:900, margin:0 }}>거래 내역</p>
+          <p style={{ fontSize:'12px', color:D.sub, margin:0 }}>{ledgers.length.toLocaleString()}건</p>
+        </div>
+        {ledgers.length === 0 ? (
+          <div style={{ padding:'34px 20px', textAlign:'center' }}>
+            <p style={{ fontSize:'13px', color:D.sub, margin:0 }}>아직 포인트 거래 내역이 없어요.</p>
+          </div>
+        ) : ledgers.map((row) => (
+          <div key={row.id} style={{ padding:'16px 20px', borderBottom:`1px solid ${D.border}`, display:'grid', gridTemplateColumns:'1fr auto', gap:'12px', alignItems:'center' }}>
+            <div style={{ minWidth:0 }}>
+              <p style={{ fontSize:'13px', color:D.text, fontWeight:800, margin:'0 0 4px' }}>{ledgerKindLabel(row.kind)}</p>
+              <p style={{ fontSize:'11px', color:D.sub, margin:0, lineHeight:1.5 }}>
+                {new Date(row.created_at).toLocaleString('ko-KR')}
+                {row.memo ? ` · ${row.memo}` : ''}
+              </p>
+            </div>
+            <div style={{ textAlign:'right' }}>
+              <p style={{ fontSize:'14px', color:Number(row.point_delta || 0) >= 0 ? accent : '#ef4444', fontWeight:900, margin:'0 0 4px' }}>
+                {formatSignedPoint(row.point_delta)}
+              </p>
+              {Number(row.cash_delta || 0) !== 0 && (
+                <p style={{ fontSize:'11px', color:D.sub, margin:0 }}>캐시 {formatSignedCash(row.cash_delta)}</p>
+              )}
+              <p style={{ fontSize:'11px', color:D.sub, margin:0 }}>잔액 {Number(row.point_after || 0).toLocaleString()} P</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function MyPage() {
   return (
     <Suspense fallback={<div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center' }}><div style={{ width:'44px', height:'44px', borderRadius:'50%', border:'3px solid #14532d', borderTopColor:'transparent', animation:'spin 0.8s linear infinite' }} /><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style></div>}>
@@ -116,7 +226,7 @@ function MyPageInner() {
   const [orderItems, setOrderItems]   = useState<Record<string, OrderItem[]>>({})
   const [orderReturns, setOrderReturns] = useState<OrderReturn[]>([])
   const [loading, setLoading]         = useState(true)
-  const [tab, setTab]                 = useState<'home' | 'orders' | 'coupons' | 'benefits' | 'wishlist' | 'settings'>('home')
+  const [tab, setTab]                 = useState<'home' | 'orders' | 'coupons' | 'benefits' | 'wishlist' | 'settings' | 'points'>('home')
   const [wishlists, setWishlists]     = useState<any[]>([])
   const [myCoupons, setMyCoupons]     = useState<any[]>([])   // 받은 쿠폰(user_coupons + coupons)
   const [availCoupons, setAvailCoupons] = useState<any[]>([]) // 받을 수 있는 쿠폰
@@ -124,6 +234,8 @@ function MyPageInner() {
   const [dark, setDark]               = useState(false)
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null)
   const [itemsLoading, setItemsLoading]   = useState<string | null>(null)
+  const [cashAccount, setCashAccount] = useState<CashAccount | null>(null)
+  const [cashLedgers, setCashLedgers] = useState<CashLedger[]>([])
 
   // ── 설정(주소/비번) ──
   const [addrInput, setAddrInput]     = useState('')
@@ -154,6 +266,20 @@ function MyPageInner() {
       .eq('user_id', uid)
       .order('created_at', { ascending: false })
     if (!error) setOrderReturns((data as OrderReturn[]) || [])
+  }
+
+  const loadCashPointData = async (uid: string) => {
+    const [{ data: account }, { data: ledger }] = await Promise.all([
+      supabase.from('cash_accounts').select('user_id,cash_balance,point_balance').eq('user_id', uid).maybeSingle(),
+      supabase
+        .from('cash_ledger')
+        .select('id,kind,cash_delta,point_delta,cash_after,point_after,source,ref_type,ref_id,memo,created_at')
+        .eq('user_id', uid)
+        .order('created_at', { ascending: false })
+        .limit(80),
+    ])
+    setCashAccount((account as CashAccount | null) || { user_id: uid, cash_balance: 0, point_balance: 0 })
+    setCashLedgers((ledger as CashLedger[]) || [])
   }
 
   const syncDefaultAddress = async (address: string) => {
@@ -350,6 +476,7 @@ function MyPageInner() {
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
         setOrders(o || [])
+        await loadCashPointData(user.id)
         await loadOrderReturns(user.id)
         await loadAddresses(user.id)
         setLoading(false)
@@ -358,6 +485,7 @@ function MyPageInner() {
       setMember(m)
       setAddrInput(m.address || (typeof window !== 'undefined' ? localStorage.getItem('onjongil_addr') || '' : ''))
       await loadAddresses(user.id)
+      await loadCashPointData(user.id)
       // 등급이 바뀌어도 과거 주문이 사라지지 않도록 3개 주문 테이블을 모두 조회해 합침 (주문 id는 UUID라 충돌 없음)
       const ORDER_TABLES: { t: string; type: 'general' | 'retail' | 'wholesale' }[] = [
         { t: 'general_orders', type: 'general' },
@@ -436,7 +564,7 @@ function MyPageInner() {
 
     // 장바구니 결제 완료 후 ?tab=orders 로 진입 시 주문내역 탭 바로 열기
     const tabParam = searchParams.get('tab')
-    if (tabParam === 'orders' || tabParam === 'benefits' || tabParam === 'wishlist' || tabParam === 'coupons') {
+    if (tabParam === 'orders' || tabParam === 'benefits' || tabParam === 'wishlist' || tabParam === 'coupons' || tabParam === 'points') {
       setTab(tabParam as any)
     }
 
@@ -598,6 +726,7 @@ function MyPageInner() {
             { key:'home',     icon:'🏠', label:'홈' },
             { key:'orders',   icon:'📦', label:'주문/배송' },
             { key:'coupons',  icon:'🎟️', label:'쿠폰함' },
+            { key:'points',   icon:'💰', label:'포인트' },
             { key:'wishlist', icon:'❤️', label:'찜 목록' },
             { key:'benefits', icon: member.member_type === '일반' ? '⭐' : '💼', label: member.member_type === '일반' ? '등급/혜택' : '유통 혜택' },
             { key:'settings', icon:'⚙️', label:'설정' },
@@ -619,7 +748,7 @@ function MyPageInner() {
         <div className="mp-main">
 
         {/* ════════════════ TAB: HOME ════════════════ */}
-        {tab === 'home' && <HomeTab D={D} accent={accent} member={member} orders={orders} totalAmount={totalAmount} curGrade={curGrade} dark={dark} setTab={setTab} onShopClick={() => router.push('/shop')} handleLogout={handleLogout} />}
+        {tab === 'home' && <HomeTab D={D} accent={accent} member={member} orders={orders} pointBalance={Number(cashAccount?.point_balance || 0)} totalAmount={totalAmount} curGrade={curGrade} dark={dark} setTab={setTab} onShopClick={() => router.push('/shop')} handleLogout={handleLogout} />}
 
         {/* ════════════════ TAB: ORDERS ════════════════ */}
         {tab === 'orders' && <OrdersTab D={D} tc={tc} accent={accent} member={member} orders={orders} orderItems={orderItems} orderReturns={orderReturns} setOrderReturns={setOrderReturns} itemsLoading={itemsLoading} openTracking={openTracking} setOrders={setOrders} />}
@@ -629,6 +758,9 @@ function MyPageInner() {
 
         {/* ════════════════ TAB: COUPONS (쿠폰함) ════════════════ */}
         {tab === 'coupons' && <CouponsTab myCoupons={myCoupons} availCoupons={availCoupons} couponBusy={couponBusy} claimCoupon={claimCoupon} D={D} tc={tc} accent={accent} />}
+
+        {/* ════════════════ TAB: POINTS ════════════════ */}
+        {tab === 'points' && <PointDetailTab D={D} accent={accent} account={cashAccount} ledgers={cashLedgers} />}
 
         {/* ════════════════ TAB: BENEFITS ════════════════ */}
         {tab === 'benefits' && <BenefitsTab D={D} tc={tc} accent={accent} member={member} orders={orders} curGrade={curGrade} nextGrade={nextGrade} gradeProgress={gradeProgress} totalAmount={totalAmount} />}

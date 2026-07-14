@@ -3,13 +3,14 @@
 import type { Dispatch, SetStateAction } from 'react'
 import { OrderBadge } from '../_OrderBadge'
 
-type MyPageTab = 'home' | 'orders' | 'coupons' | 'benefits' | 'wishlist' | 'settings'
+type MyPageTab = 'home' | 'orders' | 'coupons' | 'benefits' | 'wishlist' | 'settings' | 'points'
 
 type Props = {
   D: any
   accent: string
   member: any
   orders: any[]
+  pointBalance: number
   totalAmount: number
   curGrade: any
   dark: boolean
@@ -18,7 +19,7 @@ type Props = {
   handleLogout: () => void
 }
 
-export function HomeTab({ D, accent, member, orders, totalAmount, curGrade, dark, setTab, onShopClick, handleLogout }: Props) {
+export function HomeTab({ D, accent, member, orders, pointBalance, totalAmount, curGrade, dark, setTab, onShopClick, handleLogout }: Props) {
   return (
           <div style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
 
@@ -57,7 +58,7 @@ export function HomeTab({ D, accent, member, orders, totalAmount, curGrade, dark
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px' }}>
               {[
                 { icon:'📦', label:'주문 내역',       sub:`총 ${orders.length}건`,                     onClick: () => setTab('orders') },
-                { icon:'💰', label:'쇼핑 포인트',     sub:'0 P (준비 중)',                              onClick: () => {} },
+                { icon:'💰', label:'쇼핑 포인트',     sub:`${pointBalance.toLocaleString()} P`,          onClick: () => setTab('points') },
                 { icon: member.member_type==='일반' ? '⭐' : '💼',
                   label: member.member_type==='일반' ? '회원 등급' : '유통 혜택',
                   sub:   member.member_type==='일반' ? `${curGrade.icon} ${curGrade.name}` : (member.status==='승인'?'이용 가능':'승인 후 이용'),

@@ -12,6 +12,7 @@ const menus = [
   { href: '/admin/orders/retail', icon: '🛒', label: '소매주문' },
   { href: '/admin/orders/general', icon: '🧑‍💼', label: '일반구매' },
   { href: '/admin/members', icon: '👥', label: '회원관리' },
+  { href: '/admin/cash-points', icon: '💰', label: '캐시·포인트' },
   { href: '/admin/inventory', icon: '📦', label: '재고관리' },
   { href: '/admin/tax', icon: '🧾', label: '세금계산서' },
   { href: '/admin/social-proof', icon: '⭐', label: '소셜 프루프' },

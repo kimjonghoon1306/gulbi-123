@@ -35,6 +35,7 @@ const menuGroups = [
     label: '회원',
     items: [
       { href: '/admin/members',   icon: '👥', label: '회원관리' },
+      { href: '/admin/cash-points', icon: '💰', label: '캐시·포인트' },
       { href: '/admin/suppliers', icon: '🏭', label: '공급업체' },
       { href: '/admin/settlements', icon: '💰', label: '공급사 정산' },
     ],
@@ -57,6 +58,7 @@ const mobileMenus = [
   { href: '/admin/orders/general',   icon: '📝', label: '주문' },
   { href: '/admin/returns',          icon: '↩️', label: '반품' },
   { href: '/admin/members',          icon: '👥', label: '회원' },
+  { href: '/admin/cash-points',      icon: '💰', label: '포인트' },
 ]
 
 // SVG 로고 컴포넌트
