@@ -454,16 +454,18 @@ function MyPageInner() {
       if (!user) { router.push('/shop/login'); return }
       const { data: m } = await supabase.from('shop_members').select('*').eq('id', user.id).single()
       if (!m) {
-        // shop_members 레코드가 없는 경우 (회원가입 시 INSERT 실패 등)
-        // → auth 유저 정보로 기본값 구성 + general_orders에서 주문 조회는 계속 진행
+        // shop_members 레코드가 없는 경우 (온파트너로 가입 등 shop_members 미생성)
+        // → auth 메타데이터의 실제 이름을 우선 사용 (이메일 앞부분 아님)
+        const meta = (user.user_metadata || {}) as any
+        const realName = meta.name || meta.full_name || meta.nickname
         const fallbackMember = {
           id: user.id,
           email: user.email || '',
-          name: user.email?.split('@')[0] || '회원',
-          contact: '',
+          name: realName || user.email?.split('@')[0] || '회원',
+          contact: meta.contact || meta.phone || '',
           member_type: '일반' as const,
-          business_name: '',
-          business_number: '',
+          business_name: meta.business_name || '',
+          business_number: meta.business_number || '',
           status: '승인',
           created_at: new Date().toISOString()
         }
