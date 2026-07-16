@@ -416,7 +416,7 @@ export default function ProductDetailPage() {
       )}
 
       {/* 헤더 */}
-      <header style={{background:D.headerBg,backdropFilter:'blur(20px)',borderBottom:`1px solid ${D.border}`,position:'sticky',top:0,zIndex:50}}>
+      <header style={{background:dark?'#0d2a1d':'#ffffff',borderBottom:`1px solid ${D.border}`,position:'sticky',top:0,zIndex:50}}>
         <div style={{maxWidth:'1100px',margin:'0 auto',padding:'0 20px',height:'60px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
           <div style={{display:'flex',alignItems:'center',gap:'14px'}}>
             <button onClick={() => router.back()} style={{background:D.input,border:'none',borderRadius:'10px',width:'36px',height:'36px',cursor:'pointer',fontSize:'16px',display:'flex',alignItems:'center',justifyContent:'center',color:D.text}}>←</button>
@@ -431,7 +431,7 @@ export default function ProductDetailPage() {
           <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
             {visitorCount > 0 && (
               <div style={{background:dark?'#15391f':'#fdf2f8',borderRadius:'100px',padding:'4px 10px',display:'flex',alignItems:'center',gap:'4px'}}>
-                <div style={{width:'6px',height:'6px',borderRadius:'50%',background:'#15803d',animation:'pulse 2s infinite'}} />
+                <div style={{width:'6px',height:'6px',borderRadius:'50%',background:'#15803d'}} />
                 <span style={{fontSize:'11px',fontWeight:700,color:D.gtext}}>{visitorCount}명 방문중</span>
               </div>
             )}
