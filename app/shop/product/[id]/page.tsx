@@ -547,7 +547,7 @@ export default function ProductDetailPage() {
             <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'16px'}}>
               <div style={{width:'8px',height:'8px',borderRadius:'50%',background:product.stock > 0 ? '#22c55e' : '#ef4444'}} />
               <p style={{fontSize:'13px',color:D.sub,fontWeight:500}}>
-                {product.stock > 0 ? `재고 ${product.stock}${product.unit} 남음` : '현재 품절입니다'}
+                {product.stock > 0 ? `재고 ${product.stock} 남음` : '현재 품절입니다'}
               </p>
             </div>
 
