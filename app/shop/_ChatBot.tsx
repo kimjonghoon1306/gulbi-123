@@ -204,7 +204,6 @@ export function ChatBot() {
           {/* 캐릭터 — 틀 없이 이미지만, 큼직하게 */}
           <img src={HERO_IMAGE} alt="온봇" style={{
             width: '116px', height: '116px', objectFit: 'contain',
-            filter: 'drop-shadow(0 8px 13px rgba(20,83,45,0.3))',
           }} />
           {/* 캐릭터 밑 — 온봇 (다크모드에서도 또렷하게) */}
           <span style={{

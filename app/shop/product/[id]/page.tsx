@@ -470,7 +470,7 @@ export default function ProductDetailPage() {
                 )}
                 <span style={{background:'rgba(5,150,105,0.9)',color:'white',fontSize:'10px',fontWeight:700,padding:'3px 8px',borderRadius:'100px'}}>무료배송</span>
               </div>
-              <button onClick={toggleLike} style={{position:'absolute',top:'12px',right:'12px',width:'36px',height:'36px',borderRadius:'50%',background:'rgba(255,255,255,0.9)',border:'none',cursor:'pointer',fontSize:'18px',display:'flex',alignItems:'center',justifyContent:'center',backdropFilter:'blur(8px)',transition:'transform 0.15s',boxShadow:'0 2px 8px rgba(0,0,0,0.12)'}}>
+              <button onClick={toggleLike} style={{position:'absolute',top:'12px',right:'12px',width:'36px',height:'36px',borderRadius:'50%',background:'#ffffff',border:'none',cursor:'pointer',fontSize:'18px',display:'flex',alignItems:'center',justifyContent:'center',transition:'transform 0.15s',boxShadow:'0 2px 8px rgba(0,0,0,0.12)'}}>
                 {liked ? '❤️' : '🤍'}
               </button>
             </div>
@@ -690,7 +690,7 @@ export default function ProductDetailPage() {
 
       {/* ── 모바일 전용 하단 고정 구매바 ── */}
       {!showOrderForm && (
-        <div className="mobile-buybar" style={{position:'fixed',bottom:0,left:0,right:0,zIndex:60,transform:'translateZ(0)',WebkitTransform:'translateZ(0)',backfaceVisibility:'hidden',WebkitBackfaceVisibility:'hidden',background:D.headerBg,borderTop:`1px solid ${D.border}`,padding:'10px 16px calc(10px + env(safe-area-inset-bottom))',display:'flex',alignItems:'center',gap:'12px',boxShadow:'0 -6px 24px rgba(0,0,0,0.1)'}}>
+        <div className="mobile-buybar" style={{position:'fixed',bottom:0,left:0,right:0,zIndex:60,transform:'translateZ(0)',WebkitTransform:'translateZ(0)',backfaceVisibility:'hidden',WebkitBackfaceVisibility:'hidden',background:D.headerBg,borderTop:`1px solid ${D.border}`,padding:'10px 16px calc(10px + env(safe-area-inset-bottom))',alignItems:'center',gap:'12px',boxShadow:'0 -6px 24px rgba(0,0,0,0.1)'}}>
           <button onClick={toggleLike} aria-label="찜하기" style={{width:'48px',height:'48px',flexShrink:0,borderRadius:'14px',border:`1.5px solid ${D.border}`,background:'transparent',cursor:'pointer',fontSize:'22px',display:'flex',alignItems:'center',justifyContent:'center'}}>
             {liked ? '❤️' : '🤍'}
           </button>
