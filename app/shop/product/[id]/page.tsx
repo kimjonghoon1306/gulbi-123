@@ -470,7 +470,7 @@ export default function ProductDetailPage() {
                 )}
                 <span style={{background:'rgba(5,150,105,0.9)',color:'white',fontSize:'10px',fontWeight:700,padding:'3px 8px',borderRadius:'100px'}}>무료배송</span>
               </div>
-              <button onClick={toggleLike} style={{position:'absolute',top:'12px',right:'12px',width:'36px',height:'36px',borderRadius:'50%',background:'rgba(255,255,255,0.9)',border:'none',cursor:'pointer',fontSize:'18px',display:'flex',alignItems:'center',justifyContent:'center',backdropFilter:'blur(8px)',transition:'transform 0.15s',boxShadow:'0 2px 8px rgba(0,0,0,0.12)'}}>
+              <button onClick={toggleLike} style={{position:'absolute',top:'12px',right:'12px',width:'36px',height:'36px',borderRadius:'50%',background:'#ffffff',border:'none',cursor:'pointer',fontSize:'18px',display:'flex',alignItems:'center',justifyContent:'center',transition:'transform 0.15s',boxShadow:'0 2px 8px rgba(0,0,0,0.12)'}}>
                 {liked ? '❤️' : '🤍'}
               </button>
             </div>
