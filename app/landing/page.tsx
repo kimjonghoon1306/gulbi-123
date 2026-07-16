@@ -163,13 +163,20 @@ export default function LandingPage() {
               style={{ background: dark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.9)', border: dark ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.12)', color: dark ? '#ffffff' : '#111827', boxShadow: dark ? 'none' : '0 2px 8px rgba(0,0,0,0.08)' }}>
               🛒 <span className="hidden sm:inline">쇼핑몰</span>
             </Link>
-            <Link href="/admin/dashboard"
-              className="flex items-center gap-1.5 bg-green-600 hover:bg-green-500 text-white text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-green-600/30">
-              ⚙️ <span className="hidden sm:inline">관리자</span>
-            </Link>
           </div>
         </div>
       </nav>
+
+      {/* 관리자 진입 — 좌하단에 작고 눈에 안 띄게 */}
+      <Link href="/admin/dashboard" aria-label="관리자"
+        title="관리자"
+        className="fixed bottom-4 left-4 z-50 flex items-center justify-center rounded-full transition-all duration-200 hover:scale-110 hover:rotate-90"
+        style={{ width: '38px', height: '38px', backdropFilter: 'blur(8px)',
+          background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+          border: dark ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(0,0,0,0.08)',
+          color: dark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.45)', fontSize: '17px' }}>
+        ⚙️
+      </Link>
 
       {/* 히어로 섹션 */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 sm:px-6">

@@ -193,24 +193,27 @@ export default function AiLandingEditor({ show, onClose, products, onDone }: Pro
     finally { setAiLoading(false) }
   }
 
+  // 직접 만들기 블록 → HTML (저장/미리보기 공용)
+  const buildManualHtml = () => manualBlocks.map((b, idx) => {
+    if (!b.content) return ''
+    if (b.type === 'image') return `<div style="width:100%;overflow:hidden;"><img src="${b.content}" style="width:100%;display:block;object-fit:cover;" /></div>`
+    if (b.type === 'video') {
+      const isYT = b.content.includes('youtube') || b.content.includes('youtu.be')
+      if (isYT) { const eu = getYoutubeEmbedUrl(b.content); return `<div style="width:100%;position:relative;padding-bottom:56.25%;background:#000;"><iframe src="${eu}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen></iframe></div>` }
+      return `<div style="width:100%;background:#000;"><video controls style="width:100%;display:block;"><source src="${b.content}" /></video></div>`
+    }
+    if (b.type === 'text') {
+      const bg = idx === 0 ? 'background:linear-gradient(135deg,#1a1a1a,#2d2d2d);color:white;' : 'background:#fff;border-bottom:8px solid #f5f5f5;'
+      return `<div style="padding:28px 24px;font-size:15px;line-height:2;${bg}">${b.content.split('\n').join('<br/>')}</div>`
+    }
+    return ''
+  }).filter(Boolean).join('')
+
   const handleManualRegister = async () => {
     if (!selectedProduct) return setAiError('상품을 먼저 선택해주세요.')
     setAiLoading(true); setAiError('')
     try {
-      const html = manualBlocks.map((b, idx) => {
-        if (!b.content) return ''
-        if (b.type === 'image') return `<div style="width:100%;overflow:hidden;"><img src="${b.content}" style="width:100%;display:block;object-fit:cover;" /></div>`
-        if (b.type === 'video') {
-          const isYT = b.content.includes('youtube') || b.content.includes('youtu.be')
-          if (isYT) { const eu = getYoutubeEmbedUrl(b.content); return `<div style="width:100%;position:relative;padding-bottom:56.25%;background:#000;"><iframe src="${eu}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen></iframe></div>` }
-          return `<div style="width:100%;background:#000;"><video controls style="width:100%;display:block;"><source src="${b.content}" /></video></div>`
-        }
-        if (b.type === 'text') {
-          const bg = idx === 0 ? 'background:linear-gradient(135deg,#1a1a1a,#2d2d2d);color:white;' : 'background:#fff;border-bottom:8px solid #f5f5f5;'
-          return `<div style="padding:28px 24px;font-size:15px;line-height:2;${bg}">${b.content.split('\n').join('<br/>')}</div>`
-        }
-        return ''
-      }).filter(Boolean).join('')
+      const html = buildManualHtml()
       await supabase.from('products').update({ description: html }).eq('id', selectedProduct.id)
       reset(); onDone()
     } catch (e: any) {
@@ -533,6 +536,11 @@ export default function AiLandingEditor({ show, onClose, products, onDone }: Pro
                 ))}
               </div>
               {aiError && <p style={{ color: '#f87171', fontSize: '12px' }}>{aiError}</p>}
+              <button onClick={() => { if (!selectedProduct) return setAiError('상품을 먼저 선택해주세요.'); setAiError(''); setShowBuyerPreview('mobile') }}
+                disabled={!selectedProduct}
+                style={{ padding: '14px', borderRadius: '12px', background: !selectedProduct ? 'rgba(255,255,255,0.08)' : 'rgba(34,197,94,0.15)', color: !selectedProduct ? 'rgba(255,255,255,0.3)' : '#22c55e', fontSize: '14px', fontWeight: 800, border: '1.5px solid ' + (!selectedProduct ? 'transparent' : 'rgba(34,197,94,0.4)'), cursor: !selectedProduct ? 'not-allowed' : 'pointer' }}>
+                👁️ 올리기 전 미리보기
+              </button>
               <button onClick={handleManualRegister} disabled={aiLoading || !selectedProduct}
                 style={{ padding: '14px', borderRadius: '12px', background: aiLoading || !selectedProduct ? 'rgba(34,197,94,0.2)' : 'linear-gradient(135deg,#ec4899,#f43f5e)', color: aiLoading || !selectedProduct ? 'rgba(255,255,255,0.3)' : '#111', fontSize: '14px', fontWeight: 900, border: 'none', cursor: aiLoading || !selectedProduct ? 'not-allowed' : 'pointer' }}>
                 {aiLoading ? '저장 중...' : '💾 상세페이지 저장'}
@@ -568,7 +576,11 @@ export default function AiLandingEditor({ show, onClose, products, onDone }: Pro
       )}
 
       {/* ── 구매자 미리보기 ── */}
-      {showBuyerPreview && (
+      {showBuyerPreview && (() => {
+        const isManual = aiTab === 'manual'
+        const previewHtml = isManual ? buildManualHtml() : aiLandingHtml
+        const topImg = isManual ? (selectedProduct?.image_url || '') : aiBgRemovedPreview
+        return (
         <div style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0,0,0,0.95)', display: 'flex', flexDirection: 'column' }}>
           <div style={{ background: '#111', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
             <div style={{ display: 'flex', gap: '6px' }}>
@@ -586,8 +598,8 @@ export default function AiLandingEditor({ show, onClose, products, onDone }: Pro
           <div style={{ flex: 1, overflow: 'auto', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '20px', background: '#1a1a1a' }}>
             {showBuyerPreview === 'mobile' ? (
               <div style={{ width: '100%', maxWidth: '390px', minHeight: '844px', background: 'white', borderRadius: '36px', overflow: 'hidden', boxShadow: '0 40px 80px rgba(0,0,0,0.8)', border: '8px solid #333', flexShrink: 0 }}>
-                {aiBgRemovedPreview && <div style={{ width: '100%', aspectRatio: '1/1', display: 'flex', alignItems: 'center', justifyContent: 'center', background: aiSelectedBg === 'warm' ? 'linear-gradient(160deg,#1a0e08,#3d2010)' : aiSelectedBg === 'white' ? '#f5f5f5' : '#0d0d0d' }}><img src={aiBgRemovedPreview} alt="" style={{ width: '85%', height: '85%', objectFit: 'contain' }} /></div>}
-                <div dangerouslySetInnerHTML={{ __html: aiLandingHtml }} />
+                {topImg && <div style={{ width: '100%', aspectRatio: '1/1', display: 'flex', alignItems: 'center', justifyContent: 'center', background: aiSelectedBg === 'warm' ? 'linear-gradient(160deg,#1a0e08,#3d2010)' : aiSelectedBg === 'white' ? '#f5f5f5' : '#0d0d0d' }}><img src={topImg} alt="" style={{ width: '85%', height: '85%', objectFit: 'contain' }} /></div>}
+                <div dangerouslySetInnerHTML={{ __html: previewHtml }} />
               </div>
             ) : (
               <div style={{ width: '100%', maxWidth: '1200px', background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
@@ -596,14 +608,14 @@ export default function AiLandingEditor({ show, onClose, products, onDone }: Pro
                   <div style={{ flex: 1, background: 'white', borderRadius: '6px', padding: '3px 12px', marginLeft: '8px' }}><p style={{ fontSize: '11px', color: '#999', margin: 0 }}>gulbi-store.vercel.app/shop/product/...</p></div>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: '600px' }}>
-                  {aiBgRemovedPreview && <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px', background: aiSelectedBg === 'warm' ? 'linear-gradient(160deg,#1a0e08,#3d2010)' : aiSelectedBg === 'white' ? '#f5f5f5' : '#0d0d0d' }}><img src={aiBgRemovedPreview} alt="" style={{ maxWidth: '100%', maxHeight: '400px', objectFit: 'contain' }} /></div>}
-                  <div style={{ overflowY: 'auto', maxHeight: '700px' }}><div dangerouslySetInnerHTML={{ __html: aiLandingHtml }} /></div>
+                  {topImg && <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px', background: aiSelectedBg === 'warm' ? 'linear-gradient(160deg,#1a0e08,#3d2010)' : aiSelectedBg === 'white' ? '#f5f5f5' : '#0d0d0d' }}><img src={topImg} alt="" style={{ maxWidth: '100%', maxHeight: '400px', objectFit: 'contain' }} /></div>}
+                  <div style={{ overflowY: 'auto', maxHeight: '700px' }}><div dangerouslySetInnerHTML={{ __html: previewHtml }} /></div>
                 </div>
               </div>
             )}
           </div>
         </div>
-      )}
+        ) })()}
 
       {/* ── HTML 붙여넣기 탭 ── */}
       {aiTab === 'html' && (
