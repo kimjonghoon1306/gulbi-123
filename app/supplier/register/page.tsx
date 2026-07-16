@@ -24,7 +24,11 @@ export default function SupplierRegisterPage() {
     setLoading(true); setError('')
     const supabase = createClient()
 
-    const { data: authData, error: authErr } = await supabase.auth.signUp({ email: form.email, password: form.password })
+    const { data: authData, error: authErr } = await supabase.auth.signUp({
+      email: form.email,
+      password: form.password,
+      options: { data: { account_type: 'supplier' } },
+    })
     if (authErr) {
       setLoading(false)
       const msg = authErr.message

@@ -32,10 +32,17 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // 현재 사용자가 관리자인지 (admin_users 허용목록 기반 is_admin() 함수)
+  let adminCheck: PromiseLike<boolean> | undefined
   const checkAdmin = async () => {
     if (!user) return false
-    const { data } = await supabase.rpc('is_admin')
-    return data === true
+    adminCheck ??= supabase.rpc('is_admin').then(({ data, error }) => {
+      if (error) {
+        console.error('[middleware] is_admin check failed', error.message)
+        return false
+      }
+      return data === true
+    })
+    return adminCheck
   }
   // 현재 사용자가 승인된 공급사인지
   const supplierStatus = async () => {
