@@ -545,7 +545,7 @@ export default function ProductDetailPage() {
 
             {/* 재고 */}
             <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'16px'}}>
-              <div style={{width:'8px',height:'8px',borderRadius:'50%',background:product.stock > 0 ? '#22c55e' : '#ef4444'}} />
+              <div style={{width:'8px',height:'8px',borderRadius:'50%',background:product.stock > 0 ? '#22c55e' : '#ef4444',animation:product.stock > 0 ? 'pulse 1.6s ease-in-out infinite' : 'none'}} />
               <p style={{fontSize:'13px',color:D.sub,fontWeight:500}}>
                 {product.stock > 0 ? `재고 ${product.stock} 남음` : '현재 품절입니다'}
               </p>
