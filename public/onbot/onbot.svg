@@ -1,12 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 210" fill="none">
-  <style>
-    .leaf { transform-origin: 100px 62px; animation: sway 2.6s ease-in-out infinite; }
-    @keyframes sway { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
-  </style>
   <!-- 발밑 그림자 -->
   <ellipse cx="100" cy="196" rx="48" ry="7" fill="#14532d" opacity="0.16"/>
-  <!-- 줄기 + 새싹 잎 (살랑살랑) -->
-  <g class="leaf">
+  <!-- 줄기 + 새싹 잎 -->
+  <g>
     <path d="M100 84 V42" stroke="#15803d" stroke-width="7" stroke-linecap="round"/>
     <path d="M98 58 C 74 60, 52 50, 46 26 C 74 20, 94 34, 100 54 Z" fill="#22c55e"/>
     <path d="M102 58 C 126 60, 148 50, 154 26 C 126 20, 106 34, 100 54 Z" fill="#16a34a"/>

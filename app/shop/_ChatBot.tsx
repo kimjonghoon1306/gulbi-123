@@ -195,7 +195,7 @@ export function ChatBot() {
             zIndex: 9998, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0,
             background: 'transparent', border: 'none', boxShadow: 'none', cursor: 'pointer', padding: 0,
           }}>
-          {/* 캐릭터 위 — 시간차로 떴다 사라지는 문구(hover 시 고정) */}
+          {/* 캐릭터 위 안내 문구 */}
           <span className="onbot-blink" style={{
             fontSize: '11px', fontWeight: 800, color: T.fabSub, whiteSpace: 'nowrap',
             background: T.panelBg, padding: '4px 9px', borderRadius: '12px',
@@ -273,9 +273,12 @@ export function ChatBot() {
       <style>{`
         .chatbot-fab { transition: transform 0.2s, box-shadow 0.2s; }
         .chatbot-fab:hover { transform: translateY(-2px); box-shadow: 0 18px 38px rgba(20,83,45,0.26) !important; }
-        .onbot-blink { animation: onbotBlink 2.6s ease-in-out infinite; }
-        @keyframes onbotBlink { 0%, 70%, 100% { opacity: 0; } 20%, 50% { opacity: 1; } }
-        .onbot-hero-wrap:hover .onbot-blink { animation: none; opacity: 1; }
+        /*
+         * Safari는 fixed 요소 안의 drop-shadow SVG와 opacity 애니메이션을
+         * 함께 합성할 때 긴 상품 상세 레이어 전체를 반복 repaint할 수 있다.
+         * 안내 문구는 그대로 노출하되 영구 opacity 애니메이션은 사용하지 않는다.
+         */
+        .onbot-blink { opacity: 1; }
         @media (min-width: 640px) {
           .chatbot-fab { bottom: 24px !important; }
           .chatbot-panel { bottom: 24px !important; }
