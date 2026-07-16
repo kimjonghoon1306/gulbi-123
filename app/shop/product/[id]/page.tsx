@@ -416,7 +416,7 @@ export default function ProductDetailPage() {
       )}
 
       {/* 헤더 */}
-      <header style={{background:D.headerBg,borderBottom:`1px solid ${D.border}`,position:'sticky',top:0,zIndex:50,transform:'translateZ(0)',WebkitTransform:'translateZ(0)',backfaceVisibility:'hidden',WebkitBackfaceVisibility:'hidden'}}>
+      <header style={{background:D.headerBg,borderBottom:`1px solid ${D.border}`,position:'sticky',top:0,zIndex:50}}>
         <div style={{maxWidth:'1100px',margin:'0 auto',padding:'0 20px',height:'60px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
           <div style={{display:'flex',alignItems:'center',gap:'14px'}}>
             <button onClick={() => router.back()} style={{background:D.input,border:'none',borderRadius:'10px',width:'36px',height:'36px',cursor:'pointer',fontSize:'16px',display:'flex',alignItems:'center',justifyContent:'center',color:D.text}}>←</button>
@@ -690,7 +690,7 @@ export default function ProductDetailPage() {
 
       {/* ── 모바일 전용 하단 고정 구매바 ── */}
       {!showOrderForm && (
-        <div className="mobile-buybar" style={{position:'fixed',bottom:0,left:0,right:0,zIndex:60,transform:'translateZ(0)',WebkitTransform:'translateZ(0)',backfaceVisibility:'hidden',WebkitBackfaceVisibility:'hidden',background:D.headerBg,borderTop:`1px solid ${D.border}`,padding:'10px 16px calc(10px + env(safe-area-inset-bottom))',alignItems:'center',gap:'12px',boxShadow:'0 -6px 24px rgba(0,0,0,0.1)'}}>
+        <div className="mobile-buybar" style={{position:'fixed',bottom:0,left:0,right:0,zIndex:60,background:D.headerBg,borderTop:`1px solid ${D.border}`,padding:'10px 16px calc(10px + env(safe-area-inset-bottom))',alignItems:'center',gap:'12px',boxShadow:'0 -6px 24px rgba(0,0,0,0.1)'}}>
           <button onClick={toggleLike} aria-label="찜하기" style={{width:'48px',height:'48px',flexShrink:0,borderRadius:'14px',border:`1.5px solid ${D.border}`,background:'transparent',cursor:'pointer',fontSize:'22px',display:'flex',alignItems:'center',justifyContent:'center'}}>
             {liked ? '❤️' : '🤍'}
           </button>
@@ -712,6 +712,8 @@ export default function ProductDetailPage() {
       )}
 
       <style>{`
+        /* [진단 임시] 모든 애니메이션/transition 정지 - PC 깜빡임 원인이 CSS인지 판별 */
+        *, *::before, *::after { animation: none !important; transition: none !important; }
         @keyframes spin{to{transform:rotate(360deg)}}
         @keyframes pdFadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
         .pd-mini{transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.25s,border-color 0.25s}
