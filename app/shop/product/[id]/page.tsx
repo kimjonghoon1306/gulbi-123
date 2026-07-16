@@ -431,7 +431,7 @@ export default function ProductDetailPage() {
           <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
             {visitorCount > 0 && (
               <div style={{background:dark?'#15391f':'#fdf2f8',borderRadius:'100px',padding:'4px 10px',display:'flex',alignItems:'center',gap:'4px'}}>
-                <div style={{width:'6px',height:'6px',borderRadius:'50%',background:'#15803d',animation:'pulse 2s infinite'}} />
+                <div style={{width:'6px',height:'6px',borderRadius:'50%',background:'#15803d'}} />
                 <span style={{fontSize:'11px',fontWeight:700,color:D.gtext}}>{visitorCount}명 방문중</span>
               </div>
             )}
@@ -545,7 +545,7 @@ export default function ProductDetailPage() {
 
             {/* 재고 */}
             <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'16px'}}>
-              <div style={{width:'8px',height:'8px',borderRadius:'50%',background:product.stock > 0 ? '#22c55e' : '#ef4444',animation:product.stock > 0 ? 'pulse 1.5s ease-in-out infinite' : undefined}} />
+              <div style={{width:'8px',height:'8px',borderRadius:'50%',background:product.stock > 0 ? '#22c55e' : '#ef4444'}} />
               <p style={{fontSize:'13px',color:D.sub,fontWeight:500}}>
                 {product.stock > 0 ? `재고 ${product.stock} 남음` : '현재 품절입니다'}
               </p>
