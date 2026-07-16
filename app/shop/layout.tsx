@@ -9,9 +9,10 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
   return (
     <>
       {children}
+      {/* [진단 임시] PC 깜빡임 범인 격리 테스트 — 원인 확인 후 되살림
       <ChatBot />
-      {/* 온파트너 제휴 추적 (파트너 링크 유입 op_ref 캡처 + 구매 전환) */}
       <Script src="https://partnering.vercel.app/tracker.js" strategy="afterInteractive" />
+      */}
     </>
   )
 }
