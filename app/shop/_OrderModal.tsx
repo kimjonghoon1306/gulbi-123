@@ -3,7 +3,7 @@
 import React from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
-import { loadToss } from '@/lib/toss'
+import { payWithInicis } from '@/lib/inicis'
 import { openPostcode } from '@/lib/postcode'
 import { AddressBookPicker } from './_AddressBookPicker'
 
@@ -312,9 +312,9 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
                         const table = memberType === '도매업' ? 'wholesale_orders' : memberType === '소매업' ? 'retail_orders' : 'general_orders'
                         const itemTable = memberType === '도매업' ? 'wholesale_order_items' : memberType === '소매업' ? 'retail_order_items' : 'general_order_items'
                         const isBiz = memberType !== '일반'
-                        const isCard = orderForm.payment_method === '카드'      // 카드 = 토스 카드결제
-                        const isVbank = orderForm.payment_method === '가상계좌' // 가상계좌 = 토스 가상계좌
-                        const isToss = isCard || isVbank                       // 둘 다 토스 결제창 사용
+                        const isCard = orderForm.payment_method === '카드'      // 카드 = 이니시스 카드결제
+                        const isVbank = orderForm.payment_method === '가상계좌' // 가상계좌 = 이니시스 가상계좌
+                        const isPg = isCard || isVbank                         // 둘 다 이니시스 결제창 사용
                         // 재고는 결제/입금 성공 후 차감 → 시작 전 재고 여부만 확인(초과판매 방지)
                         {
                           const { data: prod } = await supabase.from('products').select('stock').eq('id', product.id).single()
@@ -330,7 +330,7 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
                           user_id: user?.id || '',
                           address: orderForm.address,
                           note: orderForm.note,
-                          payment_method: isCard ? '카드(토스)' : isVbank ? '가상계좌(토스)' : orderForm.payment_method,
+                          payment_method: isCard ? '카드(이니시스)' : isVbank ? '가상계좌(이니시스)' : orderForm.payment_method,
                           status: isCard ? '결제대기' : isVbank ? '입금대기' : '접수',
                           total_amount: payAmount,
                           point_used: pointUsed,
@@ -397,18 +397,18 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
                           return
                         }
 
-                        // 카드/가상계좌 → 토스 결제창 호출
-                        if (isToss && newOrder) {
-                          const toss = await loadToss()
-                          await toss.requestPayment(isCard ? '카드' : '가상계좌', {
-                            amount: payAmount,
+                        // 카드/가상계좌 → 이니시스 결제창 호출 (승인은 서버 /api/payments/inicis/return)
+                        if (isPg && newOrder) {
+                          await payWithInicis({
+                            table,
                             orderId: String(newOrder.id),
-                            orderName: product.name,
-                            customerName: orderForm.recipient || memberInfo?.name || '고객',
-                            successUrl: `${window.location.origin}/shop/payment/success?table=${table}`,
-                            failUrl: `${window.location.origin}/shop/payment/fail`,
+                            method: orderForm.payment_method,
+                            goodname: product.name,
+                            buyername: orderForm.recipient || memberInfo?.name || '고객',
+                            buyertel: orderForm.phone || memberInfo?.contact || '',
+                            buyeremail: memberInfo?.email || '',
                           })
-                          return  // 토스 결제창으로 리다이렉트
+                          return  // 이니시스 결제창이 열리므로 이후 코드 실행 안 함
                         }
                         setOrderDone(true)
                       } catch { alert('주문 중 오류가 발생했어요. 다시 시도해주세요.') }

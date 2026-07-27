@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import { sanitizeHtml } from '@/lib/sanitize-html'
-import { loadToss } from '@/lib/toss'
 import { ProductMini } from '../../_ProductMini'
 import { ReviewSection } from '../../_ReviewSection'
 import { QuestionSection } from '../../_QuestionSection'

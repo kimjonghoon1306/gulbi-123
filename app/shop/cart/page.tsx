@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
 import { CartOrderModal } from '../_CartOrderModal'
 import { priceFor } from '../_shopConstants'
-import { loadToss } from '@/lib/toss'
+import { payWithInicis } from '@/lib/inicis'
 import { addressToText } from '../_AddressBookPicker'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -214,9 +214,9 @@ export default function CartPage() {
       const table = memberType === '도매업' ? 'wholesale_orders' : memberType === '소매업' ? 'retail_orders' : 'general_orders'
       const itemTable = memberType === '도매업' ? 'wholesale_order_items' : memberType === '소매업' ? 'retail_order_items' : 'general_order_items'
 
-      const isCard = orderForm.payment_method === '카드'        // 카드 = 토스페이먼츠 카드결제
-      const isVbank = orderForm.payment_method === '가상계좌'    // 가상계좌 = 토스페이먼츠 가상계좌 발급
-      const isToss = isCard || isVbank                          // 둘 다 토스 결제창 사용
+      const isCard = orderForm.payment_method === '카드'        // 카드 = 이니시스 카드결제
+      const isVbank = orderForm.payment_method === '가상계좌'    // 가상계좌 = 이니시스 가상계좌 발급
+      const isPg = isCard || isVbank                            // 둘 다 이니시스 결제창 사용
 
       // 재고는 결제/입금 성공 후 차감 → 결제 시작 전 재고 여부만 확인(초과판매 방지)
       {
@@ -237,7 +237,7 @@ export default function CartPage() {
         contact: orderForm.phone || memberInfo?.contact || '',
         user_id: userId,
         address: orderForm.address,
-        payment_method: isCard ? '카드(토스)' : isVbank ? '가상계좌(토스)' : orderForm.payment_method,
+        payment_method: isCard ? '카드(이니시스)' : isVbank ? '가상계좌(이니시스)' : orderForm.payment_method,
         status: isCard ? '결제대기' : isVbank ? '입금대기' : '접수',
         total_amount: payAmount,
         point_used: pointUsed,
@@ -299,7 +299,7 @@ export default function CartPage() {
         }
       }
 
-      // 카드/가상계좌 → 토스 결제창 호출 (성공 시 /shop/payment/success 에서 승인 + 장바구니 비움)
+      // 카드/가상계좌 → 이니시스 결제창 호출 (승인은 서버 /api/payments/inicis/return 에서 처리)
       if (newOrder && payAmount === 0) {
         const res = await fetch('/api/orders/point-pay', {
           method: 'POST',
@@ -314,20 +314,20 @@ export default function CartPage() {
         return
       }
 
-      if (isToss && newOrder) {
-        const toss = await loadToss()
+      if (isPg && newOrder) {
         const orderName = items.length > 1
           ? `${items[0].products.name} 외 ${items.length - 1}건`
           : (items[0]?.products?.name || '온종일팜 주문')
-        await toss.requestPayment(isCard ? '카드' : '가상계좌', {
-          amount: payAmount,
+        await payWithInicis({
+          table,
           orderId: String(newOrder.id),
-          orderName,
-          customerName: orderForm.recipient || memberInfo?.name || '고객',
-          successUrl: `${window.location.origin}/shop/payment/success?table=${table}`,
-          failUrl: `${window.location.origin}/shop/payment/fail`,
+          method: orderForm.payment_method,
+          goodname: orderName,
+          buyername: orderForm.recipient || memberInfo?.name || '고객',
+          buyertel: orderForm.phone || memberInfo?.contact || '',
+          buyeremail: memberInfo?.email || '',
         })
-        return  // 토스 결제창으로 리다이렉트되므로 이후 코드 실행 안 함
+        return  // 이니시스 결제창이 열리므로 이후 코드 실행 안 함
       }
 
       await clearCart()

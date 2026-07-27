@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
 
 // 가상계좌 입금 자동확인 — 도매/소매/일반 주문 페이지 상단 공용 바.
-// 자동 ON: 손님 입금 → 토스 신호 → 주문 '입금대기'→'입금완료' 자동 전환
+// 자동 ON: 손님 입금 → 이니시스 입금통보 → 주문 '입금대기'→'입금완료' 자동 전환
 // 자동 OFF: 입금돼도 그대로, 관리자가 '입금완료' 버튼 수동 클릭
 export default function DepositAutoBar() {
   const supabase = createClient()
@@ -63,8 +63,8 @@ export default function DepositAutoBar() {
       {loaded && (
         <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2 pl-6">
           {lastDate
-            ? `🟢 토스 연결됨 · 마지막 입금 신호: ${fmt(lastDate)}`
-            : '⚪ 아직 토스에서 입금 신호를 받은 적이 없어요. (토스 웹훅 등록 후 첫 입금이 오면 켜져요)'}
+            ? `🟢 이니시스 연결됨 · 마지막 입금 신호: ${fmt(lastDate)}`
+            : '⚪ 아직 이니시스에서 입금 신호를 받은 적이 없어요. (이니시스 입금통보 URL 등록 후 첫 입금이 오면 켜져요)'}
         </p>
       )}
     </div>

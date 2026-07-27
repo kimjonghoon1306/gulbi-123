@@ -44,7 +44,7 @@ export default function PrivacyPage() {
         </Section>
         <Section title="5. 개인정보 처리의 위탁">
           회사는 원활한 서비스 제공을 위하여 다음과 같이 개인정보 처리를 위탁할 수 있습니다.<br />
-          · 결제 처리: 토스페이먼츠(주)<br />
+          · 결제 처리: KG이니시스(주)<br />
           · 배송: 계약 택배사<br />
           · 거래 증빙 발행: 전자세금계산서·현금영수증 발행 대행사
         </Section>

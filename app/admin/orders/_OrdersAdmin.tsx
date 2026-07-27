@@ -251,9 +251,9 @@ export default function OrdersAdmin({ config }: { config: OrdersAdminConfig }) {
   const refundOrder = async (o: Order) => {
     if (o.status === '환불') return
     const isCard = (o.payment_method || '').includes('카드')
-    if (!confirm(`${getCustomerName(o)} 주문(${o.total_amount.toLocaleString()}원)을 환불 처리할까요?` + (isCard ? '\n카드결제 → 토스 결제취소가 즉시 실행됩니다.' : '\n가상계좌/현금 → 환불 송금 후 상태만 변경됩니다.'))) return
+    if (!confirm(`${getCustomerName(o)} 주문(${o.total_amount.toLocaleString()}원)을 환불 처리할까요?` + (isCard ? '\n카드결제 → 이니시스 결제취소가 즉시 실행됩니다.' : '\n가상계좌/현금 → 환불 송금 후 상태만 변경됩니다.'))) return
     if (isCard) {
-      if (!o.payment_key) { alert('결제키(paymentKey)가 없어 자동취소가 불가합니다. 토스 콘솔에서 직접 취소 후 상태를 변경하세요.'); return }
+      if (!o.payment_key) { alert('거래번호(tid)가 없어 자동취소가 불가합니다. 이니시스 상점관리자에서 직접 취소 후 상태를 변경하세요.'); return }
       const res = await fetch('/api/payments/cancel', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ paymentKey: o.payment_key, cancelReason: '관리자 환불' }),
@@ -261,7 +261,7 @@ export default function OrdersAdmin({ config }: { config: OrdersAdminConfig }) {
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
         console.error('[admin order refund] failed', data)
-        alert('토스 환불 처리에 실패했습니다. 서버 로그를 확인해 주세요.')
+        alert(data.message || '이니시스 환불 처리에 실패했습니다. 이니시스 상점관리자에서 직접 취소해 주세요.')
         return
       }
     }

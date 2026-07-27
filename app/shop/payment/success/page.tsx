@@ -3,95 +3,70 @@ import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 
-// 토스 은행코드 → 은행명 (가상계좌 안내용, 주요 은행)
-const BANK: Record<string, string> = {
-  '11':'농협','20':'우리','88':'신한','81':'하나','04':'국민','03':'기업',
-  '23':'SC','27':'씨티','31':'대구','32':'부산','34':'광주','35':'제주','37':'전북','39':'경남',
-  '45':'새마을','48':'신협','71':'우체국','89':'케이뱅크','90':'카카오뱅크','92':'토스뱅크',
+// 이니시스 가상계좌 은행명은 승인응답 vactBankName 을 그대로 전달받아 표시한다(코드→이름 매핑 불필요).
+// yyyyMMdd(HHmmss) 형식의 입금기한을 사람이 읽기 쉬운 형태로 변환
+function formatDue(raw: string): string {
+  if (!raw) return ''
+  const d = raw.replace(/[^0-9]/g, '')
+  if (d.length < 8) return raw
+  const y = d.slice(0, 4), mo = d.slice(4, 6), da = d.slice(6, 8)
+  const hh = d.slice(8, 10), mm = d.slice(10, 12)
+  return `${y}.${mo}.${da}` + (hh ? ` ${hh}:${mm || '00'}` : '')
 }
-
-type Vbank = { bank: string; account: string; due: string; holder: string }
 
 function SuccessInner() {
   const sp = useSearchParams()
   const router = useRouter()
   const supabase = createClient()
-  const [state, setState] = useState<'loading' | 'ok' | 'vbank' | 'fail'>('loading')
-  const [msg, setMsg] = useState('결제를 확인하고 있어요...')
-  const [amount, setAmount] = useState('')
-  const [vbank, setVbank] = useState<Vbank | null>(null)
+  const [ready, setReady] = useState(false)
 
+  const status = sp.get('status') || 'paid'   // 'paid'(카드/결제완료) | 'vbank'(가상계좌 발급)
+  const isVbank = status === 'vbank'
+  const amount = Number(sp.get('amount') || 0).toLocaleString()
+  const table = sp.get('table') || 'general_orders'
+  const orderId = sp.get('orderId') || ''
+  const vbank = {
+    bank: sp.get('bank') || '가상계좌',
+    account: sp.get('account') || '',
+    holder: sp.get('holder') || '',
+    due: formatDue(sp.get('due') || ''),
+  }
+  const msg = isVbank ? '가상계좌가 발급됐어요!' : '결제가 완료되었습니다!'
+
+  // 결제 성공 → 장바구니 비우기 + 온파트너 전환추적 (결제 확정은 서버 /return 에서 이미 처리됨)
   useEffect(() => {
-    const paymentKey = sp.get('paymentKey')
-    const orderId = sp.get('orderId')
-    const amt = sp.get('amount')
-    const table = sp.get('table') || 'general_orders'
-    if (!paymentKey || !orderId || !amt) { setState('fail'); setMsg('결제 정보가 올바르지 않습니다.'); return }
-
     ;(async () => {
       try {
-        const res = await fetch('/api/payments/confirm', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ paymentKey, orderId, amount: amt, table }),
-        })
-        const data = await res.json()
-        if (!res.ok) {
-          console.error('[payment confirm] failed', data)
-          setState('fail')
-          setMsg('결제 승인에 실패했습니다. 잠시 후 다시 시도해 주세요.')
-          return
-        }
-
-        // 가상계좌 = 입금대기 / 카드 = 결제완료. 주문 상태/재고 반영은 서버 confirm API에서 처리한다.
-        const isWaiting = data.status === 'WAITING_FOR_DEPOSIT' || data.method === '가상계좌'
-        const va = data.virtualAccount
-
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) await supabase.from('cart_items').delete().eq('user_id', user.id)
+        localStorage.setItem('cart-updated', Date.now().toString())
+      } catch {}
+      if (!isVbank && orderId) {
         try {
-          const { data: { user } } = await supabase.auth.getUser()
-          if (user) await supabase.from('cart_items').delete().eq('user_id', user.id)
-          localStorage.setItem('cart-updated', Date.now().toString())
-        } catch {}
-
-        setAmount(Number(amt).toLocaleString())
-        if (isWaiting && va) {
-          setVbank({
-            bank: BANK[va.bankCode] ? `${BANK[va.bankCode]}은행` : (va.bank || '가상계좌'),
-            account: va.accountNumber || '',
-            due: va.dueDate ? new Date(va.dueDate).toLocaleString('ko-KR') : '',
-            holder: va.customerName || '',
+          ;(window as any).Partnering?.track({
+            orderId,
+            amount: Number(sp.get('amount') || 0),
+            orderType: table.replace('_orders', ''),
           })
-          setState('vbank'); setMsg('가상계좌가 발급됐어요!')
-        } else {
-          setState('ok'); setMsg('결제가 완료되었습니다!')
-          // 온파트너 제휴 전환 추적 (파트너 링크로 유입된 구매만 적립됨)
-          try {
-            ;(window as any).Partnering?.track({
-              orderId,
-              amount: Number(amt),
-              orderType: (table || 'general_orders').replace('_orders', ''),
-            })
-          } catch {}
-        }
-      } catch (e) {
-        console.error('[payment confirm] unexpected error', e)
-        setState('fail'); setMsg('결제 확인 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.')
+        } catch {}
       }
+      setReady(true)
     })()
-  }, [sp, supabase])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#f0fdf4', padding: 20, fontFamily: '-apple-system,sans-serif' }}>
       <div style={{ background: '#fff', borderRadius: 24, padding: '44px 32px', maxWidth: 440, width: '100%', textAlign: 'center', boxShadow: '0 24px 60px -28px rgba(0,0,0,.2)' }}>
         <div style={{ width: 76, height: 76, borderRadius: '50%', margin: '0 auto 18px', display: 'grid', placeItems: 'center',
-          background: state === 'ok' ? 'linear-gradient(135deg,#34d399,#16a34a)' : state === 'vbank' ? 'linear-gradient(135deg,#38bdf8,#0284c7)' : state === 'fail' ? '#fee2e2' : '#f1f5f9', fontSize: 38 }}>
-          {state === 'ok' ? '✅' : state === 'vbank' ? '🏦' : state === 'fail' ? '❌' : '⏳'}
+          background: isVbank ? 'linear-gradient(135deg,#38bdf8,#0284c7)' : 'linear-gradient(135deg,#34d399,#16a34a)', fontSize: 38 }}>
+          {isVbank ? '🏦' : '✅'}
         </div>
         <h2 style={{ fontSize: 23, fontWeight: 800, margin: '0 0 8px', color: '#0f172a' }}>{msg}</h2>
 
-        {state === 'ok' && <p style={{ color: '#16a34a', fontWeight: 800, fontSize: 20, margin: '6px 0 0' }}>{amount}원 결제 완료</p>}
+        {!isVbank && <p style={{ color: '#16a34a', fontWeight: 800, fontSize: 20, margin: '6px 0 0' }}>{amount}원 결제 완료</p>}
 
-        {state === 'vbank' && vbank && (
+        {isVbank && (
           <div style={{ marginTop: 18, textAlign: 'left', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 16, padding: '18px 20px' }}>
             <p style={{ margin: '0 0 10px', fontSize: 13, color: '#0369a1', fontWeight: 800 }}>아래 계좌로 입금해 주세요</p>
             <div style={{ display: 'flex', justifyContent: 'space-between', margin: '6px 0' }}>
@@ -113,13 +88,11 @@ function SuccessInner() {
           </div>
         )}
 
-        {state !== 'loading' && (
-          <button onClick={() => router.push(state === 'vbank' ? '/shop/mypage?tab=orders' : '/shop')}
-            style={{ marginTop: 26, width: '100%', padding: 15, borderRadius: 14, border: 'none', cursor: 'pointer',
-              background: 'linear-gradient(135deg,#34d399,#16a34a)', color: '#fff', fontWeight: 800, fontSize: 16 }}>
-            {state === 'vbank' ? '주문내역 보기' : '쇼핑몰로 돌아가기'}
-          </button>
-        )}
+        <button onClick={() => router.push(isVbank ? '/shop/mypage?tab=orders' : '/shop')} disabled={!ready}
+          style={{ marginTop: 26, width: '100%', padding: 15, borderRadius: 14, border: 'none', cursor: 'pointer',
+            background: 'linear-gradient(135deg,#34d399,#16a34a)', color: '#fff', fontWeight: 800, fontSize: 16, opacity: ready ? 1 : 0.7 }}>
+          {isVbank ? '주문내역 보기' : '쇼핑몰로 돌아가기'}
+        </button>
       </div>
     </div>
   )
