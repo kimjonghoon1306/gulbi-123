@@ -107,7 +107,7 @@ function renderText(text: string) {
   )
 }
 
-const HERO_IMAGE = '/onbot/onbot.svg'
+const HERO_IMAGE = '/onbot/onbot.png'
 
 const readTheme = () => {
   if (typeof window === 'undefined') return 'light'
