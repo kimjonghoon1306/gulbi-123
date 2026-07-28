@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Biz } from '../_BizInfo'
+import { SellerNotice } from '../_SellerNotice'
 
 export const metadata = { title: '이용약관 · 온종일팜' }
 
@@ -58,6 +59,9 @@ export default function TermsPage() {
           본 약관과 관련한 분쟁에 대하여는 대한민국 법을 적용하며, 분쟁으로 인한 소송은 회사의 본점 소재지를 관할하는 법원을 전속관할로 합니다.
         </Section>
 
+        <div style={{ marginTop: '32px' }}>
+          <SellerNotice />
+        </div>
         <Biz />
         <p style={{ marginTop: '24px', color: '#94a3b8', fontSize: '12px' }}>본 약관은 2026년 6월 13일부터 시행합니다.</p>
       </div>

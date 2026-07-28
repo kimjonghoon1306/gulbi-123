@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { payWithInicis } from '@/lib/inicis'
 import { openPostcode } from '@/lib/postcode'
 import { AddressBookPicker } from './_AddressBookPicker'
+import { SellerNotice } from './_SellerNotice'
 
 // 상품상세 주문 폼 모달 — page에서 분리. 주문/결제 로직은 그대로(verbatim).
 type OrderForm = { address: string; recipient: string; phone: string; note: string; payment_method: string; evidence: string; evidenceContact: string }
@@ -300,6 +301,11 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
                     {couponDiscount > 0 && <div style={{display:'flex',justifyContent:'space-between',fontSize:'13px',color:'#16a34a',fontWeight:700}}><span>쿠폰 할인</span><span>−{couponDiscount.toLocaleString()}원</span></div>}
                     {pointUsed > 0 && <div style={{display:'flex',justifyContent:'space-between',fontSize:'13px',color:'#16a34a',fontWeight:700}}><span>포인트 사용</span><span>−{pointUsed.toLocaleString()}원</span></div>}
                     <div style={{display:'flex',justifyContent:'space-between',fontSize:'15px',color:D.text,fontWeight:900,borderTop:`1px solid ${D.border}`,paddingTop:'6px',marginTop:'2px'}}><span>최종 결제액</span><span>{payAmount.toLocaleString()}원</span></div>
+                  </div>
+
+                  {/* 판매자 책임 고지 (이니시스 심사 요구) */}
+                  <div style={{marginBottom:'12px'}}>
+                    <SellerNotice dark={dark} compact />
                   </div>
 
                   {/* 주문하기 버튼 */}

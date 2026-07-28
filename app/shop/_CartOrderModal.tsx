@@ -4,6 +4,7 @@ import React from 'react'
 import { useRouter } from 'next/navigation'
 import { openPostcode } from '@/lib/postcode'
 import { AddressBookPicker } from './_AddressBookPicker'
+import { SellerNotice } from './_SellerNotice'
 
 // 장바구니 주문 모달 — page에서 분리. handleOrder(주문로직)는 page에 그대로, JSX만 이동.
 type CartOrderForm = { address: string; recipient: string; phone: string; note: string; payment_method: string; evidence: string; evidenceContact: string }
@@ -245,6 +246,11 @@ export function CartOrderModal({ orderForm, setOrderForm, orderDone, handleOrder
                       style={{ width:'18px', height:'18px', marginTop:'1px', accentColor:'#14532d', flexShrink:0 }} />
                     <span style={{ fontSize:'12.5px', fontWeight:700, color:D.text }}>위 청약철회·반품 제한 사항을 확인했으며, 이에 동의합니다. <span style={{ color:gtext }}>(필수)</span></span>
                   </label>
+                </div>
+
+                {/* 판매자 책임 고지 (이니시스 심사 요구) */}
+                <div style={{ marginBottom:'12px' }}>
+                  <SellerNotice dark={dark} compact />
                 </div>
 
                 <button onClick={handleOrder} disabled={orderLoading || !agreeRefund}

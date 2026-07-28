@@ -6,6 +6,7 @@ import { sanitizeHtml } from '@/lib/sanitize-html'
 import { ProductMini } from '../../_ProductMini'
 import { ReviewSection } from '../../_ReviewSection'
 import { QuestionSection } from '../../_QuestionSection'
+import { SellerNotice } from '../../_SellerNotice'
 import { OrderModal } from '../../_OrderModal'
 import { priceFor } from '../../_shopConstants'
 import { addressToText } from '../../_AddressBookPicker'
@@ -613,6 +614,11 @@ export default function ProductDetailPage() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* 판매자 책임 고지 (이니시스 심사 요구) */}
+        <div style={{display:'flex',justifyContent:'center',marginBottom:'16px'}}>
+          <SellerNotice dark={dark} />
         </div>
 
         {/* 상세 설명 */}
