@@ -191,7 +191,7 @@ export function ChatBot() {
       {!open && (
         <button onClick={() => setOpen(true)} aria-label="온봇 열기" className="chatbot-fab onbot-hero-wrap"
           style={{
-            position: 'fixed', right: '14px', bottom: 'calc(86px + env(safe-area-inset-bottom))',
+            position: 'fixed', right: '14px', bottom: 'calc(108px + env(safe-area-inset-bottom))',
             zIndex: 9998, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0,
             background: 'transparent', border: 'none', boxShadow: 'none', cursor: 'pointer', padding: 0,
           }}>

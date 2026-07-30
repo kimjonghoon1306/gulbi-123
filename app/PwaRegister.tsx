@@ -81,12 +81,18 @@ export default function PwaRegister() {
 
   const doUpdate = async () => {
     setBusy(true);
-    const r = reg ?? (await navigator.serviceWorker.getRegistration());
-    if (r?.waiting) r.waiting.postMessage({ type: "SKIP_WAITING" });
-    else {
+    const forceReload = () => {
       const url = new URL(window.location.href);
       url.searchParams.set("_update", Date.now().toString());
       window.location.replace(url.toString());
+    };
+    const r = reg ?? (await navigator.serviceWorker.getRegistration());
+    if (r?.waiting) {
+      r.waiting.postMessage({ type: "SKIP_WAITING" });
+      // 안전장치: controllerchange가 안 와도 2.5초 뒤 강제 새로고침 (무한 "업데이트 중…" 방지)
+      setTimeout(forceReload, 2500);
+    } else {
+      forceReload();
     }
   };
 
