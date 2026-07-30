@@ -168,7 +168,7 @@ export default function LandingPage() {
       </nav>
 
       {/* 관리자 진입 — 좌하단에 작고 눈에 안 띄게 */}
-      <Link href="/admin/dashboard" aria-label="관리자"
+      <Link href="/auth/login?force=1" aria-label="관리자"
         title="관리자"
         className="fixed bottom-4 left-4 z-50 flex items-center justify-center rounded-full transition-all duration-200 hover:scale-110 hover:rotate-90"
         style={{ width: '38px', height: '38px', backdropFilter: 'blur(8px)',

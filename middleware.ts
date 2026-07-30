@@ -59,7 +59,8 @@ export async function middleware(request: NextRequest) {
     if (!(await checkAdmin())) return NextResponse.redirect(new URL('/shop', request.url))
   }
 
-  if (pathname === '/auth/login' && user) {
+  // ?force=1 이면(톱니로 관리자 재로그인) 로그인 폼을 그대로 보여줌 — 일반회원 세션이어도 관리자로 갈아탈 수 있게
+  if (pathname === '/auth/login' && user && !request.nextUrl.searchParams.has('force')) {
     // 관리자만 대시보드로, 그 외 로그인 사용자는 쇼핑몰로
     if (await checkAdmin()) return NextResponse.redirect(new URL('/admin/dashboard', request.url))
     return NextResponse.redirect(new URL('/shop', request.url))
