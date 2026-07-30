@@ -197,19 +197,19 @@ export function ChatBot() {
           }}>
           {/* 캐릭터 위 안내 문구 */}
           <span className="onbot-blink" style={{
-            fontSize: '11px', fontWeight: 800, color: T.fabSub, whiteSpace: 'nowrap',
-            background: T.panelBg, padding: '4px 9px', borderRadius: '12px',
-            boxShadow: '0 3px 10px rgba(20,83,45,0.18)', marginBottom: '4px',
+            fontSize: '10px', fontWeight: 800, color: T.fabSub, whiteSpace: 'nowrap',
+            background: T.panelBg, padding: '3px 8px', borderRadius: '11px',
+            boxShadow: '0 3px 10px rgba(20,83,45,0.18)', marginBottom: '3px',
           }}>궁금하신 거 클릭하세요</span>
-          {/* 캐릭터 — 틀 없이 이미지만, 큼직하게 */}
+          {/* 캐릭터 — 틀 없이 이미지만 (적당한 크기) */}
           <img src={HERO_IMAGE} alt="온봇" draggable={false} style={{
-            width: '116px', height: '116px', objectFit: 'contain',
+            width: '84px', height: '84px', objectFit: 'contain',
             pointerEvents: 'none', userSelect: 'none', WebkitUserSelect: 'none',
             WebkitTouchCallout: 'none',
           } as any} />
           {/* 캐릭터 밑 — 온봇 (다크모드에서도 또렷하게) */}
           <span style={{
-            fontSize: '17px', fontWeight: 900, color: T.fabText, marginTop: '-4px',
+            fontSize: '15px', fontWeight: 900, color: T.fabText, marginTop: '-3px',
             textShadow: dark ? '0 1px 4px rgba(0,0,0,0.6)' : '0 1px 2px rgba(255,255,255,0.8)',
           }}>온봇</span>
         </button>
