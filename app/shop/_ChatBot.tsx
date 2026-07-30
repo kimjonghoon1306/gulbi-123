@@ -119,37 +119,6 @@ export function ChatBot() {
   const [dark, setDark] = useState(false)
   const [msgs, setMsgs] = useState<Msg[]>([])
   const bodyRef = useRef<HTMLDivElement>(null)
-  // 온봇 드래그 이동 (탭=열기, 끌어서 이동, 위치 기억)
-  const [botPos, setBotPos] = useState<{ x: number; y: number } | null>(null)
-  const dragRef = useRef({ dragging: false, moved: false, sx: 0, sy: 0, ox: 0, oy: 0 })
-  useEffect(() => {
-    try { const s = localStorage.getItem('onbot_pos'); if (s) setBotPos(JSON.parse(s)); } catch { /* noop */ }
-  }, [])
-  const onBotDown = (e: any) => {
-    const r = e.currentTarget.getBoundingClientRect();
-    dragRef.current = { dragging: true, moved: false, sx: e.clientX, sy: e.clientY, ox: r.left, oy: r.top };
-    try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* noop */ }
-  };
-  const onBotMove = (e: any) => {
-    const d = dragRef.current; if (!d.dragging) return;
-    const dx = e.clientX - d.sx, dy = e.clientY - d.sy;
-    if (Math.abs(dx) > 6 || Math.abs(dy) > 6) d.moved = true;
-    if (d.moved) {
-      const el = e.currentTarget;
-      const w = el.offsetWidth, h = el.offsetHeight;
-      const nx = Math.max(4, Math.min(window.innerWidth - w - 4, d.ox + dx));
-      const ny = Math.max(4, Math.min(window.innerHeight - h - 4, d.oy + dy));
-      setBotPos({ x: nx, y: ny });
-    }
-  };
-  const onBotUp = (e: any) => {
-    const d = dragRef.current; d.dragging = false;
-    if (d.moved) {
-      try { const r = e.currentTarget.getBoundingClientRect(); localStorage.setItem('onbot_pos', JSON.stringify({ x: r.left, y: r.top })); } catch { /* noop */ }
-    } else {
-      setOpen(true);
-    }
-  };
 
   useEffect(() => {
     if (open && bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight
@@ -220,13 +189,11 @@ export function ChatBot() {
     <>
       {/* 플로팅 온봇 버튼 */}
       {!open && (
-        <button onPointerDown={onBotDown} onPointerMove={onBotMove} onPointerUp={onBotUp} aria-label="온봇 (탭하면 열기, 끌면 이동)" className="chatbot-fab onbot-hero-wrap"
+        <button onClick={() => setOpen(true)} aria-label="온봇 열기" className="chatbot-fab onbot-hero-wrap"
           style={{
-            position: 'fixed',
-            ...(botPos ? { left: `${botPos.x}px`, top: `${botPos.y}px`, right: 'auto', bottom: 'auto' } : { right: '14px', bottom: 'calc(86px + env(safe-area-inset-bottom))' }),
+            position: 'fixed', right: '14px', bottom: 'calc(86px + env(safe-area-inset-bottom))',
             zIndex: 9998, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0,
-            background: 'transparent', border: 'none', boxShadow: 'none', cursor: 'grab', padding: 0,
-            touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none',
+            background: 'transparent', border: 'none', boxShadow: 'none', cursor: 'pointer', padding: 0,
           }}>
           {/* 캐릭터 위 안내 문구 */}
           <span className="onbot-blink" style={{

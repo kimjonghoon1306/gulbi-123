@@ -1,55 +1,124 @@
-'use client'
-import { useEffect, useState } from 'react'
+"use client";
+import { useEffect, useState } from "react";
 
-// 온종일팜 PWA: 서비스워커 등록 + 새 배포 감지 시 하단 "업데이트" 버튼(하나)
+/**
+ * 온종일팜 PWA 업데이트 배너 — 온캐치(검증됨) 방식 그대로 이식.
+ * 새 배포로 SW가 바뀌면 하단 배너 → "업데이트" 누르면 SKIP_WAITING → controllerchange → 자동 새로고침.
+ */
 export default function PwaRegister() {
-  const [show, setShow] = useState(false)
-  const [waiting, setWaiting] = useState<ServiceWorker | null>(null)
+  const [show, setShow] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [reg, setReg] = useState<ServiceWorkerRegistration | null>(null);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return
-    let refreshing = false
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (refreshing) return
-      refreshing = true
-      window.location.reload()
-    })
-    navigator.serviceWorker.register('/sw.js').then((reg) => {
-      if (reg.waiting && navigator.serviceWorker.controller) { setWaiting(reg.waiting); setShow(true) }
-      reg.addEventListener('updatefound', () => {
-        const nw = reg.installing
-        if (!nw) return
-        nw.addEventListener('statechange', () => {
-          if (nw.state === 'installed' && navigator.serviceWorker.controller) { setWaiting(nw); setShow(true) }
+    if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
+    let reloaded = false;
+    let active = true;
+    const hardReload = () => {
+      const url = new URL(window.location.href);
+      url.searchParams.set("_update", Date.now().toString());
+      window.location.replace(url.toString());
+    };
+
+    const watchInstalling = (r: ServiceWorkerRegistration, worker: ServiceWorker | null) => {
+      if (!worker) return;
+      const check = () => {
+        if (!active) return;
+        if ((worker.state === "installed" || r.waiting) && navigator.serviceWorker.controller) {
+          setReg(r);
+          setShow(true);
+        }
+      };
+      worker.addEventListener("statechange", check);
+      check();
+    };
+
+    const inspect = async (r?: ServiceWorkerRegistration) => {
+      const current = r ?? (await navigator.serviceWorker.getRegistration("/").catch(() => undefined));
+      if (!current || !active) return;
+      setReg(current);
+      if (current.waiting && navigator.serviceWorker.controller) { setShow(true); return; }
+      watchInstalling(current, current.installing);
+      await current.update().catch(() => {});
+      if (!active) return;
+      if (current.waiting && navigator.serviceWorker.controller) setShow(true);
+      watchInstalling(current, current.installing);
+    };
+
+    const onLoad = () => {
+      navigator.serviceWorker.register("/sw.js", { updateViaCache: "none" })
+        .then((r) => {
+          if (!active) return;
+          r.addEventListener("updatefound", () => watchInstalling(r, r.installing));
+          void inspect(r);
         })
-      })
-    }).catch(() => {})
-  }, [])
+        .catch(() => {});
+    };
 
-  if (!show) return null
+    const checkVisible = () => { if (document.visibilityState === "visible") void inspect(); };
+    const onCtrl = () => { if (reloaded) return; reloaded = true; hardReload(); };
 
-  const doUpdate = () => {
-    if (waiting) { waiting.postMessage('skipWaiting'); setTimeout(() => window.location.reload(), 1200) }
-    else { window.location.reload() }
-  }
+    if (document.readyState === "complete") onLoad();
+    else window.addEventListener("load", onLoad);
+    document.addEventListener("visibilitychange", checkVisible);
+    window.addEventListener("focus", checkVisible);
+    window.addEventListener("pageshow", checkVisible);
+    window.addEventListener("online", checkVisible);
+    navigator.serviceWorker.addEventListener("controllerchange", onCtrl);
+    const poll = window.setInterval(() => void inspect(), 20_000);
+
+    return () => {
+      active = false;
+      window.removeEventListener("load", onLoad);
+      document.removeEventListener("visibilitychange", checkVisible);
+      window.removeEventListener("focus", checkVisible);
+      window.removeEventListener("pageshow", checkVisible);
+      window.removeEventListener("online", checkVisible);
+      navigator.serviceWorker.removeEventListener("controllerchange", onCtrl);
+      window.clearInterval(poll);
+    };
+  }, []);
+
+  const doUpdate = async () => {
+    setBusy(true);
+    const r = reg ?? (await navigator.serviceWorker.getRegistration());
+    if (r?.waiting) r.waiting.postMessage({ type: "SKIP_WAITING" });
+    else {
+      const url = new URL(window.location.href);
+      url.searchParams.set("_update", Date.now().toString());
+      window.location.replace(url.toString());
+    }
+  };
+
+  if (!show) return null;
 
   return (
-    <button
-      onClick={doUpdate}
-      aria-label="새 버전 업데이트"
+    <div
       style={{
-        position: 'fixed', left: '50%', bottom: 'calc(84px + env(safe-area-inset-bottom))',
-        transform: 'translateX(-50%)', zIndex: 99999,
-        display: 'inline-flex', alignItems: 'center', gap: 8,
-        padding: '13px 26px', background: '#16a34a', color: '#fff',
-        border: 'none', borderRadius: 999, fontWeight: 800, fontSize: 15,
-        boxShadow: '0 12px 34px rgba(0,0,0,.45)', cursor: 'pointer',
-        maxWidth: 'calc(100vw - 28px)', whiteSpace: 'nowrap',
-        userSelect: 'none', WebkitUserSelect: 'none',
-        WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation',
+        position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 100,
+        display: "flex", alignItems: "center", gap: 12,
+        maxWidth: 480, margin: "0 auto", padding: "12px 16px",
+        background: "linear-gradient(135deg,#16a34a,#12833c)", color: "#fff",
+        boxShadow: "0 -6px 20px rgba(0,0,0,.2)",
+        userSelect: "none", WebkitUserSelect: "none",
       }}
     >
-      🎉 새 버전이 나왔어요 · 지금 업데이트
-    </button>
-  )
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontWeight: 800, fontSize: 15 }}>🆕 새 버전이 나왔어요!</div>
+        <div style={{ fontSize: 12, opacity: 0.9 }}>업데이트하면 최신 기능을 쓸 수 있어요</div>
+      </div>
+      <button
+        onClick={doUpdate}
+        disabled={busy}
+        style={{
+          flex: "0 0 auto", background: "#fff", color: "#16a34a",
+          border: "none", borderRadius: 999, padding: "10px 20px",
+          fontWeight: 900, fontSize: 15, cursor: "pointer", opacity: busy ? 0.6 : 1,
+          WebkitTapHighlightColor: "transparent", touchAction: "manipulation",
+        }}
+      >
+        {busy ? "업데이트 중…" : "업데이트"}
+      </button>
+    </div>
+  );
 }

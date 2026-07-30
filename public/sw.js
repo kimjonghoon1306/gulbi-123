@@ -1,7 +1,7 @@
 // 온종일팜 서비스워커 — PWA 설치 + 업데이트 배너용
-const VERSION = 'onjongil-20260731-4';
+const VERSION = 'onjongil-20260731-5';
 
-self.addEventListener('install', () => { self.skipWaiting(); });
+self.addEventListener('install', () => { /* 대기(waiting) 상태 유지 — 배너의 SKIP_WAITING 메시지로 활성화 */ });
 
 self.addEventListener('activate', (e) => {
   e.waitUntil((async () => {
@@ -12,7 +12,7 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('message', (e) => {
-  if (e.data === 'skipWaiting') self.skipWaiting();
+  if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 // 설치형 PWA 요건: fetch 핸들러. 네트워크 우선(항상 최신), 실패 시 캐시.
