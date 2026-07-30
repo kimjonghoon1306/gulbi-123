@@ -298,7 +298,7 @@ export default function ShopPage() {
       {/* ── 상단 홍보영상 (주문→쇼핑몰→식탁→요리) ── */}
       <div style={{ width: '100%', maxWidth: 1100, margin: '0 auto', padding: '14px 24px 0' }}>
         <video
-          src="/onjongil-food.mp4"
+          src="/onjongil-food.mp4?v=2"
           autoPlay muted loop playsInline preload="auto"
           style={{ width: '100%', maxHeight: 480, objectFit: 'cover', borderRadius: 18, display: 'block', boxShadow: '0 14px 36px rgba(0,0,0,0.16)' }}
         />
