@@ -49,6 +49,24 @@ export default function MembersPage() {
     setSelected(null); setNote(''); fetchAll()
   }
 
+  const setPassword = async (id: string) => {
+    const pw = prompt('새 비밀번호를 입력하세요 (6자 이상)')
+    if (pw == null) return
+    if (pw.length < 6) { alert('비밀번호는 6자 이상이어야 합니다.'); return }
+    try {
+      const res = await fetch('/api/admin/set-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: id, password: pw }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (res.ok) alert('비밀번호가 변경되었습니다.')
+      else alert(data.error || '비밀번호 변경에 실패했습니다.')
+    } catch {
+      alert('비밀번호 변경 중 문제가 발생했습니다.')
+    }
+  }
+
   const deleteMember = async (id: string) => {
     if (!confirm('정말 삭제하시겠습니까?')) return
     setDeletingId(id)
@@ -206,6 +224,10 @@ ${rows.map(r => `<Row>${r.map(c => `<Cell><Data ss:Type="String">${String(c).rep
                   {m.status === '대기중' ? '심사하기' : '수정'}
                 </button>
               )}
+              <button onClick={() => setPassword(m.id)}
+                className="text-xs text-blue-500 hover:text-blue-600 font-medium px-2 py-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+                비번변경
+              </button>
               <button onClick={() => deleteMember(m.id)} disabled={deletingId === m.id}
                 className="text-xs text-red-400 hover:text-red-500 font-medium px-2 py-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
                 {deletingId === m.id ? '삭제 중...' : '삭제'}
