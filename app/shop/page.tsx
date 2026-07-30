@@ -300,7 +300,7 @@ export default function ShopPage() {
         <video
           src="/onjongil-food.mp4"
           autoPlay muted loop playsInline preload="auto"
-          style={{ width: '100%', maxHeight: 400, objectFit: 'cover', borderRadius: 18, display: 'block', boxShadow: '0 14px 36px rgba(0,0,0,0.16)' }}
+          style={{ width: '100%', maxHeight: 480, objectFit: 'cover', borderRadius: 18, display: 'block', boxShadow: '0 14px 36px rgba(0,0,0,0.16)' }}
         />
       </div>
 
