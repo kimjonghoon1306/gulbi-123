@@ -2,8 +2,9 @@
 import { useEffect, useState } from "react";
 
 /**
- * 온종일팜 PWA 업데이트 배너 — 온캐치(검증됨) 방식 그대로 이식.
- * 새 배포로 SW가 바뀌면 하단 배너 → "업데이트" 누르면 SKIP_WAITING → controllerchange → 자동 새로고침.
+ * 온종일팜 PWA 업데이트 배너 — 온캐치 방식 + 무한반복 차단.
+ * 업데이트를 한 번 누르면 sessionStorage 플래그로 이 탭에선 배너를 더 안 띄움
+ * (강제 새로고침으로 콘텐츠는 네트워크 우선 최신이라, SW가 waiting이어도 실사용 최신).
  */
 export default function PwaRegister() {
   const [show, setShow] = useState(false);
@@ -14,6 +15,11 @@ export default function PwaRegister() {
     if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
     let reloaded = false;
     let active = true;
+
+    // 이미 이 탭에서 업데이트를 눌렀으면 배너를 다시 띄우지 않음(무한반복 방지)
+    const alreadyTried = () => { try { return !!sessionStorage.getItem("pwa_upd"); } catch { return false; } };
+    const markShow = () => { if (!active || alreadyTried()) return; setShow(true); };
+
     const hardReload = () => {
       const url = new URL(window.location.href);
       url.searchParams.set("_update", Date.now().toString());
@@ -25,8 +31,7 @@ export default function PwaRegister() {
       const check = () => {
         if (!active) return;
         if ((worker.state === "installed" || r.waiting) && navigator.serviceWorker.controller) {
-          setReg(r);
-          setShow(true);
+          setReg(r); markShow();
         }
       };
       worker.addEventListener("statechange", check);
@@ -37,11 +42,11 @@ export default function PwaRegister() {
       const current = r ?? (await navigator.serviceWorker.getRegistration("/").catch(() => undefined));
       if (!current || !active) return;
       setReg(current);
-      if (current.waiting && navigator.serviceWorker.controller) { setShow(true); return; }
+      if (current.waiting && navigator.serviceWorker.controller) { markShow(); return; }
       watchInstalling(current, current.installing);
       await current.update().catch(() => {});
       if (!active) return;
-      if (current.waiting && navigator.serviceWorker.controller) setShow(true);
+      if (current.waiting && navigator.serviceWorker.controller) markShow();
       watchInstalling(current, current.installing);
     };
 
@@ -81,6 +86,7 @@ export default function PwaRegister() {
 
   const doUpdate = async () => {
     setBusy(true);
+    try { sessionStorage.setItem("pwa_upd", String(Date.now())); } catch { /* noop */ }
     const forceReload = () => {
       const url = new URL(window.location.href);
       url.searchParams.set("_update", Date.now().toString());
@@ -89,8 +95,7 @@ export default function PwaRegister() {
     const r = reg ?? (await navigator.serviceWorker.getRegistration());
     if (r?.waiting) {
       r.waiting.postMessage({ type: "SKIP_WAITING" });
-      // 안전장치: controllerchange가 안 와도 2.5초 뒤 강제 새로고침 (무한 "업데이트 중…" 방지)
-      setTimeout(forceReload, 2500);
+      setTimeout(forceReload, 2000); // controllerchange 안 와도 강제 새로고침
     } else {
       forceReload();
     }
