@@ -257,7 +257,7 @@ export default function LandingPage() {
           <h2 className="text-2xl sm:text-4xl font-black mb-8" style={{ color: landingText }}>산지의 신선함, 그대로</h2>
           <div className="rounded-3xl overflow-hidden shadow-2xl mx-auto" style={{ maxWidth: 880, border: `1px solid ${dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}` }}>
             <video
-              src="/promo.mp4"
+              src="/onjongil-hero.mp4"
               autoPlay
               muted
               loop
