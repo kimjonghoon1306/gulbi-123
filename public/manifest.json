@@ -1,0 +1,15 @@
+{
+  "name": "온종일팜 — 농축수산물 도매 관리시스템",
+  "short_name": "온종일팜",
+  "description": "주문·재고·정산·세금계산서까지. 농축수산물 도매에 필요한 모든 것을 한 곳에서.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#071a0e",
+  "theme_color": "#16a34a",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

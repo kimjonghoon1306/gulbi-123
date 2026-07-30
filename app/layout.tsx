@@ -1,10 +1,14 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import PwaRegister from './PwaRegister'
 
 export const metadata: Metadata = {
   title: '온종일팜 관리시스템 — 농축수산물 도매를 스마트하게',
   description: '주문·재고·정산·세금계산서까지. 도매에 필요한 모든 것을 한 곳에서.',
   metadataBase: new URL('https://app.yuanfnb.com'),
+  manifest: '/manifest.json',
+  appleWebApp: { capable: true, title: '온종일팜', statusBarStyle: 'default' },
+  icons: { icon: '/icon-192.png', apple: '/apple-touch-icon.png' },
   openGraph: {
     title: '온종일팜 관리시스템 — 농축수산물 도매를 스마트하게',
     description: '주문·재고·정산·세금계산서까지. 도매에 필요한 모든 것을 한 곳에서.',
@@ -35,6 +39,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
+  themeColor: '#16a34a',
 }
 
 export default function RootLayout({
@@ -49,7 +54,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
       </head>
-      <body>{children}</body>
+      <body>{children}<PwaRegister /></body>
     </html>
   )
 }
