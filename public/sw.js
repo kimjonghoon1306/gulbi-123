@@ -1,5 +1,5 @@
 // 온종일팜 서비스워커 — PWA 설치 + 업데이트 배너용
-const VERSION = 'onjongil-20260731-3';
+const VERSION = 'onjongil-20260731-4';
 
 self.addEventListener('install', () => { self.skipWaiting(); });
 

@@ -235,9 +235,11 @@ export function ChatBot() {
             boxShadow: '0 3px 10px rgba(20,83,45,0.18)', marginBottom: '4px',
           }}>궁금하신 거 클릭하세요</span>
           {/* 캐릭터 — 틀 없이 이미지만, 큼직하게 */}
-          <img src={HERO_IMAGE} alt="온봇" style={{
+          <img src={HERO_IMAGE} alt="온봇" draggable={false} style={{
             width: '116px', height: '116px', objectFit: 'contain',
-          }} />
+            pointerEvents: 'none', userSelect: 'none', WebkitUserSelect: 'none',
+            WebkitTouchCallout: 'none',
+          } as any} />
           {/* 캐릭터 밑 — 온봇 (다크모드에서도 또렷하게) */}
           <span style={{
             fontSize: '17px', fontWeight: 900, color: T.fabText, marginTop: '-4px',

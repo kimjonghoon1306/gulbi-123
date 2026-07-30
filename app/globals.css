@@ -4,6 +4,12 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* 모바일 롱프레스 시 텍스트 선택·검색·이미지 복사 메뉴 뜨는 것 차단 (입력창만 예외) */
+* { -webkit-touch-callout: none; }
+html, body { -webkit-user-select: none; -ms-user-select: none; user-select: none; }
+input, textarea, select, [contenteditable="true"] { -webkit-user-select: text; user-select: text; }
+img { -webkit-user-drag: none; user-select: none; }
+
 :root {
   --farm-green: #16a34a;
   --farm-green-light: #22c55e;
