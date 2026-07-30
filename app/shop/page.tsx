@@ -295,6 +295,15 @@ export default function ShopPage() {
         </div>
       )}
 
+      {/* ── 상단 홍보영상 (주문→쇼핑몰→식탁→요리) ── */}
+      <div style={{ width: '100%', maxWidth: 1200, margin: '0 auto', padding: '16px 16px 0' }}>
+        <video
+          src="/onjongil-food.mp4"
+          autoPlay muted loop playsInline preload="auto"
+          style={{ width: '100%', borderRadius: 20, display: 'block', boxShadow: '0 16px 44px rgba(0,0,0,0.18)' }}
+        />
+      </div>
+
       {/* ── 히어로 섹션 ── */}
       <HeroSection bg={bg} border={border} dark={dark} text={text} sub={sub} gtext={gtext} heroVisible={heroVisible} visitorCount={visitorCount} productCount={products.length} />
 
