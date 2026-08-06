@@ -32,17 +32,19 @@ export async function payWithInicis(params: {
   buyertel: string
   buyeremail: string
 }) {
+  // 모바일 기기 여부. INIStdPay.js(PC 웹표준)는 모바일에서 "Dev.Error"를 내므로,
+  // 모바일은 서버가 내려준 모바일 결제창 URL(mobile.inicis.com/smart/...)로 폼을 직접 POST한다.
+  const isMobile = /Android|iPhone|iPad|iPod|IEMobile|Opera Mini|Mobile/i.test(navigator.userAgent)
+
   const res = await fetch('/api/payments/inicis/prepare', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(params),
+    body: JSON.stringify({ ...params, isMobile }),
   })
   const data = await res.json().catch(() => ({}))
   if (!res.ok || !data.fields) {
     throw new Error(data.message || '결제 준비에 실패했어요. 잠시 후 다시 시도해 주세요.')
   }
-
-  await loadSdk()
 
   const FORM_ID = 'inicis-pay-form'
   document.getElementById(FORM_ID)?.remove()
@@ -59,5 +61,16 @@ export async function payWithInicis(params: {
     form.appendChild(input)
   }
   document.body.appendChild(form)
+
+  // 모바일: 이니시스 모바일 결제창으로 페이지 이동(POST). PC: INIStdPay 팝업.
+  if (data.mobile && data.action) {
+    form.action = data.action
+    form.acceptCharset = 'euc-kr' // 모바일 결제창은 요청 charset을 P_CHARSET으로 맞춤(utf8 지정 시 utf8)
+    if (data.fields?.P_CHARSET === 'utf8') form.acceptCharset = 'UTF-8'
+    form.submit()
+    return
+  }
+
+  await loadSdk()
   ;(window as any).INIStdPay.pay(FORM_ID)
 }

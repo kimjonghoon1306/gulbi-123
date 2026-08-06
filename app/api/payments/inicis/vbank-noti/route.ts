@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     return OK()
   }
   const g = (...keys: string[]) => { for (const k of keys) { const v = f.get(k); if (v) return v } return '' }
-  const tid = g('tid', 'TID')
+  const tid = g('tid', 'TID', 'P_TID')
   const oid = g('oid', 'MOID', 'orderNumber', 'P_OID')
   const amount = Number(g('price', 'TotPrice', 'P_AMT', 'No_Deposit') || 0)
   const status = (g('status', 'P_STATUS', 'resultCode') || '').toUpperCase()
@@ -62,8 +62,8 @@ export async function POST(req: NextRequest) {
     return OK()
   }
 
-  // 취소/실패 통보 → 주문 취소 (resultCode 0000 아님 또는 명시적 취소)
-  const isCancel = /CANCEL|FAIL/.test(status) || (status && status !== '0000' && status !== 'DONE' && status !== 'PAID')
+  // 취소/실패 통보 → 주문 취소 (성공코드: PC=0000/DONE/PAID, 모바일 입금통보=02)
+  const isCancel = /CANCEL|FAIL/.test(status) || (!!status && !['0000', 'DONE', 'PAID', '02'].includes(status))
   if (isCancel) {
     await supabase.from(table).update({ status: '취소', updated_at: new Date().toISOString() }).eq('id', order.id)
     return OK()

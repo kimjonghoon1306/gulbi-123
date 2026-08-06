@@ -16,7 +16,7 @@ function siteOrigin(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { table, orderId, method, goodname, buyername, buyertel, buyeremail } = await req.json()
+    const { table, orderId, method, goodname, buyername, buyertel, buyeremail, isMobile } = await req.json()
     if (!ORDER_TABLES.includes(table) || !orderId) {
       return NextResponse.json({ message: '결제 정보가 올바르지 않습니다.' }, { status: 400 })
     }
@@ -52,11 +52,37 @@ export async function POST(req: NextRequest) {
     const oid = `${PREFIX[table as OrderTable]}${Date.now()}${Math.random().toString(36).slice(2, 8)}`
     await admin.from(table).update({ pg_oid: oid }).eq('id', orderId)
 
+    const origin = siteOrigin(req)
+    const isVbank = method === '가상계좌'
+
+    // ── 모바일 결제(mobile.inicis.com 표준결제) ──
+    // INIStdPay(PC)는 모바일에서 동작하지 않으므로, 모바일은 결제수단별 URL로 폼을 POST한다.
+    // 인증결과는 P_NEXT_URL(mobile-return)로, 가상계좌 입금통보는 P_NOTI_URL(vbank-noti)로 온다.
+    if (isMobile) {
+      const action = isVbank
+        ? 'https://mobile.inicis.com/smart/vbank/'
+        : 'https://mobile.inicis.com/smart/wcard/'
+      const mFields: Record<string, string> = {
+        P_MID: INICIS_MID,
+        P_OID: oid,
+        P_AMT: price,
+        P_GOODS: String(goodname || '온종일팜 주문').slice(0, 40),
+        P_UNAME: String(buyername || '고객').slice(0, 40),
+        P_MOBILE: String(buyertel || '').replace(/[^0-9]/g, ''),
+        P_EMAIL: String(buyeremail || ''),
+        P_CHARSET: 'utf8',
+        P_NOTI: `${table}|${orderId}`, // 인증결과에서 주문 식별
+        P_NEXT_URL: `${origin}/api/payments/inicis/mobile-return`,
+        P_RESERVED: isVbank ? 'vbank_receipt=Y' : 'twotrs_isp=Y&block_isp=Y',
+      }
+      if (isVbank) mFields.P_NOTI_URL = `${origin}/api/payments/inicis/vbank-noti`
+      return NextResponse.json({ mobile: true, action, fields: mFields })
+    }
+
     const signature = sha256(`oid=${oid}&price=${price}&timestamp=${timestamp}`)
     const verification = sha256(`oid=${oid}&price=${price}&signKey=${INICIS_SIGN_KEY}&timestamp=${timestamp}`)
     const mKey = sha256(INICIS_SIGN_KEY)
-    const origin = siteOrigin(req)
-    const gopaymethod = method === '가상계좌' ? 'VBank' : 'Card'
+    const gopaymethod = isVbank ? 'VBank' : 'Card'
 
     const fields: Record<string, string> = {
       version: '1.0',
