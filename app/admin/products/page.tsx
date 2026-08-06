@@ -48,6 +48,8 @@ export default function ProductsPage() {
 
   // AI 에디터
   const [showAiForm, setShowAiForm] = useState(false)
+  const [aiInitialProduct, setAiInitialProduct] = useState<Product | null>(null)
+  const remakeDetail = (p: Product) => { setAiInitialProduct(p); setShowAiForm(true) }
 
   // 공급업체 승인
   const [supplierProducts, setSupplierProducts] = useState<SupplierProduct[]>([])
@@ -240,7 +242,7 @@ export default function ProductsPage() {
         </div>
         {tab === 'products' && (
           <div className="flex gap-2">
-            <button onClick={() => setShowAiForm(true)}
+            <button onClick={() => { setAiInitialProduct(null); setShowAiForm(true) }}
               className="text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-all duration-200 active:scale-95"
               style={{ background: 'linear-gradient(135deg,#ec4899,#f43f5e)', boxShadow: '0 4px 15px rgba(236,72,153,0.35)' }}>
               ✨ AI 상세
@@ -274,7 +276,7 @@ export default function ProductsPage() {
         <ProductList
           tab="products" setTab={() => {}}
           products={products} categories={categories} loading={loading}
-          onEdit={openEdit} onDelete={deleteProduct}
+          onEdit={openEdit} onDelete={deleteProduct} onRemake={remakeDetail}
           onEditCat={c => { setEditCat(c); setCatName(c.name); setShowCatForm(true) }}
           onDeleteCat={deleteCat}
           onAddCat={() => { setCatName(''); setEditCat(null); setShowCatForm(true) }}
@@ -299,7 +301,7 @@ export default function ProductsPage() {
         <ProductList
           tab="categories" setTab={() => {}}
           products={products} categories={categories} loading={loading}
-          onEdit={openEdit} onDelete={deleteProduct}
+          onEdit={openEdit} onDelete={deleteProduct} onRemake={remakeDetail}
           onEditCat={c => { setEditCat(c); setCatName(c.name); setShowCatForm(true) }}
           onDeleteCat={deleteCat}
           onAddCat={() => { setCatName(''); setEditCat(null); setShowCatForm(true) }}
@@ -326,9 +328,10 @@ export default function ProductsPage() {
 
       <AiLandingEditor
         show={showAiForm}
-        onClose={() => setShowAiForm(false)}
+        onClose={() => { setShowAiForm(false); setAiInitialProduct(null) }}
         products={products}
-        onDone={fetchAll}
+        initialProduct={aiInitialProduct}
+        onDone={() => { setAiInitialProduct(null); fetchAll() }}
       />
 
       {/* ── 공급업체 상품 검토 모달 ── */}

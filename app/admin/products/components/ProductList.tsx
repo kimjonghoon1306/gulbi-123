@@ -15,6 +15,7 @@ type Props = {
   loading: boolean
   onEdit: (p: Product) => void
   onDelete: (id: string) => void
+  onRemake: (p: Product) => void
   onEditCat: (c: Category) => void
   onDeleteCat: (id: string) => void
   onAddCat: () => void
@@ -22,7 +23,7 @@ type Props = {
 
 export default function ProductList({
   tab, setTab, products, categories, loading,
-  onEdit, onDelete, onEditCat, onDeleteCat, onAddCat
+  onEdit, onDelete, onRemake, onEditCat, onDeleteCat, onAddCat
 }: Props) {
   const getCatName = (id: string) => categories.find(c => c.id === id)?.name || '-'
 
@@ -75,6 +76,7 @@ export default function ProductList({
                         </td>
                         <td className="px-5 py-4">
                           <div className="flex gap-2">
+                            <button onClick={() => onRemake(p)} className="text-xs text-emerald-600 hover:text-emerald-700 font-semibold">📄 상세</button>
                             <button onClick={() => onEdit(p)} className="text-xs text-green-600 hover:text-green-700 font-medium">수정</button>
                             <button onClick={() => onDelete(p.id)} className="text-xs text-red-400 hover:text-red-500 font-medium">삭제</button>
                           </div>
@@ -99,6 +101,7 @@ export default function ProductList({
                       <p className="text-xs text-green-600 dark:text-green-400 font-semibold mt-0.5">도매 공급가 {p.wholesale_price.toLocaleString()}원 / 일반 구매가 {p.retail_price.toLocaleString()}원</p>
                     </div>
                     <div className="flex flex-col gap-1.5 flex-shrink-0">
+                      <button onClick={() => onRemake(p)} className="text-xs bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 font-bold px-3 py-1.5 rounded-lg">📄 상세</button>
                       <button onClick={() => onEdit(p)} className="text-xs bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold px-3 py-1.5 rounded-lg">수정</button>
                       <button onClick={() => onDelete(p.id)} className="text-xs bg-red-50 dark:bg-red-900/30 text-red-400 font-bold px-3 py-1.5 rounded-lg">삭제</button>
                     </div>

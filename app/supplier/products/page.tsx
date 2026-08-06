@@ -46,6 +46,8 @@ function ProductsContent() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [showAiEditor, setShowAiEditor] = useState(false)
+  const [aiInitialProduct, setAiInitialProduct] = useState<Product | null>(null)
+  const remakeDetail = (p: Product) => { setAiInitialProduct(p); setShowAiEditor(true) }
   const [aiFilling, setAiFilling] = useState(false)
   const [aiMsg, setAiMsg] = useState('')
   const [okMsg, setOkMsg] = useState('')
@@ -225,7 +227,7 @@ function ProductsContent() {
         </div>
         {supplierStatus === '승인' && (
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button onClick={() => setShowAiEditor(true)}
+            <button onClick={() => { setAiInitialProduct(null); setShowAiEditor(true) }}
               style={{ padding: '12px 20px', borderRadius: '14px', background: 'linear-gradient(135deg, #ec4899, #f43f5e)', color: 'white', fontSize: '13px', fontWeight: 700, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 16px rgba(236,72,153,0.35)' }}>
               📄 상세페이지
             </button>
@@ -244,6 +246,7 @@ function ProductsContent() {
         setShowForm={setShowForm}
         openEdit={openEdit}
         handleDelete={handleDelete}
+        onRemake={remakeDetail}
       />
 
       {showForm && (
@@ -371,9 +374,10 @@ function ProductsContent() {
 
       <SupplierAiLandingEditor
         show={showAiEditor}
-        onClose={() => setShowAiEditor(false)}
+        onClose={() => { setShowAiEditor(false); setAiInitialProduct(null) }}
         products={products}
-        onDone={() => { setShowAiEditor(false); init() }}
+        initialProduct={aiInitialProduct}
+        onDone={() => { setShowAiEditor(false); setAiInitialProduct(null); init() }}
       />
 
       <style>{`

@@ -61,6 +61,7 @@ type Props = {
   onClose: () => void
   products: SupplierProduct[]
   onDone: () => void
+  initialProduct?: SupplierProduct | null
 }
 
 const BG_PRESETS = {
@@ -69,7 +70,7 @@ const BG_PRESETS = {
   white: { label: '화이트', bg: '#f5f5f5' },
 }
 
-export default function SupplierAiLandingEditor({ show, onClose, products, onDone }: Props) {
+export default function SupplierAiLandingEditor({ show, onClose, products, onDone, initialProduct }: Props) {
   const supabase = createClient()
 
   const [aiTab, setAiTab] = useState<'ai' | 'manual' | 'html' | 'images'>('ai')
@@ -105,6 +106,16 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
     check(); window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
   }, [])
+
+  // '다시 만들기'로 특정 상품을 지정해 열면 자동 선택 후 생성 단계로
+  useEffect(() => {
+    if (show && initialProduct) {
+      selectProductForAI(initialProduct)
+      setAiStep(1)
+      setAiTab('ai')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [show, initialProduct])
 
   if (!show) return null
 

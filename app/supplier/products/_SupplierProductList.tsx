@@ -24,6 +24,7 @@ type Props = {
   setShowForm: Dispatch<SetStateAction<boolean>>
   openEdit: (p: Product) => void
   handleDelete: (id: string) => Promise<void>
+  onRemake: (p: Product) => void
 }
 
 export default function SupplierProductList({
@@ -33,6 +34,7 @@ export default function SupplierProductList({
   setShowForm,
   openEdit,
   handleDelete,
+  onRemake,
 }: Props) {
   return products.length === 0 ? (
     <div style={{ textAlign: 'center', padding: '60px 20px', background: t.card, borderRadius: '20px', border: `1px solid ${t.border}` }}>
@@ -71,6 +73,8 @@ export default function SupplierProductList({
               )}
             </div>
             <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+              <button onClick={() => onRemake(p)} title="AI 상세페이지 다시 만들기 / 수정"
+                style={{ padding: '7px 12px', borderRadius: '10px', border: '1px solid rgba(34,197,94,0.3)', background: 'rgba(34,197,94,0.1)', color: '#22c55e', fontSize: '12px', cursor: 'pointer', fontWeight: 700 }}>📄 {p.description ? '상세 수정' : '상세 만들기'}</button>
               <button onClick={() => openEdit(p)}
                 style={{ padding: '7px 12px', borderRadius: '10px', border: `1px solid ${t.border}`, background: t.input, color: t.textMuted, fontSize: '12px', cursor: 'pointer', fontWeight: 600 }}>수정</button>
               <button onClick={() => handleDelete(p.id)}
