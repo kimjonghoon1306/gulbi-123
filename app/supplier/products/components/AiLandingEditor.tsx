@@ -75,6 +75,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
 
   const [aiTab, setAiTab] = useState<'ai' | 'manual' | 'html' | 'images'>('ai')
   const [aiStep, setAiStep] = useState<1 | 2 | 3>(1)
+  const [aiChoice, setAiChoice] = useState(false) // 상품 지정 진입 시 수정/새로만들기 선택창
   const [aiDark, setAiDark] = useState(true)
   const [selectedProduct, setSelectedProduct] = useState<SupplierProduct | null>(null)
   const [aiImage, setAiImage] = useState<File | null>(null)
@@ -107,15 +108,33 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
     return () => window.removeEventListener('resize', check)
   }, [])
 
-  // '다시 만들기'로 특정 상품을 지정해 열면 자동 선택 후 생성 단계로
+  // 상품관리에서 '상세' 버튼으로 특정 상품을 지정해 열 때: 상품 재선택 없이 바로 선택창
   useEffect(() => {
     if (show && initialProduct) {
       selectProductForAI(initialProduct)
-      setAiStep(1)
       setAiTab('ai')
+      const hasDetail = !!(initialProduct.description && initialProduct.description.trim())
+      setAiChoice(hasDetail)   // 기존 상세 있으면 선택창, 없으면 바로 새로 만들기
+      if (!hasDetail) setAiStep(1)
+    } else if (!show) {
+      setAiChoice(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [show, initialProduct])
+
+  // 선택창: 기존 상세페이지 수정 (저장된 HTML을 편집 화면으로)
+  const startEditExisting = () => {
+    if (!initialProduct?.description) return
+    setAiLandingData(null)              // 구조화 데이터 없음 → 텍스트 편집만
+    setAiLandingHtml(initialProduct.description)
+    setAiChoice(false)
+    setAiStep(3)
+  }
+  // 선택창: AI로 새로 만들기 (상품은 이미 선택됨)
+  const startMakeNew = () => {
+    setAiChoice(false)
+    setAiStep(1)
+  }
 
   if (!show) return null
 
@@ -291,8 +310,8 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
 
   const reset = () => {
     clearInterval(aiLoadingTimer.current)
-    setAiLoading(false); setAiLoadingMsg(''); setAiStep(1); setAiTab('ai')
-    setAiImage(null); setAiImagePreview('')
+    setAiLoading(false); setAiLoadingMsg(''); setAiStep(1); setAiTab('ai'); setAiChoice(false)
+    setAiImage(null); setAiImagePreview(''); setAiExtraImages([])
     setAiLandingHtml(''); setAiError(''); setAiSelectedBg('dark'); setShowBuyerPreview(false)
     setSelectedProduct(null); setManualBlocks([])
     setHtmlCode(''); setHtmlProduct(null)
@@ -349,8 +368,34 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: aiDark ? 'rgba(0,0,0,0.95)' : 'rgba(240,240,240,0.97)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column' }}>
           <Header />
 
+          {/* 선택창: 상품관리에서 '상세' 눌러 진입 시 (상품 재선택 없음) */}
+          {aiChoice && (
+            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+              <div style={{ width: '100%', maxWidth: '620px', textAlign: 'center' }}>
+                <p style={{ color: aiDark ? 'rgba(255,255,255,0.5)' : '#666', fontSize: '13px', margin: '0 0 6px' }}>선택한 상품</p>
+                <h2 style={{ color: aiDark ? 'white' : '#111', fontSize: '22px', fontWeight: 900, margin: '0 0 28px' }}>📦 {initialProduct?.name}</h2>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '14px' }}>
+                  <button onClick={startEditExisting}
+                    style={{ padding: '28px 22px', borderRadius: '18px', border: '2px solid ' + (aiDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)'), background: aiDark ? 'rgba(255,255,255,0.04)' : 'white', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#22c55e' }} onMouseLeave={e => { e.currentTarget.style.borderColor = aiDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)' }}>
+                    <div style={{ fontSize: '30px', marginBottom: '10px' }}>✏️</div>
+                    <p style={{ color: aiDark ? 'white' : '#111', fontSize: '17px', fontWeight: 800, margin: '0 0 6px' }}>기존 상세페이지 수정</p>
+                    <p style={{ color: aiDark ? 'rgba(255,255,255,0.45)' : '#888', fontSize: '13px', margin: 0, lineHeight: 1.5 }}>지금 저장된 상세페이지를 그대로 불러와<br />글자·문구를 직접 고쳐요.</p>
+                  </button>
+                  <button onClick={startMakeNew}
+                    style={{ padding: '28px 22px', borderRadius: '18px', border: '2px solid transparent', background: 'linear-gradient(135deg,#22c55e,#4ade80)', cursor: 'pointer', textAlign: 'left' }}>
+                    <div style={{ fontSize: '30px', marginBottom: '10px' }}>✨</div>
+                    <p style={{ color: '#111', fontSize: '17px', fontWeight: 900, margin: '0 0 6px' }}>AI로 새로 만들기</p>
+                    <p style={{ color: 'rgba(0,0,0,0.6)', fontSize: '13px', margin: 0, lineHeight: 1.5 }}>사진과 말투를 골라<br />상세페이지를 처음부터 새로 생성해요.</p>
+                  </button>
+                </div>
+                <p style={{ color: aiDark ? 'rgba(255,255,255,0.3)' : '#999', fontSize: '12px', margin: '20px 0 0' }}>※ 새로 만들면 지금 상세페이지는 저장 전까지 바뀌지 않아요.</p>
+              </div>
+            </div>
+          )}
+
           {/* STEP 1: 상품 선택 + 이미지 */}
-          {aiStep === 1 && (
+          {!aiChoice && aiStep === 1 && (
             <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', gap: '20px', minHeight: 0 }}>
               {/* 상품 리스트 */}
               <div style={{ width: isMobile ? '100%' : '260px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -463,7 +508,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
           )}
 
           {/* STEP 2: 생성 중 */}
-          {aiStep === 2 && (
+          {!aiChoice && aiStep === 2 && (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px' }}>
               <div style={{ width: '60px', height: '60px', border: '4px solid rgba(34,197,94,0.2)', borderTop: '4px solid #22c55e', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
               <p style={{ color: '#22c55e', fontSize: '16px', fontWeight: 700 }}>{aiLoadingMsg || 'AI가 상세페이지를 만들고 있어요...'}</p>
@@ -472,7 +517,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
           )}
 
           {/* STEP 3: 결과 */}
-          {aiStep === 3 && (
+          {!aiChoice && aiStep === 3 && (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
               {/* 상단 툴바 - admin과 동일 */}
               <div style={{ background: '#111', borderBottom: '1px solid rgba(255,255,255,0.1)', padding: '6px 10px', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
@@ -510,7 +555,10 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
               {/* 미리보기 */}
               <div style={{ flex: 1, overflowY: 'auto', background: '#d0d0d0', display: 'flex', justifyContent: 'center', padding: '16px' }}>
                 <div style={{ width: '100%', maxWidth: '390px', background: 'white', boxShadow: '0 24px 60px rgba(0,0,0,0.3)', borderRadius: '16px', overflow: 'hidden' }}>
-                  {aiImagePreview && (
+                  {!aiLandingData && (
+                    <div style={{ background: '#ecfdf5', color: '#047857', fontSize: '12px', fontWeight: 700, padding: '10px 14px', textAlign: 'center' }}>✏️ 기존 상세페이지 수정 중 — 글자를 눌러 바로 고치고 저장하세요</div>
+                  )}
+                  {aiImagePreview && aiLandingData && (
                     <div style={{ width: '100%', aspectRatio: '1', background: BG_PRESETS[aiSelectedBg as keyof typeof BG_PRESETS]?.bg || '#0d0d0d', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <img src={aiImagePreview} alt="" style={{ width: '85%', height: '85%', objectFit: 'contain' }} />
                     </div>
