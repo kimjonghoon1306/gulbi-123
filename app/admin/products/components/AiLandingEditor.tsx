@@ -41,7 +41,8 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
   const [aiBgRemovedBase64, setAiBgRemovedBase64] = useState('')
   const [aiSelectedBg, setAiSelectedBg] = useState('dark')
   const [aiBgLoading, setAiBgLoading] = useState(false)
-  const [aiLoading, setAiLoading] = useState(false)
+  const [aiLoading, setAiLoading] = useState(false)   // 생성/재생성 로딩
+  const [aiSaving, setAiSaving] = useState(false)     // 등록(저장) 로딩 — 재생성과 분리
   const [aiLoadingMsg, setAiLoadingMsg] = useState('')
   const [aiError, setAiError] = useState('')
   const [aiPersona, setAiPersona] = useState('shohost')
@@ -206,7 +207,7 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
 
   // ── save / register ──────────────────────────────────────
   const handleAiRegister = async () => {
-    setAiLoading(true); setAiError('')
+    setAiSaving(true); setAiError('')
     try {
       let mainImgUrl = ''
       if (aiImage) {
@@ -230,7 +231,7 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
       console.error('[admin landing save] failed', e)
       setAiError('상세페이지 저장에 실패했습니다. 서버 로그를 확인해 주세요.')
     }
-    finally { setAiLoading(false) }
+    finally { setAiSaving(false) }
   }
 
   // 직접 만들기 블록 → HTML (저장/미리보기 공용)
@@ -531,11 +532,11 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
                 ))}
                 <div style={{ flex: 1 }} />
                 <button onClick={() => setAiStep(2)} style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: 'rgba(255,255,255,0.45)', fontSize: '10px', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>← 설정</button>
-                <button onClick={handleGenerateLanding} disabled={aiLoading} style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(34,197,94,0.5)', background: 'transparent', color: '#22c55e', fontSize: '10px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>🔄 재생성</button>
+                <button onClick={handleGenerateLanding} disabled={aiLoading || aiSaving} style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(34,197,94,0.5)', background: 'transparent', color: '#22c55e', fontSize: '10px', fontWeight: 700, cursor: (aiLoading||aiSaving) ? 'not-allowed' : 'pointer', opacity: (aiLoading||aiSaving) ? 0.6 : 1, whiteSpace: 'nowrap' }}>{aiLoading ? '⏳ 생성 중…' : '🔄 재생성'}</button>
                 <button onClick={() => setShowBuyerPreview('mobile')} style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(100,200,100,0.4)', background: 'rgba(100,200,100,0.07)', color: '#6ee7b7', fontSize: '10px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>📱 모바일</button>
                 <button onClick={() => setShowBuyerPreview('desktop')} style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(147,197,253,0.4)', background: 'rgba(147,197,253,0.07)', color: '#93c5fd', fontSize: '10px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>🖥️ PC</button>
-                <button onClick={handleAiRegister} disabled={aiLoading} style={{ padding: '5px 14px', borderRadius: '6px', background: 'linear-gradient(135deg,#ec4899,#f43f5e)', color: '#111', fontSize: '11px', fontWeight: 900, border: 'none', cursor: aiLoading ? 'not-allowed' : 'pointer', opacity: aiLoading ? 0.6 : 1, whiteSpace: 'nowrap' }}>
-                  {aiLoading ? '등록 중...' : '🛍️ 등록'}
+                <button onClick={handleAiRegister} disabled={aiLoading || aiSaving} style={{ padding: '5px 14px', borderRadius: '6px', background: 'linear-gradient(135deg,#ec4899,#f43f5e)', color: '#111', fontSize: '11px', fontWeight: 900, border: 'none', cursor: (aiLoading||aiSaving) ? 'not-allowed' : 'pointer', opacity: (aiLoading||aiSaving) ? 0.6 : 1, whiteSpace: 'nowrap' }}>
+                  {aiSaving ? '⏳ 등록 중...' : '🛍️ 등록'}
                 </button>
               </div>
               {aiError && <p style={{ color: '#f87171', fontSize: '12px', padding: '6px 12px', background: 'rgba(239,68,68,0.1)', margin: 0, flexShrink: 0 }}>{aiError}</p>}
