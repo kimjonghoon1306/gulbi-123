@@ -47,6 +47,34 @@ export default function ProductDetailPage() {
   const [cartAdded, setCartAdded] = useState(false)
   const [cartLoading, setCartLoading] = useState(false)
   const popupTimer = useRef<any>(null)
+  const landingRef = useRef<HTMLDivElement>(null)
+
+  // 상세페이지 섹션 스크롤 인 애니메이션 (innerHTML이라 뷰어에서 IntersectionObserver로 처리)
+  useEffect(() => {
+    if (!product?.description) return
+    const root = landingRef.current
+    if (!root) return
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const secs = Array.from(root.children) as HTMLElement[]
+    if (secs.length === 0) return
+    for (const el of secs) {
+      el.style.opacity = '0'
+      el.style.transform = 'translateY(28px)'
+      el.style.transition = 'opacity 0.7s ease, transform 0.7s cubic-bezier(0.2,0.7,0.2,1)'
+    }
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (e.isIntersecting) {
+          const el = e.target as HTMLElement
+          el.style.opacity = '1'
+          el.style.transform = 'none'
+          io.unobserve(el)
+        }
+      }
+    }, { threshold: 0.1, rootMargin: '0px 0px -6% 0px' })
+    for (const el of secs) io.observe(el)
+    return () => io.disconnect()
+  }, [product?.description])
 
   // ── 리뷰/별점 ──
   const [reviews, setReviews] = useState<any[]>([])
