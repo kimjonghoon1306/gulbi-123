@@ -78,6 +78,8 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
   const [selectedProduct, setSelectedProduct] = useState<SupplierProduct | null>(null)
   const [aiImage, setAiImage] = useState<File | null>(null)
   const [aiImagePreview, setAiImagePreview] = useState('')
+  // AI 생성용 추가 사진 (대표 외 여러 장 → 원산지·스토리·레시피·보관 섹션 자동 배치)
+  const [aiExtraImages, setAiExtraImages] = useState<{ id: number; file: File; preview: string }[]>([])
   const [aiSelectedBg, setAiSelectedBg] = useState('dark')
   const [aiLoading, setAiLoading] = useState(false)
   const [aiLoadingMsg, setAiLoadingMsg] = useState('')
@@ -136,6 +138,16 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
     } catch { setAiError('이미지 로드 실패') }
   }
 
+  const addExtraImages = async (files: FileList) => {
+    for (const f of Array.from(files)) {
+      try {
+        const { base64, mimeType } = await resizeImg(f)
+        setAiExtraImages(prev => [...prev, { id: Date.now() + Math.random(), file: f, preview: 'data:' + mimeType + ';base64,' + base64 }])
+      } catch { /* 개별 실패는 건너뜀 */ }
+    }
+  }
+  const removeExtraImage = (id: number) => setAiExtraImages(prev => prev.filter(x => x.id !== id))
+
   const selectProductForAI = (p: SupplierProduct) => {
     setSelectedProduct(p)
     setAiMeta({
@@ -147,6 +159,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
       stock: String(p.stock || ''),
     })
     if (p.image_url) setAiImagePreview(p.image_url)
+    setAiExtraImages([])
   }
 
   const handleGenerateLanding = async () => {
@@ -156,23 +169,26 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
     let idx = 0; setAiLoadingMsg(steps[0])
     aiLoadingTimer.current = setInterval(() => { idx = Math.min(idx + 1, steps.length - 1); setAiLoadingMsg(steps[idx]) }, 5000)
     try {
-      let base64 = ''; let mimeType = 'image/jpeg'
+      // 대표 이미지 + 추가 사진 전부 수집 → 여러 장을 API가 섹션별 자동 배치
+      const images: { base64: string; mimeType: string }[] = []
       if (aiImage) {
-        const r = await resizeImg(aiImage); base64 = r.base64; mimeType = r.mimeType
+        images.push(await resizeImg(aiImage))
       } else if (selectedProduct?.image_url) {
         const imgRes = await fetch(selectedProduct.image_url)
         if (!imgRes.ok) { setAiLoading(false); return setAiError('상품 이미지를 불러올 수 없어요. 이미지를 새로 업로드해주세요.') }
         const blob = await imgRes.blob()
-        mimeType = blob.type || 'image/jpeg'
-        const r = await resizeImg(new File([blob], 'product.jpg', { type: mimeType }))
-        base64 = r.base64; mimeType = r.mimeType
+        const mt = blob.type || 'image/jpeg'
+        images.push(await resizeImg(new File([blob], 'product.jpg', { type: mt })))
       }
-      if (!base64) { setAiLoading(false); return setAiError('이미지가 준비되지 않았어요.') }
+      for (const ex of aiExtraImages) {
+        try { images.push(await resizeImg(ex.file)) } catch { /* 개별 실패 건너뜀 */ }
+      }
+      if (images.length === 0) { setAiLoading(false); return setAiError('이미지가 준비되지 않았어요.') }
 
       const res = await fetch('/api/generate-landing', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          base64, mimeType, persona: aiPersona, theme: 'premium',
+          images, persona: aiPersona, theme: 'premium',
           productName: aiMeta.name,
           retailPrice: aiMeta.suggested_retail_price,
           wholesalePrice: aiMeta.suggested_wholesale_price,
@@ -374,6 +390,25 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
                     </div>
                   </div>
                 )}
+
+                {/* 추가 사진 (여러 장 → 원산지·스토리·레시피·보관 섹션 자동 배치) */}
+                <div>
+                  <p style={{ color: aiDark ? 'rgba(255,255,255,0.5)' : '#555', fontSize: '11px', fontWeight: 700, margin: '0 0 6px', letterSpacing: '1px' }}>
+                    🖼 추가 사진 <span style={{ fontWeight: 400, letterSpacing: 0, color: aiDark ? 'rgba(255,255,255,0.35)' : '#888' }}>(선택 · 여러 장 올리면 상세페이지가 더 풍성해져요)</span>
+                  </p>
+                  <input id="supplier-ai-extra" type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={e => { if (e.target.files) addExtraImages(e.target.files); e.target.value = '' }} />
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {aiExtraImages.map(ex => (
+                      <div key={ex.id} style={{ position: 'relative', width: '64px', height: '64px' }}>
+                        <img src={ex.preview} alt="" style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '8px', background: '#111' }} />
+                        <button onClick={() => removeExtraImage(ex.id)} title="삭제"
+                          style={{ position: 'absolute', top: '-6px', right: '-6px', width: '20px', height: '20px', borderRadius: '50%', background: 'rgba(0,0,0,0.8)', border: '1px solid rgba(255,255,255,0.3)', color: 'white', fontSize: '12px', lineHeight: 1, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+                      </div>
+                    ))}
+                    <button onClick={() => document.getElementById('supplier-ai-extra')?.click()} title="사진 추가"
+                      style={{ width: '64px', height: '64px', borderRadius: '8px', border: '2px dashed rgba(34,197,94,0.4)', background: 'rgba(34,197,94,0.03)', color: '#22c55e', fontSize: '22px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>＋</button>
+                  </div>
+                </div>
 
                 {/* 메타 정보 */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>

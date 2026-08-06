@@ -33,6 +33,8 @@ export default function AiLandingEditor({ show, onClose, products, onDone }: Pro
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [aiImage, setAiImage] = useState<File | null>(null)
   const [aiImagePreview, setAiImagePreview] = useState('')
+  // AI 생성용 추가 사진 (대표 외 여러 장 → 원산지·스토리·레시피·보관 섹션 자동 배치)
+  const [aiExtraImages, setAiExtraImages] = useState<{ id: number; file: File; preview: string }[]>([])
   const [aiBgRemovedPreview, setAiBgRemovedPreview] = useState('')
   const [aiBgRemovedBase64, setAiBgRemovedBase64] = useState('')
   const [aiSelectedBg, setAiSelectedBg] = useState('dark')
@@ -103,10 +105,21 @@ export default function AiLandingEditor({ show, onClose, products, onDone }: Pro
     finally { setAiBgLoading(false) }
   }
 
+  const addExtraImages = async (files: FileList) => {
+    for (const f of Array.from(files)) {
+      try {
+        const { base64, mimeType } = await resizeImg(f)
+        setAiExtraImages(prev => [...prev, { id: Date.now() + Math.random(), file: f, preview: 'data:' + mimeType + ';base64,' + base64 }])
+      } catch { /* 개별 실패는 건너뜀 */ }
+    }
+  }
+  const removeExtraImage = (id: number) => setAiExtraImages(prev => prev.filter(x => x.id !== id))
+
   const selectProductForAI = (p: Product) => {
     setSelectedProduct(p)
     setAiMeta({ name: p.name, category_id: p.category_id || '', unit: p.unit || 'kg', wholesale_price: String(p.wholesale_price || ''), member_price: String(p.member_price || ''), retail_price: String(p.retail_price || ''), stock: String(p.stock || '') })
     if (p.image_url) { setAiImagePreview(p.image_url); setAiBgRemovedPreview(p.image_url) }
+    setAiExtraImages([])
   }
 
   // ── AI generation ────────────────────────────────────────
@@ -117,22 +130,25 @@ export default function AiLandingEditor({ show, onClose, products, onDone }: Pro
     let idx = 0; setAiLoadingMsg(steps[0])
     aiLoadingTimer.current = setInterval(() => { idx = Math.min(idx + 1, steps.length - 1); setAiLoadingMsg(steps[idx]) }, 5000)
     try {
-      let base64 = ''; let mimeType = 'image/jpeg'
-      if (aiBgRemovedBase64) { base64 = aiBgRemovedBase64; mimeType = 'image/png' }
-      else if (aiImage) { const r = await resizeImg(aiImage); base64 = r.base64; mimeType = r.mimeType }
+      // 대표 이미지(배경제거본 우선) + 추가 사진 전부 수집 → API가 섹션별 자동 배치
+      const images: { base64: string; mimeType: string }[] = []
+      if (aiBgRemovedBase64) { images.push({ base64: aiBgRemovedBase64, mimeType: 'image/png' }) }
+      else if (aiImage) { images.push(await resizeImg(aiImage)) }
       else if (selectedProduct?.image_url) {
         const imgRes = await fetch(selectedProduct.image_url)
         if (!imgRes.ok) { setAiLoading(false); return setAiError('상품 이미지를 불러올 수 없어요. 이미지를 새로 업로드해주세요.') }
         const blob = await imgRes.blob()
-        mimeType = blob.type || 'image/jpeg'
-        const r = await resizeImg(new File([blob], 'product.jpg', { type: mimeType }))
-        base64 = r.base64; mimeType = r.mimeType
+        const mt = blob.type || 'image/jpeg'
+        images.push(await resizeImg(new File([blob], 'product.jpg', { type: mt })))
       }
-      if (!base64) { setAiLoading(false); return setAiError('이미지가 준비되지 않았어요.') }
+      for (const ex of aiExtraImages) {
+        try { images.push(await resizeImg(ex.file)) } catch { /* 개별 실패 건너뜀 */ }
+      }
+      if (images.length === 0) { setAiLoading(false); return setAiError('이미지가 준비되지 않았어요.') }
 
       const res = await fetch('/api/generate-landing', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ base64, mimeType, persona: aiPersona, theme: 'premium', productName: aiMeta.name, retailPrice: aiMeta.retail_price, wholesalePrice: aiMeta.wholesale_price, unit: aiMeta.unit })
+        body: JSON.stringify({ images, persona: aiPersona, theme: 'premium', productName: aiMeta.name, retailPrice: aiMeta.retail_price, wholesalePrice: aiMeta.wholesale_price, unit: aiMeta.unit })
       })
       const data = await res.json()
       if (data.error) {
@@ -344,6 +360,26 @@ export default function AiLandingEditor({ show, onClose, products, onDone }: Pro
                     </button>
                   </div>
                 )}
+
+                {/* 추가 사진 (여러 장 → 원산지·스토리·레시피·보관 섹션 자동 배치) */}
+                <div>
+                  <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontWeight: 700, margin: '0 0 6px', letterSpacing: '1px' }}>
+                    🖼 추가 사진 <span style={{ fontWeight: 400, letterSpacing: 0, color: 'rgba(255,255,255,0.35)' }}>(선택 · 여러 장 올리면 상세페이지가 더 풍성해져요)</span>
+                  </p>
+                  <input id="admin-ai-extra" type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={e => { if (e.target.files) addExtraImages(e.target.files); e.target.value = '' }} />
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {aiExtraImages.map(ex => (
+                      <div key={ex.id} style={{ position: 'relative', width: '64px', height: '64px' }}>
+                        <img src={ex.preview} alt="" style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '8px', background: '#111' }} />
+                        <button onClick={() => removeExtraImage(ex.id)} title="삭제"
+                          style={{ position: 'absolute', top: '-6px', right: '-6px', width: '20px', height: '20px', borderRadius: '50%', background: 'rgba(0,0,0,0.8)', border: '1px solid rgba(255,255,255,0.3)', color: 'white', fontSize: '12px', lineHeight: 1, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+                      </div>
+                    ))}
+                    <button onClick={() => document.getElementById('admin-ai-extra')?.click()} title="사진 추가"
+                      style={{ width: '64px', height: '64px', borderRadius: '8px', border: '2px dashed rgba(34,197,94,0.4)', background: 'rgba(34,197,94,0.03)', color: '#22c55e', fontSize: '22px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>＋</button>
+                  </div>
+                </div>
+
                 {aiError && <p style={{ color: '#fbbf24', fontSize: '12px' }}>{aiError}</p>}
                 <button onClick={() => setAiStep(2)} disabled={!selectedProduct}
                   style={{ padding: '14px', borderRadius: '12px', background: !selectedProduct ? 'rgba(34,197,94,0.2)' : 'linear-gradient(135deg,#ec4899,#f43f5e)', color: !selectedProduct ? 'rgba(255,255,255,0.3)' : '#111', fontSize: '14px', fontWeight: 900, border: 'none', cursor: !selectedProduct ? 'not-allowed' : 'pointer', transition: 'all 0.2s' }}>
