@@ -361,8 +361,8 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
                         </button>
                       ))}
                     </div>
-                    <div style={{ flex: 1, borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(34,197,94,0.2)', minHeight: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: aiSelectedBg === 'warm' ? 'linear-gradient(160deg,#1a0e08,#3d2010)' : aiSelectedBg === 'white' ? '#f5f5f5' : '#0d0d0d' }}>
-                      {aiBgLoading ? <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px' }}>⏳ 배경 제거 중...</p> : <img src={aiBgRemovedPreview || aiImagePreview} alt="" style={{ maxHeight: '180px', maxWidth: '100%', objectFit: 'contain' }} />}
+                    <div style={{ flex: 1, borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(34,197,94,0.2)', minHeight: isMobile ? '240px' : '420px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: aiSelectedBg === 'warm' ? 'linear-gradient(160deg,#1a0e08,#3d2010)' : aiSelectedBg === 'white' ? '#f5f5f5' : '#0d0d0d' }}>
+                      {aiBgLoading ? <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px' }}>⏳ 배경 제거 중...</p> : <img src={aiBgRemovedPreview || aiImagePreview} alt="" style={{ maxHeight: isMobile ? '220px' : '400px', maxWidth: '100%', objectFit: 'contain' }} />}
                     </div>
                     <button onClick={() => { setAiImagePreview(''); setAiBgRemovedPreview(''); setAiBgRemovedBase64(''); setAiError('') }}
                       style={{ padding: '8px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: 'rgba(255,255,255,0.5)', fontSize: '12px', cursor: 'pointer' }}>
@@ -411,7 +411,7 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
                   </div>
                 </div>
               )}
-              <div style={{ width: '100%', maxWidth: '520px', display: 'flex', flexDirection: 'column', gap: '22px' }}>
+              <div style={{ width: '100%', maxWidth: isMobile ? '540px' : '960px', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '20px' : '28px', alignItems: 'start' }}>
                 <div>
                   <h3 style={{ color: aiDark ? 'white' : '#111', fontSize: '18px', fontWeight: 900, margin: '0 0 12px' }}>📋 상품 정보</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -452,15 +452,15 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
                     ))}
                   </div>
                 </div>
-                {aiError && <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '10px', padding: '10px 14px' }}><p style={{ color: '#f87171', fontSize: '13px', margin: 0 }}>{aiError}</p></div>}
-                <div style={{ display: 'flex', gap: '10px' }}>
+                {aiError && <div style={{ gridColumn: '1 / -1', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '10px', padding: '10px 14px' }}><p style={{ color: '#f87171', fontSize: '13px', margin: 0 }}>{aiError}</p></div>}
+                <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '10px' }}>
                   <button onClick={() => setAiStep(1)} style={{ flex: 1, padding: '15px', borderRadius: '12px', border: '1.5px solid ' + (aiDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)'), background: 'transparent', color: aiDark ? 'rgba(255,255,255,0.5)' : '#555', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}>← 이전</button>
                   <button onClick={handleGenerateLanding} disabled={aiLoading || !aiMeta.name.trim()}
                     style={{ flex: 3, padding: '15px', borderRadius: '12px', background: aiLoading || !aiMeta.name.trim() ? 'rgba(34,197,94,0.25)' : 'linear-gradient(135deg,#ec4899,#f43f5e)', color: aiLoading || !aiMeta.name.trim() ? 'rgba(255,255,255,0.3)' : '#111', fontSize: '15px', fontWeight: 900, border: 'none', cursor: aiLoading || !aiMeta.name.trim() ? 'not-allowed' : 'pointer', transition: 'all 0.2s' }}>
                     {aiLoading ? (aiLoadingMsg || '⏳ 준비 중...') : '✨ 상세페이지 자동 생성'}
                   </button>
                 </div>
-                {!aiMeta.name.trim() && <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px', textAlign: 'center', margin: '-10px 0 0' }}>상품명을 입력해야 생성할 수 있어요</p>}
+                {!aiMeta.name.trim() && <p style={{ gridColumn: '1 / -1', color: 'rgba(255,255,255,0.3)', fontSize: '12px', textAlign: 'center', margin: '-10px 0 0' }}>상품명을 입력해야 생성할 수 있어요</p>}
               </div>
             </div>
           )}
