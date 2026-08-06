@@ -1106,6 +1106,7 @@ function renderModernLanding(d: LandingData, p: Preset): string {
     <div style="width:3px;height:18px;background:${C.primary};border-radius:2px;"></div>
   </div>
   <p ${ce('origin.story')} style="font-size:clamp(13px,3.5vw,14px);color:${C.inkSoft};line-height:1.85;max-width:480px;margin:0 auto 28px;">${esc(d.originStory)}</p>
+  ${d.sectionImages?.origin ? `<img src="${d.sectionImages.origin}" alt="${esc(d.originLocation)}" style="width:100%;max-width:560px;aspect-ratio:16/9;object-fit:cover;border-radius:16px;display:block;margin:0 auto 28px;box-shadow:0 8px 24px rgba(0,0,0,0.1);" />` : ''}
   <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:12px;">
     ${d.originStats.filter(s=>s.value?.trim()).slice(0,4).map((s,i)=>`
     <div style="background:white;border-radius:14px;padding:18px 20px;min-width:90px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
@@ -1119,6 +1120,7 @@ function renderModernLanding(d: LandingData, p: Preset): string {
 <section style="background:${C.paper};padding:48px 20px;text-align:center;">
   <h2 style="font-size:12px;letter-spacing:0.3em;color:${C.primary};margin:0 0 10px;font-weight:700;">STORY</h2>
   <h3 ${ce('story.title')} style="font-size:clamp(20px,5vw,26px);font-weight:800;color:${C.ink};margin:0 0 24px;">${esc(d.productName)}의 이야기</h3>
+  ${d.sectionImages?.story ? `<img src="${d.sectionImages.story}" alt="${esc(d.productName)}" style="width:100%;max-width:560px;aspect-ratio:4/3;object-fit:cover;border-radius:16px;display:block;margin:0 auto 24px;" />` : ''}
   <div ${ce('story.body')} style="font-size:clamp(13px,3.5vw,14px);color:${C.inkSoft};line-height:1.95;max-width:520px;margin:0 auto;text-align:left;">${esc(d.story).split('\n').filter(Boolean).map(x=>`<p style="margin:0 0 14px;">${x}</p>`).join('')}</div>
 </section>
 
@@ -1161,6 +1163,7 @@ ${d.recipe ? `
 <section style="background:${C.paper};padding:48px 20px;text-align:center;">
   <h2 style="font-size:clamp(18px,5vw,22px);font-weight:800;color:${C.ink};margin:0 0 8px;">${esc(d.recipe.title)}</h2>
   <p style="font-size:13px;color:${C.inkSoft};margin:0 0 28px;">${esc(d.recipe.intro)}</p>
+  ${d.sectionImages?.recipe ? `<img src="${d.sectionImages.recipe}" alt="${esc(d.recipe.title)}" style="width:100%;max-width:520px;aspect-ratio:4/3;object-fit:cover;border-radius:16px;display:block;margin:0 auto 28px;" />` : ''}
   <div style="max-width:480px;margin:0 auto;text-align:left;">
     ${d.recipe.steps.map((s,i)=>`
     <div style="display:flex;gap:14px;padding:16px 0;border-bottom:1px solid ${C.line};align-items:start;">
@@ -1190,6 +1193,9 @@ ${d.storage ? `
   </div>
 </section>` : ''}
 
+${(d.unusedImages && d.unusedImages.length) ? `<section style="background:${C.cream};padding:40px 20px;">
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:560px;margin:0 auto;">${d.unusedImages.map(src=>`<img src="${src}" alt="${esc(d.productName)}" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:12px;display:block;" />`).join('')}</div>
+</section>` : ''}
 <section style="background:${C.paper};padding:48px 20px;text-align:center;">
   <h2 style="font-size:clamp(18px,5vw,22px);font-weight:800;color:${C.ink};margin:0 0 8px;">고객 후기</h2>
   <div style="font-size:clamp(28px,7vw,36px);font-weight:900;color:${C.deep};margin:4px 0;">4.9</div>
