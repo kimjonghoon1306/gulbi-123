@@ -391,8 +391,10 @@ unusedIndices: 어느 섹션에도 안 어울리는 이미지 인덱스들.
       }
     }
 
-    // 업로드한 사진을 최대한 활용: 비어있는 섹션에 남은 이미지를 순서대로 자동 배치
-    for (const key of sectionKeys) {
+    // 업로드한 사진을 최대한 활용: 원산지·스토리는 모든 템플릿이 렌더하므로 비면 강제 배치.
+    // (recipe/storage는 Gemini가 명시 배치한 것만 유지 — 일부 템플릿은 렌더 안 해서 사라지므로
+    //  나머지는 아래 unusedImages로 넘겨 '갤러리'에서 무조건 보이게 한다)
+    for (const key of ['origin', 'story'] as const) {
       if (sectionImages[key]) continue
       for (let i = 0; i < imageList.length; i++) {
         if (!usedIndices.has(i)) {

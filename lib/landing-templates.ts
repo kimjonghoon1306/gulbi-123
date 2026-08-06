@@ -955,6 +955,7 @@ function renderPopLanding(d: LandingData, p: Preset): string {
   </div>
 </section>
 
+${d.sectionImages?.origin ? `<section style="padding:12px 22px;"><img src="${d.sectionImages.origin}" alt="${esc(d.originLocation)}" style="width:100%;max-width:560px;aspect-ratio:16/9;object-fit:cover;border-radius:28px;display:block;margin:0 auto;box-shadow:0 14px 36px rgba(0,0,0,0.12);" /></section>` : ''}
 ${d.sectionImages?.story ? `<section style="padding:12px 22px 44px;"><img src="${d.sectionImages.story}" alt="${esc(d.productName)}" style="width:100%;max-width:560px;aspect-ratio:4/3;object-fit:cover;border-radius:28px;display:block;margin:0 auto;box-shadow:0 14px 36px rgba(0,0,0,0.12);" /></section>` : ''}
 
 <section style="background:linear-gradient(135deg,${acc},${acc2});padding:52px 22px;text-align:center;color:#fff;border-radius:36px;margin:0 12px;">
@@ -1519,6 +1520,10 @@ ${d.recipe ? `
   </div>
 </section>` : ''}
 
+${(d.unusedImages && d.unusedImages.length) ? `<section style="padding:44px 20px;background:${T.dark};">
+  <p style="font-size:10px;letter-spacing:0.4em;color:${T.gold};margin:0 0 20px;text-align:center;">사 진</p>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;max-width:520px;margin:0 auto;">${d.unusedImages.map(src=>`<img src="${src}" alt="${esc(d.productName)}" style="width:100%;aspect-ratio:1/1;object-fit:cover;display:block;" />`).join('')}</div>
+</section>` : ''}
 <section style="padding:52px 20px;background:#F2E8CC;text-align:center;">
   <p style="font-size:10px;letter-spacing:0.4em;color:${T.red};margin:0 0 10px;">후 기</p>
   <h2 style="font-family:'Noto Serif KR',serif;font-size:clamp(22px,5.5vw,28px);font-weight:700;color:${T.dark};margin:0 0 28px;">써보신 분들의 말</h2>
@@ -1670,6 +1675,10 @@ ${d.specs ? `
   </table>
 </section>` : ''}
 
+${(d.unusedImages && d.unusedImages.length) ? `<section style="background:#F7F8FA;padding:24px 20px;border-bottom:1px solid #E2E8F0;">
+  <h2 style="font-size:13px;font-weight:700;color:${C.primary};letter-spacing:0.1em;margin:0 0 14px;">📷 제품 사진</h2>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">${d.unusedImages.map(src=>`<img src="${src}" alt="${esc(d.productName)}" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:8px;display:block;" />`).join('')}</div>
+</section>` : ''}
 <section style="background:white;padding:28px 20px;border-bottom:1px solid #E2E8F0;">
   <h2 style="font-size:13px;font-weight:700;color:${C.primary};letter-spacing:0.1em;margin:0 0 14px;">💬 구매 후기</h2>
   ${d.reviews.slice(0,3).map(r=>`
@@ -1812,6 +1821,9 @@ ${d.recipe ? `
   </div>`).join('')}
 </section>` : ''}
 
+${(d.unusedImages && d.unusedImages.length) ? `<section style="background:#0a0a0a;padding:8px 8px 0;">
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">${d.unusedImages.map(src=>`<img src="${src}" alt="${esc(d.productName)}" style="width:100%;aspect-ratio:1/1;object-fit:cover;display:block;border-radius:4px;" />`).join('')}</div>
+</section>` : ''}
 <section style="background:#111;padding:60px 20px;">
   <p style="font-size:11px;letter-spacing:0.4em;color:${C.primary};margin:0 0 32px;">REVIEWS</p>
   ${d.reviews.slice(0,3).map((r,i)=>`
