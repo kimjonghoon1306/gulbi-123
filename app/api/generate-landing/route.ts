@@ -391,6 +391,19 @@ unusedIndices: 어느 섹션에도 안 어울리는 이미지 인덱스들.
       }
     }
 
+    // 업로드한 사진을 최대한 활용: 비어있는 섹션에 남은 이미지를 순서대로 자동 배치
+    for (const key of sectionKeys) {
+      if (sectionImages[key]) continue
+      for (let i = 0; i < imageList.length; i++) {
+        if (!usedIndices.has(i)) {
+          usedIndices.add(i)
+          const img = imageList[i]
+          sectionImages[key] = `data:${img.mimeType};base64,${img.base64}`
+          break
+        }
+      }
+    }
+
     const unusedImages: string[] = []
     for (let i = 0; i < imageList.length; i++) {
       if (!usedIndices.has(i)) {

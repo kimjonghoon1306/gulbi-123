@@ -143,7 +143,7 @@ export const PRESETS: Record<PresetKey, Preset> = {
       difference: 'DIFFERENCE · 차이', features: 'FEATURES · 핵심 특징',
       story: 'STORY · 상품 이야기', proof: 'PROOF', voices: 'VOICES', spec: 'SPEC',
     },
-    sections: ['intro','hero','origin','story','features','keynum','compare','recipe','storage','reviews','info','faq','cta','ship','seal'],
+    sections: ['intro','hero','origin','story','features','keynum','compare','recipe','storage','gallery','reviews','info','faq','cta','ship','seal'],
   },
 
   // ② 검정 — 다크·럭셔리 블랙
@@ -168,7 +168,7 @@ export const PRESETS: Record<PresetKey, Preset> = {
       difference: 'DIFFERENCE · 차이', features: 'FEATURES · 특징',
       story: 'STORY · 이야기', proof: 'PROOF', voices: 'VOICES', spec: 'SPEC',
     },
-    sections: ['intro','hero','origin','story','features','keynum','compare','recipe','storage','reviews','info','faq','cta','ship','seal'],
+    sections: ['intro','hero','origin','story','features','keynum','compare','recipe','storage','gallery','reviews','info','faq','cta','ship','seal'],
   },
 
   // ③ 파랑 — 로열 블루
@@ -193,7 +193,7 @@ export const PRESETS: Record<PresetKey, Preset> = {
       difference: 'DIFFERENCE · 차이', features: 'FEATURES · 특징',
       story: 'STORY · 이야기', proof: 'PROOF', voices: 'VOICES', spec: 'SPEC',
     },
-    sections: ['intro','hero','origin','story','features','keynum','compare','recipe','storage','reviews','info','faq','cta','ship','seal'],
+    sections: ['intro','hero','origin','story','features','keynum','compare','recipe','storage','gallery','reviews','info','faq','cta','ship','seal'],
   },
 
   // ④ 빨강 — 볼드 레드
@@ -218,7 +218,7 @@ export const PRESETS: Record<PresetKey, Preset> = {
       difference: 'DIFFERENCE · 차이', features: 'FEATURES · 특징',
       story: 'STORY · 이야기', proof: 'PROOF', voices: 'VOICES', spec: 'SPEC',
     },
-    sections: ['intro','hero','origin','story','features','keynum','compare','recipe','storage','reviews','info','faq','cta','ship','seal'],
+    sections: ['intro','hero','origin','story','features','keynum','compare','recipe','storage','gallery','reviews','info','faq','cta','ship','seal'],
   },
 
   // ⑤ 핑크 — 로즈 핑크
@@ -243,7 +243,7 @@ export const PRESETS: Record<PresetKey, Preset> = {
       difference: 'DIFFERENCE · 차이', features: 'FEATURES · 특징',
       story: 'STORY · 이야기', proof: 'PROOF', voices: 'VOICES', spec: 'SPEC',
     },
-    sections: ['intro','hero','origin','story','features','keynum','compare','recipe','storage','reviews','info','faq','cta','ship','seal'],
+    sections: ['intro','hero','origin','story','features','keynum','compare','recipe','storage','gallery','reviews','info','faq','cta','ship','seal'],
   },
 
   // ⑥ 하양 — 울트라 클린 화이트
@@ -268,7 +268,7 @@ export const PRESETS: Record<PresetKey, Preset> = {
       difference: 'DIFFERENCE · 차이', features: 'FEATURES · 특징',
       story: 'STORY · 이야기', proof: 'PROOF', voices: 'VOICES', spec: 'SPEC',
     },
-    sections: ['intro','hero','origin','story','features','keynum','compare','recipe','storage','reviews','info','faq','cta','ship','seal'],
+    sections: ['intro','hero','origin','story','features','keynum','compare','recipe','storage','gallery','reviews','info','faq','cta','ship','seal'],
   },
 }
 
@@ -815,8 +815,23 @@ function renderSeal(d: LandingData, p: Preset): string {
 // 섹션 디스패처
 // ============================================================
 
+// 섹션에 배치되고 남은 추가 사진들을 하단 갤러리로 (업로드 이미지 100% 활용)
+function renderGallery(d: LandingData, p: Preset): string {
+  const imgs = (d.unusedImages || []).filter(Boolean)
+  if (imgs.length === 0) return ''
+  const { colors: C } = p
+  const cells = imgs.map(src => `<div class="gulbi-section-img" data-section-img="gallery" style="aspect-ratio:1/1;overflow:hidden;border-radius:12px;background:#f5f5f5;position:relative;"><img src="${src}" alt="${esc(d.productName)}" style="width:100%;height:100%;object-fit:cover;display:block;" /></div>`).join('')
+  return `
+<section data-section="gallery" style="padding:64px 28px;background:${C.paper};">
+  <p style="text-align:center;font-size:12px;letter-spacing:0.2em;color:${C.primary};font-weight:700;margin:0 0 8px;">GALLERY</p>
+  <h2 style="text-align:center;font-size:clamp(20px,5vw,28px);font-weight:900;margin:0 0 28px;color:${C.ink};">더 많은 사진</h2>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:640px;margin:0 auto;">${cells}</div>
+</section>`
+}
+
 const SECTION_RENDERERS: Record<string, (d: LandingData, p: Preset) => string> = {
   intro: renderIntro,
+  gallery: renderGallery,
   hero: renderHero,
   origin: renderOrigin,
   story: renderStory,
