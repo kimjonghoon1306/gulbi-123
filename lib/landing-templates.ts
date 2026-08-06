@@ -401,16 +401,24 @@ function renderOrigin(d: LandingData, p: Preset): string {
   <h2 ${ce('origin.location')} style="font-family:${F.serif};font-weight:700;font-size:clamp(28px,7vw,40px);line-height:1.1;letter-spacing:-0.02em;margin:0 0 24px;color:${C.light};">${esc(d.originLocation)}</h2>
   <p ${ce('origin.story')} style="font-family:${F.deco};font-size:15px;line-height:1.95;opacity:0.85;margin:0 0 40px;">${esc(d.originStory)}</p>
   ${img ? `<div class="gulbi-section-img" data-section-img="origin" style="margin:0 -28px 0;aspect-ratio:16/9;background:#000;overflow:hidden;position:relative;"><img src="${img}" alt="${esc(d.productName)}" style="width:100%;height:100%;object-fit:cover;display:block;" /></div>` : ''}
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:${C.light}33;margin:0 -28px;border-top:1px solid ${C.light}33;">
-    ${d.originStats.filter(s => s.value && s.value.trim()).slice(0,4).map((s,i) => `
-    <div style="background:${C.ink};padding:28px 20px;">
+  ${(() => {
+    const stats = d.originStats.filter(s => s.value && s.value.trim()).slice(0,4)
+    if (stats.length === 0) return ''
+    const cols = stats.length === 1 ? 1 : 2
+    return `<div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:1px;background:${C.light}33;margin:0 -28px;border-top:1px solid ${C.light}33;">
+    ${stats.map((s,i) => {
+      const spanFull = cols === 2 && stats.length % 2 === 1 && i === stats.length - 1
+      return `
+    <div style="background:${C.ink};padding:28px 20px;${spanFull ? 'grid-column:1/-1;' : ''}">
       <div style="font-family:${F.serif};font-size:36px;font-weight:300;color:${C.light};line-height:1;margin-bottom:8px;letter-spacing:-0.02em;">
         <span ${ce('origin.stat.' + i + '.value')}>${esc(s.value)}</span><span ${ce('origin.stat.' + i + '.unit')} style="font-size:14px;margin-left:4px;">${esc(s.unit)}</span>
       </div>
       <div ${ce('origin.stat.' + i + '.label')} style="font-size:10px;letter-spacing:0.25em;opacity:0.6;text-transform:uppercase;color:${C.cream};">${esc(s.label)}</div>
       <div ${ce('origin.stat.' + i + '.desc')} style="font-family:${F.deco};font-size:12px;line-height:1.7;margin-top:10px;opacity:0.85;color:${C.cream};">${esc(s.desc)}</div>
-    </div>`).join('')}
-  </div>
+    </div>`
+    }).join('')}
+  </div>`
+  })()}
 </section>`
 }
 
