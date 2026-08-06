@@ -7,13 +7,15 @@
 // ============================================================
 
 export type PresetKey = 'gold' | 'dark' | 'blue' | 'red' | 'pink' | 'white'
-export type TemplateKey = 'premium' | 'modern' | 'traditional' | 'business' | 'emotional'
+export type TemplateKey = 'premium' | 'modern' | 'traditional' | 'business' | 'emotional' | 'magazine' | 'luxury'
 export const TEMPLATES: { key: TemplateKey; name: string; emoji: string; desc: string }[] = [
   { key: 'premium',     name: '프리미엄', emoji: '👑', desc: '고급 명품 스타일' },
   { key: 'modern',      name: '모던',     emoji: '✦',  desc: '심플하고 깔끔한' },
   { key: 'traditional', name: '전통',     emoji: '🏮', desc: '한국 전통 한지' },
   { key: 'business',    name: '비즈니스', emoji: '📊', desc: '신뢰감 있는 기업형' },
   { key: 'emotional',   name: '감성',     emoji: '🌊', desc: '스토리텔링 감성형' },
+  { key: 'magazine',    name: '매거진',   emoji: '📖', desc: '잡지 에디토리얼' },
+  { key: 'luxury',      name: '럭셔리',   emoji: '🖤', desc: '다크 골드 명품' },
 ]
 
 export type Preset = {
@@ -867,6 +869,8 @@ export function renderLanding(data: LandingData, presetKey: PresetKey = 'gold', 
   if (templateKey === 'traditional') return renderTraditionalLanding(data, preset)
   if (templateKey === 'business')    return renderBusinessLanding(data, preset)
   if (templateKey === 'emotional')   return renderEmotionalLanding(data, preset)
+  if (templateKey === 'magazine')    return renderMagazineLanding(data, preset)
+  if (templateKey === 'luxury')      return renderLuxuryLanding(data, preset)
   const { colors: C, fonts: F } = preset
 
   const fontImports = `
@@ -888,6 +892,186 @@ export function renderLanding(data: LandingData, presetKey: PresetKey = 'gold', 
   return `${fontImports}
 <div data-landing data-preset="${presetKey}" style="font-family:${F.sans};color:${C.ink};background:${C.paper};line-height:1.6;-webkit-font-smoothing:antialiased;word-break:keep-all;-webkit-text-size-adjust:100%;">
 ${sections}
+</div>`
+}
+
+// ============================================================
+// 매거진 템플릿 (에디토리얼 · 세리프 · 풀블리드 사진)
+// ============================================================
+function renderMagazineLanding(d: LandingData, p: Preset): string {
+  const { colors: C } = p
+  const hero = d.sectionImages?.hero || d.mainImageUrl
+  const gallery = (d.unusedImages || []).filter(Boolean)
+  const bleed = (img: string | undefined, cap: string) => img ? `
+  <figure style="margin:0;position:relative;">
+    <img src="${img}" alt="${esc(d.productName)}" style="width:100%;display:block;object-fit:cover;max-height:78vh;" />
+    ${cap ? `<figcaption style="position:absolute;left:20px;bottom:16px;color:#fff;font-size:12px;letter-spacing:0.1em;background:rgba(0,0,0,0.45);padding:6px 12px;border-radius:2px;backdrop-filter:blur(4px);">${esc(cap)}</figcaption>` : ''}
+  </figure>` : ''
+  const css = `<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;700;900&display=swap');
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
+[data-landing] [contenteditable="true"]:focus{outline:2px dashed ${C.primary};outline-offset:3px;background:${C.primary}14;border-radius:4px}
+[data-landing] *{box-sizing:border-box;-webkit-text-size-adjust:100%}
+</style>`
+  return `${css}
+<div data-landing data-template="magazine" style="font-family:'Noto Serif KR',serif;color:#1a1a1a;background:#faf9f7;line-height:1.75;-webkit-font-smoothing:antialiased;word-break:keep-all;">
+
+<section style="padding:64px 24px 40px;text-align:center;border-bottom:1px solid #e5e0d8;">
+  <p style="font-family:'Pretendard Variable',sans-serif;font-size:11px;letter-spacing:0.4em;color:${C.primary};margin:0 0 20px;text-transform:uppercase;">${esc(d.brandName || 'STORY')}</p>
+  <h1 ${ce('hero.catch')} style="font-size:clamp(30px,8vw,52px);font-weight:900;line-height:1.2;margin:0 0 18px;letter-spacing:-0.02em;">${esc(d.catchphrase)}</h1>
+  <p ${ce('hero.sub')} style="font-size:clamp(14px,3.8vw,17px);color:#555;max-width:460px;margin:0 auto;line-height:1.85;">${esc(d.subtitle)}</p>
+</section>
+
+${bleed(hero, d.productName)}
+
+<section style="padding:56px 24px;text-align:center;max-width:600px;margin:0 auto;">
+  <p ${ce('intro.quote')} style="font-size:clamp(19px,5vw,26px);font-weight:500;line-height:1.75;margin:0 0 16px;font-style:italic;">“${esc(d.artisanQuote)}”</p>
+  <p ${ce('intro.sig')} style="font-family:'Pretendard Variable',sans-serif;font-size:12px;letter-spacing:0.15em;color:${C.primary};margin:0;">— ${esc(d.artisanName)}</p>
+</section>
+
+${bleed(d.sectionImages?.origin, d.originLocation)}
+
+<section style="padding:56px 24px;max-width:620px;margin:0 auto;">
+  <p style="font-family:'Pretendard Variable',sans-serif;font-size:48px;font-weight:900;color:${C.primary};opacity:0.18;margin:0;line-height:1;">01</p>
+  <h2 ${ce('origin.location')} style="font-size:clamp(22px,6vw,32px);font-weight:900;margin:4px 0 20px;">${esc(d.originLocation)}</h2>
+  <p ${ce('origin.story')} style="font-size:clamp(14px,3.8vw,16px);color:#444;line-height:1.95;margin:0;">${esc(d.originStory)}</p>
+</section>
+
+${bleed(d.sectionImages?.story, '')}
+
+<section style="padding:56px 24px;max-width:620px;margin:0 auto;">
+  <p style="font-family:'Pretendard Variable',sans-serif;font-size:48px;font-weight:900;color:${C.primary};opacity:0.18;margin:0;line-height:1;">02</p>
+  <h2 style="font-size:clamp(22px,6vw,32px);font-weight:900;margin:4px 0 20px;">${esc(d.productName)}의 이야기</h2>
+  <div ${ce('story.body')} style="font-size:clamp(14px,3.8vw,16px);color:#444;line-height:2;">${esc(d.story).split('\n').filter(Boolean).map(x=>`<p style="margin:0 0 16px;">${x}</p>`).join('')}</div>
+</section>
+
+<section style="padding:8px 24px 56px;max-width:620px;margin:0 auto;">
+  ${d.features.slice(0,4).map((f,i)=>`
+  <div style="border-top:1px solid #e5e0d8;padding:24px 0;display:flex;gap:20px;">
+    <span style="font-family:'Pretendard Variable',sans-serif;font-size:14px;font-weight:700;color:${C.primary};flex-shrink:0;">0${i+1}</span>
+    <div><h3 ${ce('features.'+i+'.title')} style="font-size:clamp(16px,4.2vw,19px);font-weight:700;margin:0 0 8px;">${esc(f.title)}</h3>
+    <p ${ce('features.'+i+'.desc')} style="font-size:clamp(13px,3.4vw,14px);color:#555;line-height:1.85;margin:0;">${esc(f.desc)}</p></div>
+  </div>`).join('')}
+</section>
+
+<section style="padding:64px 24px;text-align:center;background:#1a1a1a;color:#faf9f7;">
+  <p style="font-family:'Pretendard Variable',sans-serif;font-size:11px;letter-spacing:0.3em;opacity:0.6;margin:0 0 12px;">${esc(d.keyNumber.label)}</p>
+  <div style="font-size:clamp(56px,15vw,110px);font-weight:900;line-height:1;color:${C.light};">${esc(d.keyNumber.value)}<span style="font-size:0.28em;margin-left:6px;">${esc(d.keyNumber.unit)}</span></div>
+  <p ${ce('keynum.caption')} style="font-size:14px;opacity:0.7;max-width:420px;margin:16px auto 0;line-height:1.8;">${esc(d.keyNumber.caption)}</p>
+</section>
+
+${d.recipe ? `${bleed(d.sectionImages?.recipe, d.recipe.title)}
+<section style="padding:56px 24px;max-width:600px;margin:0 auto;">
+  <h2 style="font-size:clamp(20px,5.5vw,28px);font-weight:900;margin:0 0 8px;text-align:center;">${esc(d.recipe.title)}</h2>
+  <p style="text-align:center;color:#666;font-size:14px;margin:0 0 28px;">${esc(d.recipe.intro)}</p>
+  ${d.recipe.steps.map((s,i)=>`<div style="display:flex;gap:16px;padding:16px 0;border-bottom:1px solid #e5e0d8;"><span style="font-family:'Pretendard Variable',sans-serif;font-weight:700;color:${C.primary};">${i+1}</span><div><p style="font-weight:700;margin:0 0 4px;">${esc(s.name)}</p><p style="font-size:13px;color:#555;margin:0;line-height:1.75;">${esc(s.detail)}</p></div></div>`).join('')}
+</section>` : ''}
+
+${gallery.length > 0 ? `
+<section style="padding:24px 12px;">
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;">
+    ${gallery.map(src=>`<img src="${src}" alt="${esc(d.productName)}" style="width:100%;aspect-ratio:1/1;object-fit:cover;display:block;" />`).join('')}
+  </div>
+</section>` : ''}
+
+<section style="padding:56px 24px;max-width:600px;margin:0 auto;text-align:center;">
+  <h2 style="font-size:clamp(20px,5.5vw,26px);font-weight:900;margin:0 0 24px;">고객의 이야기</h2>
+  ${d.reviews.slice(0,3).map(r=>`<div style="border-top:1px solid #e5e0d8;padding:22px 0;text-align:left;"><p style="font-size:15px;line-height:1.85;margin:0 0 10px;font-style:italic;">“${esc(r.text)}”</p><p style="font-family:'Pretendard Variable',sans-serif;font-size:12px;color:#888;margin:0;">${esc(r.author)} · ${esc(r.date)}</p></div>`).join('')}
+</section>
+
+<section style="padding:64px 24px;text-align:center;background:#1a1a1a;color:#faf9f7;">
+  <div style="font-size:clamp(40px,11vw,72px);font-weight:900;line-height:1;color:${C.light};">${comma(d.price.retail)}<span style="font-size:0.26em;margin-left:4px;">원</span></div>
+  <p style="font-size:12px;opacity:0.5;margin:8px 0 28px;">/ ${esc(d.price.unit)}</p>
+  <button style="font-family:'Pretendard Variable',sans-serif;background:${C.light};color:#1a1a1a;padding:16px 48px;border:none;border-radius:2px;font-size:15px;font-weight:800;letter-spacing:0.2em;cursor:pointer;">주문하기</button>
+  <p style="font-size:11px;opacity:0.4;margin:20px 0 0;">무료배송 · 당일출고 · 7일이내 교환</p>
+</section>
+
+</div>`
+}
+
+// ============================================================
+// 럭셔리 템플릿 (다크 · 골드 · 넓은 여백)
+// ============================================================
+function renderLuxuryLanding(d: LandingData, p: Preset): string {
+  const { colors: C } = p
+  const gold = C.light || '#d4b56a'
+  const hero = d.sectionImages?.hero || d.mainImageUrl
+  const gallery = (d.unusedImages || []).filter(Boolean)
+  const frame = (img: string | undefined) => img ? `
+  <div style="padding:0 24px;margin:0 auto;max-width:560px;">
+    <div style="border:1px solid ${gold}55;padding:10px;">
+      <img src="${img}" alt="${esc(d.productName)}" style="width:100%;display:block;aspect-ratio:4/3;object-fit:cover;" />
+    </div>
+  </div>` : ''
+  const rule = `<div style="width:44px;height:1px;background:${gold};margin:0 auto;"></div>`
+  const css = `<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;700;900&display=swap');
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
+[data-landing] [contenteditable="true"]:focus{outline:2px dashed ${gold};outline-offset:3px;border-radius:4px}
+[data-landing] *{box-sizing:border-box;-webkit-text-size-adjust:100%}
+</style>`
+  return `${css}
+<div data-landing data-template="luxury" style="font-family:'Noto Serif KR',serif;color:#e8e2d5;background:#0b0b0d;line-height:1.8;-webkit-font-smoothing:antialiased;word-break:keep-all;">
+
+<section style="padding:72px 24px 44px;text-align:center;">
+  <p style="font-family:'Pretendard Variable',sans-serif;font-size:11px;letter-spacing:0.45em;color:${gold};margin:0 0 24px;text-transform:uppercase;">${esc(d.brandName || 'MAISON')}</p>
+  <h1 ${ce('hero.catch')} style="font-size:clamp(30px,8vw,50px);font-weight:700;line-height:1.25;margin:0 0 20px;color:#fff;letter-spacing:-0.01em;">${esc(d.catchphrase)}</h1>
+  ${rule}
+  <p ${ce('hero.sub')} style="font-size:clamp(14px,3.8vw,16px);color:#b8b0a0;max-width:440px;margin:22px auto 0;line-height:1.9;">${esc(d.subtitle)}</p>
+</section>
+
+${frame(hero)}
+
+<section style="padding:52px 24px;text-align:center;max-width:560px;margin:0 auto;">
+  <p ${ce('intro.quote')} style="font-size:clamp(18px,4.8vw,24px);font-weight:400;line-height:1.85;margin:0 0 18px;color:#f0ebe0;font-style:italic;">“${esc(d.artisanQuote)}”</p>
+  <p ${ce('intro.sig')} style="font-family:'Pretendard Variable',sans-serif;font-size:12px;letter-spacing:0.2em;color:${gold};margin:0;">— ${esc(d.artisanName)}</p>
+</section>
+
+<section style="padding:20px 24px 52px;text-align:center;max-width:600px;margin:0 auto;">
+  <p style="font-family:'Pretendard Variable',sans-serif;font-size:11px;letter-spacing:0.35em;color:${gold};margin:0 0 14px;">ORIGIN</p>
+  <h2 ${ce('origin.location')} style="font-size:clamp(22px,6vw,30px);font-weight:700;margin:0 0 20px;color:#fff;">${esc(d.originLocation)}</h2>
+  <p ${ce('origin.story')} style="font-size:clamp(14px,3.7vw,15px);color:#b8b0a0;line-height:2;margin:0;">${esc(d.originStory)}</p>
+</section>
+
+${frame(d.sectionImages?.origin)}
+
+<section style="padding:56px 24px;max-width:560px;margin:0 auto;">
+  ${d.features.slice(0,4).map((f,i)=>`
+  <div style="padding:22px 0;border-bottom:1px solid #26241f;text-align:center;">
+    <p style="font-family:'Pretendard Variable',sans-serif;font-size:11px;letter-spacing:0.3em;color:${gold};margin:0 0 8px;">0${i+1}</p>
+    <h3 ${ce('features.'+i+'.title')} style="font-size:clamp(16px,4.4vw,20px);font-weight:700;margin:0 0 10px;color:#fff;">${esc(f.title)}</h3>
+    <p ${ce('features.'+i+'.desc')} style="font-size:clamp(13px,3.4vw,14px);color:#a89f8e;line-height:1.9;margin:0;">${esc(f.desc)}</p>
+  </div>`).join('')}
+</section>
+
+${frame(d.sectionImages?.story)}
+
+<section style="padding:60px 24px;text-align:center;">
+  <p style="font-family:'Pretendard Variable',sans-serif;font-size:11px;letter-spacing:0.3em;color:${gold};opacity:0.8;margin:0 0 14px;">${esc(d.keyNumber.label)}</p>
+  <div style="font-size:clamp(58px,15vw,112px);font-weight:700;line-height:1;color:${gold};">${esc(d.keyNumber.value)}<span style="font-size:0.26em;margin-left:6px;">${esc(d.keyNumber.unit)}</span></div>
+  <p ${ce('keynum.caption')} style="font-size:14px;color:#b8b0a0;max-width:420px;margin:18px auto 0;line-height:1.85;">${esc(d.keyNumber.caption)}</p>
+</section>
+
+${gallery.length > 0 ? `
+<section style="padding:16px 24px 40px;max-width:600px;margin:0 auto;">
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
+    ${gallery.map(src=>`<div style="border:1px solid ${gold}44;padding:6px;"><img src="${src}" alt="${esc(d.productName)}" style="width:100%;aspect-ratio:1/1;object-fit:cover;display:block;" /></div>`).join('')}
+  </div>
+</section>` : ''}
+
+<section style="padding:52px 24px;text-align:center;max-width:560px;margin:0 auto;">
+  <p style="font-family:'Pretendard Variable',sans-serif;font-size:11px;letter-spacing:0.3em;color:${gold};margin:0 0 24px;">CLIENTS</p>
+  ${d.reviews.slice(0,3).map(r=>`<div style="padding:20px 0;border-top:1px solid #26241f;text-align:left;"><p style="font-size:14px;line-height:1.9;color:#d8d0c0;margin:0 0 8px;font-style:italic;">“${esc(r.text)}”</p><p style="font-family:'Pretendard Variable',sans-serif;font-size:11px;letter-spacing:0.15em;color:${gold};margin:0;">${esc(r.author)} · ${esc(r.date)}</p></div>`).join('')}
+</section>
+
+<section style="padding:64px 24px;text-align:center;border-top:1px solid #26241f;">
+  ${rule}
+  <div style="font-size:clamp(40px,11vw,72px);font-weight:700;line-height:1;color:${gold};margin:24px 0 8px;">${comma(d.price.retail)}<span style="font-size:0.26em;margin-left:4px;">원</span></div>
+  <p style="font-size:12px;color:#8a8272;margin:0 0 28px;">/ ${esc(d.price.unit)}</p>
+  <button style="font-family:'Pretendard Variable',sans-serif;background:${gold};color:#0b0b0d;padding:16px 52px;border:none;font-size:14px;font-weight:800;letter-spacing:0.25em;cursor:pointer;">ORDER</button>
+  <p style="font-size:11px;color:#6a6252;margin:22px 0 0;">무료배송 · 당일출고 · 7일이내 교환</p>
+</section>
+
 </div>`
 }
 
