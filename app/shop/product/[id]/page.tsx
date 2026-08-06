@@ -47,46 +47,6 @@ export default function ProductDetailPage() {
   const [cartAdded, setCartAdded] = useState(false)
   const [cartLoading, setCartLoading] = useState(false)
   const popupTimer = useRef<any>(null)
-  const landingRef = useRef<HTMLDivElement>(null)
-
-  // 상세페이지 섹션 스크롤 인 애니메이션 (innerHTML이라 뷰어에서 IntersectionObserver로 처리)
-  useEffect(() => {
-    if (!product?.description) return
-    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    // description HTML이 렌더된 뒤 실제 섹션을 잡아야 하므로 다음 프레임에 실행
-    const raf = requestAnimationFrame(() => {
-      const root = landingRef.current
-      if (!root) return
-      // 껍데기 <div data-landing> 안쪽의 실제 섹션들을 대상으로. 없으면 직계 자식.
-      let secs = Array.from(root.querySelectorAll<HTMLElement>('section, [data-section]'))
-      if (secs.length === 0) secs = Array.from(root.children).flatMap(c => Array.from((c as HTMLElement).children)) as HTMLElement[]
-      if (secs.length === 0) secs = Array.from(root.children) as HTMLElement[]
-      if (secs.length === 0) return
-      for (const el of secs) {
-        el.style.opacity = '0'
-        el.style.transform = 'translateY(40px)'
-        el.style.transition = 'opacity 0.7s ease, transform 0.7s cubic-bezier(0.2,0.7,0.2,1)'
-        el.style.willChange = 'opacity, transform'
-      }
-      const io = new IntersectionObserver((entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) {
-            const el = e.target as HTMLElement
-            el.style.opacity = '1'
-            el.style.transform = 'none'
-            io.unobserve(el)
-          }
-        }
-      }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' })
-      for (const el of secs) io.observe(el)
-      ;(root as any).__io = io
-    })
-    return () => {
-      cancelAnimationFrame(raf)
-      const io = (landingRef.current as any)?.__io as IntersectionObserver | undefined
-      io?.disconnect()
-    }
-  }, [product?.description])
 
   // ── 리뷰/별점 ──
   const [reviews, setReviews] = useState<any[]>([])
@@ -669,7 +629,7 @@ export default function ProductDetailPage() {
                 <div style={{width:'32px',height:'32px',background:'linear-gradient(135deg,#15803d,#16a34a)',borderRadius:'10px',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'16px'}}>✦</div>
                 <h2 style={{fontSize:'16px',fontWeight:900,letterSpacing:'-0.3px'}}>상품 상세</h2>
               </div>
-              <div ref={landingRef} dangerouslySetInnerHTML={{__html: sanitizeHtml(product.description)}} style={{lineHeight:1.8, pointerEvents:'none', userSelect:'none'}} />
+              <div dangerouslySetInnerHTML={{__html: sanitizeHtml(product.description)}} style={{lineHeight:1.8, pointerEvents:'none', userSelect:'none'}} />
             </div>
           </div>
         )}
