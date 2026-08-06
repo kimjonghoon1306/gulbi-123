@@ -1282,6 +1282,7 @@ function renderTraditionalLanding(d: LandingData, p: Preset): string {
   <h2 ${ce('origin.location')} style="font-family:'Noto Serif KR',serif;font-size:clamp(26px,6.5vw,34px);font-weight:700;color:${T.dark};margin:0 0 18px;">${esc(d.originLocation)}</h2>
   <div style="width:50px;height:2px;background:${T.gold};margin:0 auto 22px;"></div>
   <p ${ce('origin.story')} style="font-size:clamp(13px,3.5vw,14px);line-height:2;max-width:460px;margin:0 auto 32px;color:${T.dark};">${esc(d.originStory)}</p>
+  ${d.sectionImages?.origin ? `<img src="${d.sectionImages.origin}" alt="${esc(d.originLocation)}" style="width:100%;max-width:560px;aspect-ratio:16/9;object-fit:cover;border-radius:14px;display:block;margin:0 auto 28px;" />` : ''}
   <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:0;">
     ${d.originStats.filter(s=>s.value?.trim()).slice(0,4).map((s,i)=>`
     <div style="padding:20px 22px;border:1px solid ${T.line}55;${i>0?'border-left:none':''}">
@@ -1295,6 +1296,7 @@ function renderTraditionalLanding(d: LandingData, p: Preset): string {
 <section style="padding:52px 20px;background:#F2E8CC;text-align:center;">
   <p style="font-size:10px;letter-spacing:0.4em;color:${T.red};margin:0 0 10px;">이 야 기</p>
   <h2 ${ce('story.title')} style="font-family:'Noto Serif KR',serif;font-size:clamp(22px,5.5vw,28px);font-weight:700;color:${T.dark};margin:0 0 28px;">${esc(d.productName)}의 하루</h2>
+  ${d.sectionImages?.story ? `<img src="${d.sectionImages.story}" alt="${esc(d.productName)}" style="width:100%;max-width:520px;aspect-ratio:4/3;object-fit:cover;border-radius:14px;display:block;margin:0 auto 24px;" />` : ''}
   <div ${ce('story.body')} style="font-size:clamp(13px,3.5vw,14px);line-height:2.1;max-width:480px;margin:0 auto;text-align:left;color:${T.dark};">${esc(d.story).split('\n').filter(Boolean).map(x=>`<p style="margin:0 0 16px;">${x}</p>`).join('')}</div>
 </section>
 
@@ -1444,11 +1446,13 @@ function renderBusinessLanding(d: LandingData, p: Preset): string {
       <p style="font-size:clamp(14px,3.8vw,16px);font-weight:700;color:#1A202C;margin:0;">${esc(s.value)}${esc(s.unit)}</p>
     </div>`).join('')}
   </div>
-  <p ${ce('origin.story')} style="font-size:clamp(12px,3.2vw,13px);color:#4A5568;line-height:1.8;margin:0;">${esc(d.originStory)}</p>
+  <p ${ce('origin.story')} style="font-size:clamp(12px,3.2vw,13px);color:#4A5568;line-height:1.8;margin:0 0 20px;">${esc(d.originStory)}</p>
+  ${d.sectionImages?.origin ? `<img src="${d.sectionImages.origin}" alt="${esc(d.originLocation)}" style="width:100%;max-width:560px;aspect-ratio:16/9;object-fit:cover;border-radius:12px;display:block;margin:0 auto;" />` : ''}
 </section>
 
 <section style="background:white;padding:28px 20px;border-bottom:1px solid #E2E8F0;">
   <h2 style="font-size:13px;font-weight:700;color:${C.primary};letter-spacing:0.1em;margin:0 0 14px;">📖 상품 스토리</h2>
+  ${d.sectionImages?.story ? `<img src="${d.sectionImages.story}" alt="${esc(d.productName)}" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:12px;display:block;margin:0 0 18px;" />` : ''}
   <div style="font-size:clamp(12px,3.2vw,13px);color:#4A5568;line-height:1.85;">${esc(d.story).split('\n').filter(Boolean).map(x=>`<p style="margin:0 0 12px;">${x}</p>`).join('')}</div>
 </section>
 
@@ -1582,6 +1586,7 @@ function renderEmotionalLanding(d: LandingData, p: Preset): string {
   <p style="font-size:11px;letter-spacing:0.4em;color:${C.primary};margin:0 0 10px;">ORIGIN</p>
   <h2 ${ce('origin.location')} style="font-family:'Noto Serif KR',serif;font-size:clamp(26px,6.5vw,42px);font-weight:300;color:white;margin:0 0 20px;line-height:1.2;">${esc(d.originLocation)}</h2>
   <p ${ce('origin.story')} style="font-size:clamp(13px,3.5vw,15px);color:rgba(255,255,255,0.75);line-height:2;max-width:480px;">${esc(d.originStory)}</p>
+  ${d.sectionImages?.origin ? `<img src="${d.sectionImages.origin}" alt="${esc(d.originLocation)}" style="width:100%;max-width:600px;aspect-ratio:16/9;object-fit:cover;border-radius:16px;display:block;margin:28px auto 0;box-shadow:0 16px 40px rgba(0,0,0,0.4);" />` : ''}
   <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:36px;">
     ${d.originStats.filter(s=>s.value?.trim()).slice(0,4).map((s,i)=>`
     <div style="flex:1;min-width:80px;padding:20px;border:1px solid rgba(255,255,255,0.12);">
@@ -1593,6 +1598,7 @@ function renderEmotionalLanding(d: LandingData, p: Preset): string {
 
 <section style="background:#111;padding:60px 20px;">
   <p style="font-size:11px;letter-spacing:0.4em;color:${C.primary};margin:0 0 36px;">STORY</p>
+  ${d.sectionImages?.story ? `<img src="${d.sectionImages.story}" alt="${esc(d.productName)}" style="width:100%;max-width:560px;aspect-ratio:4/3;object-fit:cover;border-radius:16px;display:block;margin:0 auto 28px;box-shadow:0 16px 40px rgba(0,0,0,0.4);" />` : ''}
   <div ${ce('story.body')} style="font-size:clamp(15px,4vw,19px);color:rgba(255,255,255,0.85);line-height:2.1;font-weight:300;">${esc(d.story).split('\n').filter(Boolean).map(x=>`<p style="margin:0 0 22px;">${x}</p>`).join('')}</div>
 </section>
 
