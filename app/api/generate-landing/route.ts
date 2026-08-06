@@ -391,10 +391,10 @@ unusedIndices: 어느 섹션에도 안 어울리는 이미지 인덱스들.
       }
     }
 
-    // 업로드한 사진을 최대한 활용: 원산지·스토리는 모든 템플릿이 렌더하므로 비면 강제 배치.
-    // (recipe/storage는 Gemini가 명시 배치한 것만 유지 — 일부 템플릿은 렌더 안 해서 사라지므로
-    //  나머지는 아래 unusedImages로 넘겨 '갤러리'에서 무조건 보이게 한다)
-    for (const key of ['origin', 'story'] as const) {
+    // 업로드한 사진을 글 사이사이에 분산: 원산지→스토리→레시피→보관 순으로 빈 섹션 채움.
+    // (모든 템플릿이 이 4개 섹션 이미지를 렌더 → 글 중간중간 큰 사진이 들어감)
+    // 5개(hero 포함)를 넘는 사진만 맨 아래 갤러리로.
+    for (const key of ['origin', 'story', 'recipe', 'storage'] as const) {
       if (sectionImages[key]) continue
       for (let i = 0; i < imageList.length; i++) {
         if (!usedIndices.has(i)) {

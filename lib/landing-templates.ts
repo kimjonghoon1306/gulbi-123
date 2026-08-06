@@ -958,6 +958,8 @@ function renderPopLanding(d: LandingData, p: Preset): string {
 ${d.sectionImages?.origin ? `<section style="padding:12px 22px;"><img src="${d.sectionImages.origin}" alt="${esc(d.originLocation)}" style="width:100%;max-width:560px;aspect-ratio:16/9;object-fit:cover;border-radius:28px;display:block;margin:0 auto;box-shadow:0 14px 36px rgba(0,0,0,0.12);" /></section>` : ''}
 ${d.sectionImages?.story ? `<section style="padding:12px 22px 44px;"><img src="${d.sectionImages.story}" alt="${esc(d.productName)}" style="width:100%;max-width:560px;aspect-ratio:4/3;object-fit:cover;border-radius:28px;display:block;margin:0 auto;box-shadow:0 14px 36px rgba(0,0,0,0.12);" /></section>` : ''}
 
+${d.sectionImages?.recipe ? `<section style="padding:12px 22px 44px;"><img src="${d.sectionImages.recipe}" alt="${esc(d.productName)}" style="width:100%;max-width:560px;aspect-ratio:4/3;object-fit:cover;border-radius:28px;display:block;margin:0 auto;box-shadow:0 14px 36px rgba(0,0,0,0.12);" /></section>` : ''}
+
 <section style="background:linear-gradient(135deg,${acc},${acc2});padding:52px 22px;text-align:center;color:#fff;border-radius:36px;margin:0 12px;">
   <p style="font-size:13px;font-weight:800;opacity:0.85;letter-spacing:0.1em;margin:0 0 6px;">${esc(d.keyNumber.label)}</p>
   <div style="font-size:clamp(58px,16vw,108px);font-weight:900;line-height:1;">${esc(d.keyNumber.value)}<span style="font-size:0.3em;">${esc(d.keyNumber.unit)}</span></div>
@@ -970,6 +972,8 @@ ${d.sectionImages?.story ? `<section style="padding:12px 22px 44px;"><img src="$
     ${(d.recipe?.steps || []).slice(0,5).map((s,i)=>`<div style="display:flex;gap:14px;align-items:center;background:#fff;border-radius:18px;padding:16px 18px;box-shadow:0 4px 14px rgba(0,0,0,0.05);"><span style="flex-shrink:0;width:34px;height:34px;background:${acc}18;color:${acc};border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;">${i+1}</span><div><p style="font-weight:800;margin:0 0 2px;">${esc(s.name)}</p><p style="font-size:13px;color:#6b6b80;margin:0;line-height:1.6;">${esc(s.detail)}</p></div></div>`).join('')}
   </div>
 </section>
+
+${d.sectionImages?.storage ? `<section style="padding:0 22px 44px;"><img src="${d.sectionImages.storage}" alt="${esc(d.productName)}" style="width:100%;max-width:560px;aspect-ratio:4/3;object-fit:cover;border-radius:28px;display:block;margin:0 auto;box-shadow:0 14px 36px rgba(0,0,0,0.12);" /></section>` : ''}
 
 ${gallery.length ? `<section style="padding:8px 12px 40px;">
   <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:560px;margin:0 auto;">${gallery.map(src=>`<img src="${src}" alt="${esc(d.productName)}" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:20px;display:block;" />`).join('')}</div>
@@ -1049,6 +1053,9 @@ ${d.sectionImages?.story ? bleed(d.sectionImages.story) : ''}
   <p style="font-size:11px;letter-spacing:0.3em;color:#aaa;margin:12px 0 10px;text-transform:uppercase;">${esc(d.keyNumber.label)}</p>
   <p ${ce('keynum.caption')} style="font-size:14px;color:#888;max-width:400px;margin:0 auto;line-height:1.85;">${esc(d.keyNumber.caption)}</p>
 </section>
+
+${d.sectionImages?.recipe ? bleed(d.sectionImages.recipe) : ''}
+${d.sectionImages?.storage ? bleed(d.sectionImages.storage) : ''}
 
 ${gallery.length ? `<section style="padding:2px 0;"><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:2px;">${gallery.map(src=>`<img src="${src}" alt="${esc(d.productName)}" style="width:100%;aspect-ratio:3/4;object-fit:cover;display:block;" />`).join('')}</div></section>` : ''}
 
@@ -1139,6 +1146,8 @@ ${d.recipe ? `${bleed(d.sectionImages?.recipe, d.recipe.title)}
   ${d.recipe.steps.map((s,i)=>`<div style="display:flex;gap:16px;padding:16px 0;border-bottom:1px solid #e5e0d8;"><span style="font-family:'Pretendard Variable',sans-serif;font-weight:700;color:${C.primary};">${i+1}</span><div><p style="font-weight:700;margin:0 0 4px;">${esc(s.name)}</p><p style="font-size:13px;color:#555;margin:0;line-height:1.75;">${esc(s.detail)}</p></div></div>`).join('')}
 </section>` : ''}
 
+${d.sectionImages?.storage ? bleed(d.sectionImages.storage, '') : ''}
+
 ${gallery.length > 0 ? `
 <section style="padding:24px 12px;">
   <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;">
@@ -1223,6 +1232,9 @@ ${frame(d.sectionImages?.story)}
   <div style="font-size:clamp(58px,15vw,112px);font-weight:700;line-height:1;color:${gold};">${esc(d.keyNumber.value)}<span style="font-size:0.26em;margin-left:6px;">${esc(d.keyNumber.unit)}</span></div>
   <p ${ce('keynum.caption')} style="font-size:14px;color:#b8b0a0;max-width:420px;margin:18px auto 0;line-height:1.85;">${esc(d.keyNumber.caption)}</p>
 </section>
+
+${frame(d.sectionImages?.recipe)}
+${frame(d.sectionImages?.storage)}
 
 ${gallery.length > 0 ? `
 <section style="padding:16px 24px 40px;max-width:600px;margin:0 auto;">
@@ -1350,6 +1362,7 @@ ${d.recipe ? `
 ${d.storage ? `
 <section style="background:${C.cream};padding:48px 20px;text-align:center;">
   <h2 style="font-size:clamp(18px,5vw,22px);font-weight:800;color:${C.ink};margin:0 0 28px;">${esc(d.storage.title)}</h2>
+  ${d.sectionImages?.storage ? `<img src="${d.sectionImages.storage}" alt="${esc(d.productName)}" style="width:100%;max-width:520px;aspect-ratio:16/9;object-fit:cover;border-radius:16px;display:block;margin:0 auto 24px;" />` : ''}
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid ${C.line};border-radius:12px;overflow:hidden;max-width:400px;margin:0 auto 24px;">
     <div style="padding:20px 16px;border-right:1px solid ${C.line};text-align:center;">
       <p style="font-size:10px;color:${C.primary};letter-spacing:0.2em;margin:0 0 8px;font-weight:700;">권장 보관</p>
@@ -1472,6 +1485,8 @@ function renderTraditionalLanding(d: LandingData, p: Preset): string {
   <div ${ce('story.body')} style="font-size:clamp(13px,3.5vw,14px);line-height:2.1;max-width:480px;margin:0 auto;text-align:left;color:${T.dark};">${esc(d.story).split('\n').filter(Boolean).map(x=>`<p style="margin:0 0 16px;">${x}</p>`).join('')}</div>
 </section>
 
+${d.sectionImages?.recipe ? `<section style="padding:0;"><img src="${d.sectionImages.recipe}" alt="${esc(d.productName)}" style="width:100%;aspect-ratio:16/10;object-fit:cover;display:block;" /></section>` : ''}
+
 <section style="padding:52px 20px;background:${T.paper};text-align:center;">
   <p style="font-size:10px;letter-spacing:0.4em;color:${T.red};margin:0 0 10px;">특 징</p>
   <h2 style="font-family:'Noto Serif KR',serif;font-size:clamp(22px,5.5vw,28px);font-weight:700;color:${T.dark};margin:0 0 32px;">무엇이 다른가</h2>
@@ -1520,6 +1535,7 @@ ${d.recipe ? `
   </div>
 </section>` : ''}
 
+${d.sectionImages?.storage ? `<section style="padding:0;"><img src="${d.sectionImages.storage}" alt="${esc(d.productName)}" style="width:100%;aspect-ratio:16/10;object-fit:cover;display:block;" /></section>` : ''}
 ${(d.unusedImages && d.unusedImages.length) ? `<section style="padding:44px 20px;background:${T.dark};">
   <p style="font-size:10px;letter-spacing:0.4em;color:${T.gold};margin:0 0 20px;text-align:center;">사 진</p>
   <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;max-width:520px;margin:0 auto;">${d.unusedImages.map(src=>`<img src="${src}" alt="${esc(d.productName)}" style="width:100%;aspect-ratio:1/1;object-fit:cover;display:block;" />`).join('')}</div>
@@ -1632,6 +1648,8 @@ function renderBusinessLanding(d: LandingData, p: Preset): string {
   <div style="font-size:clamp(12px,3.2vw,13px);color:#4A5568;line-height:1.85;">${esc(d.story).split('\n').filter(Boolean).map(x=>`<p style="margin:0 0 12px;">${x}</p>`).join('')}</div>
 </section>
 
+${d.sectionImages?.recipe ? `<section style="padding:0;"><img src="${d.sectionImages.recipe}" alt="${esc(d.productName)}" style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block;" /></section>` : ''}
+
 <section style="background:white;padding:28px 20px;border-bottom:1px solid #E2E8F0;">
   <h2 style="font-size:13px;font-weight:700;color:${C.primary};letter-spacing:0.1em;margin:0 0 14px;">✅ 주요 특징</h2>
   ${d.features.slice(0,5).map((f,i)=>`
@@ -1675,6 +1693,7 @@ ${d.specs ? `
   </table>
 </section>` : ''}
 
+${d.sectionImages?.storage ? `<section style="padding:0;"><img src="${d.sectionImages.storage}" alt="${esc(d.productName)}" style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block;" /></section>` : ''}
 ${(d.unusedImages && d.unusedImages.length) ? `<section style="background:#F7F8FA;padding:24px 20px;border-bottom:1px solid #E2E8F0;">
   <h2 style="font-size:13px;font-weight:700;color:${C.primary};letter-spacing:0.1em;margin:0 0 14px;">📷 제품 사진</h2>
   <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">${d.unusedImages.map(src=>`<img src="${src}" alt="${esc(d.productName)}" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:8px;display:block;" />`).join('')}</div>
@@ -1782,6 +1801,8 @@ function renderEmotionalLanding(d: LandingData, p: Preset): string {
   <div ${ce('story.body')} style="font-size:clamp(15px,4vw,19px);color:rgba(255,255,255,0.85);line-height:2.1;font-weight:300;">${esc(d.story).split('\n').filter(Boolean).map(x=>`<p style="margin:0 0 22px;">${x}</p>`).join('')}</div>
 </section>
 
+${d.sectionImages?.recipe ? `<section style="padding:0;"><img src="${d.sectionImages.recipe}" alt="${esc(d.productName)}" style="width:100%;aspect-ratio:16/10;object-fit:cover;display:block;" /></section>` : ''}
+
 <section style="background:#0A0A0A;padding:60px 20px;">
   <p style="font-size:11px;letter-spacing:0.4em;color:${C.primary};margin:0 0 44px;">WHY</p>
   ${d.features.slice(0,4).map((f,i)=>`
@@ -1821,6 +1842,7 @@ ${d.recipe ? `
   </div>`).join('')}
 </section>` : ''}
 
+${d.sectionImages?.storage ? `<section style="padding:0;"><img src="${d.sectionImages.storage}" alt="${esc(d.productName)}" style="width:100%;aspect-ratio:16/10;object-fit:cover;display:block;" /></section>` : ''}
 ${(d.unusedImages && d.unusedImages.length) ? `<section style="background:#0a0a0a;padding:8px 8px 0;">
   <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">${d.unusedImages.map(src=>`<img src="${src}" alt="${esc(d.productName)}" style="width:100%;aspect-ratio:1/1;object-fit:cover;display:block;border-radius:4px;" />`).join('')}</div>
 </section>` : ''}
