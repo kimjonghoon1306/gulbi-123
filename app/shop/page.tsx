@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import Link from 'next/link'
-import { CAT_ICONS, CAT_PHOTOS, CAT_COLORS, getDefaultCatColor, POPUP_NAMES, POPUP_ACTIONS, priceFor, type Product, type Category } from './_shopConstants'
+import { CAT_ICONS, CAT_PHOTOS, catPhoto, CAT_COLORS, getDefaultCatColor, POPUP_NAMES, POPUP_ACTIONS, priceFor, type Product, type Category } from './_shopConstants'
 import { ProductCard } from './_ProductCard'
 import { AdBanner } from './_AdBanner'
 import { PromoSection } from './_PromoSection'
@@ -336,9 +336,9 @@ export default function ShopPage() {
                   transition: 'all 0.2s ease',
                   boxShadow: active ? `0 6px 16px ${color.shadow}` : '0 2px 8px rgba(0,0,0,0.06)',
                 }}>
-                  {CAT_PHOTOS[cat]
-                    ? <img src={CAT_PHOTOS[cat]} alt="" style={{ width: '26px', height: '26px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0, border: active ? '1.5px solid rgba(255,255,255,0.6)' : `1px solid ${border}` }} />
-                    : <span style={{ fontSize: '20px' }}>{CAT_ICONS[cat] || '🧺'}</span>}
+                  {catPhoto(cat)
+                    ? <img src={catPhoto(cat)!} alt="" style={{ width: '26px', height: '26px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0, border: active ? '1.5px solid rgba(255,255,255,0.6)' : `1px solid ${border}` }} />
+                    : <span style={{ fontSize: '20px' }}>{CAT_ICONS[cat] || '🛒'}</span>}
                   <span>{cat}</span>
                 </button>
               )

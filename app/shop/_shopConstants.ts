@@ -35,6 +35,31 @@ export const CAT_PHOTOS: Record<string, string> = {
   '건어물/염장류': '/demo-food/seafood_driedshrimp.webp',
 }
 
+// 카테고리 이름의 키워드로 실사 대표 사진을 매칭(이름이 조금 달라도 잡히게).
+// 이미지 = public/ai-images/food/*.webp (실사 56종). '전체'는 사진 없이 아이콘.
+const CAT_PHOTO_RULES: { keys: string[]; src: string }[] = [
+  { keys: ['채소', '야채', '농산'],                 src: '/ai-images/food/produce_ssam.webp' },
+  { keys: ['과일', '청과'],                          src: '/ai-images/food/fruit_strawberry.webp' },
+  { keys: ['축산', '정육', '한우', '고기', '육류'],   src: '/ai-images/food/meat_beef.webp' },
+  { keys: ['수산', '해산', '생선', '어류', '건어'],   src: '/ai-images/food/seafood_hairtail.webp' },
+  { keys: ['갑각', '새우', '대하', '게'],             src: '/ai-images/food/seafood_prawn.webp' },
+  { keys: ['패류', '조개', '굴'],                     src: '/ai-images/food/seafood_oyster.webp' },
+  { keys: ['쌀', '잡곡', '곡물', '미곡'],             src: '/ai-images/food/banchan_riceball.webp' },
+  { keys: ['유제품', '계란', '달걀', '우유', '란'],   src: '/ai-images/food/food_egg.webp' },
+  { keys: ['김치', '반찬'],                          src: '/ai-images/food/traditional_kimchi.webp' },
+  { keys: ['베이커리', '간식', '빵', '제과', '디저트'], src: '/ai-images/food/bakery_bread.webp' },
+  { keys: ['선물', '전통', '장류', '기타'],           src: '/ai-images/food/traditional_giftset.webp' },
+]
+
+export function catPhoto(name: string): string | null {
+  if (!name || name === '전체') return null
+  if (CAT_PHOTOS[name]) return CAT_PHOTOS[name]           // 정확 매칭 우선
+  for (const rule of CAT_PHOTO_RULES) {
+    if (rule.keys.some(k => name.includes(k))) return rule.src
+  }
+  return null
+}
+
 export const CAT_COLORS: Record<string, { bg: string; border: string; shadow: string }> = {
   '전체':           { bg: 'linear-gradient(135deg,#14532d,#15803d)', border: '#14532d', shadow: 'rgba(22,163,74,0.4)' },
   '어류':           { bg: 'linear-gradient(135deg,#3b82f6,#6366f1)', border: '#3b82f6', shadow: 'rgba(59,130,246,0.4)' },
