@@ -459,10 +459,10 @@ export default function AiLandingEditor({ show, onClose, products, onDone }: Pro
           {aiStep === 3 && (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
               <div style={{ background: '#111', borderBottom: '1px solid rgba(255,255,255,0.1)', padding: '6px 10px', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '9px', flexShrink: 0 }}>🖼️</span>
+                <span style={{ color: 'rgba(255,255,255,0.55)', fontSize: '10px', fontWeight: 700, flexShrink: 0, letterSpacing: '0.05em' }}>디자인</span>
                 {TEMPLATES.map(t => (
-                  <button key={t.key} onClick={() => handleChangeTemplate(t.key as TemplateKey)}
-                    style={{ padding: '4px 8px', borderRadius: '6px', border: '1.5px solid', borderColor: aiTemplateKey === t.key ? '#22c55e' : 'rgba(255,255,255,0.12)', background: aiTemplateKey === t.key ? 'rgba(34,197,94,0.2)' : 'transparent', color: aiTemplateKey === t.key ? '#4ade80' : 'rgba(255,255,255,0.45)', fontSize: '10px', fontWeight: aiTemplateKey === t.key ? 700 : 500, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                  <button key={t.key} onClick={() => handleChangeTemplate(t.key as TemplateKey)} title={t.desc}
+                    style={{ padding: '6px 11px', borderRadius: '8px', border: '1.5px solid', borderColor: aiTemplateKey === t.key ? '#22c55e' : 'rgba(255,255,255,0.15)', background: aiTemplateKey === t.key ? 'rgba(34,197,94,0.22)' : 'rgba(255,255,255,0.04)', color: aiTemplateKey === t.key ? '#4ade80' : 'rgba(255,255,255,0.6)', fontSize: '11.5px', fontWeight: aiTemplateKey === t.key ? 800 : 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
                     {t.emoji} {t.name}
                   </button>
                 ))}
