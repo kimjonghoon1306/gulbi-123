@@ -7,7 +7,7 @@
 // ============================================================
 
 export type PresetKey = 'gold' | 'dark' | 'blue' | 'red' | 'pink' | 'white'
-export type TemplateKey = 'premium' | 'modern' | 'traditional' | 'business' | 'emotional' | 'magazine' | 'luxury'
+export type TemplateKey = 'premium' | 'modern' | 'traditional' | 'business' | 'emotional' | 'magazine' | 'luxury' | 'pop' | 'clean'
 export const TEMPLATES: { key: TemplateKey; name: string; emoji: string; desc: string }[] = [
   { key: 'premium',     name: '프리미엄', emoji: '👑', desc: '고급 명품 스타일' },
   { key: 'modern',      name: '모던',     emoji: '✦',  desc: '심플하고 깔끔한' },
@@ -16,6 +16,8 @@ export const TEMPLATES: { key: TemplateKey; name: string; emoji: string; desc: s
   { key: 'emotional',   name: '감성',     emoji: '🌊', desc: '스토리텔링 감성형' },
   { key: 'magazine',    name: '매거진',   emoji: '📖', desc: '잡지 에디토리얼' },
   { key: 'luxury',      name: '럭셔리',   emoji: '🖤', desc: '다크 골드 명품' },
+  { key: 'pop',         name: '팝',       emoji: '🍭', desc: '밝고 컬러풀·MZ 감성' },
+  { key: 'clean',       name: '클린',     emoji: '🤍', desc: '화이트 미니멀·화장품/패션' },
 ]
 
 export type Preset = {
@@ -871,6 +873,8 @@ export function renderLanding(data: LandingData, presetKey: PresetKey = 'gold', 
   if (templateKey === 'emotional')   return renderEmotionalLanding(data, preset)
   if (templateKey === 'magazine')    return renderMagazineLanding(data, preset)
   if (templateKey === 'luxury')      return renderLuxuryLanding(data, preset)
+  if (templateKey === 'pop')         return renderPopLanding(data, preset)
+  if (templateKey === 'clean')       return renderCleanLanding(data, preset)
   const { colors: C, fonts: F } = preset
 
   const fontImports = `
@@ -892,6 +896,165 @@ export function renderLanding(data: LandingData, presetKey: PresetKey = 'gold', 
   return `${fontImports}
 <div data-landing data-preset="${presetKey}" style="font-family:${F.sans};color:${C.ink};background:${C.paper};line-height:1.6;-webkit-font-smoothing:antialiased;word-break:keep-all;-webkit-text-size-adjust:100%;">
 ${sections}
+</div>`
+}
+
+// ============================================================
+// 팝 템플릿 (밝고 컬러풀 · 큰 라운드 · MZ 감성)
+// ============================================================
+function renderPopLanding(d: LandingData, p: Preset): string {
+  const { colors: C } = p
+  const acc = C.primary
+  const acc2 = C.deep || C.primary
+  const hero = d.sectionImages?.hero || d.mainImageUrl
+  const gallery = (d.unusedImages || []).filter(Boolean)
+  const chipColors = ['#FF5D8F', '#7C5CFF', '#00C2A8', '#FFB020', '#3B82F6']
+  const css = `<style>
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
+[data-landing] [contenteditable="true"]:focus{outline:2px dashed ${acc};outline-offset:3px;border-radius:8px}
+[data-landing] *{box-sizing:border-box;-webkit-text-size-adjust:100%}
+@keyframes popfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+</style>`
+  return `${css}
+<div data-landing data-template="pop" style="font-family:'Pretendard Variable',sans-serif;color:#1a1a2e;background:#fff8f3;line-height:1.6;-webkit-font-smoothing:antialiased;word-break:keep-all;">
+
+<section style="background:radial-gradient(120% 100% at 50% 0%, ${acc}22 0%, #fff8f3 60%);padding:48px 22px 40px;text-align:center;">
+  <span style="display:inline-block;background:${acc};color:#fff;font-size:12px;font-weight:800;padding:7px 18px;border-radius:999px;margin-bottom:18px;box-shadow:0 6px 16px ${acc}55;">${esc(d.brandName || 'NEW')}</span>
+  <h1 ${ce('hero.catch')} style="font-size:clamp(30px,9vw,54px);font-weight:900;line-height:1.12;margin:0 0 14px;letter-spacing:-0.03em;">${esc(d.catchphrase)}</h1>
+  <p ${ce('hero.sub')} style="font-size:clamp(14px,4vw,17px);color:#6b6b80;margin:0 auto 28px;max-width:420px;line-height:1.7;">${esc(d.subtitle)}</p>
+  ${hero ? `<div style="position:relative;max-width:min(460px,90vw);margin:0 auto;">
+    <div style="position:absolute;inset:-14px;background:linear-gradient(135deg,${acc},${acc2});border-radius:36px;transform:rotate(-3deg);opacity:0.25;"></div>
+    <img src="${hero}" alt="${esc(d.productName)}" style="position:relative;width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:32px;box-shadow:0 20px 50px rgba(0,0,0,0.15);animation:popfloat 4s ease-in-out infinite;" />
+  </div>` : ''}
+</section>
+
+<section style="padding:20px 22px 8px;">
+  <div style="display:flex;flex-wrap:wrap;gap:9px;justify-content:center;">
+    ${d.features.slice(0,4).map((f,i)=>`<span style="background:${chipColors[i%chipColors.length]}1a;color:${chipColors[i%chipColors.length]};font-size:13px;font-weight:800;padding:9px 16px;border-radius:999px;">#${esc(f.title)}</span>`).join('')}
+  </div>
+</section>
+
+<section style="padding:44px 22px;text-align:center;">
+  <p style="font-size:13px;font-weight:800;color:${acc};letter-spacing:0.1em;margin:0 0 8px;">WHY</p>
+  <h2 style="font-size:clamp(22px,6vw,30px);font-weight:900;margin:0 0 28px;">이래서 사랑받아요 💕</h2>
+  <div style="display:grid;gap:14px;max-width:520px;margin:0 auto;">
+    ${d.features.slice(0,4).map((f,i)=>`
+    <div style="background:#fff;border-radius:22px;padding:22px;text-align:left;box-shadow:0 6px 20px rgba(0,0,0,0.06);border:2px solid ${chipColors[i%chipColors.length]}22;">
+      <div style="display:inline-flex;width:40px;height:40px;background:${chipColors[i%chipColors.length]};border-radius:14px;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:17px;margin-bottom:12px;">${i+1}</div>
+      <h3 ${ce('features.'+i+'.title')} style="font-size:clamp(16px,4.4vw,19px);font-weight:900;margin:0 0 6px;">${esc(f.title)}</h3>
+      <p ${ce('features.'+i+'.desc')} style="font-size:clamp(13px,3.5vw,14px);color:#6b6b80;line-height:1.75;margin:0;">${esc(f.desc)}</p>
+    </div>`).join('')}
+  </div>
+</section>
+
+${d.sectionImages?.story ? `<section style="padding:12px 22px 44px;"><img src="${d.sectionImages.story}" alt="${esc(d.productName)}" style="width:100%;max-width:560px;aspect-ratio:4/3;object-fit:cover;border-radius:28px;display:block;margin:0 auto;box-shadow:0 14px 36px rgba(0,0,0,0.12);" /></section>` : ''}
+
+<section style="background:linear-gradient(135deg,${acc},${acc2});padding:52px 22px;text-align:center;color:#fff;border-radius:36px;margin:0 12px;">
+  <p style="font-size:13px;font-weight:800;opacity:0.85;letter-spacing:0.1em;margin:0 0 6px;">${esc(d.keyNumber.label)}</p>
+  <div style="font-size:clamp(58px,16vw,108px);font-weight:900;line-height:1;">${esc(d.keyNumber.value)}<span style="font-size:0.3em;">${esc(d.keyNumber.unit)}</span></div>
+  <p ${ce('keynum.caption')} style="font-size:14px;opacity:0.9;max-width:400px;margin:14px auto 0;line-height:1.7;">${esc(d.keyNumber.caption)}</p>
+</section>
+
+<section style="padding:44px 22px;text-align:center;">
+  <h2 style="font-size:clamp(20px,5.5vw,26px);font-weight:900;margin:0 0 22px;">이렇게 즐겨요 🙌</h2>
+  <div style="max-width:520px;margin:0 auto;text-align:left;display:grid;gap:12px;">
+    ${(d.recipe?.steps || []).slice(0,5).map((s,i)=>`<div style="display:flex;gap:14px;align-items:center;background:#fff;border-radius:18px;padding:16px 18px;box-shadow:0 4px 14px rgba(0,0,0,0.05);"><span style="flex-shrink:0;width:34px;height:34px;background:${acc}18;color:${acc};border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;">${i+1}</span><div><p style="font-weight:800;margin:0 0 2px;">${esc(s.name)}</p><p style="font-size:13px;color:#6b6b80;margin:0;line-height:1.6;">${esc(s.detail)}</p></div></div>`).join('')}
+  </div>
+</section>
+
+${gallery.length ? `<section style="padding:8px 12px 40px;">
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:560px;margin:0 auto;">${gallery.map(src=>`<img src="${src}" alt="${esc(d.productName)}" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:20px;display:block;" />`).join('')}</div>
+</section>` : ''}
+
+<section style="padding:44px 22px;text-align:center;">
+  <h2 style="font-size:clamp(20px,5.5vw,26px);font-weight:900;margin:0 0 6px;">리얼 후기 ⭐</h2>
+  <p style="color:${acc};font-weight:900;font-size:28px;margin:4px 0 22px;">4.9 / 5.0</p>
+  <div style="max-width:520px;margin:0 auto;display:grid;gap:12px;">
+    ${d.reviews.slice(0,3).map((r,i)=>`<div style="background:${chipColors[i%chipColors.length]}12;border-radius:22px;padding:20px;text-align:left;"><p style="color:#FFB020;margin:0 0 8px;font-size:14px;">★★★★★</p><p style="font-size:14px;line-height:1.75;margin:0 0 10px;">${esc(r.text)}</p><p style="font-size:12px;color:#8a8aa0;margin:0;font-weight:700;">${esc(r.author)} · ${esc(r.date)}</p></div>`).join('')}
+  </div>
+</section>
+
+<section style="padding:8px 22px 56px;text-align:center;">
+  <div style="background:#1a1a2e;border-radius:32px;padding:44px 24px;color:#fff;">
+    <div style="font-size:clamp(40px,11vw,68px);font-weight:900;line-height:1;">${comma(d.price.retail)}<span style="font-size:0.3em;margin-left:4px;">원</span></div>
+    <p style="opacity:0.6;font-size:13px;margin:8px 0 24px;">/ ${esc(d.price.unit)}</p>
+    <button style="width:100%;max-width:340px;background:linear-gradient(135deg,${acc},${acc2});color:#fff;border:none;border-radius:999px;padding:18px;font-size:16px;font-weight:900;cursor:pointer;box-shadow:0 10px 30px ${acc}66;">지금 담기 🛒</button>
+    <p style="opacity:0.5;font-size:12px;margin:18px 0 0;">무료배송 · 당일출고 · 7일 교환</p>
+  </div>
+</section>
+
+</div>`
+}
+
+// ============================================================
+// 클린 템플릿 (화이트 미니멀 · 화장품/패션 · 넉넉한 여백)
+// ============================================================
+function renderCleanLanding(d: LandingData, p: Preset): string {
+  const { colors: C } = p
+  const acc = C.primary
+  const hero = d.sectionImages?.hero || d.mainImageUrl
+  const gallery = (d.unusedImages || []).filter(Boolean)
+  const bleed = (img?: string) => img ? `<img src="${img}" alt="${esc(d.productName)}" style="width:100%;display:block;object-fit:cover;aspect-ratio:3/4;max-height:82vh;" />` : ''
+  const css = `<style>
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&display=swap');
+[data-landing] [contenteditable="true"]:focus{outline:2px dashed ${acc};outline-offset:3px}
+[data-landing] *{box-sizing:border-box;-webkit-text-size-adjust:100%}
+</style>`
+  return `${css}
+<div data-landing data-template="clean" style="font-family:'Pretendard Variable',sans-serif;color:#222;background:#ffffff;line-height:1.7;-webkit-font-smoothing:antialiased;word-break:keep-all;">
+
+<section style="padding:72px 28px 44px;text-align:center;">
+  <p style="font-size:11px;letter-spacing:0.4em;color:${acc};margin:0 0 22px;text-transform:uppercase;font-weight:600;">${esc(d.brandName || 'COLLECTION')}</p>
+  <h1 ${ce('hero.catch')} style="font-family:'Cormorant Garamond',serif;font-size:clamp(34px,10vw,60px);font-weight:500;line-height:1.15;margin:0 0 18px;letter-spacing:-0.01em;">${esc(d.catchphrase)}</h1>
+  <p ${ce('hero.sub')} style="font-size:clamp(13px,3.6vw,15px);color:#888;max-width:400px;margin:0 auto;line-height:1.9;">${esc(d.subtitle)}</p>
+</section>
+
+${bleed(hero)}
+
+<section style="padding:60px 28px;text-align:center;max-width:520px;margin:0 auto;">
+  <p ${ce('intro.quote')} style="font-family:'Cormorant Garamond',serif;font-size:clamp(20px,5.5vw,28px);font-weight:500;line-height:1.7;margin:0 0 16px;font-style:italic;">“${esc(d.artisanQuote)}”</p>
+  <p ${ce('intro.sig')} style="font-size:11px;letter-spacing:0.2em;color:${acc};margin:0;text-transform:uppercase;">${esc(d.artisanName)}</p>
+</section>
+
+<section style="padding:8px 28px 56px;max-width:720px;margin:0 auto;">
+  ${d.features.slice(0,4).map((f,i)=>`
+  <div style="border-top:1px solid #eee;padding:30px 0;display:grid;grid-template-columns:44px 1fr;gap:18px;">
+    <span style="font-family:'Cormorant Garamond',serif;font-size:26px;color:${acc};">0${i+1}</span>
+    <div><h3 ${ce('features.'+i+'.title')} style="font-size:clamp(16px,4.3vw,20px);font-weight:600;margin:0 0 8px;">${esc(f.title)}</h3>
+    <p ${ce('features.'+i+'.desc')} style="font-size:clamp(13px,3.4vw,14px);color:#888;line-height:1.9;margin:0;">${esc(f.desc)}</p></div>
+  </div>`).join('')}
+</section>
+
+${d.sectionImages?.origin ? bleed(d.sectionImages.origin) : ''}
+
+<section style="padding:60px 28px;max-width:560px;margin:0 auto;text-align:center;">
+  <p style="font-size:11px;letter-spacing:0.3em;color:${acc};margin:0 0 14px;text-transform:uppercase;">STORY</p>
+  <div ${ce('story.body')} style="font-size:clamp(14px,3.7vw,16px);color:#555;line-height:2.05;text-align:left;">${esc(d.story).split('\n').filter(Boolean).map(x=>`<p style="margin:0 0 18px;">${x}</p>`).join('')}</div>
+</section>
+
+${d.sectionImages?.story ? bleed(d.sectionImages.story) : ''}
+
+<section style="padding:64px 28px;text-align:center;background:#fafafa;">
+  <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(60px,16vw,120px);font-weight:500;line-height:1;color:${acc};">${esc(d.keyNumber.value)}<span style="font-size:0.26em;">${esc(d.keyNumber.unit)}</span></div>
+  <p style="font-size:11px;letter-spacing:0.3em;color:#aaa;margin:12px 0 10px;text-transform:uppercase;">${esc(d.keyNumber.label)}</p>
+  <p ${ce('keynum.caption')} style="font-size:14px;color:#888;max-width:400px;margin:0 auto;line-height:1.85;">${esc(d.keyNumber.caption)}</p>
+</section>
+
+${gallery.length ? `<section style="padding:2px 0;"><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:2px;">${gallery.map(src=>`<img src="${src}" alt="${esc(d.productName)}" style="width:100%;aspect-ratio:3/4;object-fit:cover;display:block;" />`).join('')}</div></section>` : ''}
+
+<section style="padding:60px 28px;max-width:560px;margin:0 auto;text-align:center;">
+  <p style="font-size:11px;letter-spacing:0.3em;color:${acc};margin:0 0 24px;text-transform:uppercase;">REVIEWS</p>
+  ${d.reviews.slice(0,3).map(r=>`<div style="padding:24px 0;border-top:1px solid #eee;text-align:left;"><p style="font-size:15px;line-height:1.9;color:#444;margin:0 0 10px;">“${esc(r.text)}”</p><p style="font-size:11px;letter-spacing:0.1em;color:#aaa;margin:0;">${esc(r.author)} · ${esc(r.date)}</p></div>`).join('')}
+</section>
+
+<section style="padding:72px 28px;text-align:center;border-top:1px solid #eee;">
+  <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(38px,10vw,64px);font-weight:500;line-height:1;margin:0 0 8px;">${comma(d.price.retail)}<span style="font-size:0.3em;margin-left:4px;">원</span></div>
+  <p style="font-size:12px;color:#aaa;margin:0 0 28px;">/ ${esc(d.price.unit)}</p>
+  <button style="background:#222;color:#fff;border:none;padding:17px 56px;font-size:13px;font-weight:600;letter-spacing:0.2em;cursor:pointer;">ADD TO CART</button>
+  <p style="font-size:11px;color:#bbb;margin:22px 0 0;letter-spacing:0.05em;">FREE SHIPPING · SAME-DAY · 7-DAY RETURN</p>
+</section>
+
 </div>`
 }
 
