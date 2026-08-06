@@ -378,7 +378,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
                 <input id="supplier-ai-img" type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f) }} />
                 {!aiImagePreview ? (
                   <div onClick={() => document.getElementById('supplier-ai-img')?.click()}
-                    style={{ height: '180px', border: '2px dashed rgba(34,197,94,0.4)', borderRadius: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'rgba(34,197,94,0.03)' }}>
+                    style={{ height: isMobile ? '180px' : '260px', border: '2px dashed rgba(34,197,94,0.4)', borderRadius: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'rgba(34,197,94,0.03)' }}>
                     <div style={{ fontSize: '36px', marginBottom: '8px' }}>📸</div>
                     <p style={{ color: '#22c55e', fontSize: '14px', fontWeight: 700 }}>클릭해서 이미지 올리기</p>
                     <p style={{ color: aiDark ? 'rgba(255,255,255,0.3)' : '#888', fontSize: '11px' }}>JPG · PNG · WEBP</p>
@@ -386,7 +386,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
                 ) : (
                   <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                     <div style={{ position: 'relative', flexShrink: 0 }}>
-                      <img src={aiImagePreview} alt="" style={{ width: '140px', height: '140px', objectFit: 'contain', borderRadius: '12px', background: '#111' }} />
+                      <img src={aiImagePreview} alt="" style={{ width: isMobile ? '128px' : '200px', height: isMobile ? '128px' : '200px', objectFit: 'contain', borderRadius: '12px', background: '#111' }} />
                       <button onClick={() => document.getElementById('supplier-ai-img')?.click()}
                         style={{ position: 'absolute', bottom: '6px', right: '6px', background: 'rgba(0,0,0,0.7)', border: 'none', borderRadius: '6px', padding: '4px 8px', color: 'white', fontSize: '10px', cursor: 'pointer' }}>교체</button>
                     </div>
