@@ -15,15 +15,34 @@ fs.mkdirSync(OUT, { recursive: true })
 const STYLE = 'cute 3D claymorphism app icon, glossy soft-rendered clay style, plump rounded friendly shapes, vibrant fresh colors, soft studio lighting, subtle soft shadow underneath, centered composition, plain solid very light warm gray background (#f4f4f2), clean modern mobile e-commerce category icon, high detail, sharp, no text, no letters, no words, no numbers'
 
 const ALL = [
-  { key: 'fish',     subject: 'a single fresh whole silvery-blue fish (mackerel), plump and cute' },
+  // ── 신선/식품 ──
   { key: 'produce',  subject: 'a small bundle of fresh green vegetables, a napa cabbage and crisp lettuce leaves' },
   { key: 'fruit',    subject: 'a shiny red apple with a small green leaf and a ripe strawberry beside it' },
-  { key: 'crab',     subject: 'a cute fresh orange prawn/shrimp and a small crab' },
+  { key: 'meat',     subject: 'a fresh marbled beef steak on a tiny wooden cutting board' },
+  { key: 'seafood',  subject: 'an assorted fresh seafood platter: a whole fish, a shrimp and a clam together on ice' },
+  { key: 'grain',    subject: 'an open burlap sack full of white rice with a scoop, and a few mixed grains and beans' },
+  { key: 'dairy',    subject: 'a glass milk bottle and two brown eggs beside it' },
+  { key: 'kimchi',   subject: 'a small white ceramic bowl filled with red napa-cabbage kimchi' },
+  { key: 'bakery',   subject: 'a golden loaf of bread and a buttery croissant' },
+  { key: 'drink',    subject: 'a takeaway coffee cup with a lid and a cup of tea beside it' },
+  { key: 'giftset',  subject: 'a premium gift set box wrapped with a satin ribbon and a bow, clearly a wrapped present' },
+  // ── 수산 세부 ──
+  { key: 'fish',     subject: 'a single fresh whole silvery-blue fish (mackerel), plump and cute' },
+  { key: 'crab',     subject: 'a bright red steamed crab with claws, clearly a crab' },
   { key: 'shellfish',subject: 'a fresh oyster on the half shell and a couple of clams' },
-  { key: 'seaweed',  subject: 'a tidy stack of glossy dark-green dried seaweed sheets with a sprig of green sea kelp' },
-  { key: 'dried',    subject: 'a small bundle of dried fish and dried shrimp, warm amber tones' },
-  { key: 'meat',     subject: 'a fresh marbled beef steak cut on a tiny wooden board' },
-  { key: 'etc',      subject: 'a friendly woven market basket filled with assorted fresh groceries' },
+  { key: 'seaweed',  subject: 'a tidy stack of glossy dark-green dried seaweed laver sheets with a sprig of green sea kelp' },
+  { key: 'dried',    subject: 'a neat tied bundle of flat dried whole fish, clearly dried and flattened, warm amber-brown, tied with straw rope' },
+  // ── 비식품 ──
+  { key: 'fashion',  subject: 'a neatly folded stack of clothes with a cute t-shirt and a small paper shopping bag' },
+  { key: 'beauty',   subject: 'a cosmetic pump bottle and a tube of lipstick, skincare, pastel colors' },
+  { key: 'living',   subject: 'a cozy little sofa/armchair with a small potted green house plant, home living' },
+  { key: 'health',   subject: 'a friendly health vitamins jar with a red plus/cross health symbol on the label and one green capsule beside it' },
+  { key: 'device',   subject: 'a modern smartphone with a small smartwatch beside it' },
+  { key: 'tech',     subject: 'a sleek laptop computer with a pair of headphones' },
+  { key: 'accessory',subject: 'a stylish wristwatch and a small handbag, fashion accessories' },
+  { key: 'traditional', subject: 'a traditional Korean brown ceramic onggi jar with a decorative norigae tassel' },
+  { key: 'gourmet',  subject: 'an elegant fine-dining plate under a silver cloche dome, gourmet food' },
+  { key: 'etc',      subject: 'a simple friendly paper shopping bag with handles, neutral, clearly a shopping bag not food' },
 ]
 
 const items = MODE === 'all' ? ALL : ALL.slice(0, 3)

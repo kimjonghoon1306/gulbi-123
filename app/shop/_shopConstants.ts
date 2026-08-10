@@ -58,25 +58,55 @@ const CAT_PHOTO_RULES: { keys: string[]; src: string }[] = [
   { keys: ['선물', '전통', '장류', '기타'],           src: '/ai-images/food/traditional_giftset.webp' },
 ]
 
-// 카테고리 캐릭터 아이콘(3D, 투명) — 이름 키워드로 매칭. public/category-icons/*.webp
-const CAT_ICON_IMG_RULES: { keys: string[]; src: string }[] = [
-  { keys: ['갑각', '새우', '대하', '게', '크랩'],          src: '/category-icons/crab.webp' },
-  { keys: ['패류', '조개', '굴', '전복', '홍합'],          src: '/category-icons/shellfish.webp' },
-  { keys: ['해조', '김', '미역', '다시마', '톳'],          src: '/category-icons/seaweed.webp' },
-  { keys: ['건어', '염장', '건조', '마른'],                src: '/category-icons/dried.webp' },
-  { keys: ['어류', '생선', '수산', '해산'],                src: '/category-icons/fish.webp' },
-  { keys: ['과일', '청과'],                                src: '/category-icons/fruit.webp' },
-  { keys: ['축산', '정육', '한우', '고기', '육류', '계란', '달걀'], src: '/category-icons/meat.webp' },
-  { keys: ['농산', '채소', '야채', '쌀', '잡곡', '곡물'],   src: '/category-icons/produce.webp' },
+// 카테고리 캐릭터 아이콘(3D, 투명) — 실제 등록된 25개 카테고리명 → 아이콘 정확 매핑.
+// public/category-icons/<slug>.webp
+const CAT_ICON_SLUG: Record<string, string> = {
+  '채소': 'produce', '과일': 'fruit', '축산·정육': 'meat', '수산·해산물': 'seafood',
+  '쌀·잡곡': 'grain', '유제품·계란': 'dairy', '김치·반찬': 'kimchi', '베이커리·간식': 'bakery',
+  '음료·커피·차': 'drink', '건강·선물세트': 'giftset', '어류': 'fish', '갑각류': 'crab',
+  '패류': 'shellfish', '해조류': 'seaweed', '건어물/염장류': 'dried', '패션': 'fashion',
+  '뷰티': 'beauty', '리빙': 'living', '디바이스': 'device',
+  '테크': 'tech', '액세사리': 'accessory', '전통': 'traditional', '고메': 'gourmet', '기타': 'etc',
+}
+
+// 이름이 조금 달라도 잡히게 하는 키워드 폴백
+const CAT_ICON_KW: { keys: string[]; slug: string }[] = [
+  { keys: ['갑각', '새우', '대하', '크랩'], slug: 'crab' },
+  { keys: ['패류', '조개', '굴', '전복', '홍합'], slug: 'shellfish' },
+  { keys: ['해조', '미역', '다시마', '톳'], slug: 'seaweed' },
+  { keys: ['건어', '염장', '마른'], slug: 'dried' },
+  { keys: ['어류', '생선'], slug: 'fish' },
+  { keys: ['수산', '해산'], slug: 'seafood' },
+  { keys: ['과일', '청과'], slug: 'fruit' },
+  { keys: ['축산', '정육', '한우', '육류'], slug: 'meat' },
+  { keys: ['유제품', '계란', '달걀', '우유'], slug: 'dairy' },
+  { keys: ['채소', '야채', '농산'], slug: 'produce' },
+  { keys: ['쌀', '잡곡', '곡물'], slug: 'grain' },
+  { keys: ['김치', '반찬'], slug: 'kimchi' },
+  { keys: ['베이커리', '빵', '간식', '제과'], slug: 'bakery' },
+  { keys: ['음료', '커피', '차'], slug: 'drink' },
+  { keys: ['선물', '세트'], slug: 'giftset' },
+  { keys: ['패션', '의류', '옷'], slug: 'fashion' },
+  { keys: ['뷰티', '화장'], slug: 'beauty' },
+  { keys: ['리빙', '생활', '가구'], slug: 'living' },
+  { keys: ['디바이스', '가전'], slug: 'device' },
+  { keys: ['테크', '전자'], slug: 'tech' },
+  { keys: ['액세', '악세'], slug: 'accessory' },
+  { keys: ['전통'], slug: 'traditional' },
+  { keys: ['고메', '미식'], slug: 'gourmet' },
 ]
 
-// 카테고리 아이콘 이미지 경로. '전체'는 null(텍스트 표시), 매칭 없으면 기타(바구니).
+// 메인에는 식품 위주만 노출, 비식품은 햄버거(전체) 안에만.
+export const NON_FOOD_CATS = new Set(['패션', '뷰티', '리빙', '건강식품', '디바이스', '테크', '액세사리', '기타'])
+export function isFoodCat(name: string): boolean {
+  return name !== '전체' && !NON_FOOD_CATS.has(name)
+}
+
+// 카테고리 아이콘 이미지 경로. '전체'는 null(텍스트), 매칭 없으면 기타.
 export function catIconImg(name: string): string | null {
   if (!name || name === '전체') return null
-  for (const rule of CAT_ICON_IMG_RULES) {
-    if (rule.keys.some(k => name.includes(k))) return rule.src
-  }
-  return '/category-icons/etc.webp'
+  const slug = CAT_ICON_SLUG[name] || CAT_ICON_KW.find(r => r.keys.some(k => name.includes(k)))?.slug || 'etc'
+  return `/category-icons/${slug}.webp`
 }
 
 export function catPhoto(name: string): string | null {

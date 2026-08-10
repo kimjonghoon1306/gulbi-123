@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import Link from 'next/link'
-import { CAT_ICONS, CAT_PHOTOS, catPhoto, catIconImg, CAT_COLORS, getDefaultCatColor, POPUP_NAMES, POPUP_ACTIONS, priceFor, type Product, type Category } from './_shopConstants'
+import { CAT_ICONS, CAT_PHOTOS, catPhoto, catIconImg, isFoodCat, CAT_COLORS, getDefaultCatColor, POPUP_NAMES, POPUP_ACTIONS, priceFor, type Product, type Category } from './_shopConstants'
 import { ProductCard } from './_ProductCard'
 import { AdBanner } from './_AdBanner'
 import { PromoSection } from './_PromoSection'
@@ -37,6 +37,7 @@ export default function ShopPage() {
   const [gulbiStep, setGulbiStep] = useState(0)
   const gulbiTimer = useRef<any>(null)
   const [promoOpen, setPromoOpen] = useState(false)  // 이용방법 섹션 접기(기본 접힘)
+  const [catMenuOpen, setCatMenuOpen] = useState(false)  // 전체 카테고리(햄버거) 열림
   const popupTimer = useRef<any>(null)
   const supabase = createClient()
 
@@ -329,37 +330,71 @@ export default function ShopPage() {
 
       <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '40px 20px 120px' }}>
 
-        {/* ── 카테고리 (쿠팡식 아이콘 그리드) ── */}
-        <div style={{ marginBottom: '36px' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '16px', letterSpacing: '-0.3px' }}>
-            카테고리
-          </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(74px, 1fr))', gap: '14px 6px' }}>
-            {['전체', ...categories.map(c => c.name)].map((cat) => {
-              const active = selectedCat === cat
-              const img = catIconImg(cat)
-              return (
-                <button key={cat} onClick={() => setSelectedCat(cat)} style={{
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '7px',
-                  background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px',
+        {/* ── 카테고리 (쿠팡식: 햄버거 전체 + 대표만) ── */}
+        {(() => {
+          const allCatNames = ['전체', ...categories.map(c => c.name)]
+          const primaryCats = categories.map(c => c.name).filter(isFoodCat)   // 메인엔 식품만, 비식품은 햄버거로
+          const catCell = (cat: string, big: boolean) => {
+            const active = selectedCat === cat
+            const img = catIconImg(cat)
+            return (
+              <button key={cat} onClick={() => { setSelectedCat(cat); setCatMenuOpen(false) }} style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
+                background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px', flexShrink: 0,
+              }}>
+                <div style={{
+                  width: big ? '64px' : '56px', height: big ? '64px' : '56px', borderRadius: '16px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: active ? (dark ? 'rgba(22,163,74,0.18)' : '#e7f6ec') : (dark ? 'rgba(255,255,255,0.05)' : '#f4f5f4'),
+                  border: `1.5px solid ${active ? '#16a34a' : 'transparent'}`, transition: 'all 0.15s ease',
+                }}>
+                  {img
+                    ? <img src={img} alt={cat} style={{ width: '76%', height: '76%', objectFit: 'contain' }} />
+                    : <span style={{ fontSize: '12px', fontWeight: 800, color: active ? '#15803d' : sub }}>전체</span>}
+                </div>
+                <span style={{ fontSize: '12px', fontWeight: active ? 700 : 500, color: active ? gtext : text, whiteSpace: 'nowrap', letterSpacing: '-0.3px' }}>{cat}</span>
+              </button>
+            )
+          }
+          return (
+            <div style={{ marginBottom: '32px', position: 'relative' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                {/* 햄버거: 전체 카테고리 */}
+                <button onClick={() => setCatMenuOpen(o => !o)} aria-label="전체 카테고리" style={{
+                  display: 'inline-flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                  flexShrink: 0, background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px',
                 }}>
                   <div style={{
-                    width: '100%', maxWidth: '68px', aspectRatio: '1 / 1', borderRadius: '18px',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: active ? (dark ? 'rgba(22,163,74,0.18)' : '#e7f6ec') : (dark ? 'rgba(255,255,255,0.05)' : '#f4f5f4'),
-                    border: `1.5px solid ${active ? '#16a34a' : 'transparent'}`,
-                    transition: 'all 0.15s ease',
+                    width: '56px', height: '56px', borderRadius: '16px',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px',
+                    background: catMenuOpen ? '#14532d' : (dark ? 'rgba(255,255,255,0.05)' : '#f4f5f4'),
+                    border: `1.5px solid ${catMenuOpen ? '#14532d' : 'transparent'}`, transition: 'all 0.15s ease',
                   }}>
-                    {img
-                      ? <img src={img} alt={cat} style={{ width: '76%', height: '76%', objectFit: 'contain' }} />
-                      : <span style={{ fontSize: '13px', fontWeight: 800, color: active ? '#15803d' : sub }}>전체</span>}
+                    {[0, 1, 2].map(i => <span key={i} style={{ width: '20px', height: '2px', borderRadius: '2px', background: catMenuOpen ? '#fff' : (dark ? '#cbd5e1' : '#334155') }} />)}
                   </div>
-                  <span style={{ fontSize: '12px', fontWeight: active ? 700 : 500, color: active ? gtext : text, whiteSpace: 'nowrap', letterSpacing: '-0.3px' }}>{cat}</span>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: text }}>전체</span>
                 </button>
-              )
-            })}
-          </div>
-        </div>
+                {/* 대표 카테고리 (가로 스크롤) */}
+                <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', flex: 1, paddingBottom: '2px' }}>
+                  {primaryCats.filter(c => c !== '전체').map(cat => catCell(cat, false))}
+                </div>
+              </div>
+
+              {/* 햄버거 펼침: 전체 카테고리 그리드 */}
+              {catMenuOpen && (
+                <div style={{
+                  marginTop: '10px', border: `1px solid ${border}`, borderRadius: '16px',
+                  background: card, padding: '18px 16px', boxShadow: dark ? 'none' : '0 8px 24px rgba(0,0,0,0.08)',
+                }}>
+                  <p style={{ fontSize: '13px', fontWeight: 700, color: sub, margin: '0 0 14px' }}>전체 카테고리</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(72px, 1fr))', gap: '16px 6px' }}>
+                    {allCatNames.map(cat => catCell(cat, true))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )
+        })()}
 
         {/* ── 상품 수 & 필터 ── */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', gap: '10px', flexWrap: 'wrap' }}>
