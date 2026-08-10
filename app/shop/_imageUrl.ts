@@ -1,21 +1,9 @@
-const SUPABASE_PUBLIC_MARKER = '/storage/v1/object/public/'
-
-export function optimizedImageUrl(src: string, width: number, quality = 72): string {
-  if (!src || !src.includes(SUPABASE_PUBLIC_MARKER)) return src
-
-  try {
-    const url = new URL(src)
-    url.pathname = url.pathname.replace(SUPABASE_PUBLIC_MARKER, '/storage/v1/render/image/public/')
-    url.searchParams.set('width', String(width))
-    url.searchParams.set('quality', String(quality))
-    url.searchParams.set('resize', 'cover')
-    return url.toString()
-  } catch {
-    return src
-  }
+export function optimizedImageUrl(src: string, _width: number, _quality = 72): string {
+  // 이 프로젝트의 Supabase Image Transformation은 403을 반환한다.
+  // 공개 원본 주소를 그대로 사용해 상품·광고 이미지가 깨지지 않도록 한다.
+  return src
 }
 
-export function responsiveImageSrcSet(src: string, widths: number[], quality = 72): string | undefined {
-  if (!src.includes(SUPABASE_PUBLIC_MARKER)) return undefined
-  return widths.map(width => `${optimizedImageUrl(src, width, quality)} ${width}w`).join(', ')
+export function responsiveImageSrcSet(_src: string, _widths: number[], _quality = 72): string | undefined {
+  return undefined
 }
