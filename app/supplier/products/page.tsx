@@ -28,7 +28,7 @@ const STATUS_STYLE: Record<string, { bg: string; color: string; label: string }>
 
 const EMPTY_FORM = {
   name: '', category_id: '', suggested_wholesale_price: '', suggested_retail_price: '',
-  stock: '', unit: 'kg', image_url: '', description: ''
+  stock: '', unit: 'kg', weight: '', image_url: '', description: ''
 }
 
 function ProductsContent() {
@@ -155,6 +155,7 @@ function ProductsContent() {
       suggested_retail_price: Number(form.suggested_retail_price),
       wholesale_price: 0, retail_price: 0, member_price: 0,
       stock: Number(form.stock) || 0, unit: form.unit,
+      weight: form.weight.trim() === '' ? null : Number(form.weight),
       image_url: form.image_url, supplier_id: supplierId,
       approval_status: '대기중', is_active: false,
     }
@@ -177,7 +178,7 @@ function ProductsContent() {
 
   const openEdit = (p: Product) => {
     setEditProduct(p)
-    setForm({ name: p.name, category_id: p.category_id || '', suggested_wholesale_price: String(p.suggested_wholesale_price), suggested_retail_price: String(p.suggested_retail_price), stock: String(p.stock), unit: p.unit || 'kg', image_url: p.image_url || '', description: p.description || '' })
+    setForm({ name: p.name, category_id: p.category_id || '', suggested_wholesale_price: String(p.suggested_wholesale_price), suggested_retail_price: String(p.suggested_retail_price), stock: String(p.stock), unit: p.unit || 'kg', weight: (p as any).weight != null ? String((p as any).weight) : '', image_url: p.image_url || '', description: p.description || '' })
     setShowForm(true)
   }
 
@@ -341,6 +342,17 @@ function ProductsContent() {
                     style={{ ...inputStyle, background: t.input }}>
                     {['kg', 'g', '박스', '마리', '개', '묶음'].map(u => <option key={u} style={{ background: t.optionBg }}>{u}</option>)}
                   </select>
+                </div>
+              </div>
+
+              <div>
+                <label style={labelStyle}>중량 / 수량 (선택) — 예: 1.5 → 1.5{form.unit || 'kg'}</label>
+                <div style={{ position: 'relative' }}>
+                  <input type="number" inputMode="decimal" step="any" min="0" value={form.weight}
+                    onChange={e => setForm(p => ({ ...p, weight: e.target.value }))}
+                    placeholder="수치만 입력 (생선처럼 무게가 다른 상품)"
+                    style={{ ...inputStyle, paddingRight: '52px' }} />
+                  <span style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', fontSize: '13px', fontWeight: 800, color: '#f59e0b', pointerEvents: 'none' }}>{form.unit || 'kg'}</span>
                 </div>
               </div>
 

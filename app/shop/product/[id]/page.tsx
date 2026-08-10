@@ -8,7 +8,7 @@ import { ReviewSection } from '../../_ReviewSection'
 import { QuestionSection } from '../../_QuestionSection'
 import { SellerNotice } from '../../_SellerNotice'
 import { OrderModal } from '../../_OrderModal'
-import { priceFor } from '../../_shopConstants'
+import { priceFor, weightLabel } from '../../_shopConstants'
 import { addressToText } from '../../_AddressBookPicker'
 import { openPostcode } from '@/lib/postcode'
 import Link from 'next/link'
@@ -534,7 +534,12 @@ export default function ProductDetailPage() {
               <p style={{fontSize:'32px',fontWeight:900,color:D.text,letterSpacing:'-1.5px',lineHeight:1,marginBottom:'2px'}}>
                 {getPrice().toLocaleString()}<span style={{fontSize:'16px',fontWeight:600,color:D.sub}}>원</span>
               </p>
-              <p style={{fontSize:'12px',color:D.sub}}>/{product.unit}</p>
+              <div style={{display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap'}}>
+                <p style={{fontSize:'12px',color:D.sub,margin:0}}>/{product.unit}</p>
+                {weightLabel(product) && (
+                  <span style={{fontSize:'12px',fontWeight:800,color:'#059669',background:dark?'rgba(16,185,129,0.14)':'#ecfdf5',padding:'3px 10px',borderRadius:'999px'}}>중량 {weightLabel(product)}</span>
+                )}
+              </div>
               {memberType === '일반' && (
                 <div style={{marginTop:'10px',padding:'8px 12px',background:dark?'rgba(255,255,255,0.04)':'#f8fafc',borderRadius:'10px',display:'flex',flexDirection:'column',gap:'4px'}}>
                   <p style={{fontSize:'11px',color:D.gtext,fontWeight:600,margin:0}}>🏪 소매 공급가 {product.member_price.toLocaleString()}원 — 소매회원 전용</p>

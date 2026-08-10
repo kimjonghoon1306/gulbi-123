@@ -7,13 +7,15 @@ type Category = { id: string; name: string; sort_order: number }
 type Product = {
   id: string; name: string; description: string
   category_id: string; wholesale_price: number; member_price: number; retail_price: number
-  stock: number; unit: string; image_url: string; is_active: boolean; is_taxable: boolean
+  stock: number; unit: string; weight?: number | null; image_url: string; is_active: boolean; is_taxable: boolean
+  subscribable?: boolean; subscribe_discount?: number | null
 }
 
 export type ProductForm = {
   name: string; description: string; category_id: string
   wholesale_price: string; member_price: string; retail_price: string
-  stock: string; unit: string; image_url: string; is_active: boolean; is_taxable: boolean
+  stock: string; unit: string; weight: string; image_url: string; is_active: boolean; is_taxable: boolean
+  subscribable: boolean; subscribe_discount: string
 }
 
 export type CatForm = { name: string }
@@ -113,6 +115,16 @@ export function ProductFormModal({ show, onClose, editProduct, form, setForm, on
                 {['kg', 'g', '박스', '마리', '개', '묶음'].map(u => <option key={u}>{u}</option>)}
               </select>
             </div>
+            <div className="col-span-2">
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">중량 / 수량 <span className="font-normal text-slate-400">(예: 1.5 → 1.5{form.unit || 'kg'})</span></label>
+              <div className="relative">
+                <input type="number" inputMode="decimal" step="any" min="0" placeholder="수치만 입력 (선택)" value={form.weight}
+                  onChange={e => setForm({ ...form, weight: e.target.value })}
+                  className="w-full border border-slate-200 dark:border-gray-600 rounded-xl pl-4 pr-16 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-600" />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-green-600 pointer-events-none">{form.unit || 'kg'}</span>
+              </div>
+              <p className="text-[11px] text-slate-400 mt-1.5">생선처럼 마리마다 무게가 다른 상품은 수치를 적어주세요. 뒤에 단위가 자동으로 붙어요.</p>
+            </div>
           </div>
 
           <div>
@@ -135,6 +147,31 @@ export function ProductFormModal({ show, onClose, editProduct, form, setForm, on
               </button>
             </div>
             <p className="text-[11px] text-slate-400 mt-1.5">미가공 농·축·수산물은 면세, 젓갈·조미김·밀키트 등 가공식품은 과세입니다. 세금계산서 부가세 계산에 반영됩니다.</p>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 dark:border-gray-600 p-4 space-y-3">
+            <div className="flex items-center gap-3">
+              <button type="button" onClick={() => setForm({ ...form, subscribable: !form.subscribable })}
+                className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${form.subscribable ? 'bg-green-600' : 'bg-slate-300 dark:bg-gray-600'}`}>
+                <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all duration-200 ${form.subscribable ? 'left-7' : 'left-1'}`} />
+              </button>
+              <div>
+                <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">🔁 정기배송 가능</p>
+                <p className="text-[11px] text-slate-400">켜면 손님이 이 상품을 정기배송(구독)으로 신청할 수 있어요.</p>
+              </div>
+            </div>
+            {form.subscribable && (
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">정기배송 할인율 (%)</label>
+                <div className="relative">
+                  <input type="number" inputMode="decimal" step="any" min="0" max="100" placeholder="예: 5 (5% 할인)" value={form.subscribe_discount}
+                    onChange={e => setForm({ ...form, subscribe_discount: e.target.value })}
+                    className="w-full border border-slate-200 dark:border-gray-600 rounded-xl pl-4 pr-10 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-600" />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-green-600 pointer-events-none">%</span>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-1.5">구독 신청 시 회차 단가에서 이 비율만큼 할인돼요. (0이면 할인 없음)</p>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-3">

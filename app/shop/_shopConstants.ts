@@ -3,7 +3,14 @@
 export type Product = {
   id: string; name: string; description: string; image_url: string
   wholesale_price: number; retail_price: number; member_price: number; stock: number; unit: string
+  weight?: number | null
   category_id: string; is_active: boolean
+}
+
+// 중량/수량 수치를 단위와 합쳐 "1.5kg"처럼 표시. 값이 없으면 빈 문자열.
+export function weightLabel(p: { weight?: number | null; unit?: string }): string {
+  if (p.weight == null || Number(p.weight) <= 0) return ''
+  return `${Number(p.weight)}${p.unit || ''}`
 }
 export type Category = { id: string; name: string }
 

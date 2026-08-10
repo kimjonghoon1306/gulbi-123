@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import type { Product } from './_shopConstants'
+import { weightLabel } from './_shopConstants'
 
 // 쇼핑몰 메인 상품 그리드의 카드 한 장 (page.tsx에서 분리 — 동작/디자인 동일)
 type Props = {
@@ -107,7 +108,12 @@ export function ProductCard({ p, i, dark, card, border, text, sub, gtext, member
           ) : (
             <div style={{ fontSize: '12px', color: sub, fontWeight: 500, marginBottom: '8px', opacity: 0.7 }}>아직 후기 없음</div>
           )}
-          <p className="pc-unit" style={{ fontSize: '12px', color: sub, marginBottom: '14px', fontWeight: 500 }}>{p.unit} 단위</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '14px', flexWrap: 'wrap' }}>
+            <p className="pc-unit" style={{ fontSize: '12px', color: sub, margin: 0, fontWeight: 500 }}>{p.unit} 단위</p>
+            {weightLabel(p) && (
+              <span style={{ fontSize: '11px', fontWeight: 800, color: '#059669', background: dark ? 'rgba(16,185,129,0.14)' : '#ecfdf5', padding: '2px 8px', borderRadius: '999px' }}>중량 {weightLabel(p)}</span>
+            )}
+          </div>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>

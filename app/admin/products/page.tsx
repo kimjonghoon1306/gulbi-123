@@ -13,7 +13,8 @@ type Category = { id: string; name: string; sort_order: number }
 type Product = {
   id: string; name: string; description: string
   category_id: string; wholesale_price: number; member_price: number; retail_price: number
-  stock: number; unit: string; image_url: string; is_active: boolean; is_taxable: boolean
+  stock: number; unit: string; weight?: number | null; image_url: string; is_active: boolean; is_taxable: boolean
+  subscribable?: boolean; subscribe_discount?: number | null
 }
 type SupplierProduct = {
   id: string; name: string; description: string
@@ -26,7 +27,8 @@ type SupplierProduct = {
 
 const EMPTY_FORM: ProductForm = {
   name: '', description: '', category_id: '', wholesale_price: '',
-  member_price: '', retail_price: '', stock: '', unit: 'kg', image_url: '', is_active: true, is_taxable: false
+  member_price: '', retail_price: '', stock: '', unit: 'kg', weight: '', image_url: '', is_active: true, is_taxable: false,
+  subscribable: false, subscribe_discount: ''
 }
 
 export default function ProductsPage() {
@@ -91,12 +93,12 @@ export default function ProductsPage() {
 
   const openEdit = (p: Product) => {
     setEditProduct(p)
-    setForm({ name: p.name, description: p.description || '', category_id: p.category_id || '', wholesale_price: String(p.wholesale_price), member_price: String(p.member_price || 0), retail_price: String(p.retail_price), stock: String(p.stock), unit: p.unit || 'kg', image_url: p.image_url || '', is_active: p.is_active, is_taxable: p.is_taxable ?? false })
+    setForm({ name: p.name, description: p.description || '', category_id: p.category_id || '', wholesale_price: String(p.wholesale_price), member_price: String(p.member_price || 0), retail_price: String(p.retail_price), stock: String(p.stock), unit: p.unit || 'kg', weight: p.weight != null ? String(p.weight) : '', image_url: p.image_url || '', is_active: p.is_active, is_taxable: p.is_taxable ?? false, subscribable: p.subscribable ?? false, subscribe_discount: p.subscribe_discount != null ? String(p.subscribe_discount) : '' })
     setShowForm(true)
   }
 
   const saveProduct = async () => {
-    const data = { ...form, wholesale_price: Number(form.wholesale_price), member_price: Number(form.member_price) || 0, retail_price: Number(form.retail_price), stock: Number(form.stock) }
+    const data = { ...form, wholesale_price: Number(form.wholesale_price), member_price: Number(form.member_price) || 0, retail_price: Number(form.retail_price), stock: Number(form.stock), weight: form.weight.trim() === '' ? null : Number(form.weight), subscribable: !!form.subscribable, subscribe_discount: form.subscribe_discount.trim() === '' ? 0 : Number(form.subscribe_discount) }
     if (editProduct) {
       await supabase.from('products').update(data).eq('id', editProduct.id)
     } else {

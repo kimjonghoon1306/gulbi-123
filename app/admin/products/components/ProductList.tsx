@@ -4,7 +4,7 @@ type Category = { id: string; name: string; sort_order: number }
 type Product = {
   id: string; name: string; description: string
   category_id: string; wholesale_price: number; member_price: number; retail_price: number
-  stock: number; unit: string; image_url: string; is_active: boolean; is_taxable: boolean
+  stock: number; unit: string; weight?: number | null; image_url: string; is_active: boolean; is_taxable: boolean
 }
 
 type Props = {
@@ -68,7 +68,7 @@ export default function ProductList({
                         <td className="px-5 py-4 text-sm text-slate-800 dark:text-slate-200">{p.wholesale_price.toLocaleString()}원</td>
                         <td className="px-5 py-4 text-sm text-slate-800 dark:text-slate-200">{p.retail_price.toLocaleString()}원</td>
                         <td className="px-5 py-4 text-sm text-slate-800 dark:text-slate-200">{p.stock}</td>
-                        <td className="px-5 py-4 text-sm text-slate-500 dark:text-slate-400">{p.unit}</td>
+                        <td className="px-5 py-4 text-sm text-slate-500 dark:text-slate-400">{p.unit}{p.weight != null && Number(p.weight) > 0 ? ` · ${Number(p.weight)}${p.unit}` : ''}</td>
                         <td className="px-5 py-4">
                           <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${p.is_active ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'bg-slate-100 dark:bg-gray-700 text-slate-400'}`}>
                             {p.is_active ? '판매중' : '숨김'}
@@ -97,7 +97,7 @@ export default function ProductList({
                           {p.is_active ? '판매중' : '숨김'}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-400 dark:text-slate-500">{getCatName(p.category_id)} · {p.stock}{p.unit}</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500">{getCatName(p.category_id)} · {p.stock}{p.unit}{p.weight != null && Number(p.weight) > 0 ? ` · 중량 ${Number(p.weight)}${p.unit}` : ''}</p>
                       <p className="text-xs text-green-600 dark:text-green-400 font-semibold mt-0.5">도매 공급가 {p.wholesale_price.toLocaleString()}원 / 일반 구매가 {p.retail_price.toLocaleString()}원</p>
                     </div>
                     <div className="flex flex-col gap-1.5 flex-shrink-0">
