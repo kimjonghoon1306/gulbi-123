@@ -1,11 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 
-/**
- * 온종일팜 PWA 업데이트 배너 — 온캐치 방식 + 무한반복 차단.
- * 업데이트를 한 번 누르면 sessionStorage 플래그로 이 탭에선 배너를 더 안 띄움
- * (강제 새로고침으로 콘텐츠는 네트워크 우선 최신이라, SW가 waiting이어도 실사용 최신).
- */
+/** 온종일팜 PWA 업데이트 배너 */
 export default function PwaRegister() {
   const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -16,9 +12,7 @@ export default function PwaRegister() {
     let reloaded = false;
     let active = true;
 
-    // 이미 이 탭에서 업데이트를 눌렀으면 배너를 다시 띄우지 않음(무한반복 방지)
-    const alreadyTried = () => { try { return !!sessionStorage.getItem("pwa_upd"); } catch { return false; } };
-    const markShow = () => { if (!active || alreadyTried()) return; setShow(true); };
+    const markShow = () => { if (!active) return; setShow(true); };
 
     const hardReload = () => {
       const url = new URL(window.location.href);
@@ -86,7 +80,7 @@ export default function PwaRegister() {
 
   const doUpdate = async () => {
     setBusy(true);
-    try { sessionStorage.setItem("pwa_upd", String(Date.now())); } catch { /* noop */ }
+    setShow(false);
     const forceReload = () => {
       const url = new URL(window.location.href);
       url.searchParams.set("_update", Date.now().toString());
@@ -128,7 +122,7 @@ export default function PwaRegister() {
           WebkitTapHighlightColor: "transparent", touchAction: "manipulation",
         }}
       >
-        {busy ? "업데이트 중…" : "업데이트"}
+        {busy ? "업데이트 중…" : "업데이트하기"}
       </button>
     </div>
   );

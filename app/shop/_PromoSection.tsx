@@ -40,7 +40,7 @@ export function PromoSection({ dark, text, sub, gtext, gulbiStep, setGulbiStep, 
           letterSpacing: '-1.5px', lineHeight: 1.1, marginBottom: '48px', color: text
         }}>
           신선한 농축수산물을<br />
-          <span style={{ background: 'linear-gradient(135deg,#14532d,#15803d)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>집 앞까지 직배송</span>
+          <span style={{ background: 'linear-gradient(135deg,#14532d,#15803d)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>간편하게 주문하고 배송받으세요</span>
         </h2>
 
         <div style={{
@@ -52,7 +52,7 @@ export function PromoSection({ dark, text, sub, gtext, gulbiStep, setGulbiStep, 
 
           {/* 탭 */}
           <div style={{ display: 'flex', borderBottom: `1px solid ${dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)'}`, background: dark ? '#0d1525' : '#f8fcfc' }}>
-            {['선택하기','신선 보장','주문하기','문앞 배송'].map((label, i) => (
+            {['상품 선택','상품 확인','주문하기','배송 확인'].map((label, i) => (
               <button key={i} onClick={() => goStep(i)}
                 style={{
                   flex: 1, padding: '14px 8px', fontSize: '13px', fontFamily: 'inherit',
@@ -76,9 +76,9 @@ export function PromoSection({ dark, text, sub, gtext, gulbiStep, setGulbiStep, 
               <div>
                 <div style={{ fontSize: '56px', fontWeight: 900, color: dark ? 'rgba(22,163,74,0.1)' : 'rgba(22,163,74,0.07)', lineHeight: 1, marginBottom: '12px', letterSpacing: '-2px' }}>01</div>
                 <h3 style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-0.5px', marginBottom: '12px', color: text }}>원하는 농축수산물 고르기</h3>
-                <p style={{ fontSize: '15px', color: sub, lineHeight: 1.7 }}>카테고리별로 농산물, 축산물, 농축수산물 등<br />다양한 신선 상품을 직접 고르세요.</p>
+                <p style={{ fontSize: '15px', color: sub, lineHeight: 1.7 }}>카테고리와 검색을 이용해 원하는 상품을 찾고<br />가격과 판매 단위를 비교해 보세요.</p>
                 <div style={{ display: 'flex', gap: '8px', marginTop: '20px', flexWrap: 'wrap' as const }}>
-                  {['🥬 채소','🍎 과일','🥩 한우','🧺 농축수산물','🌾 곡물'].map((item, i) => (
+                  {['🥬 채소','🍎 과일','🥩 축산물','🐟 수산물','🌾 곡물'].map((item, i) => (
                     <span key={i} style={{ padding: '6px 14px', borderRadius: '100px', fontSize: '13px', fontWeight: 600, background: dark ? 'rgba(22,163,74,0.15)' : 'rgba(22,163,74,0.08)', border: '1px solid rgba(22,163,74,0.25)', color: gtext }}>{item}</span>
                   ))}
                 </div>
@@ -105,20 +105,20 @@ export function PromoSection({ dark, text, sub, gtext, gulbiStep, setGulbiStep, 
             </div>
           )}
 
-          {/* STEP 1: 신선 보장 */}
+          {/* STEP 1: 상품 정보 확인 */}
           {gulbiStep === 1 && (
             <div className="promo-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', padding: '40px 48px', alignItems: 'center', textAlign: 'left', animation: 'promoIn 0.4s ease' }}>
               <div>
                 <div style={{ fontSize: '56px', fontWeight: 900, color: dark ? 'rgba(22,163,74,0.1)' : 'rgba(22,163,74,0.07)', lineHeight: 1, marginBottom: '12px', letterSpacing: '-2px' }}>02</div>
-                <h3 style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-0.5px', marginBottom: '12px', color: text }}>100% 신선함 보장</h3>
-                <p style={{ fontSize: '15px', color: sub, lineHeight: 1.7 }}>매일 아침 어민에서 직접 수령한<br />신선한 농축수산물만 취급합니다.</p>
+                <h3 style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-0.5px', marginBottom: '12px', color: text }}>상품 정보를 꼼꼼히 확인</h3>
+                <p style={{ fontSize: '15px', color: sub, lineHeight: 1.7 }}>상품 상세에서 원산지와 구성, 보관 방법,<br />판매자가 안내한 출고 정보를 확인하세요.</p>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '10px' }}>
                 {[
-                  { icon: '🚚', title: '산지 직송', desc: '전국 산지에서 당일 출발' },
-                  { icon: '❄️', title: '냉장 포장', desc: '아이스팩 + 스티로폼 이중 보냉 포장' },
-                  { icon: '✅', title: '품질 검수', desc: '출고 전 100% 신선도 검수 완료' },
-                  { icon: '💯', title: '환불 보장', desc: '신선하지 않으면 100% 전액 환불' },
+                  { icon: '📍', title: '원산지·구성', desc: '상품 상세에 표시된 원산지와 구성을 확인' },
+                  { icon: '❄️', title: '보관·포장', desc: '상품 특성에 맞는 냉장·냉동·상온 보관 안내' },
+                  { icon: '🚚', title: '출고 일정', desc: '상품과 판매자에 따라 달라지는 출고 일정 확인' },
+                  { icon: '💬', title: '상품 문의', desc: '원산지·손질·배송일은 주문 전 판매자에게 문의' },
                 ].map((item, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '13px 16px', background: dark ? 'rgba(22,163,74,0.08)' : 'rgba(22,163,74,0.05)', border: `1px solid ${dark ? 'rgba(22,163,74,0.2)' : 'rgba(22,163,74,0.12)'}`, borderRadius: '14px' }}>
                     <span style={{ fontSize: '24px', flexShrink: 0 }}>{item.icon}</span>
@@ -139,7 +139,7 @@ export function PromoSection({ dark, text, sub, gtext, gulbiStep, setGulbiStep, 
               <div>
                 <div style={{ fontSize: '56px', fontWeight: 900, color: dark ? 'rgba(22,163,74,0.1)' : 'rgba(22,163,74,0.07)', lineHeight: 1, marginBottom: '12px', letterSpacing: '-2px' }}>03</div>
                 <h3 style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-0.5px', marginBottom: '12px', color: text }}>간편하게 주문하기</h3>
-                <p style={{ fontSize: '15px', color: sub, lineHeight: 1.7 }}>도매·소매·일반구매 중 내 등급에 맞는<br />가격으로 손쉽게 주문하세요.</p>
+                <p style={{ fontSize: '15px', color: sub, lineHeight: 1.7 }}>회원 유형에 맞는 가격을 확인하고<br />배송지와 결제 금액을 확인한 뒤 주문하세요.</p>
                 <div style={{ display: 'flex', gap: '8px', marginTop: '20px', flexWrap: 'wrap' as const }}>
                   {[
                     { label: '도매 공급가', color: '#7c3aed', bg: dark ? 'rgba(124,58,237,0.12)' : 'rgba(124,58,237,0.08)' },
@@ -153,38 +153,38 @@ export function PromoSection({ dark, text, sub, gtext, gulbiStep, setGulbiStep, 
               <div style={{ background: dark ? 'rgba(22,163,74,0.08)' : 'rgba(22,163,74,0.05)', border: `1px solid ${dark ? 'rgba(22,163,74,0.2)' : 'rgba(22,163,74,0.15)'}`, borderRadius: '20px', padding: '24px' }}>
                 <div style={{ fontSize: '13px', fontWeight: 700, color: text, marginBottom: '16px' }}>🛒 주문 요약</div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '13px' }}>
-                  <span style={{ color: sub }}>온종일팜 신선상품 1kg</span>
-                  <span style={{ color: text, fontWeight: 600 }}>₩125,000</span>
+                  <span style={{ color: sub }}>선택 상품 금액</span>
+                  <span style={{ color: text, fontWeight: 600 }}>상품별 표시</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '13px' }}>
                   <span style={{ color: sub }}>배송비</span>
-                  <span style={{ color: gtext, fontWeight: 700 }}>무료</span>
+                  <span style={{ color: gtext, fontWeight: 700 }}>주문 화면에서 확인</span>
                 </div>
                 <div style={{ height: '1px', background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)', margin: '12px 0' }} />
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '16px', fontWeight: 900 }}>
                   <span style={{ color: text }}>합계</span>
-                  <span style={{ color: gtext }}>₩125,000</span>
+                  <span style={{ color: gtext }}>최종 결제금액</span>
                 </div>
                 <div style={{ marginTop: '16px', padding: '12px', borderRadius: '12px', textAlign: 'center' as const, background: 'linear-gradient(135deg,#14532d,#15803d)', color: 'white', fontSize: '14px', fontWeight: 800, cursor: 'pointer' }}>결제하기 →</div>
               </div>
             </div>
           )}
 
-          {/* STEP 3: 문앞 배송 */}
+          {/* STEP 3: 배송 확인 */}
           {gulbiStep === 3 && (
             <div className="promo-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', padding: '40px 48px', alignItems: 'center', textAlign: 'left', animation: 'promoIn 0.4s ease' }}>
               <div>
                 <div style={{ fontSize: '56px', fontWeight: 900, color: dark ? 'rgba(22,163,74,0.1)' : 'rgba(22,163,74,0.07)', lineHeight: 1, marginBottom: '12px', letterSpacing: '-2px' }}>04</div>
-                <h3 style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-0.5px', marginBottom: '12px', color: text }}>문 앞까지 신선 배송</h3>
-                <p style={{ fontSize: '15px', color: sub, lineHeight: 1.7 }}>오전 주문 시 당일 배송.<br />아이스팩 냉장 포장으로 신선하게 도착.</p>
+                <h3 style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-0.5px', marginBottom: '12px', color: text }}>주문·배송 상태 확인</h3>
+                <p style={{ fontSize: '15px', color: sub, lineHeight: 1.7 }}>마이페이지에서 주문 처리 상태를 확인하고<br />송장 등록 후 배송조회를 이용할 수 있어요.</p>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0' }}>
                 {[
-                  { time: '오전 10시', label: '주문 완료', icon: '✅', done: true },
-                  { time: '오전 11시', label: '산지 출발', icon: '🚀', done: true },
-                  { time: '오후 2시',  label: '포장·검수', icon: '📦', done: true },
-                  { time: '오후 4시',  label: '배송 출발', icon: '🚚', done: false },
-                  { time: '당일 도착', label: '문 앞 배달', icon: '🏠', done: false },
+                  { time: '주문 접수', label: '주문 완료', icon: '✅', done: true },
+                  { time: '판매자 확인', label: '상품 준비', icon: '📦', done: true },
+                  { time: '택배 정보 등록', label: '송장 등록', icon: '🧾', done: true },
+                  { time: '택배사 이동', label: '배송 중', icon: '🚚', done: false },
+                  { time: '수령 완료', label: '배송 완료', icon: '🏠', done: false },
                 ].map((step, i, arr) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '10px 0', position: 'relative' as const }}>
                     {i < arr.length - 1 && <div style={{ position: 'absolute', left: '15px', top: '40px', width: '2px', height: '28px', background: step.done ? '#14532d' : (dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)') }} />}

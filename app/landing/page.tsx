@@ -115,6 +115,11 @@ export default function LandingPage() {
 
   const landingBg = dark ? '#071a0e' : '#f0fdf4'
   const landingText = dark ? '#ffffff' : '#111827'
+  const promoCardText = dark ? '#ffffff' : '#1f2937'
+  const promoCardSub = dark ? '#94a3b8' : '#475569'
+  const promoCardSurface = dark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.72)'
+  const promoCardLine = dark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.10)'
+  const promoTrack = dark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.12)'
 
   return (
     <div className="min-h-screen overflow-x-hidden" style={{ background: landingBg, color: landingText }}>
@@ -334,15 +339,15 @@ export default function LandingPage() {
                       { buyer: '온종일유통㈜', product: '유기농 채소 3kg × 20박스', status: '출고완료', time: '15분 전', dot: '#34d399' },
                     ].map((o, i) => (
                       <div key={i} className="flex items-center gap-3 p-3 rounded-xl" style={{
-                        background: 'rgba(255,255,255,0.04)',
+                        background: promoCardSurface,
                         opacity: orderIdx >= i ? 1 : 0,
                         transform: orderIdx >= i ? 'translateX(0)' : 'translateX(-16px)',
                         transition: 'all 0.4s ease',
                       }}>
                         <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: o.dot }} />
                         <div className="flex-1 min-w-0">
-                          <div className="text-xs font-bold text-white">{o.buyer}</div>
-                          <div className="text-xs text-slate-400 truncate">{o.product}</div>
+                          <div className="text-xs font-bold" style={{ color: promoCardText }}>{o.buyer}</div>
+                          <div className="text-xs truncate" style={{ color: promoCardSub }}>{o.product}</div>
                         </div>
                         <div className="text-right flex-shrink-0">
                           <div className="text-xs font-bold" style={{ color: o.dot }}>{o.status}</div>
@@ -375,8 +380,8 @@ export default function LandingPage() {
                       { name: '제주 감귤', warn: true,  emoji: '🍎', img: '/demo-food/fruit_tangerine.webp' },
                     ].map((item, i) => (
                       <div key={i} className="flex items-center gap-3 p-3 rounded-xl" style={{
-                        background: 'rgba(255,255,255,0.04)',
-                        border: `1px solid ${item.warn ? 'rgba(251,146,60,0.25)' : 'rgba(255,255,255,0.06)'}`,
+                        background: promoCardSurface,
+                        border: `1px solid ${item.warn ? 'rgba(251,146,60,0.35)' : promoCardLine}`,
                         opacity: barWidths[i] > 0 ? 1 : 0,
                         transform: barWidths[i] > 0 ? 'translateX(0)' : 'translateX(16px)',
                         transition: 'opacity 0.4s ease, transform 0.4s ease',
@@ -385,12 +390,12 @@ export default function LandingPage() {
                         <img src={item.img} alt="" className="w-7 h-7 rounded-md object-cover flex-shrink-0" />
                         <div className="flex-1 min-w-0">
                           <div className="flex justify-between items-center mb-1.5">
-                            <span className="text-xs font-bold text-white">{item.name}</span>
+                            <span className="text-xs font-bold" style={{ color: promoCardText }}>{item.name}</span>
                             <span className="text-xs font-bold" style={{ color: item.warn ? '#fb923c' : '#22c55e' }}>
                               {barWidths[i]}%{item.warn ? ' ⚠️' : ''}
                             </span>
                           </div>
-                          <div className="h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                          <div className="h-1.5 rounded-full" style={{ background: promoTrack }}>
                             <div style={{
                               width: `${barWidths[i]}%`, height: '100%', borderRadius: '9999px',
                               background: item.warn ? 'linear-gradient(90deg,#fb923c,#ef4444)' : 'linear-gradient(90deg,#22c55e,#4ade80)',
@@ -418,19 +423,19 @@ export default function LandingPage() {
                     </div>
                   </div>
                   <div className="rounded-2xl p-5" style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)' }}>
-                    <div className="text-xs font-bold text-slate-400 mb-3">📊 이번 달 정산 현황</div>
+                    <div className="text-xs font-bold mb-3" style={{ color: promoCardSub }}>📊 이번 달 정산 현황</div>
                     {/* 카운트업 금액 */}
-                    <div className="text-3xl font-black text-white mb-1">
+                    <div className="text-3xl font-black mb-1" style={{ color: promoCardText }}>
                       ₩{countVal.toLocaleString()}
                     </div>
                     <div className="text-xs text-green-400 font-bold mb-4">▲ 전월 대비 +23%</div>
                     {/* 정산 진행 바 */}
                     <div className="mb-4">
                       <div className="flex justify-between text-xs mb-1.5">
-                        <span className="text-slate-400">수금 진행률</span>
+                        <span style={{ color: promoCardSub }}>수금 진행률</span>
                         <span className="text-green-400 font-bold">{Math.round((countVal / 48200000) * 83)}%</span>
                       </div>
-                      <div className="h-2 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                      <div className="h-2 rounded-full" style={{ background: promoTrack }}>
                         <div style={{ width: `${Math.round((countVal / 48200000) * 83)}%`, height: '100%', borderRadius: '9999px', background: 'linear-gradient(90deg,#22c55e,#34d399)', transition: 'width 0.1s linear' }} />
                       </div>
                     </div>
@@ -440,8 +445,8 @@ export default function LandingPage() {
                         { label: '수금완료', value: '₩39,800,000', color: '#34d399' },
                         { label: '세금계산서 발행', value: '142건', color: '#22c55e' },
                       ].map((r, i) => (
-                        <div key={i} className="flex justify-between items-center py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                          <span className="text-xs text-slate-400">{r.label}</span>
+                        <div key={i} className="flex justify-between items-center py-2" style={{ borderBottom: `1px solid ${promoCardLine}` }}>
+                          <span className="text-xs" style={{ color: promoCardSub }}>{r.label}</span>
                           <span className="text-sm font-black" style={{ color: r.color }}>{r.value}</span>
                         </div>
                       ))}
@@ -464,7 +469,7 @@ export default function LandingPage() {
                     </div>
                   </div>
                   <div className="rounded-2xl p-5" style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)' }}>
-                    <div className="text-xs font-bold text-slate-400 mb-3">🏆 이번 달 베스트 상품</div>
+                    <div className="text-xs font-bold mb-3" style={{ color: promoCardSub }}>🏆 이번 달 베스트 상품</div>
                     <div className="space-y-2.5">
                       {[
                         { rank: '1', name: '온종일팜 신선상품', sales: '₩19,500,000', change: '+32%', emoji: '🌾', img: '/demo-food/produce_spinach.webp' },
@@ -473,7 +478,7 @@ export default function LandingPage() {
                         { rank: '4', name: '제주 감귤 1kg', sales: '₩4,800,000', change: '-5%', emoji: '🍎', img: '/demo-food/fruit_tangerine.webp' },
                       ].map((p, i) => (
                         <div key={i} className="flex items-center gap-3 py-2" style={{
-                          borderBottom: '1px solid rgba(255,255,255,0.06)',
+                          borderBottom: `1px solid ${promoCardLine}`,
                           opacity: rankIdx >= i ? 1 : 0,
                           transform: rankIdx >= i ? 'translateX(0)' : 'translateX(20px)',
                           transition: 'all 0.35s ease',
@@ -482,7 +487,7 @@ export default function LandingPage() {
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={p.img} alt="" className="w-6 h-6 rounded-md object-cover flex-shrink-0" />
                           <div className="flex-1 min-w-0">
-                            <div className="text-xs font-bold text-white truncate">{p.name}</div>
+                            <div className="text-xs font-bold truncate" style={{ color: promoCardText }}>{p.name}</div>
                             <div className="text-xs text-green-400 font-bold">{p.sales}</div>
                           </div>
                           <span className="text-xs font-bold flex-shrink-0" style={{ color: p.change.startsWith('+') ? '#34d399' : '#f87171' }}>{p.change}</span>
@@ -498,7 +503,7 @@ export default function LandingPage() {
             <div className="flex justify-center gap-2 py-5 border-t border-slate-700/40">
               {[0,1,2,3].map(i => (
                 <div key={i} onClick={() => goStep(i)}
-                  style={{ width: promoStep === i ? '22px' : '7px', height: '7px', borderRadius: '4px', cursor: 'pointer', background: promoStep === i ? '#22c55e' : 'rgba(255,255,255,0.2)', transition: 'all 0.3s' }}
+                  style={{ width: promoStep === i ? '22px' : '7px', height: '7px', borderRadius: '4px', cursor: 'pointer', background: promoStep === i ? '#22c55e' : (dark ? 'rgba(255,255,255,0.2)' : 'rgba(15,23,42,0.22)'), transition: 'all 0.3s' }}
                 />
               ))}
             </div>

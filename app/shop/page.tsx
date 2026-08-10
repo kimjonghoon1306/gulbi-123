@@ -17,6 +17,7 @@ export default function ShopPage() {
   const [reviewStats, setReviewStats] = useState<Record<string, { sum: number; count: number }>>({})
   const [sortBy, setSortBy] = useState<'추천순' | '평점순' | '최신순'>('추천순')
   const [banners, setBanners] = useState<any[]>([])
+  const [bannersLoading, setBannersLoading] = useState(true)
   const [bannerIdx, setBannerIdx] = useState(0)
   const bannerTimer = useRef<any>(null)
   const PAGE_SIZE = 24
@@ -69,37 +70,47 @@ export default function ShopPage() {
 
   const fetchData = async () => {
     setLoading(true)
+    setBannersLoading(true)
     // 첫 화면의 상품과 카테고리는 리뷰/배너보다 먼저 표시한다.
     const productsPromise = supabase.from('products').select('*').eq('is_active', true).order('created_at', { ascending: false })
     const categoriesPromise = supabase.from('categories').select('*').order('sort_order')
     const reviewsPromise = supabase.from('reviews').select('product_id, rating')
     const bannersPromise = supabase.from('ad_banners').select('*').eq('is_active', true).order('sort_order')
 
+    // 배너는 리뷰 집계를 기다리지 않고 응답 즉시 표시한다.
+    const bannersTask = (async () => {
+      try {
+        const { data: bn } = await bannersPromise
+        const now = Date.now()
+        const liveBanners = (bn || []).filter((b: any) => {
+          const s = b.starts_at ? new Date(b.starts_at).getTime() : -Infinity
+          const e = b.ends_at ? new Date(b.ends_at).getTime() : Infinity
+          return now >= s && now <= e
+        })
+        setBanners(liveBanners)
+        setBannerIdx(0)
+      } finally {
+        setBannersLoading(false)
+      }
+    })()
+
+    const reviewsTask = reviewsPromise.then(({ data: rv }) => {
+      const stats: Record<string, { sum: number; count: number }> = {}
+      for (const r of (rv || []) as any[]) {
+        if (!r.product_id) continue
+        const s = stats[r.product_id] || { sum: 0, count: 0 }
+        s.sum += r.rating || 0
+        s.count += 1
+        stats[r.product_id] = s
+      }
+      setReviewStats(stats)
+    })
+
     const [{ data: p }, { data: c }] = await Promise.all([productsPromise, categoriesPromise])
     setProducts(p || [])
     setCategories(c || [])
     setLoading(false)
-
-    const [{ data: rv }, { data: bn }] = await Promise.all([reviewsPromise, bannersPromise])
-    // 광고 배너: 시작/종료 일시 기준 현재 노출 가능한 것만 슬라이더에 (여러 업체 동시 순환)
-    const now = Date.now()
-    const liveBanners = (bn || []).filter((b: any) => {
-      const s = b.starts_at ? new Date(b.starts_at).getTime() : -Infinity
-      const e = b.ends_at ? new Date(b.ends_at).getTime() : Infinity
-      return now >= s && now <= e
-    })
-    setBanners(liveBanners)
-    setBannerIdx(0)
-    // 리뷰 통계 집계 (상품별 별점합/개수) → 베이지안 상위노출 랭킹에 사용
-    const stats: Record<string, { sum: number; count: number }> = {}
-    for (const r of (rv || []) as any[]) {
-      if (!r.product_id) continue
-      const s = stats[r.product_id] || { sum: 0, count: 0 }
-      s.sum += r.rating || 0
-      s.count += 1
-      stats[r.product_id] = s
-    }
-    setReviewStats(stats)
+    await Promise.all([bannersTask, reviewsTask])
   }
 
   const checkUser = async () => {
@@ -311,6 +322,7 @@ export default function ShopPage() {
         <div style={{ minHeight: 'clamp(180px,36vw,480px)', borderRadius: 18, overflow: 'hidden', background: dark ? '#102a1d' : '#e7eee9', boxShadow: '0 14px 36px rgba(0,0,0,0.16)' }}>
           <video
             src="/onjongil-food.mp4?v=2"
+            poster="/onjongil-food-poster.jpg"
             autoPlay muted loop playsInline preload="auto"
             style={{ width: '100%', height: '100%', maxHeight: 480, objectFit: 'cover', display: 'block' }}
           />
@@ -321,7 +333,7 @@ export default function ShopPage() {
       <HeroSection bg={bg} border={border} dark={dark} text={text} sub={sub} gtext={gtext} heroVisible={heroVisible} visitorCount={visitorCount} productCount={products.length} statsReady={!loading && visitorCount > 0} />
 
       {/* ── 광고 배너 슬라이더 (여러 업체 자동 순환) ── */}
-      <AdBanner banners={banners} bannerIdx={bannerIdx} setBannerIdx={setBannerIdx} dark={dark} />
+      <AdBanner banners={banners} bannerIdx={bannerIdx} setBannerIdx={setBannerIdx} dark={dark} loading={bannersLoading} />
 
       {/* ── 이용방법(프로모션) — 기본 접힘, 눌러서 펼침 ── */}
       <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '20px 20px 0' }}>

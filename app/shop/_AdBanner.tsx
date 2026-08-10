@@ -8,9 +8,20 @@ type Props = {
   bannerIdx: number
   setBannerIdx: (i: number) => void
   dark: boolean
+  loading: boolean
 }
 
-export function AdBanner({ banners, bannerIdx, setBannerIdx, dark }: Props) {
+export function AdBanner({ banners, bannerIdx, setBannerIdx, dark, loading }: Props) {
+  if (loading) {
+    return (
+      <section style={{ background: dark ? '#0a1c13' : '#f0faf9', padding: '30px 20px 0' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+          <div style={{ width: '104px', height: '28px', borderRadius: '9px', marginBottom: '12px', background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.08)' }} />
+          <div className="ad-banner-box" style={{ borderRadius: '24px', background: dark ? '#102a1d' : '#e5ece7' }} />
+        </div>
+      </section>
+    )
+  }
   // 활성(켜짐+기간내) 광고가 하나도 없으면 섹션 전체를 숨김 (이미지·배지 모두 사라짐)
   if (banners.length === 0) return null
   return (
@@ -33,6 +44,7 @@ export function AdBanner({ banners, bannerIdx, setBannerIdx, dark }: Props) {
             const content = (
               <>
                 <img src={b.image_url} alt={b.title || '광고'} className="ad-banner-img"
+                  loading={i === 0 ? 'eager' : 'lazy'} fetchPriority={i === 0 ? 'high' : 'auto'} decoding="async"
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.5s ease' }} />
                 {hasText && (
                   <div className="ad-banner-overlay" style={{
