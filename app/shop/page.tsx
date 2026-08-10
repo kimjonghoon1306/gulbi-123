@@ -34,7 +34,6 @@ export default function ShopPage() {
   const [popup, setPopup] = useState<{ show: boolean; name: string; action: string; product: string }>({ show: false, name: '', action: '', product: '' })
   const [visitorCount, setVisitorCount] = useState(0)
   const [heroVisible, setHeroVisible] = useState(false)
-  const [heroVideoReady, setHeroVideoReady] = useState(false)
   const [gulbiStep, setGulbiStep] = useState(0)
   const gulbiTimer = useRef<any>(null)
   const [promoOpen, setPromoOpen] = useState(false)  // 이용방법 섹션 접기(기본 접힘)
@@ -164,20 +163,6 @@ export default function ShopPage() {
       if (popupTimer.current) clearTimeout(popupTimer.current)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  // 9MB 홍보영상이 경로 전환 직후 JS·상품 이미지 다운로드와 경쟁하지 않게
-  // 첫 화면이 그려진 뒤 여유 시간에 영상을 불러온다.
-  useEffect(() => {
-    const startVideo = () => setHeroVideoReady(true)
-    const requestIdle = (window as any).requestIdleCallback as ((callback: () => void, options?: { timeout: number }) => number) | undefined
-    const cancelIdle = (window as any).cancelIdleCallback as ((id: number) => void) | undefined
-    if (requestIdle && cancelIdle) {
-      const idleId = requestIdle(startVideo, { timeout: 1500 })
-      return () => cancelIdle(idleId)
-    }
-    const timer = window.setTimeout(startVideo, 700)
-    return () => window.clearTimeout(timer)
   }, [])
 
   useEffect(() => {
@@ -324,13 +309,11 @@ export default function ShopPage() {
       {/* ── 상단 홍보영상 (주문→쇼핑몰→식탁→요리) ── */}
       <div style={{ width: '100%', maxWidth: 1100, margin: '0 auto', padding: '14px 24px 0' }}>
         <div style={{ minHeight: 'clamp(180px,36vw,480px)', borderRadius: 18, overflow: 'hidden', background: dark ? '#102a1d' : '#e7eee9', boxShadow: '0 14px 36px rgba(0,0,0,0.16)' }}>
-          {heroVideoReady && (
-            <video
-              src="/onjongil-food.mp4?v=2"
-              autoPlay muted loop playsInline preload="metadata"
-              style={{ width: '100%', height: '100%', maxHeight: 480, objectFit: 'cover', display: 'block' }}
-            />
-          )}
+          <video
+            src="/onjongil-food.mp4?v=2"
+            autoPlay muted loop playsInline preload="auto"
+            style={{ width: '100%', height: '100%', maxHeight: 480, objectFit: 'cover', display: 'block' }}
+          />
         </div>
       </div>
 
