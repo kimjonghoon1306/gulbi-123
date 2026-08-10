@@ -1,23 +1,29 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
+const UPDATE_IN_PROGRESS_KEY = "onjongil-pwa-update-in-progress";
 
 /** 온종일팜 PWA 업데이트 배너 */
 export default function PwaRegister() {
   const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(false);
   const [reg, setReg] = useState<ServiceWorkerRegistration | null>(null);
+  const applyingUpdate = useRef(false);
 
   useEffect(() => {
     if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
     let reloaded = false;
     let active = true;
 
-    const markShow = () => { if (!active) return; setShow(true); };
+    applyingUpdate.current = sessionStorage.getItem(UPDATE_IN_PROGRESS_KEY) === "1";
+
+    const markShow = () => {
+      if (!active || applyingUpdate.current) return;
+      setShow(true);
+    };
 
     const hardReload = () => {
-      const url = new URL(window.location.href);
-      url.searchParams.set("_update", Date.now().toString());
-      window.location.replace(url.toString());
+      window.location.reload();
     };
 
     const watchInstalling = (r: ServiceWorkerRegistration, worker: ServiceWorker | null) => {
@@ -36,6 +42,15 @@ export default function PwaRegister() {
       const current = r ?? (await navigator.serviceWorker.getRegistration("/").catch(() => undefined));
       if (!current || !active) return;
       setReg(current);
+      if (applyingUpdate.current) {
+        if (current.waiting) {
+          current.waiting.postMessage({ type: "SKIP_WAITING" });
+        } else if (!current.installing) {
+          applyingUpdate.current = false;
+          sessionStorage.removeItem(UPDATE_IN_PROGRESS_KEY);
+        }
+        return;
+      }
       if (current.waiting && navigator.serviceWorker.controller) { markShow(); return; }
       watchInstalling(current, current.installing);
       await current.update().catch(() => {});
@@ -55,7 +70,12 @@ export default function PwaRegister() {
     };
 
     const checkVisible = () => { if (document.visibilityState === "visible") void inspect(); };
-    const onCtrl = () => { if (reloaded) return; reloaded = true; hardReload(); };
+    const onCtrl = () => {
+      if (reloaded) return;
+      reloaded = true;
+      sessionStorage.removeItem(UPDATE_IN_PROGRESS_KEY);
+      hardReload();
+    };
 
     if (document.readyState === "complete") onLoad();
     else window.addEventListener("load", onLoad);
@@ -64,7 +84,7 @@ export default function PwaRegister() {
     window.addEventListener("pageshow", checkVisible);
     window.addEventListener("online", checkVisible);
     navigator.serviceWorker.addEventListener("controllerchange", onCtrl);
-    const poll = window.setInterval(() => void inspect(), 20_000);
+    const poll = window.setInterval(() => void inspect(), 5 * 60_000);
 
     return () => {
       active = false;
@@ -81,15 +101,15 @@ export default function PwaRegister() {
   const doUpdate = async () => {
     setBusy(true);
     setShow(false);
+    applyingUpdate.current = true;
+    sessionStorage.setItem(UPDATE_IN_PROGRESS_KEY, "1");
     const forceReload = () => {
-      const url = new URL(window.location.href);
-      url.searchParams.set("_update", Date.now().toString());
-      window.location.replace(url.toString());
+      window.location.reload();
     };
     const r = reg ?? (await navigator.serviceWorker.getRegistration());
     if (r?.waiting) {
       r.waiting.postMessage({ type: "SKIP_WAITING" });
-      setTimeout(forceReload, 2000); // controllerchange 안 와도 강제 새로고침
+      setTimeout(forceReload, 3000); // 일부 iOS PWA에서 controllerchange가 늦는 경우 한 번만 새로고침
     } else {
       forceReload();
     }
