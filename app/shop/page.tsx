@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import ShopClient from './ShopClient'
+import { optimizedImageUrl, responsiveImageSrcSet } from './_imageUrl'
 import type { Category, Product } from './_shopConstants'
 
 export const revalidate = 60
@@ -39,7 +40,12 @@ export default async function ShopPage() {
   return (
     <>
       <link rel="preload" as="image" href="/onjongil-food-poster.jpg" />
-      {banners[0]?.image_url && <link rel="preload" as="image" href={banners[0].image_url} />}
+      {banners[0]?.image_url && (
+        <link rel="preload" as="image"
+          href={optimizedImageUrl(banners[0].image_url, 1200, 76)}
+          imageSrcSet={responsiveImageSrcSet(banners[0].image_url, [640, 960, 1200, 1600], 76)}
+          imageSizes="(max-width: 1140px) calc(100vw - 40px), 1100px" />
+      )}
       <ShopClient
         initialProducts={(productsResult.data || []) as Product[]}
         initialCategories={(categoriesResult.data || []) as Category[]}

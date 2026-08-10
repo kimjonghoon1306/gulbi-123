@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import type { Product } from './_shopConstants'
 import { weightLabel } from './_shopConstants'
+import { optimizedImageUrl, responsiveImageSrcSet } from './_imageUrl'
 
 // 쇼핑몰 메인 상품 그리드의 카드 한 장 (page.tsx에서 분리 — 동작/디자인 동일)
 type Props = {
@@ -30,8 +31,6 @@ export function ProductCard({ p, i, dark, card, border, text, sub, gtext, member
         border: `1px solid ${border}`,
         borderRadius: '12px', overflow: 'hidden',
         transition: 'all 0.2s ease',
-        animation: 'fadeInUp 0.4s ease both',
-        animationDelay: `${i * 0.04}s`,
         cursor: 'pointer'
       }}>
         {/* 이미지 */}
@@ -40,9 +39,12 @@ export function ProductCard({ p, i, dark, card, border, text, sub, gtext, member
           background: dark ? '#1a2e20' : '#f4f4f4'
         }}>
           {p.image_url ? (
-            <img src={p.image_url} alt={p.name}
-              loading={i < 8 ? 'eager' : 'lazy'}
-              fetchPriority={i < 4 ? 'high' : 'auto'}
+            <img src={optimizedImageUrl(p.image_url, 480)}
+              srcSet={responsiveImageSrcSet(p.image_url, [320, 480, 640])}
+              sizes="(max-width: 640px) 50vw, (max-width: 1000px) 33vw, 275px"
+              alt={p.name}
+              loading={i < 4 ? 'eager' : 'lazy'}
+              fetchPriority={i < 2 ? 'high' : 'auto'}
               decoding="async"
               style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.4s ease' }}
               className="product-img" />

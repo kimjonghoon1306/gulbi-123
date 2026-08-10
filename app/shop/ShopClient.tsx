@@ -282,11 +282,13 @@ export default function ShopClient({ initialProducts, initialCategories, initial
       <div style={{ width: '100%', maxWidth: 1100, margin: '0 auto', padding: '14px 24px 0' }}>
         <div style={{ minHeight: 'clamp(180px,36vw,480px)', borderRadius: 18, overflow: 'hidden', background: dark ? '#102a1d' : '#e7eee9', boxShadow: '0 14px 36px rgba(0,0,0,0.16)' }}>
           <video
-            src="/onjongil-food.mp4?v=2"
             poster="/onjongil-food-poster.jpg"
-            autoPlay muted loop playsInline preload="metadata"
+            autoPlay muted loop playsInline preload="auto"
             style={{ width: '100%', height: '100%', maxHeight: 480, objectFit: 'cover', display: 'block' }}
-          />
+          >
+            <source media="(max-width: 640px)" src="/onjongil-food-mobile.mp4?v=3" type="video/mp4" />
+            <source src="/onjongil-food-desktop.mp4?v=3" type="video/mp4" />
+          </video>
         </div>
       </div>
 

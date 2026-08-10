@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { optimizedImageUrl, responsiveImageSrcSet } from './_imageUrl'
 
 // 쇼핑몰 메인 광고 배너 슬라이더 (여러 업체 자동 순환) — page.tsx에서 분리, 동작/디자인 동일
 type Props = {
@@ -39,12 +40,17 @@ export function AdBanner({ banners, bannerIdx, setBannerIdx, dark, loading }: Pr
         }}>
           {banners.map((b, i) => {
             const active = i === (bannerIdx % banners.length)
+            const next = i === ((bannerIdx + 1) % banners.length)
+            if (!active && !next) return null
             const href = b.product_id ? `/shop/product/${b.product_id}` : (b.link_url || null)
             const hasText = b.title || b.subtitle || b.tag
             const content = (
               <>
-                <img src={b.image_url} alt={b.title || '광고'} className="ad-banner-img"
-                  loading={i === 0 ? 'eager' : 'lazy'} fetchPriority={i === 0 ? 'high' : 'auto'} decoding="async"
+                <img src={optimizedImageUrl(b.image_url, 1200)}
+                  srcSet={responsiveImageSrcSet(b.image_url, [640, 960, 1200, 1600], 76)}
+                  sizes="(max-width: 1140px) calc(100vw - 40px), 1100px"
+                  alt={b.title || '광고'} className="ad-banner-img"
+                  loading={active ? 'eager' : 'lazy'} fetchPriority={active ? 'high' : 'low'} decoding="async"
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.5s ease' }} />
                 {hasText && (
                   <div className="ad-banner-overlay" style={{
