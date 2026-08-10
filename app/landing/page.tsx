@@ -180,7 +180,7 @@ export default function LandingPage() {
                 transition:'all 0.2s', flexShrink:0 }}>
               {dark ? '☀️' : '🌙'}
             </button>
-            <Link href="/shop"
+            <Link href="/shop" prefetch
               className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl transition-all duration-200 hover:scale-105"
               style={{ background: dark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.9)', border: dark ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.12)', color: dark ? '#ffffff' : '#111827', boxShadow: dark ? 'none' : '0 2px 8px rgba(0,0,0,0.08)' }}>
               🛒 <span className="hidden sm:inline">쇼핑몰</span>
@@ -221,7 +221,7 @@ export default function LandingPage() {
             농축수산물 도매에 필요한 모든 것을 한 곳에서
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-            <Link href="/shop"
+            <Link href="/shop" prefetch
               className="bg-green-600 hover:bg-green-500 text-white font-bold px-8 sm:px-10 py-3.5 sm:py-4 rounded-2xl transition-all duration-200 hover:scale-105 hover:shadow-2xl hover:shadow-green-600/40 active:scale-95 text-sm sm:text-base">
               🛒 쇼핑몰 바로가기
             </Link>

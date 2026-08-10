@@ -41,6 +41,9 @@ export function ProductCard({ p, i, dark, card, border, text, sub, gtext, member
         }}>
           {p.image_url ? (
             <img src={p.image_url} alt={p.name}
+              loading={i < 8 ? 'eager' : 'lazy'}
+              fetchPriority={i < 4 ? 'high' : 'auto'}
+              decoding="async"
               style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.4s ease' }}
               className="product-img" />
           ) : (

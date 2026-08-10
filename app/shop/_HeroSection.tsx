@@ -13,13 +13,14 @@ type Props = {
   heroVisible: boolean
   visitorCount: number
   productCount: number
+  statsReady: boolean
 }
 
-export function HeroSection({ bg, border, dark, text, sub, gtext, heroVisible, visitorCount, productCount }: Props) {
+export function HeroSection({ bg, border, dark, text, sub, gtext, heroVisible, visitorCount, productCount, statsReady }: Props) {
   const stats = [
-    { num: `${productCount}+`, label: '등록 상품' },
-    { num: `${visitorCount}명`, label: '지금 쇼핑중' },
-    { num: '당일', label: '신선 배송' },
+    { num: statsReady ? `${productCount}+` : '', label: '등록 상품' },
+    { num: statsReady ? `${visitorCount}명` : '', label: '지금 쇼핑중' },
+    { num: '신선', label: '포장 배송' },
   ]
   return (
       <section style={{
@@ -55,15 +56,24 @@ export function HeroSection({ bg, border, dark, text, sub, gtext, heroVisible, v
           </div>
 
           {/* 오른쪽: 통계 가로 */}
-          <div style={{ display: 'flex', gap: '28px', flexShrink: 0 }}>
+          <div className="hero-compact-stats" style={{ display: 'flex', gap: '28px', flexShrink: 0 }}>
             {stats.map(s => (
               <div key={s.label}>
-                <p style={{ fontSize: '22px', fontWeight: 800, color: text, margin: 0, letterSpacing: '-1px' }}>{s.num}</p>
+                <p style={{ fontSize: '22px', fontWeight: 800, color: text, margin: 0, letterSpacing: '-1px', minHeight: '26px' }}>{s.num}</p>
                 <p style={{ fontSize: '12px', color: sub, margin: '2px 0 0', fontWeight: 500, whiteSpace: 'nowrap' }}>{s.label}</p>
               </div>
             ))}
           </div>
         </div>
+        <style jsx>{`
+          @media (max-width: 639px) {
+            .hero-compact-stats {
+              width: 100%;
+              justify-content: flex-start;
+              padding-top: 2px;
+            }
+          }
+        `}</style>
       </section>
   )
 }
