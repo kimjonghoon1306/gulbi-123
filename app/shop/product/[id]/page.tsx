@@ -36,6 +36,7 @@ export default function ProductDetailPage() {
   const [addresses, setAddresses] = useState<any[]>([])
   const [isAdmin, setIsAdmin] = useState(false)
   const [showOrderForm, setShowOrderForm] = useState(false)
+  const [subNotice, setSubNotice] = useState(false)  // 정기배송 준비중 안내
   const [orderForm, setOrderForm] = useState({ address: '', recipient: '', phone: '', note: '', payment_method: '가상계좌', evidence: '현금영수증', evidenceContact: '' })
   const [orderLoading, setOrderLoading] = useState(false)
   const [orderDone, setOrderDone] = useState(false)
@@ -616,6 +617,23 @@ export default function ProductDetailPage() {
                     바로 구매
                   </button>
                 </div>
+
+                {/* 정기배송 — subscribable 상품만. 지금은 준비중 안내 */}
+                {product.subscribable && (
+                  <div style={{marginTop:'2px'}}>
+                    <button onClick={() => setSubNotice(v => !v)}
+                      style={{width:'100%',padding:'15px',borderRadius:'12px',background:'transparent',color:D.text,fontSize:'14px',fontWeight:700,border:`1px solid ${D.border}`,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px'}}>
+                      정기배송으로 받기
+                      <span style={{fontSize:'11px',fontWeight:600,color:D.sub}}>준비중</span>
+                    </button>
+                    {subNotice && (
+                      <div style={{marginTop:'10px',padding:'14px 16px',borderRadius:'12px',background:D.input,border:`1px solid ${D.border}`}}>
+                        <p style={{fontSize:'13.5px',fontWeight:700,color:D.text,margin:'0 0 3px'}}>정기배송 서비스 준비 중입니다</p>
+                        <p style={{fontSize:'12.5px',color:D.sub,margin:0,lineHeight:1.6}}>매주·격주·매달 주기로 자동 배송받는 정기배송을 곧 열 예정이에요.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>

@@ -23,6 +23,18 @@ export function HomeTab({ D, accent, member, orders, pointBalance, totalAmount, 
   return (
           <div style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
 
+            {/* 내 정기배송 — 크게 노출. 지금은 준비중 */}
+            <div style={{ background:D.card, borderRadius:'20px', border:`1px solid ${D.border}`, borderLeft:`3px solid ${accent}`, padding:'20px' }}>
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'6px' }}>
+                <p style={{ fontSize:'15px', fontWeight:800, color:D.text, margin:0, letterSpacing:'-0.3px' }}>내 정기배송</p>
+                <span style={{ fontSize:'12px', fontWeight:600, color:D.sub }}>준비 중</span>
+              </div>
+              <p style={{ fontSize:'13px', color:D.sub, margin:0, lineHeight:1.6 }}>
+                아직 이용 중인 정기배송이 없어요.<br/>
+                매주·격주·매달 주기로 자동 배송받는 정기배송 서비스를 곧 열 예정입니다.
+              </p>
+            </div>
+
             {/* 승인 대기 배너 */}
             {member.member_type !== '일반' && member.status === '대기중' && (
               <div style={{ background:'rgba(245,158,11,0.1)', border:'1px solid rgba(245,158,11,0.3)', borderRadius:'16px', padding:'16px' }}>
