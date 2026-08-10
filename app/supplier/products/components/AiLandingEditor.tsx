@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import { renderLanding, type PresetKey, type TemplateKey, type LandingData, TEMPLATES } from '@/lib/landing-templates'
+import LandingBasicInfoFields, { type LandingBasicInfo, type ProductGroup } from '@/app/components/LandingBasicInfoFields'
 
 // ── 인라인 FloatingToolbar ──────────────────────────────────
 function FloatingToolbar({ previewId }: { previewId: string }) {
@@ -90,6 +91,8 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
   const [aiError, setAiError] = useState('')
   const [aiPersona, setAiPersona] = useState('shohost')
   const [aiMeta, setAiMeta] = useState({ name: '', origin: '', category_id: '', unit: 'kg', suggested_wholesale_price: '', suggested_retail_price: '', stock: '' })
+  const [productGroup, setProductGroup] = useState<ProductGroup>('')
+  const [basicInfo, setBasicInfo] = useState<LandingBasicInfo>({})
   const [aiLandingHtml, setAiLandingHtml] = useState('')
   const [aiLandingData, setAiLandingData] = useState<LandingData | null>(null)
   const [aiPresetKey, setAiPresetKey] = useState<PresetKey>('gold' as PresetKey)
@@ -182,6 +185,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
 
   const selectProductForAI = (p: SupplierProduct) => {
     setSelectedProduct(p)
+    setProductGroup(''); setBasicInfo({})
     setAiMeta({
       name: p.name,
       origin: p.origin || '',
@@ -227,6 +231,8 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
           retailPrice: aiMeta.suggested_retail_price,
           wholesalePrice: aiMeta.suggested_wholesale_price,
           unit: aiMeta.unit,
+          productGroup,
+          basicInfo,
         })
       })
       const data = await res.json()
@@ -319,6 +325,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
     setAiImage(null); setAiImagePreview(''); setAiExtraImages([])
     setAiLandingHtml(''); setAiError(''); setAiSelectedBg('dark'); setShowBuyerPreview(false)
     setSelectedProduct(null); setManualBlocks([])
+    setProductGroup(''); setBasicInfo({})
     setHtmlCode(''); setHtmlProduct(null)
     setImgFiles([]); setImgProduct(null)
   }
@@ -490,6 +497,11 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
                   ))}
                 </div>
 
+                <div style={{ borderTop: '1px solid ' + (aiDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'), paddingTop: '12px' }}>
+                  <p style={{ color: aiDark ? 'white' : '#111', fontSize: '14px', fontWeight: 900, margin: '0 0 9px' }}>📝 상세페이지 기본내용</p>
+                  <LandingBasicInfoFields group={productGroup} setGroup={setProductGroup} value={basicInfo} onChange={setBasicInfo} dark={aiDark} />
+                </div>
+
                 {/* 페르소나 */}
                 <div>
                   <p style={{ color: aiDark ? 'rgba(255,255,255,0.5)' : '#555', fontSize: '10px', fontWeight: 700, margin: '0 0 6px', letterSpacing: '1px' }}>✍️ 작성 스타일</p>
@@ -505,9 +517,9 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
 
                 {aiError && <p style={{ color: '#f87171', fontSize: '12px', margin: 0 }}>{aiError}</p>}
 
-                <button onClick={() => { if (!selectedProduct) return setAiError('상품을 먼저 선택해주세요.'); if (!aiImagePreview) return setAiError('이미지를 먼저 올려주세요.'); setAiStep(2); handleGenerateLanding() }}
-                  disabled={aiLoading || !selectedProduct || !aiImagePreview}
-                  style={{ padding: '14px', borderRadius: '12px', background: aiLoading || !selectedProduct || !aiImagePreview ? 'rgba(34,197,94,0.2)' : 'linear-gradient(135deg,#22c55e,#4ade80)', color: aiLoading || !selectedProduct || !aiImagePreview ? 'rgba(255,255,255,0.3)' : '#111', fontSize: '14px', fontWeight: 900, border: 'none', cursor: 'pointer' }}>
+                <button onClick={() => { if (!selectedProduct) return setAiError('상품을 먼저 선택해주세요.'); if (!aiImagePreview) return setAiError('이미지를 먼저 올려주세요.'); if (!productGroup) return setAiError('상품군을 선택해주세요.'); setAiStep(2); handleGenerateLanding() }}
+                  disabled={aiLoading || !selectedProduct || !aiImagePreview || !productGroup}
+                  style={{ padding: '14px', borderRadius: '12px', background: aiLoading || !selectedProduct || !aiImagePreview || !productGroup ? 'rgba(34,197,94,0.2)' : 'linear-gradient(135deg,#22c55e,#4ade80)', color: aiLoading || !selectedProduct || !aiImagePreview || !productGroup ? 'rgba(255,255,255,0.3)' : '#111', fontSize: '14px', fontWeight: 900, border: 'none', cursor: 'pointer' }}>
                   ✨ AI 상세페이지 생성하기
                 </button>
               </div>

@@ -167,6 +167,14 @@ function mergeData(
     differences: pick(ai?.differences, fb.differences!),
     recipe: pick(ai?.recipe, fb.recipe!),
     storage: pick(ai?.storage, fb.storage!),
+    ingredients: ai?.ingredients,
+    dosage: ai?.dosage,
+    usage: ai?.usage,
+    specs: ai?.specs,
+    warranty: ai?.warranty,
+    artist: ai?.artist,
+    materials: ai?.materials,
+    care: ai?.care,
     reviews: pick(ai?.reviews, fb.reviews!),
     info: pick(ai?.info, fb.info!),
     faq: pick(ai?.faq, fb.faq!),
@@ -187,7 +195,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { persona, productName, retailPrice, wholesalePrice, unit, theme } = body
+    const { persona, productName, origin, retailPrice, wholesalePrice, unit, theme, productGroup, basicInfo } = body
 
     let imageList: { base64: string; mimeType: string }[] = []
     if (Array.isArray(body.images) && body.images.length > 0) {
@@ -203,6 +211,14 @@ export async function POST(req: NextRequest) {
     const geminiKey = auth.geminiKey
 
     const toneText = PERSONA_TONES[persona] || PERSONA_TONES.shohost
+    const groupLabels: Record<string, string> = {
+      fresh: '신선식품·농축수산물', processed: '가공식품·건강식품', living: '생활용품',
+      electronics: '전자기기·디바이스', craft: '공예품·패션·기타',
+    }
+    const providedInfo = Object.entries(basicInfo && typeof basicInfo === 'object' ? basicInfo : {})
+      .filter(([, value]) => typeof value === 'string' && value.trim())
+      .map(([key, value]) => `- ${key}: ${String(value).trim()}`)
+      .join('\n')
 
     const systemPrompt = `당신은 대한민국 최고의 프리미엄 상세페이지 카피라이터 & 편집 디렉터입니다.
 여러 장의 상품 이미지를 각각 꼼꼼히 보고 용도를 판단한 뒤,
@@ -219,10 +235,21 @@ export async function POST(req: NextRequest) {
 
 [상품 정보]
 - 상품명: ${productName || '(이미지로 파악)'}
+- 상품군: ${groupLabels[productGroup] || productGroup || '(미입력)'}
+- 원산지: ${origin || '(미입력)'}
 - 소매가: ${retailPrice || '?'}원
 - 도매가: ${wholesalePrice || '-'}원
 - 단위: ${unit || '개'}
 - 테마: ${theme || 'premium'}
+
+[판매자가 직접 작성한 상세 기본정보 — 가장 우선해서 반영]
+${providedInfo || '- 추가 입력 없음'}
+
+[작성 방향]
+- 판매자가 입력한 기본정보를 핵심 근거로 삼아 자연스럽고 풍성한 구매 카피로 확장하세요.
+- 상품군에 맞는 내용에 집중하세요. 신선식품은 맛·식감·선별·보관·조리, 가공식품은 원재료·제조·섭취, 생활용품은 소재·크기·사용·관리, 전자기기는 사양·호환·구성품·보증, 공예품은 소재·제작 과정·관리 중심입니다.
+- 입력하지 않은 항목도 이미지에서 확실히 관찰되는 특징과 일반적인 활용 제안은 풍성하게 작성할 수 있습니다.
+- 입력값과 이미지로 확인할 수 없는 인증번호·원산지·성분 함량·배송 약속·보증기간은 임의로 만들지 마세요.
 
 [카피 톤 — 반드시 지킬 것]
 ${toneText}
@@ -255,6 +282,14 @@ unusedIndices: 어느 섹션에도 안 어울리는 이미지 인덱스들.
 ⑬ faq: 반드시 6~7개. 각 a(답변)는 2~3문장으로 충분히 설명.
 ⑭ info: 8~10개 항목. 상품명·원산지·중량·보관방법·유통기한·제조방법·알레르기 등 포함.
 
+[상품군별 전용 섹션]
+- fresh: recipe와 storage를 작성하세요.
+- processed: ingredients를 작성하고, 섭취법이 있으면 dosage, 조리·활용법이 있으면 recipe를 작성하세요.
+- living: usage, specs, care를 작성하세요. recipe와 storage는 null로 두세요.
+- electronics: usage, specs, warranty를 작성하세요. recipe와 storage는 null로 두세요.
+- craft: materials, usage, care를 작성하고 판매자가 제작자 정보를 입력한 경우에만 artist를 작성하세요. recipe와 storage는 null로 두세요.
+- 해당하지 않거나 작성 근거가 없는 전용 섹션은 null로 반환하세요.
+
 [출력 JSON 구조]
 {
   "brandName": "브랜드명 2~6자",
@@ -284,6 +319,14 @@ unusedIndices: 어느 섹션에도 안 어울리는 이미지 인덱스들.
     "duration": "보관 기간",
     "tips": ["보관 방법 + 이유를 설명하는 2문장짜리 tip — 반드시 5개"]
   },
+  "ingredients": {"title":"원재료·성분","intro":"설명","items":[{"name":"원재료명","amount":"함량 또는 빈 문자열","effect":"특징 설명"}]},
+  "dosage": {"title":"섭취 방법","intro":"설명","steps":[{"name":"단계명","detail":"방법"}],"caution":"주의사항"},
+  "usage": {"title":"사용 방법","intro":"설명","steps":[{"name":"단계명","detail":"방법"}],"tip":"활용 팁"},
+  "specs": {"title":"상품 사양","items":[{"key":"항목","value":"값"}]},
+  "warranty": {"title":"품질보증","period":"기간","scope":"범위","contact":"문의 방법"},
+  "artist": {"title":"제작자 이야기","name":"이름","career":"경력","quote":"제작 철학"},
+  "materials": {"title":"소재와 제작","intro":"설명","items":[{"name":"소재명","desc":"특징"}]},
+  "care": {"title":"관리 방법","tips":["관리 팁"]},
   "reviews": [
     {"text":"3~5문장 구체적 실사용 후기 (구체적 경험·상황 포함, 단순 칭찬 금지)","author":"홍○○","date":"2026.03"}
   ],

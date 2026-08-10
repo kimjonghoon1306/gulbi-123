@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
 import { renderLanding, type PresetKey, type TemplateKey, type LandingData, TEMPLATES } from '@/lib/landing-templates'
 import FloatingToolbar from './FloatingToolbar'
+import LandingBasicInfoFields, { type LandingBasicInfo, type ProductGroup } from '@/app/components/LandingBasicInfoFields'
 
 type Product = {
   id: string; name: string; description: string
@@ -48,6 +49,8 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
   const [aiError, setAiError] = useState('')
   const [aiPersona, setAiPersona] = useState('shohost')
   const [aiMeta, setAiMeta] = useState({ name: '', origin: '', category_id: '', unit: 'kg', wholesale_price: '', member_price: '', retail_price: '', stock: '' })
+  const [productGroup, setProductGroup] = useState<ProductGroup>('')
+  const [basicInfo, setBasicInfo] = useState<LandingBasicInfo>({})
   const [aiLandingHtml, setAiLandingHtml] = useState('')
   const [aiLandingData, setAiLandingData] = useState<LandingData | null>(null)
   const [aiPresetKey, setAiPresetKey] = useState<PresetKey>('gold' as PresetKey)
@@ -143,6 +146,7 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
 
   const selectProductForAI = (p: Product) => {
     setSelectedProduct(p)
+    setProductGroup(''); setBasicInfo({})
     setAiMeta({ name: p.name, origin: p.origin || '', category_id: p.category_id || '', unit: p.unit || 'kg', wholesale_price: String(p.wholesale_price || ''), member_price: String(p.member_price || ''), retail_price: String(p.retail_price || ''), stock: String(p.stock || '') })
     if (p.image_url) { setAiImagePreview(p.image_url); setAiBgRemovedPreview(p.image_url) }
     setAiExtraImages([])
@@ -174,7 +178,7 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
 
       const res = await fetch('/api/generate-landing', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ images, persona: aiPersona, theme: 'premium', productName: aiMeta.name, retailPrice: aiMeta.retail_price, wholesalePrice: aiMeta.wholesale_price, unit: aiMeta.unit })
+        body: JSON.stringify({ images, persona: aiPersona, theme: 'premium', productName: aiMeta.name, origin: aiMeta.origin, retailPrice: aiMeta.retail_price, wholesalePrice: aiMeta.wholesale_price, unit: aiMeta.unit, productGroup, basicInfo })
       })
       const data = await res.json()
       if (data.error) {
@@ -271,6 +275,7 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
     setAiImage(null); setAiImagePreview(''); setAiBgRemovedPreview(''); setAiBgRemovedBase64(''); setAiExtraImages([])
     setAiLandingHtml(''); setAiError(''); setAiSelectedBg('dark'); setShowBuyerPreview(false)
     setSelectedProduct(null); setManualBlocks([])
+    setProductGroup(''); setBasicInfo({})
     setHtmlCode(''); setHtmlProduct(null)
   }
 
@@ -498,15 +503,20 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
                     ))}
                   </div>
                 </div>
+                <div style={{ gridColumn: '1 / -1', borderTop: '1px solid ' + (aiDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'), paddingTop: '16px' }}>
+                  <h3 style={{ color: aiDark ? 'white' : '#111', fontSize: '17px', fontWeight: 900, margin: '0 0 10px' }}>📝 상세페이지 기본내용</h3>
+                  <LandingBasicInfoFields group={productGroup} setGroup={setProductGroup} value={basicInfo} onChange={setBasicInfo} dark={aiDark} />
+                </div>
                 {aiError && <div style={{ gridColumn: '1 / -1', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '10px', padding: '10px 14px' }}><p style={{ color: '#f87171', fontSize: '13px', margin: 0 }}>{aiError}</p></div>}
                 <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '10px' }}>
                   <button onClick={() => setAiStep(1)} style={{ flex: 1, padding: '15px', borderRadius: '12px', border: '1.5px solid ' + (aiDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)'), background: 'transparent', color: aiDark ? 'rgba(255,255,255,0.5)' : '#555', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}>← 이전</button>
-                  <button onClick={handleGenerateLanding} disabled={aiLoading || !aiMeta.name.trim()}
-                    style={{ flex: 3, padding: '15px', borderRadius: '12px', background: aiLoading || !aiMeta.name.trim() ? 'rgba(34,197,94,0.25)' : 'linear-gradient(135deg,#ec4899,#f43f5e)', color: aiLoading || !aiMeta.name.trim() ? 'rgba(255,255,255,0.3)' : '#111', fontSize: '15px', fontWeight: 900, border: 'none', cursor: aiLoading || !aiMeta.name.trim() ? 'not-allowed' : 'pointer', transition: 'all 0.2s' }}>
+                  <button onClick={handleGenerateLanding} disabled={aiLoading || !aiMeta.name.trim() || !productGroup}
+                    style={{ flex: 3, padding: '15px', borderRadius: '12px', background: aiLoading || !aiMeta.name.trim() || !productGroup ? 'rgba(34,197,94,0.25)' : 'linear-gradient(135deg,#ec4899,#f43f5e)', color: aiLoading || !aiMeta.name.trim() || !productGroup ? 'rgba(255,255,255,0.3)' : '#111', fontSize: '15px', fontWeight: 900, border: 'none', cursor: aiLoading || !aiMeta.name.trim() || !productGroup ? 'not-allowed' : 'pointer', transition: 'all 0.2s' }}>
                     {aiLoading ? (aiLoadingMsg || '⏳ 준비 중...') : '✨ 상세페이지 자동 생성'}
                   </button>
                 </div>
                 {!aiMeta.name.trim() && <p style={{ gridColumn: '1 / -1', color: 'rgba(255,255,255,0.3)', fontSize: '12px', textAlign: 'center', margin: '-10px 0 0' }}>상품명을 입력해야 생성할 수 있어요</p>}
+                {aiMeta.name.trim() && !productGroup && <p style={{ gridColumn: '1 / -1', color: '#f59e0b', fontSize: '12px', textAlign: 'center', margin: '-10px 0 0' }}>상품군을 선택해야 생성할 수 있어요</p>}
               </div>
             </div>
           )}

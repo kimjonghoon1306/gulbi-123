@@ -894,7 +894,19 @@ export function renderLanding(data: LandingData, presetKey: PresetKey = 'gold', 
 [data-landing] *{box-sizing:border-box}
 </style>`
 
+  const hasGoodsSections = !!(data.usage || data.specs || data.warranty)
+  const hasCraftSections = !!(data.artist || data.materials || data.care)
+  const hasHealthSections = !!(data.ingredients || data.dosage)
   const sections = preset.sections
+    .flatMap(key => {
+      if (key === 'recipe' && hasGoodsSections) return ['usage', 'specs', 'warranty']
+      if (key === 'recipe' && hasHealthSections) return ['ingredients', 'dosage', data.recipe ? 'recipe' : '']
+      if (key === 'origin' && hasCraftSections) return ['artist', 'materials']
+      if (key === 'storage' && hasCraftSections) return ['care']
+      if (key === 'storage' && hasGoodsSections) return [data.care ? 'care' : '']
+      return [key]
+    })
+    .filter(Boolean)
     .map(key => {
       const fn = SECTION_RENDERERS[key]
       return fn ? fn(data, preset) : ''
