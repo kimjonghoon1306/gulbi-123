@@ -312,9 +312,25 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
                   <button
                     onClick={async () => {
                       if (!orderForm.address) return alert('배송지를 입력해주세요.')
+                      if (!orderForm.recipient.trim()) return alert('받는 분 이름을 입력해주세요.')
+                      if (!orderForm.phone.trim()) return alert('연락처를 입력해주세요.')
                       try { localStorage.setItem('onjongil_addr', orderForm.address) } catch {}  // 주소 저장(다음 주문 자동입력)
                       setOrderLoading(true)
                       try {
+                        const { data: { user: currentUser } } = await supabase.auth.getUser()
+                        if (!currentUser || currentUser.id !== user?.id) {
+                          alert('로그인이 만료되었습니다. 다시 로그인해주세요.')
+                          setShowOrderForm(false)
+                          router.push('/shop/login')
+                          return
+                        }
+                        const { data: currentMember } = await supabase.from('shop_members').select('id').eq('id', currentUser.id).maybeSingle()
+                        if (!currentMember) {
+                          alert('회원 정보를 확인할 수 없습니다. 다시 로그인해주세요.')
+                          setShowOrderForm(false)
+                          router.push('/shop/login')
+                          return
+                        }
                         const table = memberType === '도매업' ? 'wholesale_orders' : memberType === '소매업' ? 'retail_orders' : 'general_orders'
                         const itemTable = memberType === '도매업' ? 'wholesale_order_items' : memberType === '소매업' ? 'retail_order_items' : 'general_order_items'
                         const isBiz = memberType !== '일반'
@@ -333,7 +349,7 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
                         const orderData = {
                           customer_name: orderForm.recipient || memberInfo?.name || '',
                           contact: orderForm.phone || memberInfo?.contact || '',
-                          user_id: user?.id || '',
+                          user_id: currentUser.id,
                           address: orderForm.address,
                           note: orderForm.note,
                           payment_method: isCard ? '카드(이니시스)' : isVbank ? '가상계좌(이니시스)' : orderForm.payment_method,
@@ -344,7 +360,8 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
                           coupon_owner: appliedCoupon?.created_by_role === 'supplier' ? appliedCoupon.created_by : null,
                           coupon_discount: couponDiscount,
                         }
-                        const { data: newOrder } = await supabase.from(table).insert(orderData).select().single()
+                        const { data: newOrder, error: orderError } = await supabase.from(table).insert(orderData).select().single()
+                        if (orderError || !newOrder) throw orderError || new Error('order insert failed')
                         if (newOrder) {
                           await supabase.from(itemTable).insert({
                             order_id: newOrder.id,

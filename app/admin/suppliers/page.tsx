@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
+import SupplierProductApproval from './_SupplierProductApproval'
 
 type Supplier = {
   id: string; email: string; company_name: string; representative: string
@@ -22,20 +23,14 @@ export default function AdminSuppliersPage() {
   const [selected, setSelected] = useState<Supplier | null>(null)
   const [note, setNote] = useState('')
   const [filterStatus, setFilterStatus] = useState('전체')
-  const [pendingProducts, setPendingProducts] = useState(0)  // 상품 승인 대기 건수 (안내용)
+  const [section, setSection] = useState<'suppliers' | 'products'>('suppliers')
 
   useEffect(() => { fetchAll() }, [])
 
   const fetchAll = async () => {
     setLoading(true)
-    const [{ data: sups }, { count }] = await Promise.all([
-      supabase.from('suppliers').select('*').order('created_at', { ascending: false }),
-      // 공급업체 상품 중 승인 대기 건수만 카운트 (실제 승인은 '상품 관리'에서)
-      supabase.from('products').select('id', { count: 'exact', head: true })
-        .not('supplier_id', 'is', null).eq('approval_status', '대기중'),
-    ])
+    const { data: sups } = await supabase.from('suppliers').select('*').order('created_at', { ascending: false })
     setSuppliers(sups || [])
-    setPendingProducts(count || 0)
     setLoading(false)
   }
 
@@ -66,22 +61,19 @@ export default function AdminSuppliersPage() {
         </a>
       </div>
 
-      {/* 상품 승인은 '상품 관리'로 일원화 — 대기 건이 있으면 안내 링크 */}
-      {pendingProducts > 0 && (
-        <a href="/admin/products"
-          className="flex items-center justify-between gap-3 mb-5 px-5 py-4 rounded-2xl border border-violet-200 dark:border-violet-800 bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors">
-          <div className="flex items-center gap-3">
-            <span className="text-xl">📦</span>
-            <div>
-              <p className="text-sm font-bold text-violet-700 dark:text-violet-300">승인 대기 중인 공급업체 상품 {pendingProducts}건</p>
-              <p className="text-xs text-violet-500 dark:text-violet-400">상품 가격 확정·승인은 [상품 관리 › 공급업체 승인]에서 진행합니다.</p>
-            </div>
-          </div>
-          <span className="text-sm font-bold text-violet-600 dark:text-violet-300 whitespace-nowrap">검토하러 가기 →</span>
-        </a>
-      )}
+      <div className="flex gap-1 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl w-max mb-5">
+        <button onClick={() => setSection('suppliers')}
+          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${section === 'suppliers' ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400'}`}>
+          🏭 업체 가입 심사
+        </button>
+        <button onClick={() => setSection('products')}
+          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${section === 'products' ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400'}`}>
+          📦 공급업체 상품 승인
+        </button>
+      </div>
 
       {/* 공급업체(업체) 목록 + 심사 */}
+      {section === 'suppliers' && <>
       <div className="flex gap-2 mb-4">
         {['전체', '대기중', '승인', '거절'].map(s => (
           <button key={s} onClick={() => setFilterStatus(s)}
@@ -91,6 +83,9 @@ export default function AdminSuppliersPage() {
           </button>
         ))}
       </div>
+      </>}
+
+      {section === 'products' && <SupplierProductApproval />}
 
       <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-100 dark:border-gray-700 overflow-hidden shadow-sm">
         {loading ? (
@@ -129,7 +124,7 @@ export default function AdminSuppliersPage() {
       </div>
 
       {/* 공급업체 심사 모달 */}
-      {selected && (
+      {section === 'suppliers' && selected && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md">
             <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-gray-700">
