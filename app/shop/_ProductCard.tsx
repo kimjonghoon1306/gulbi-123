@@ -27,17 +27,17 @@ export function ProductCard({ p, i, dark, card, border, text, sub, gtext, member
     <Link href={`/shop/product/${p.id}`} style={{ textDecoration: 'none' }}>
       <div className="product-card" style={{
         background: card,
-        border: `1.5px solid ${border}`,
-        borderRadius: '24px', overflow: 'hidden',
-        transition: 'all 0.35s cubic-bezier(0.34,1.56,0.64,1)',
-        animation: 'fadeInUp 0.5s ease both',
-        animationDelay: `${i * 0.06}s`,
+        border: `1px solid ${border}`,
+        borderRadius: '12px', overflow: 'hidden',
+        transition: 'all 0.2s ease',
+        animation: 'fadeInUp 0.4s ease both',
+        animationDelay: `${i * 0.04}s`,
         cursor: 'pointer'
       }}>
         {/* 이미지 */}
         <div style={{
           aspectRatio: '4/3', position: 'relative', overflow: 'hidden',
-          background: dark ? '#15391f' : 'linear-gradient(135deg,#e8f8f5,#dff4f8)'
+          background: dark ? '#1a2e20' : '#f4f4f4'
         }}>
           {p.image_url ? (
             <img src={p.image_url} alt={p.name}
@@ -47,10 +47,9 @@ export function ProductCard({ p, i, dark, card, border, text, sub, gtext, member
             <div style={{
               width: '100%', height: '100%',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '72px', animation: 'floatItem 3s ease-in-out infinite',
-              animationDelay: `${i * 0.3}s`
+              fontSize: '13px', color: sub
             }}>
-              {catIcon}
+              이미지 준비중
             </div>
           )}
 
@@ -58,38 +57,31 @@ export function ProductCard({ p, i, dark, card, border, text, sub, gtext, member
           {p.stock === 0 && (
             <div style={{
               position: 'absolute', inset: 0,
-              background: 'rgba(0,0,0,0.55)',
+              background: 'rgba(0,0,0,0.5)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              backdropFilter: 'blur(2px)'
             }}>
               <span style={{
-                background: 'rgba(0,0,0,0.75)', color: 'white',
-                fontSize: '14px', fontWeight: 800,
-                padding: '8px 20px', borderRadius: '100px',
-                border: '2px solid rgba(255,255,255,0.2)'
-              }}>품절 😢</span>
+                background: 'rgba(0,0,0,0.72)', color: 'white',
+                fontSize: '13px', fontWeight: 600,
+                padding: '7px 18px', borderRadius: '8px',
+              }}>품절</span>
             </div>
           )}
 
           {/* 뱃지들 */}
-          <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '6px' }}>
+          <div style={{ position: 'absolute', top: '10px', left: '10px', display: 'flex', gap: '6px' }}>
             {p.stock > 0 && p.stock < 10 && (
               <span style={{
-                background: 'linear-gradient(135deg,#ef4444,#f97316)',
-                color: 'white', fontSize: '10px', fontWeight: 800,
-                padding: '4px 10px', borderRadius: '100px',
-                boxShadow: '0 4px 12px rgba(239,68,68,0.4)'
-              }}>🔥 소량</span>
+                background: '#dc2626', color: 'white', fontSize: '11px', fontWeight: 600,
+                padding: '3px 9px', borderRadius: '6px',
+              }}>품절임박</span>
             )}
             {i < 3 && p.stock > 0 && (
               <span style={{
-                background: sortBy === '최신순'
-                  ? 'linear-gradient(135deg,#14532d,#15803d)'
-                  : 'linear-gradient(135deg,#d97706,#f59e0b)',
-                color: 'white', fontSize: '10px', fontWeight: 800,
-                padding: '4px 10px', borderRadius: '100px',
-                boxShadow: sortBy === '최신순' ? '0 4px 12px rgba(22,163,74,0.4)' : '0 4px 12px rgba(245,158,11,0.45)'
-              }}>{sortBy === '최신순' ? '✨ NEW' : '👑 인기'}</span>
+                background: sortBy === '최신순' ? '#14532d' : '#b45309',
+                color: 'white', fontSize: '11px', fontWeight: 600,
+                padding: '3px 9px', borderRadius: '6px',
+              }}>{sortBy === '최신순' ? 'NEW' : '인기'}</span>
             )}
           </div>
         </div>
@@ -101,7 +93,7 @@ export function ProductCard({ p, i, dark, card, border, text, sub, gtext, member
           {reviewCount > 0 ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '8px' }}>
               <span style={{ color: '#f59e0b', fontSize: '13px', fontWeight: 900, letterSpacing: '-0.5px' }}>
-                ⭐ {rating.toFixed(1)}
+                ★ {rating.toFixed(1)}
               </span>
               <span style={{ fontSize: '12px', color: sub, fontWeight: 600 }}>후기 {reviewCount}개</span>
             </div>
@@ -111,29 +103,22 @@ export function ProductCard({ p, i, dark, card, border, text, sub, gtext, member
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '14px', flexWrap: 'wrap' }}>
             <p className="pc-unit" style={{ fontSize: '12px', color: sub, margin: 0, fontWeight: 500 }}>{p.unit} 단위</p>
             {weightLabel(p) && (
-              <span style={{ fontSize: '11px', fontWeight: 800, color: '#059669', background: dark ? 'rgba(16,185,129,0.14)' : '#ecfdf5', padding: '2px 8px', borderRadius: '999px' }}>중량 {weightLabel(p)}</span>
+              <span style={{ fontSize: '11px', fontWeight: 600, color: gtext, border: `1px solid ${border}`, padding: '2px 7px', borderRadius: '6px' }}>중량 {weightLabel(p)}</span>
             )}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
             <div>
               <p className="pc-price" style={{
-                fontSize: '22px', fontWeight: 900, color: gtext,
-                letterSpacing: '-1px', margin: 0
-              }}>{price.toLocaleString()}원</p>
+                fontSize: '21px', fontWeight: 800, color: text,
+                letterSpacing: '-0.5px', margin: 0
+              }}>{price.toLocaleString()}<span style={{ fontSize: '14px', fontWeight: 600, marginLeft: '1px' }}>원</span></p>
               {memberType === '도매업' && (
                 <p style={{ fontSize: '11px', color: sub, margin: '2px 0 0', textDecoration: 'line-through' }}>
                   일반 {p.retail_price.toLocaleString()}원
                 </p>
               )}
             </div>
-            <div className="pc-arrow" style={{
-              width: '40px', height: '40px', borderRadius: '14px',
-              background: 'linear-gradient(135deg,#14532d,#15803d)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '18px', boxShadow: '0 6px 16px rgba(22,163,74,0.35)',
-              transition: 'all 0.2s', flexShrink: 0
-            }}>→</div>
           </div>
         </div>
       </div>

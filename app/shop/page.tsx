@@ -36,6 +36,7 @@ export default function ShopPage() {
   const [heroVisible, setHeroVisible] = useState(false)
   const [gulbiStep, setGulbiStep] = useState(0)
   const gulbiTimer = useRef<any>(null)
+  const [promoOpen, setPromoOpen] = useState(false)  // 이용방법 섹션 접기(기본 접힘)
   const popupTimer = useRef<any>(null)
   const supabase = createClient()
 
@@ -310,35 +311,46 @@ export default function ShopPage() {
       {/* ── 광고 배너 슬라이더 (여러 업체 자동 순환) ── */}
       <AdBanner banners={banners} bannerIdx={bannerIdx} setBannerIdx={setBannerIdx} dark={dark} />
 
-      {/* ── 프로모션 애니메이션 섹션 ── */}
-      <PromoSection dark={dark} text={text} sub={sub} gtext={gtext} gulbiStep={gulbiStep} setGulbiStep={setGulbiStep} gulbiTimer={gulbiTimer} />
+      {/* ── 이용방법(프로모션) — 기본 접힘, 눌러서 펼침 ── */}
+      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '20px 20px 0' }}>
+        <button onClick={() => setPromoOpen(o => !o)} style={{
+          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+          padding: '13px 20px', borderRadius: '10px', cursor: 'pointer',
+          background: 'transparent', border: `1px solid ${border}`, color: sub,
+          fontSize: '14px', fontWeight: 600, fontFamily: 'inherit',
+        }}>
+          온종일팜 이용 방법
+          <span style={{ fontSize: '11px', transition: 'transform 0.2s', transform: promoOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
+        </button>
+      </div>
+      {promoOpen && (
+        <PromoSection dark={dark} text={text} sub={sub} gtext={gtext} gulbiStep={gulbiStep} setGulbiStep={setGulbiStep} gulbiTimer={gulbiTimer} />
+      )}
 
       <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '40px 20px 120px' }}>
 
         {/* ── 카테고리 ── */}
         <div style={{ marginBottom: '40px' }}>
-          <h2 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '16px', letterSpacing: '-0.5px' }}>
-            🏷️ 카테고리
+          <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '16px', letterSpacing: '-0.3px' }}>
+            카테고리
           </h2>
-          <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '8px' }}>
-            {['전체', ...categories.map(c => c.name)].map((cat, idx) => {
+          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px' }}>
+            {['전체', ...categories.map(c => c.name)].map((cat) => {
               const active = selectedCat === cat
-              const color = CAT_COLORS[cat] || getDefaultCatColor(idx)
               return (
                 <button key={cat} onClick={() => setSelectedCat(cat)} style={{
                   display: 'flex', alignItems: 'center', gap: '8px',
-                  padding: '12px 22px', borderRadius: '16px', flexShrink: 0,
-                  border: active ? 'none' : `2px solid ${border}`,
-                  background: active ? color.bg : card,
-                  color: active ? 'white' : sub,
-                  fontSize: '14px', fontWeight: active ? 800 : 600,
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  boxShadow: active ? `0 6px 16px ${color.shadow}` : '0 2px 8px rgba(0,0,0,0.06)',
+                  padding: '10px 18px', borderRadius: '10px', flexShrink: 0,
+                  border: `1px solid ${active ? '#14532d' : border}`,
+                  background: active ? '#14532d' : card,
+                  color: active ? '#fff' : sub,
+                  fontSize: '14px', fontWeight: active ? 700 : 500,
+                  cursor: 'pointer', transition: 'all 0.15s ease',
+                  whiteSpace: 'nowrap',
                 }}>
-                  {catPhoto(cat)
-                    ? <img src={catPhoto(cat)!} alt="" style={{ width: '26px', height: '26px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0, border: active ? '1.5px solid rgba(255,255,255,0.6)' : `1px solid ${border}` }} />
-                    : <span style={{ fontSize: '20px' }}>{CAT_ICONS[cat] || '🛒'}</span>}
+                  {catPhoto(cat) && (
+                    <img src={catPhoto(cat)!} alt="" style={{ width: '22px', height: '22px', borderRadius: '6px', objectFit: 'cover', flexShrink: 0 }} />
+                  )}
                   <span>{cat}</span>
                 </button>
               )
@@ -354,11 +366,11 @@ export default function ShopPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
             {getPriceLabel() && (
               <span style={{
-                fontSize: '12px', fontWeight: 800, padding: '6px 14px',
-                borderRadius: '100px',
-                background: 'linear-gradient(135deg,#14532d,#15803d)',
-                color: 'white'
-              }}>{getPriceLabel()} 기준 💰</span>
+                fontSize: '12px', fontWeight: 600, padding: '6px 12px',
+                borderRadius: '8px',
+                background: dark ? 'rgba(255,255,255,0.06)' : '#f1f5f0',
+                color: gtext, border: `1px solid ${border}`
+              }}>{getPriceLabel()} 기준</span>
             )}
             {/* 정렬 선택 — 추천순(별점+후기수 베이지안) 기본 */}
             <select
@@ -373,7 +385,7 @@ export default function ShopPage() {
                 backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', paddingRight: '32px'
               }}
             >
-              <option value="추천순">⭐ 추천순</option>
+              <option value="추천순">추천순</option>
               <option value="평점순">평점 높은순</option>
               <option value="최신순">최신순</option>
             </select>
@@ -392,22 +404,21 @@ export default function ShopPage() {
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '100px 0' }}>
-            <div style={{ fontSize: '72px', marginBottom: '20px', animation: 'floatItem 3s ease-in-out infinite' }}>{q ? '🔍' : '🧺'}</div>
+          <div style={{ textAlign: 'center', padding: '90px 0' }}>
             {q ? (
               <>
-                <p style={{ fontSize: '20px', fontWeight: 800, color: text, marginBottom: '8px' }}>&lsquo;{search.trim()}&rsquo; 검색 결과가 없어요</p>
+                <p style={{ fontSize: '18px', fontWeight: 700, color: text, marginBottom: '8px' }}>&lsquo;{search.trim()}&rsquo; 검색 결과가 없어요</p>
                 <p style={{ color: sub, fontSize: '14px', marginBottom: '20px' }}>다른 검색어로 찾아보거나 카테고리를 둘러보세요.</p>
                 <button onClick={() => { setSearch(''); setSelectedCat('전체') }} style={{
-                  padding: '11px 22px', borderRadius: '12px', border: 'none', cursor: 'pointer',
-                  background: 'linear-gradient(135deg,#14532d,#15803d)', color: 'white',
-                  fontSize: '14px', fontWeight: 800, fontFamily: 'inherit'
+                  padding: '11px 22px', borderRadius: '10px', border: 'none', cursor: 'pointer',
+                  background: '#14532d', color: 'white',
+                  fontSize: '14px', fontWeight: 700, fontFamily: 'inherit'
                 }}>전체 상품 보기</button>
               </>
             ) : (
               <>
-                <p style={{ fontSize: '20px', fontWeight: 800, color: text, marginBottom: '8px' }}>아직 상품이 없어요</p>
-                <p style={{ color: sub, fontSize: '14px' }}>곧 신선한 농축수산물이 올라올 예정이에요!</p>
+                <p style={{ fontSize: '18px', fontWeight: 700, color: text, marginBottom: '8px' }}>아직 상품이 없어요</p>
+                <p style={{ color: sub, fontSize: '14px' }}>곧 신선한 농축수산물이 올라올 예정이에요.</p>
               </>
             )}
           </div>
