@@ -15,6 +15,23 @@ export default function LandingPage() {
   const [dark, setDark] = useState(true)
   const promoTimer = useRef<any>(null)
   const animTimer = useRef<any>(null)
+  const adminClickCount = useRef(0)
+  const adminResetTimer = useRef<any>(null)
+
+  const handleAdminEntry = () => {
+    adminClickCount.current += 1
+    clearTimeout(adminResetTimer.current)
+
+    if (adminClickCount.current >= 5) {
+      adminClickCount.current = 0
+      window.location.href = '/auth/login?force=1'
+      return
+    }
+
+    adminResetTimer.current = setTimeout(() => {
+      adminClickCount.current = 0
+    }, 3000)
+  }
 
   const goStep = (i: number) => {
     setPromoStep(i)
@@ -30,7 +47,10 @@ export default function LandingPage() {
     else setDark(true)
     const handleScroll = () => setScrolled(window.scrollY > 50)
     window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      clearTimeout(adminResetTimer.current)
+    }
   }, [])
 
   useEffect(() => {
@@ -143,10 +163,12 @@ export default function LandingPage() {
           borderBottom: scrolled ? (dark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.06)') : 'none',
         }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2 sm:gap-3">
+          <button type="button" onClick={handleAdminEntry} aria-label="온종일팜 홈"
+            className="flex items-center gap-2 sm:gap-3 bg-transparent border-0 p-0 cursor-pointer select-none"
+            style={{ color: landingText }}>
             <span className="text-2xl sm:text-4xl">🧺</span>
             <span className="font-black text-lg sm:text-2xl tracking-tight" style={{ color: landingText, letterSpacing: '-0.5px' }}>온종일팜</span>
-          </div>
+          </button>
           <div className="flex items-center gap-2 sm:gap-6">
             <a href="#features" className="text-sm transition-colors hidden md:block" style={{ color: dark ? '#94a3b8' : '#4b5563' }}>기능소개</a>
             <a href="#cases" className="text-sm transition-colors hidden md:block" style={{ color: dark ? '#94a3b8' : '#4b5563' }}>도입사례</a>
@@ -166,17 +188,6 @@ export default function LandingPage() {
           </div>
         </div>
       </nav>
-
-      {/* 관리자 진입 — 좌하단에 작고 눈에 안 띄게 */}
-      <Link href="/auth/login?force=1" aria-label="관리자"
-        title="관리자"
-        className="fixed bottom-4 left-4 z-50 flex items-center justify-center rounded-full transition-all duration-200 hover:scale-110 hover:rotate-90"
-        style={{ width: '38px', height: '38px', backdropFilter: 'blur(8px)',
-          background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
-          border: dark ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(0,0,0,0.08)',
-          color: dark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.45)', fontSize: '17px' }}>
-        ⚙️
-      </Link>
 
       {/* 히어로 섹션 */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 sm:px-6">

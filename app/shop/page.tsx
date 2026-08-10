@@ -201,6 +201,12 @@ export default function ShopPage() {
     return ''
   }
 
+  const showAllProducts = () => {
+    setSelectedCat('전체')
+    setSearch('')
+    setCatMenuOpen(false)
+  }
+
   const q = search.trim().toLowerCase()
   const filtered = products.filter(p => {
     const matchCat = selectedCat === '전체' || categories.find(c => c.id === p.category_id)?.name === selectedCat
@@ -332,13 +338,16 @@ export default function ShopPage() {
 
         {/* ── 카테고리 (쿠팡식: 햄버거 전체 + 대표만) ── */}
         {(() => {
-          const allCatNames = ['전체', ...categories.map(c => c.name)]
+          const allCatNames = categories.map(c => c.name)
           const primaryCats = categories.map(c => c.name).filter(isFoodCat)   // 메인엔 식품만, 비식품은 햄버거로
           const catCell = (cat: string, big: boolean) => {
             const active = selectedCat === cat
             const img = catIconImg(cat)
             return (
-              <button key={cat} onClick={() => { setSelectedCat(cat); setCatMenuOpen(false) }} style={{
+              <button key={cat} onClick={() => {
+                if (cat === '전체') showAllProducts()
+                else { setSelectedCat(cat); setCatMenuOpen(false) }
+              }} style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
                 background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px', flexShrink: 0,
               }}>
@@ -359,8 +368,8 @@ export default function ShopPage() {
           return (
             <div style={{ marginBottom: '32px', position: 'relative' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                {/* 햄버거: 전체 카테고리 */}
-                <button onClick={() => setCatMenuOpen(o => !o)} aria-label="전체 카테고리" style={{
+                {/* 햄버거: 카테고리 목록 열기 */}
+                <button onClick={() => setCatMenuOpen(o => !o)} aria-label="전체 카테고리 열기" aria-expanded={catMenuOpen} style={{
                   display: 'inline-flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px',
                   flexShrink: 0, background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px',
                 }}>
@@ -372,8 +381,10 @@ export default function ShopPage() {
                   }}>
                     {[0, 1, 2].map(i => <span key={i} style={{ width: '20px', height: '2px', borderRadius: '2px', background: catMenuOpen ? '#fff' : (dark ? '#cbd5e1' : '#334155') }} />)}
                   </div>
-                  <span style={{ fontSize: '12px', fontWeight: 700, color: text }}>전체</span>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: text }}>카테고리</span>
                 </button>
+                {/* 전체 상품: 카테고리/검색 필터를 해제하고 모든 상품 표시 */}
+                {catCell('전체', false)}
                 {/* 대표 카테고리 (가로 스크롤) */}
                 <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', flex: 1, paddingBottom: '2px' }}>
                   {primaryCats.filter(c => c !== '전체').map(cat => catCell(cat, false))}
@@ -386,6 +397,15 @@ export default function ShopPage() {
                   marginTop: '10px', border: `1px solid ${border}`, borderRadius: '16px',
                   background: card, padding: '18px 16px', boxShadow: dark ? 'none' : '0 8px 24px rgba(0,0,0,0.08)',
                 }}>
+                  <button onClick={showAllProducts} style={{
+                    width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '14px 16px', marginBottom: '18px', borderRadius: '12px', cursor: 'pointer',
+                    border: '1px solid #16a34a', background: dark ? 'rgba(22,163,74,0.16)' : '#ecfdf3',
+                    color: dark ? '#86efac' : '#166534', fontFamily: 'inherit', fontSize: '14px', fontWeight: 800,
+                  }}>
+                    <span>🛒 전체 상품 한눈에 보기</span>
+                    <span aria-hidden="true">→</span>
+                  </button>
                   <p style={{ fontSize: '13px', fontWeight: 700, color: sub, margin: '0 0 14px' }}>전체 카테고리</p>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(72px, 1fr))', gap: '16px 6px' }}>
                     {allCatNames.map(cat => catCell(cat, true))}
@@ -447,7 +467,7 @@ export default function ShopPage() {
               <>
                 <p style={{ fontSize: '18px', fontWeight: 700, color: text, marginBottom: '8px' }}>&lsquo;{search.trim()}&rsquo; 검색 결과가 없어요</p>
                 <p style={{ color: sub, fontSize: '14px', marginBottom: '20px' }}>다른 검색어로 찾아보거나 카테고리를 둘러보세요.</p>
-                <button onClick={() => { setSearch(''); setSelectedCat('전체') }} style={{
+                <button onClick={showAllProducts} style={{
                   padding: '11px 22px', borderRadius: '10px', border: 'none', cursor: 'pointer',
                   background: '#14532d', color: 'white',
                   fontSize: '14px', fontWeight: 700, fontFamily: 'inherit'
