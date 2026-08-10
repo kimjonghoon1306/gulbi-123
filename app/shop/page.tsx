@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import Link from 'next/link'
-import { CAT_ICONS, CAT_PHOTOS, catPhoto, CAT_COLORS, getDefaultCatColor, POPUP_NAMES, POPUP_ACTIONS, priceFor, type Product, type Category } from './_shopConstants'
+import { CAT_ICONS, CAT_PHOTOS, catPhoto, catIconImg, CAT_COLORS, getDefaultCatColor, POPUP_NAMES, POPUP_ACTIONS, priceFor, type Product, type Category } from './_shopConstants'
 import { ProductCard } from './_ProductCard'
 import { AdBanner } from './_AdBanner'
 import { PromoSection } from './_PromoSection'
@@ -329,29 +329,32 @@ export default function ShopPage() {
 
       <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '40px 20px 120px' }}>
 
-        {/* ── 카테고리 ── */}
-        <div style={{ marginBottom: '40px' }}>
+        {/* ── 카테고리 (쿠팡식 아이콘 그리드) ── */}
+        <div style={{ marginBottom: '36px' }}>
           <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '16px', letterSpacing: '-0.3px' }}>
             카테고리
           </h2>
-          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(74px, 1fr))', gap: '14px 6px' }}>
             {['전체', ...categories.map(c => c.name)].map((cat) => {
               const active = selectedCat === cat
+              const img = catIconImg(cat)
               return (
                 <button key={cat} onClick={() => setSelectedCat(cat)} style={{
-                  display: 'flex', alignItems: 'center', gap: '8px',
-                  padding: '10px 18px', borderRadius: '10px', flexShrink: 0,
-                  border: `1px solid ${active ? '#14532d' : border}`,
-                  background: active ? '#14532d' : card,
-                  color: active ? '#fff' : sub,
-                  fontSize: '14px', fontWeight: active ? 700 : 500,
-                  cursor: 'pointer', transition: 'all 0.15s ease',
-                  whiteSpace: 'nowrap',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '7px',
+                  background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px',
                 }}>
-                  {catPhoto(cat) && (
-                    <img src={catPhoto(cat)!} alt="" style={{ width: '22px', height: '22px', borderRadius: '6px', objectFit: 'cover', flexShrink: 0 }} />
-                  )}
-                  <span>{cat}</span>
+                  <div style={{
+                    width: '100%', maxWidth: '68px', aspectRatio: '1 / 1', borderRadius: '18px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: active ? (dark ? 'rgba(22,163,74,0.18)' : '#e7f6ec') : (dark ? 'rgba(255,255,255,0.05)' : '#f4f5f4'),
+                    border: `1.5px solid ${active ? '#16a34a' : 'transparent'}`,
+                    transition: 'all 0.15s ease',
+                  }}>
+                    {img
+                      ? <img src={img} alt={cat} style={{ width: '76%', height: '76%', objectFit: 'contain' }} />
+                      : <span style={{ fontSize: '13px', fontWeight: 800, color: active ? '#15803d' : sub }}>전체</span>}
+                  </div>
+                  <span style={{ fontSize: '12px', fontWeight: active ? 700 : 500, color: active ? gtext : text, whiteSpace: 'nowrap', letterSpacing: '-0.3px' }}>{cat}</span>
                 </button>
               )
             })}

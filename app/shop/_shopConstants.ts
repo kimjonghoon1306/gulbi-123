@@ -58,6 +58,27 @@ const CAT_PHOTO_RULES: { keys: string[]; src: string }[] = [
   { keys: ['선물', '전통', '장류', '기타'],           src: '/ai-images/food/traditional_giftset.webp' },
 ]
 
+// 카테고리 캐릭터 아이콘(3D, 투명) — 이름 키워드로 매칭. public/category-icons/*.webp
+const CAT_ICON_IMG_RULES: { keys: string[]; src: string }[] = [
+  { keys: ['갑각', '새우', '대하', '게', '크랩'],          src: '/category-icons/crab.webp' },
+  { keys: ['패류', '조개', '굴', '전복', '홍합'],          src: '/category-icons/shellfish.webp' },
+  { keys: ['해조', '김', '미역', '다시마', '톳'],          src: '/category-icons/seaweed.webp' },
+  { keys: ['건어', '염장', '건조', '마른'],                src: '/category-icons/dried.webp' },
+  { keys: ['어류', '생선', '수산', '해산'],                src: '/category-icons/fish.webp' },
+  { keys: ['과일', '청과'],                                src: '/category-icons/fruit.webp' },
+  { keys: ['축산', '정육', '한우', '고기', '육류', '계란', '달걀'], src: '/category-icons/meat.webp' },
+  { keys: ['농산', '채소', '야채', '쌀', '잡곡', '곡물'],   src: '/category-icons/produce.webp' },
+]
+
+// 카테고리 아이콘 이미지 경로. '전체'는 null(텍스트 표시), 매칭 없으면 기타(바구니).
+export function catIconImg(name: string): string | null {
+  if (!name || name === '전체') return null
+  for (const rule of CAT_ICON_IMG_RULES) {
+    if (rule.keys.some(k => name.includes(k))) return rule.src
+  }
+  return '/category-icons/etc.webp'
+}
+
 export function catPhoto(name: string): string | null {
   if (!name || name === '전체') return null
   if (CAT_PHOTOS[name]) return CAT_PHOTOS[name]           // 정확 매칭 우선
