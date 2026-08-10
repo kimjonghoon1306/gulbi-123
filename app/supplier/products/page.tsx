@@ -11,6 +11,7 @@ import SupplierProductList from './_SupplierProductList'
 
 type Product = {
   id: string; name: string; description: string
+  origin?: string | null
   category_id: string; suggested_wholesale_price: number; suggested_retail_price: number
   wholesale_price: number; retail_price: number
   stock: number; unit: string; image_url: string
@@ -27,7 +28,7 @@ const STATUS_STYLE: Record<string, { bg: string; color: string; label: string }>
 }
 
 const EMPTY_FORM = {
-  name: '', category_id: '', suggested_wholesale_price: '', suggested_retail_price: '',
+  name: '', origin: '', category_id: '', suggested_wholesale_price: '', suggested_retail_price: '',
   stock: '', unit: 'kg', weight: '', image_url: '', description: ''
 }
 
@@ -149,7 +150,7 @@ function ProductsContent() {
     }
     setSaving(true); setError('')
     const data = {
-      name: form.name, description: form.description,
+      name: form.name, description: form.description, origin: form.origin.trim() || null,
       category_id: form.category_id || null,
       suggested_wholesale_price: Number(form.suggested_wholesale_price),
       suggested_retail_price: Number(form.suggested_retail_price),
@@ -178,7 +179,7 @@ function ProductsContent() {
 
   const openEdit = (p: Product) => {
     setEditProduct(p)
-    setForm({ name: p.name, category_id: p.category_id || '', suggested_wholesale_price: String(p.suggested_wholesale_price), suggested_retail_price: String(p.suggested_retail_price), stock: String(p.stock), unit: p.unit || 'kg', weight: (p as any).weight != null ? String((p as any).weight) : '', image_url: p.image_url || '', description: p.description || '' })
+    setForm({ name: p.name, origin: p.origin || '', category_id: p.category_id || '', suggested_wholesale_price: String(p.suggested_wholesale_price), suggested_retail_price: String(p.suggested_retail_price), stock: String(p.stock), unit: p.unit || 'kg', weight: (p as any).weight != null ? String((p as any).weight) : '', image_url: p.image_url || '', description: p.description || '' })
     setShowForm(true)
   }
 
@@ -288,6 +289,13 @@ function ProductsContent() {
               <div>
                 <label style={labelStyle}>상품명 *</label>
                 <input type="text" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="상품명 입력" style={inputStyle} />
+              </div>
+
+              <div>
+                <label style={labelStyle}>원산지 <span style={{ fontWeight: 400 }}>(선택)</span></label>
+                <input type="text" value={form.origin} onChange={e => setForm(p => ({ ...p, origin: e.target.value }))}
+                  placeholder="예: 국내산 · 전남 영광 / 중국산" maxLength={100} style={inputStyle} />
+                <p style={{ color: t.textMuted, fontSize: '11px', margin: '6px 0 0' }}>상품에 표시할 국가나 지역을 입력하세요.</p>
               </div>
 
               <div>

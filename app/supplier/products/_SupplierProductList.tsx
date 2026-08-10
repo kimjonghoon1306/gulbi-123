@@ -4,6 +4,7 @@ import type { Dispatch, SetStateAction } from 'react'
 
 type Product = {
   id: string; name: string; description: string
+  origin?: string | null
   category_id: string; suggested_wholesale_price: number; suggested_retail_price: number
   wholesale_price: number; retail_price: number
   stock: number; unit: string; image_url: string
@@ -66,6 +67,7 @@ export default function SupplierProductList({
                 {p.wholesale_price > 0 && <span style={{ color: '#34d399', marginLeft: '6px' }}>→ 도매 공급가 {p.wholesale_price.toLocaleString()}원</span>}
                 {p.stock > 0 && <span style={{ marginLeft: '8px' }}>재고 {p.stock}{p.unit}</span>}
               </p>
+              {p.origin && <p style={{ fontSize: '11px', color: t.textMuted, margin: '3px 0 0' }}>원산지 {p.origin}</p>}
               {(p.approval_status === '거절' || p.approval_status === '수정요청') && p.rejection_reason && (
                 <p style={{ fontSize: '11px', color: p.approval_status === '거절' ? '#f87171' : '#818cf8', margin: '4px 0 0', fontWeight: 600 }}>
                   💬 {p.rejection_reason}

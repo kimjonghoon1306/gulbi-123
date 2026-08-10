@@ -6,13 +6,14 @@ import StockImagePicker from '@/components/StockImagePicker'
 type Category = { id: string; name: string; sort_order: number }
 type Product = {
   id: string; name: string; description: string
+  origin?: string | null
   category_id: string; wholesale_price: number; member_price: number; retail_price: number
   stock: number; unit: string; weight?: number | null; image_url: string; is_active: boolean; is_taxable: boolean
   subscribable?: boolean; subscribe_discount?: number | null
 }
 
 export type ProductForm = {
-  name: string; description: string; category_id: string
+  name: string; description: string; origin: string; category_id: string
   wholesale_price: string; member_price: string; retail_price: string
   stock: string; unit: string; weight: string; image_url: string; is_active: boolean; is_taxable: boolean
   subscribable: boolean; subscribe_discount: string
@@ -92,6 +93,15 @@ export function ProductFormModal({ show, onClose, editProduct, form, setForm, on
               <option value="">선택</option>
               {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">원산지 <span className="font-normal text-slate-400">(선택)</span></label>
+            <input type="text" placeholder="예: 국내산 · 전남 영광 / 중국산" value={form.origin}
+              onChange={e => setForm({ ...form, origin: e.target.value })}
+              maxLength={100}
+              className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-600" />
+            <p className="text-[11px] text-slate-400 mt-1.5">상품에 표시할 국가나 지역을 입력하세요. 비식품 등 해당 사항이 없으면 비워둘 수 있어요.</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

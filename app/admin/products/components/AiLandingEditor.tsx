@@ -7,6 +7,7 @@ import FloatingToolbar from './FloatingToolbar'
 
 type Product = {
   id: string; name: string; description: string
+  origin?: string | null
   category_id: string; wholesale_price: number; member_price: number; retail_price: number
   stock: number; unit: string; image_url: string; is_active: boolean
 }
@@ -46,7 +47,7 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
   const [aiLoadingMsg, setAiLoadingMsg] = useState('')
   const [aiError, setAiError] = useState('')
   const [aiPersona, setAiPersona] = useState('shohost')
-  const [aiMeta, setAiMeta] = useState({ name: '', category_id: '', unit: 'kg', wholesale_price: '', member_price: '', retail_price: '', stock: '' })
+  const [aiMeta, setAiMeta] = useState({ name: '', origin: '', category_id: '', unit: 'kg', wholesale_price: '', member_price: '', retail_price: '', stock: '' })
   const [aiLandingHtml, setAiLandingHtml] = useState('')
   const [aiLandingData, setAiLandingData] = useState<LandingData | null>(null)
   const [aiPresetKey, setAiPresetKey] = useState<PresetKey>('gold' as PresetKey)
@@ -142,7 +143,7 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
 
   const selectProductForAI = (p: Product) => {
     setSelectedProduct(p)
-    setAiMeta({ name: p.name, category_id: p.category_id || '', unit: p.unit || 'kg', wholesale_price: String(p.wholesale_price || ''), member_price: String(p.member_price || ''), retail_price: String(p.retail_price || ''), stock: String(p.stock || '') })
+    setAiMeta({ name: p.name, origin: p.origin || '', category_id: p.category_id || '', unit: p.unit || 'kg', wholesale_price: String(p.wholesale_price || ''), member_price: String(p.member_price || ''), retail_price: String(p.retail_price || ''), stock: String(p.stock || '') })
     if (p.image_url) { setAiImagePreview(p.image_url); setAiBgRemovedPreview(p.image_url) }
     setAiExtraImages([])
   }
@@ -220,11 +221,11 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
       }
       const finalHtml = document.getElementById('landing-preview')?.innerHTML || aiLandingHtml
       if (selectedProduct) {
-        const updateData: any = { name: aiMeta.name || selectedProduct.name, description: finalHtml, category_id: aiMeta.category_id || null, wholesale_price: Number(aiMeta.wholesale_price) || 0, retail_price: Number(aiMeta.retail_price) || 0, stock: Number(aiMeta.stock) || 0, unit: aiMeta.unit || '개', member_price: Number(aiMeta.member_price) || 0 }
+        const updateData: any = { name: aiMeta.name || selectedProduct.name, origin: aiMeta.origin.trim() || null, description: finalHtml, category_id: aiMeta.category_id || null, wholesale_price: Number(aiMeta.wholesale_price) || 0, retail_price: Number(aiMeta.retail_price) || 0, stock: Number(aiMeta.stock) || 0, unit: aiMeta.unit || '개', member_price: Number(aiMeta.member_price) || 0 }
         if (mainImgUrl) updateData.image_url = mainImgUrl
         await supabase.from('products').update(updateData).eq('id', selectedProduct.id)
       } else {
-        await supabase.from('products').insert({ name: aiMeta.name || '상품', description: finalHtml, category_id: aiMeta.category_id || null, wholesale_price: Number(aiMeta.wholesale_price) || 0, retail_price: Number(aiMeta.retail_price) || 0, stock: Number(aiMeta.stock) || 0, unit: aiMeta.unit || '개', member_price: Number(aiMeta.member_price) || 0, image_url: mainImgUrl, is_active: true })
+        await supabase.from('products').insert({ name: aiMeta.name || '상품', origin: aiMeta.origin.trim() || null, description: finalHtml, category_id: aiMeta.category_id || null, wholesale_price: Number(aiMeta.wholesale_price) || 0, retail_price: Number(aiMeta.retail_price) || 0, stock: Number(aiMeta.stock) || 0, unit: aiMeta.unit || '개', member_price: Number(aiMeta.member_price) || 0, image_url: mainImgUrl, is_active: true })
       }
       reset(); onDone()
     } catch (e: any) {
@@ -414,8 +415,8 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
 
                 {/* 추가 사진 (여러 장 → 원산지·스토리·레시피·보관 섹션 자동 배치) */}
                 <div>
-                  <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontWeight: 700, margin: '0 0 6px', letterSpacing: '1px' }}>
-                    🖼 추가 사진 <span style={{ fontWeight: 400, letterSpacing: 0, color: 'rgba(255,255,255,0.35)' }}>(선택 · 여러 장 올리면 상세페이지가 더 풍성해져요)</span>
+                  <p style={{ color: aiDark ? 'rgba(255,255,255,0.5)' : '#555', fontSize: '11px', fontWeight: 700, margin: '0 0 6px', letterSpacing: '1px' }}>
+                    🖼 추가 사진 <span style={{ fontWeight: 400, letterSpacing: 0, color: aiDark ? 'rgba(255,255,255,0.35)' : '#777' }}>(선택 · 여러 장 올리면 상세페이지가 더 풍성해져요)</span>
                   </p>
                   <input id="admin-ai-extra" type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={e => { if (e.target.files) addExtraImages(e.target.files); e.target.value = '' }} />
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -458,6 +459,10 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <input value={aiMeta.name} onChange={e => setAiMeta(p => ({ ...p, name: e.target.value }))} placeholder="상품명 (예: 산지직송 보리굴비)"
                       style={{ padding: '15px 16px', borderRadius: '12px', border: '2px solid ' + (aiDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)'), background: aiDark ? 'rgba(255,255,255,0.07)' : 'white', color: aiDark ? 'white' : '#111', fontSize: '15px', fontWeight: 600, outline: 'none' }}
+                      onFocus={e => { e.target.style.borderColor = '#22c55e' }} onBlur={e => { e.target.style.borderColor = aiDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)' }} />
+                    <input value={aiMeta.origin} onChange={e => setAiMeta(p => ({ ...p, origin: e.target.value }))} placeholder="원산지 (예: 국내산 · 전남 영광)"
+                      maxLength={100}
+                      style={{ padding: '15px 16px', borderRadius: '12px', border: '2px solid ' + (aiDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)'), background: aiDark ? 'rgba(255,255,255,0.07)' : 'white', color: aiDark ? 'white' : '#111', fontSize: '14px', outline: 'none' }}
                       onFocus={e => { e.target.style.borderColor = '#22c55e' }} onBlur={e => { e.target.style.borderColor = aiDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)' }} />
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
                       {[

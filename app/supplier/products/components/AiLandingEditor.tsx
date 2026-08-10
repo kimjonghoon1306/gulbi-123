@@ -49,6 +49,7 @@ function FloatingToolbar({ previewId }: { previewId: string }) {
 
 type SupplierProduct = {
   id: string; name: string; description: string
+  origin?: string | null
   category_id: string
   suggested_wholesale_price: number; suggested_retail_price: number
   wholesale_price: number; retail_price: number
@@ -88,7 +89,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
   const [aiLoadingMsg, setAiLoadingMsg] = useState('')
   const [aiError, setAiError] = useState('')
   const [aiPersona, setAiPersona] = useState('shohost')
-  const [aiMeta, setAiMeta] = useState({ name: '', category_id: '', unit: 'kg', suggested_wholesale_price: '', suggested_retail_price: '', stock: '' })
+  const [aiMeta, setAiMeta] = useState({ name: '', origin: '', category_id: '', unit: 'kg', suggested_wholesale_price: '', suggested_retail_price: '', stock: '' })
   const [aiLandingHtml, setAiLandingHtml] = useState('')
   const [aiLandingData, setAiLandingData] = useState<LandingData | null>(null)
   const [aiPresetKey, setAiPresetKey] = useState<PresetKey>('gold' as PresetKey)
@@ -183,6 +184,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
     setSelectedProduct(p)
     setAiMeta({
       name: p.name,
+      origin: p.origin || '',
       category_id: p.category_id || '',
       unit: p.unit || 'kg',
       suggested_wholesale_price: String(p.suggested_wholesale_price || ''),
@@ -221,6 +223,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
         body: JSON.stringify({
           images, persona: aiPersona, theme: 'premium',
           productName: aiMeta.name,
+          origin: aiMeta.origin,
           retailPrice: aiMeta.suggested_retail_price,
           wholesalePrice: aiMeta.suggested_wholesale_price,
           unit: aiMeta.unit,
@@ -270,6 +273,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
       const finalHtml = document.getElementById('supplier-landing-preview')?.innerHTML || aiLandingHtml
       const updateData: any = {
         description: finalHtml,
+        origin: aiMeta.origin.trim() || null,
         approval_status: selectedProduct.approval_status === '거절' ? '대기중' : selectedProduct.approval_status,
       }
       if (mainImgUrl) updateData.image_url = mainImgUrl
@@ -471,6 +475,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                   {[
                     { label: '상품명', key: 'name', placeholder: '예) 온종일팜 신선상품', full: true },
+                    { label: '원산지', key: 'origin', placeholder: '예) 국내산 · 전남 영광', full: true },
                     { label: '도매 공급가', key: 'suggested_wholesale_price', placeholder: '원' },
                     { label: '소매 공급가', key: 'suggested_retail_price', placeholder: '원' },
                     { label: '재고', key: 'stock', placeholder: '수량' },
@@ -479,6 +484,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
                       <label style={{ display: 'block', fontSize: '10px', color: aiDark ? 'rgba(255,255,255,0.4)' : '#666', marginBottom: '4px', fontWeight: 700 }}>{f.label}</label>
                       <input value={(aiMeta as any)[f.key]} onChange={e => setAiMeta(p => ({ ...p, [f.key]: e.target.value }))}
                         placeholder={f.placeholder}
+                        maxLength={f.key === 'origin' ? 100 : undefined}
                         style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: aiDark ? 'rgba(255,255,255,0.05)' : 'white', color: aiDark ? 'white' : '#111', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }} />
                     </div>
                   ))}

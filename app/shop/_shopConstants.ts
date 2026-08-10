@@ -2,6 +2,7 @@
 
 export type Product = {
   id: string; name: string; description: string; image_url: string
+  origin?: string | null
   wholesale_price: number; retail_price: number; member_price: number; stock: number; unit: string
   weight?: number | null
   category_id: string; is_active: boolean

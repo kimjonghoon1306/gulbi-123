@@ -3,6 +3,7 @@
 type Category = { id: string; name: string; sort_order: number }
 type Product = {
   id: string; name: string; description: string
+  origin?: string | null
   category_id: string; wholesale_price: number; member_price: number; retail_price: number
   stock: number; unit: string; weight?: number | null; image_url: string; is_active: boolean; is_taxable: boolean
 }
@@ -63,7 +64,10 @@ export default function ProductList({
                   <tbody>
                     {products.map(p => (
                       <tr key={p.id} className="border-b border-slate-50 dark:border-gray-700/50 hover:bg-slate-50 dark:hover:bg-gray-700/30 transition-colors">
-                        <td className="px-5 py-4 text-sm font-medium text-slate-800 dark:text-white">{p.name}</td>
+                        <td className="px-5 py-4">
+                          <p className="text-sm font-medium text-slate-800 dark:text-white">{p.name}</p>
+                          {p.origin && <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">원산지 {p.origin}</p>}
+                        </td>
                         <td className="px-5 py-4 text-sm text-slate-500 dark:text-slate-400">{getCatName(p.category_id)}</td>
                         <td className="px-5 py-4 text-sm text-slate-800 dark:text-slate-200">{p.wholesale_price.toLocaleString()}원</td>
                         <td className="px-5 py-4 text-sm text-slate-800 dark:text-slate-200">{p.retail_price.toLocaleString()}원</td>
@@ -98,6 +102,7 @@ export default function ProductList({
                         </span>
                       </div>
                       <p className="text-xs text-slate-400 dark:text-slate-500">{getCatName(p.category_id)} · {p.stock}{p.unit}{p.weight != null && Number(p.weight) > 0 ? ` · 중량 ${Number(p.weight)}${p.unit}` : ''}</p>
+                      {p.origin && <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">원산지 {p.origin}</p>}
                       <p className="text-xs text-green-600 dark:text-green-400 font-semibold mt-0.5">도매 공급가 {p.wholesale_price.toLocaleString()}원 / 일반 구매가 {p.retail_price.toLocaleString()}원</p>
                     </div>
                     <div className="flex flex-col gap-1.5 flex-shrink-0">

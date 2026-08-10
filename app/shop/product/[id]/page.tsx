@@ -483,6 +483,9 @@ export default function ProductDetailPage() {
               {product.category_id ? '수산물' : '신선 식품'}
             </p>
             <h1 style={{fontSize:'26px',fontWeight:900,letterSpacing:'-0.8px',lineHeight:1.25,marginBottom:'10px',color:D.text}}>{product.name}</h1>
+            {product.origin && (
+              <p style={{fontSize:'13px',color:D.sub,fontWeight:600,margin:'-2px 0 12px'}}>원산지&nbsp; <strong style={{color:D.text}}>{product.origin}</strong></p>
+            )}
 
             {/* 평균 별점 요약 */}
             {reviews.length > 0 && (
