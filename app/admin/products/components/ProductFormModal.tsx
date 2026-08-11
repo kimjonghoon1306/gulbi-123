@@ -117,7 +117,7 @@ export function ProductFormModal({ show, onClose, editProduct, form, setForm, on
               { label: '🛒 일반 구매가 (원)', key: 'retail_price', isMoney: true, placeholder: '예: 30,000' },
               { label: '🏪 소매 공급가 (원)', key: 'member_price', isMoney: true, placeholder: '예: 25,000' },
               { label: '🏭 도매 공급가 (원)', key: 'wholesale_price', isMoney: true, placeholder: '예: 20,000' },
-              { label: '재고 수량', key: 'stock', isMoney: false, placeholder: '예: 100' },
+              { label: '재고 수량 (비우면 무제한)', key: 'stock', isMoney: false, placeholder: '비워두면 무제한' },
             ].map(f => (
               <div key={f.key}>
                 <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">{f.label}</label>

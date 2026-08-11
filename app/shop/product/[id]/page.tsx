@@ -557,20 +557,20 @@ export default function ProductDetailPage() {
 
             {/* 재고 */}
             <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'16px'}}>
-              <div style={{width:'8px',height:'8px',borderRadius:'50%',background:product.stock > 0 ? '#22c55e' : '#ef4444',animation:product.stock > 0 ? 'pulse 1.6s ease-in-out infinite' : 'none'}} />
+              <div style={{width:'8px',height:'8px',borderRadius:'50%',background:(product.stock == null || product.stock > 0) ? '#22c55e' : '#ef4444',animation:(product.stock == null || product.stock > 0) ? 'pulse 1.6s ease-in-out infinite' : 'none'}} />
               <p style={{fontSize:'13px',color:D.sub,fontWeight:500}}>
-                {product.stock > 0 ? `재고 ${product.stock} 남음` : '현재 품절입니다'}
+                {product.stock == null ? '재고 충분' : product.stock > 0 ? `재고 ${product.stock} 남음` : '현재 품절입니다'}
               </p>
             </div>
 
             {/* 수량 */}
-            {product.stock > 0 && (
+            {(product.stock == null || product.stock > 0) && (
               <div style={{display:'flex',alignItems:'center',gap:'14px',marginBottom:'20px'}}>
                 <p style={{fontSize:'13px',color:D.sub,fontWeight:600,flexShrink:0}}>수량</p>
                 <div style={{display:'flex',alignItems:'center',background:D.input,borderRadius:'12px',overflow:'hidden'}}>
                   <button onClick={() => setQuantity(Math.max(1,quantity-1))} style={{width:'40px',height:'40px',background:'none',border:'none',fontSize:'18px',cursor:'pointer',color:D.text,display:'flex',alignItems:'center',justifyContent:'center'}}>−</button>
                   <span style={{width:'40px',textAlign:'center',fontSize:'15px',fontWeight:700,color:D.text}}>{quantity}</span>
-                  <button onClick={() => setQuantity(Math.min(product.stock,quantity+1))} style={{width:'40px',height:'40px',background:'none',border:'none',fontSize:'18px',cursor:'pointer',color:D.text,display:'flex',alignItems:'center',justifyContent:'center'}}>+</button>
+                  <button onClick={() => setQuantity(Math.min(product.stock ?? 9999,quantity+1))} style={{width:'40px',height:'40px',background:'none',border:'none',fontSize:'18px',cursor:'pointer',color:D.text,display:'flex',alignItems:'center',justifyContent:'center'}}>+</button>
                 </div>
                 <p style={{fontSize:'15px',fontWeight:900,color:D.gtext,marginLeft:'auto'}}>
                   = {totalPrice.toLocaleString()}원
