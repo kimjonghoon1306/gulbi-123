@@ -67,7 +67,7 @@ export default function ProductsPage() {
       return
     }
     if (!form.name.trim()) { alert('상품명을 입력해 주세요.'); return }
-    const data = { ...form, origin: form.origin.trim() || null, wholesale_price: Number(form.wholesale_price), member_price: Number(form.member_price) || 0, retail_price: Number(form.retail_price), stock: form.stock.trim() === '' ? null : Number(form.stock), weight: form.weight.trim() === '' ? null : Number(form.weight), subscribable: !!form.subscribable, subscribe_discount: form.subscribe_discount.trim() === '' ? 0 : Number(form.subscribe_discount), shipping_type: form.shipping_type, shipping_fee: form.shipping_type === 'paid' ? Number(form.shipping_fee) : 0, free_shipping_threshold: form.shipping_type === 'paid' && form.free_shipping_threshold.trim() ? Number(form.free_shipping_threshold) : null }
+    const data = { ...form, category_id: form.category_id || null, origin: form.origin.trim() || null, wholesale_price: Number(form.wholesale_price), member_price: Number(form.member_price) || 0, retail_price: Number(form.retail_price), stock: form.stock.trim() === '' ? null : Number(form.stock), weight: form.weight.trim() === '' ? null : Number(form.weight), subscribable: !!form.subscribable, subscribe_discount: form.subscribe_discount.trim() === '' ? 0 : Number(form.subscribe_discount), shipping_type: form.shipping_type, shipping_fee: form.shipping_type === 'paid' ? Number(form.shipping_fee) : 0, free_shipping_threshold: form.shipping_type === 'paid' && form.free_shipping_threshold.trim() ? Number(form.free_shipping_threshold) : null }
     const { error } = editProduct
       ? await supabase.from('products').update(data).eq('id', editProduct.id)
       : await supabase.from('products').insert(data)
