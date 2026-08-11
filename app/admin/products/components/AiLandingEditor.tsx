@@ -203,7 +203,7 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
 
       const res = await fetch('/api/generate-landing', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ images, persona: aiPersona, theme: 'premium', productName: aiMeta.name, origin: aiMeta.origin, retailPrice: aiMeta.retail_price, wholesalePrice: aiMeta.wholesale_price, unit: aiMeta.unit, productGroup, basicInfo })
+        body: JSON.stringify({ images, persona: aiPersona, productName: aiMeta.name, origin: aiMeta.origin, retailPrice: aiMeta.retail_price, wholesalePrice: aiMeta.wholesale_price, unit: aiMeta.unit, productGroup, basicInfo })
       })
       const data = await res.json()
       if (data.error) {
@@ -212,7 +212,8 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
       }
       setAiLandingData(data.data || null)
       setAiLandingHtml(data.html)
-      setAiPresetKey('gold' as PresetKey); setAiTemplateKey('premium')
+      // 서버가 고른 템플릿/색상(AI 추천 또는 랜덤)을 반영 — 이상하면 사용자가 UI에서 바꿀 수 있음
+      setAiPresetKey((data.presetKey as PresetKey) || 'gold'); setAiTemplateKey((data.templateKey as TemplateKey) || 'premium')
       setAiStep(3)
     } catch (e: any) {
       console.error('[admin landing generate] unexpected error', e)

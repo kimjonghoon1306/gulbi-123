@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { renderLanding, type LandingData } from '@/lib/landing-templates'
+import { renderLanding, type LandingData, type PresetKey, type TemplateKey } from '@/lib/landing-templates'
 import { getAuthAndGeminiKey } from '@/lib/supabase-server'
 import { callAI } from '@/lib/ai'
 
@@ -453,8 +453,18 @@ unusedIndices: 어느 섹션에도 안 어울리는 이미지 인덱스들.
     "storage": <인덱스 또는 null>
   },
   "unusedIndices": [<미사용 인덱스>],
-  "nearDuplicateGroups": [[<서로 거의 동일한 이미지 인덱스들>]]
+  "nearDuplicateGroups": [[<서로 거의 동일한 이미지 인덱스들>]],
+  "recommendedTemplate": "<이 상품에 가장 어울리는 템플릿 1개>"
 }
+
+[templates] recommendedTemplate은 다음 중 상품 성격에 맞게 하나 고르세요:
+- premium: 고급 명품 스타일(식품·선물세트 등 프리미엄)
+- luxury: 다크 골드 명품(고가·프리미엄 주류/한우 등)
+- magazine: 에디토리얼 세리프(스토리가 중요한 산지 직송·전통식품)
+- pop: 밝고 컬러풀·MZ 감성(간식·디저트·음료 등 젊은 타깃)
+- clean: 화이트 미니멀(화장품·패션·건강기능식품)
+- modern/business/traditional/emotional: 그 외 성격에 맞게
+상품이 어떤 느낌이든 premium만 고르지 말고, 상품 특성에 맞는 걸 자신 있게 추천하세요.
 
 중요: sectionAssignment에서 같은 인덱스를 두 번 쓰지 마세요.
 섹션에 어울리는 사진이 없으면 null. 억지로 채우면 안 됩니다.
@@ -572,9 +582,22 @@ unusedIndices: 어느 섹션에도 안 어울리는 이미지 인덱스들.
 
     const fb = buildFallback(productName || '상품', Number(retailPrice) || 0, unit || '개')
     const finalData = mergeData(aiJson, fb, productName || '상품', sectionImages, unusedImages)
-    const html = renderLanding(finalData)
 
-    return NextResponse.json({ html, data: finalData })
+    // 템플릿 선택: 사용자가 고른 게 있으면 그것, 없으면 AI 추천, 그것도 없으면 랜덤
+    // (프리미엄 고정 방지 — 사용자는 나중에 UI에서 바꿀 수 있음)
+    const VALID_TEMPLATES: TemplateKey[] = ['premium', 'modern', 'traditional', 'business', 'emotional', 'magazine', 'luxury', 'pop', 'clean']
+    const TEMPLATE_PRESET: Record<TemplateKey, PresetKey> = {
+      premium: 'gold', luxury: 'dark', pop: 'pink', clean: 'white',
+      modern: 'blue', magazine: 'dark', business: 'blue', emotional: 'red', traditional: 'gold',
+    }
+    const userChoice = typeof theme === 'string' && VALID_TEMPLATES.includes(theme as TemplateKey) ? (theme as TemplateKey) : null
+    const aiChoice = VALID_TEMPLATES.includes(aiJson?.recommendedTemplate) ? (aiJson.recommendedTemplate as TemplateKey) : null
+    const templateKey: TemplateKey = userChoice || aiChoice || VALID_TEMPLATES[Math.floor(Math.random() * VALID_TEMPLATES.length)]
+    const presetKey: PresetKey = TEMPLATE_PRESET[templateKey] || 'gold'
+
+    const html = renderLanding(finalData, presetKey, templateKey)
+
+    return NextResponse.json({ html, data: finalData, templateKey, presetKey })
   } catch (e: any) {
     console.error('[generate-landing] unexpected error', e)
     return NextResponse.json({ error: '상세페이지 생성 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.' }, { status: 500 })

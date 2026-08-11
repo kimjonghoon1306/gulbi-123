@@ -969,15 +969,14 @@ function renderPopLanding(d: LandingData, p: Preset): string {
 </section>
 
 ${d.sectionImages?.origin ? `<section style="padding:12px 22px;"><img src="${d.sectionImages.origin}" alt="${esc(d.originLocation)}" style="width:100%;max-width:560px;aspect-ratio:16/9;object-fit:cover;border-radius:28px;display:block;margin:0 auto;box-shadow:0 14px 36px rgba(0,0,0,0.12);" /></section>` : ''}
-${d.sectionImages?.story ? `<section style="padding:12px 22px 44px;"><img src="${d.sectionImages.story}" alt="${esc(d.productName)}" style="width:100%;max-width:560px;aspect-ratio:4/3;object-fit:cover;border-radius:28px;display:block;margin:0 auto;box-shadow:0 14px 36px rgba(0,0,0,0.12);" /></section>` : ''}
-
-${d.sectionImages?.recipe ? `<section style="padding:12px 22px 44px;"><img src="${d.sectionImages.recipe}" alt="${esc(d.productName)}" style="width:100%;max-width:560px;aspect-ratio:4/3;object-fit:cover;border-radius:28px;display:block;margin:0 auto;box-shadow:0 14px 36px rgba(0,0,0,0.12);" /></section>` : ''}
 
 <section style="background:linear-gradient(135deg,${acc},${acc2});padding:52px 22px;text-align:center;color:#fff;border-radius:36px;margin:0 12px;">
   <p style="font-size:13px;font-weight:800;opacity:0.85;letter-spacing:0.1em;margin:0 0 6px;">${esc(d.keyNumber.label)}</p>
   <div style="font-size:clamp(58px,16vw,108px);font-weight:900;line-height:1;">${esc(d.keyNumber.value)}<span style="font-size:0.3em;">${esc(d.keyNumber.unit)}</span></div>
   <p ${ce('keynum.caption')} style="font-size:14px;opacity:0.9;max-width:400px;margin:14px auto 0;line-height:1.7;">${esc(d.keyNumber.caption)}</p>
 </section>
+
+${d.sectionImages?.story ? `<section style="padding:12px 22px 44px;"><img src="${d.sectionImages.story}" alt="${esc(d.productName)}" style="width:100%;max-width:560px;aspect-ratio:4/3;object-fit:cover;border-radius:28px;display:block;margin:0 auto;box-shadow:0 14px 36px rgba(0,0,0,0.12);" /></section>` : ''}
 
 <section style="padding:44px 22px;text-align:center;">
   <h2 style="font-size:clamp(20px,5.5vw,26px);font-weight:900;margin:0 0 22px;">이렇게 즐겨요 🙌</h2>
@@ -986,11 +985,7 @@ ${d.sectionImages?.recipe ? `<section style="padding:12px 22px 44px;"><img src="
   </div>
 </section>
 
-${d.sectionImages?.storage ? `<section style="padding:0 22px 44px;"><img src="${d.sectionImages.storage}" alt="${esc(d.productName)}" style="width:100%;max-width:560px;aspect-ratio:4/3;object-fit:cover;border-radius:28px;display:block;margin:0 auto;box-shadow:0 14px 36px rgba(0,0,0,0.12);" /></section>` : ''}
-
-${gallery.length ? `<section style="padding:8px 12px 40px;">
-  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:560px;margin:0 auto;">${gallery.map(src=>`<img src="${src}" alt="${esc(d.productName)}" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:20px;display:block;" />`).join('')}</div>
-</section>` : ''}
+${d.sectionImages?.recipe ? `<section style="padding:12px 22px 44px;"><img src="${d.sectionImages.recipe}" alt="${esc(d.productName)}" style="width:100%;max-width:560px;aspect-ratio:4/3;object-fit:cover;border-radius:28px;display:block;margin:0 auto;box-shadow:0 14px 36px rgba(0,0,0,0.12);" /></section>` : ''}
 
 <section style="padding:44px 22px;text-align:center;">
   <h2 style="font-size:clamp(20px,5.5vw,26px);font-weight:900;margin:0 0 6px;">리얼 후기 ⭐</h2>
@@ -999,6 +994,12 @@ ${gallery.length ? `<section style="padding:8px 12px 40px;">
     ${d.reviews.slice(0,3).map((r,i)=>`<div style="background:${chipColors[i%chipColors.length]}12;border-radius:22px;padding:20px;text-align:left;"><p style="color:#FFB020;margin:0 0 8px;font-size:14px;">★★★★★</p><p style="font-size:14px;line-height:1.75;margin:0 0 10px;">${esc(r.text)}</p><p style="font-size:12px;color:#8a8aa0;margin:0;font-weight:700;">${esc(r.author)} · ${esc(r.date)}</p></div>`).join('')}
   </div>
 </section>
+
+${d.sectionImages?.storage ? `<section style="padding:0 22px 44px;"><img src="${d.sectionImages.storage}" alt="${esc(d.productName)}" style="width:100%;max-width:560px;aspect-ratio:4/3;object-fit:cover;border-radius:28px;display:block;margin:0 auto;box-shadow:0 14px 36px rgba(0,0,0,0.12);" /></section>` : ''}
+
+${gallery.length ? `<section style="padding:8px 12px 40px;">
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:560px;margin:0 auto;">${gallery.map(src=>`<img src="${src}" alt="${esc(d.productName)}" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:20px;display:block;" />`).join('')}</div>
+</section>` : ''}
 
 <section style="padding:8px 22px 56px;text-align:center;">
   <div style="background:#1a1a2e;border-radius:32px;padding:44px 24px;color:#fff;">
@@ -1068,14 +1069,15 @@ ${d.sectionImages?.story ? bleed(d.sectionImages.story) : ''}
 </section>
 
 ${d.sectionImages?.recipe ? bleed(d.sectionImages.recipe) : ''}
-${d.sectionImages?.storage ? bleed(d.sectionImages.storage) : ''}
-
-${gallery.length ? `<section style="padding:2px 0;"><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:2px;">${gallery.map(src=>`<img src="${src}" alt="${esc(d.productName)}" style="width:100%;aspect-ratio:3/4;object-fit:cover;display:block;" />`).join('')}</div></section>` : ''}
 
 <section style="padding:60px 28px;max-width:560px;margin:0 auto;text-align:center;">
   <p style="font-size:11px;letter-spacing:0.3em;color:${acc};margin:0 0 24px;text-transform:uppercase;">REVIEWS</p>
   ${d.reviews.slice(0,3).map(r=>`<div style="padding:24px 0;border-top:1px solid #eee;text-align:left;"><p style="font-size:15px;line-height:1.9;color:#444;margin:0 0 10px;">“${esc(r.text)}”</p><p style="font-size:11px;letter-spacing:0.1em;color:#aaa;margin:0;">${esc(r.author)} · ${esc(r.date)}</p></div>`).join('')}
 </section>
+
+${d.sectionImages?.storage ? bleed(d.sectionImages.storage) : ''}
+
+${gallery.length ? `<section style="padding:2px 0;"><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:2px;">${gallery.map(src=>`<img src="${src}" alt="${esc(d.productName)}" style="width:100%;aspect-ratio:3/4;object-fit:cover;display:block;" />`).join('')}</div></section>` : ''}
 
 <section style="padding:72px 28px;text-align:center;border-top:1px solid #eee;">
   <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(38px,10vw,64px);font-weight:500;line-height:1;margin:0 0 8px;">${comma(d.price.retail)}<span style="font-size:0.3em;margin-left:4px;">원</span></div>
