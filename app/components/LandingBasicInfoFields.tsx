@@ -67,9 +67,11 @@ type Props = {
   value: LandingBasicInfo
   onChange: (value: LandingBasicInfo) => void
   dark: boolean
+  isAutoFilling?: boolean
+  onAutoFill?: () => void
 }
 
-export default function LandingBasicInfoFields({ group, setGroup, value, onChange, dark }: Props) {
+export default function LandingBasicInfoFields({ group, setGroup, value, onChange, dark, isAutoFilling = false, onAutoFill }: Props) {
   const border = dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.14)'
   const inputBg = dark ? 'rgba(255,255,255,0.06)' : '#fff'
   const text = dark ? '#fff' : '#111'
@@ -78,28 +80,40 @@ export default function LandingBasicInfoFields({ group, setGroup, value, onChang
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div style={{ padding: '11px 13px', borderRadius: '10px', border: `1px solid ${dark ? 'rgba(34,197,94,0.28)' : '#bbf7d0'}`, background: dark ? 'rgba(34,197,94,0.08)' : '#f0fdf4', color: dark ? 'rgba(255,255,255,0.72)' : '#166534', fontSize: '11px', lineHeight: 1.6 }}>
+        <strong style={{ display: 'block', marginBottom: '2px', color: dark ? '#4ade80' : '#15803d' }}>사용 방법</strong>
+        상품군을 선택한 뒤 <strong>AI 기본내용 작성</strong>을 눌러주세요. AI가 작성한 내용을 확인하고 필요한 부분을 수정한 뒤 <strong>AI 상세페이지 제작하기</strong>를 눌러주세요.
+      </div>
+      {isAutoFilling && <div role="status" style={{ padding: '10px 12px', borderRadius: '9px', background: dark ? 'rgba(59,130,246,0.12)' : '#eff6ff', color: dark ? '#93c5fd' : '#1d4ed8', fontSize: '11px', fontWeight: 700 }}>✨ 이미지에서 상품 정보를 읽어 초안을 작성하고 있어요...</div>}
       <div>
         <label style={{ display: 'block', color: sub, fontSize: '11px', fontWeight: 800, marginBottom: '6px' }}>상품군 <span style={{ color: '#f97316' }}>*</span></label>
-        <select value={group} onChange={e => setGroup(e.target.value as ProductGroup)}
+        <select value={group} disabled={isAutoFilling} onChange={e => setGroup(e.target.value as ProductGroup)}
           style={{ width: '100%', padding: '13px 14px', borderRadius: '10px', border: `2px solid ${group ? '#22c55e' : border}`, background: inputBg, color: text, fontSize: '14px', fontWeight: 700, outline: 'none' }}>
           {PRODUCT_GROUPS.map(item => <option key={item.value} value={item.value} style={{ color: '#111' }}>{item.label}</option>)}
         </select>
         <p style={{ color: sub, fontSize: '11px', margin: '5px 2px 0' }}>{PRODUCT_GROUPS.find(item => item.value === group)?.help || '상품군을 선택하면 필요한 작성칸이 나타나요.'}</p>
       </div>
 
+      {group && onAutoFill && (
+        <button type="button" onClick={onAutoFill} disabled={isAutoFilling}
+          style={{ width: '100%', padding: '14px 16px', borderRadius: '11px', border: 'none', background: isAutoFilling ? 'rgba(34,197,94,0.25)' : 'linear-gradient(135deg,#22c55e,#4ade80)', color: isAutoFilling ? (dark ? 'rgba(255,255,255,0.55)' : '#64748b') : '#071b0d', fontSize: '15px', fontWeight: 900, cursor: isAutoFilling ? 'wait' : 'pointer', boxShadow: isAutoFilling ? 'none' : '0 5px 18px rgba(34,197,94,0.28)' }}>
+          {isAutoFilling ? '✨ 이미지 분석해서 기본내용 작성 중...' : '✨ AI 기본내용 작성'}
+        </button>
+      )}
+
       {group && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: '9px' }}>
-          {fields.map(([key, label, placeholder]) => (
+          {fields.map(([key, label]) => (
             <label key={key} style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
               <span style={{ color: sub, fontSize: '10px', fontWeight: 800 }}>{label} <span style={{ fontWeight: 500 }}>(선택)</span></span>
-              <textarea value={value[key] || ''} onChange={e => onChange({ ...value, [key]: e.target.value })}
-                placeholder={placeholder} rows={2} maxLength={500}
+              <textarea value={value[key] || ''} disabled={isAutoFilling} onChange={e => onChange({ ...value, [key]: e.target.value })}
+                placeholder={isAutoFilling ? 'AI가 내용을 작성하고 있어요...' : ''} rows={2} maxLength={500}
                 style={{ width: '100%', minHeight: '62px', resize: 'vertical', boxSizing: 'border-box', padding: '10px 11px', borderRadius: '9px', border: `1px solid ${border}`, background: inputBg, color: text, fontSize: '12px', lineHeight: 1.5, outline: 'none', fontFamily: 'inherit' }} />
             </label>
           ))}
         </div>
       )}
-      {group && <p style={{ color: sub, fontSize: '11px', margin: 0 }}>모르는 내용은 비워두세요. 작성한 내용은 AI가 상세페이지 문장으로 자연스럽게 확장해요.</p>}
+      {group && <p style={{ color: dark ? '#e5e7eb' : '#334155', fontSize: '13px', lineHeight: 1.65, fontWeight: 700, margin: '2px 0 0' }}>AI가 작성한 내용을 확인하고 필요한 부분을 수정하세요. 원산지·함량·인증·소비기한은 상품 표시사항과 대조한 뒤 AI 상세페이지 제작하기를 눌러주세요.</p>}
     </div>
   )
 }

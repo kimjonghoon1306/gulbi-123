@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { renderLanding, type LandingData } from '@/lib/landing-templates'
 import { getAuthAndGeminiKey } from '@/lib/supabase-server'
+import { callAI } from '@/lib/ai'
 
 // 페르소나별 카피 톤 지침
 const PERSONA_TONES: Record<string, string> = {
@@ -203,12 +204,73 @@ export async function POST(req: NextRequest) {
     } else if (body.base64) {
       imageList = [{ base64: body.base64, mimeType: body.mimeType || 'image/jpeg' }]
     }
+    if (body.mode === 'basic-info' && body.imageUrl && imageList.length < 10) {
+      try {
+        const imageUrl = new URL(body.imageUrl)
+        if (imageUrl.protocol !== 'https:') throw new Error('invalid image URL')
+        const imageResponse = await fetch(imageUrl, { cache: 'no-store' })
+        if (!imageResponse.ok) throw new Error('image fetch failed')
+        const imageBuffer = await imageResponse.arrayBuffer()
+        if (imageBuffer.byteLength > 8 * 1024 * 1024) throw new Error('image too large')
+        imageList.unshift({ base64: Buffer.from(imageBuffer).toString('base64'), mimeType: imageResponse.headers.get('content-type') || 'image/jpeg' })
+      } catch {
+        return NextResponse.json({ error: '기존 대표이미지를 불러오지 못했습니다.' }, { status: 400 })
+      }
+    }
 
     if (imageList.length === 0) {
       return NextResponse.json({ error: '[v2] 이미지를 먼저 올려주세요. (업로드하신 이미지가 서버에 전달되지 않았습니다)' }, { status: 400 })
     }
 
     const geminiKey = auth.geminiKey
+
+    if (body.mode === 'basic-info') {
+      const basicInfoPrompt = `첨부된 상품 이미지를 분석해 상세페이지 작성용 기본정보 초안을 만드세요.
+상품명은 ${productName || '(알 수 없음)'}입니다. 사진과 상품명을 바탕으로 판매자가 수정해서 쓸 수 있는 자연스러운 초안을 작성하세요.
+선택된 상품군은 ${productGroup || '(미선택)'}입니다. productGroup은 이 값을 그대로 반환하세요.
+basicInfo에는 아래 공통 키와 선택한 상품군의 키를 모두 사용하고 모든 값을 빠짐없이 한 문장 이상 채우세요. 빈 문자열은 절대 반환하지 마세요.
+공통: oneLine, composition, highlights, difference, recommendedFor, packagingShipping, certifications
+fresh: tasteTexture, selectionProduction, storageShelfLife, preparation, ingredientsAllergy
+processed: ingredientsAllergy, manufacturing, tasteTexture, storageShelfLife, preparation
+living: material, sizeWeight, functions, usage, care
+electronics: modelSpecs, sizeWeight, components, compatibility, usage, warranty
+craft: material, sizeWeight, makerStory, usage, care
+사진만으로 확정할 수 없는 원산지·함량·인증번호·소비기한은 사실처럼 만들지 말고 "상품 표시사항 기준으로 확인 후 수정해 주세요"처럼 판매자가 수정할 초안을 넣으세요.
+반드시 {"productGroup":"fresh","basicInfo":{"oneLine":"..."}} 형태의 JSON 객체만 출력하세요.`
+      const aiResult = await callAI({
+        keys: { geminiKey },
+        system: '당신은 상품 이미지를 분석해 판매자가 수정할 상세페이지 기본정보 초안을 JSON으로 작성하는 전문가입니다.',
+        prompt: basicInfoPrompt,
+        images: imageList.slice(0, 3),
+        maxTokens: 3000,
+        jsonMode: true,
+        prefer: 'gemini',
+      })
+      if (!aiResult.ok) {
+        console.error('[generate-landing/basic-info] AI failed', aiResult.error)
+        return NextResponse.json({ error: aiResult.error || '이미지 분석에 실패했습니다.' }, { status: 502 })
+      }
+      const parsed = extractJson(aiResult.text)
+      if (!parsed?.basicInfo) {
+        console.error('[generate-landing/basic-info] invalid JSON response', aiResult.text.slice(0, 500))
+        return NextResponse.json({ error: '상품 정보를 읽지 못했습니다.' }, { status: 502 })
+      }
+      const allowedGroups = new Set(['fresh', 'processed', 'living', 'electronics', 'craft'])
+      if (!allowedGroups.has(productGroup)) return NextResponse.json({ error: '상품군을 먼저 선택해주세요.' }, { status: 400 })
+      const commonKeys = ['oneLine', 'composition', 'highlights', 'difference', 'recommendedFor', 'packagingShipping', 'certifications']
+      const groupKeys: Record<string, string[]> = {
+        fresh: ['tasteTexture', 'selectionProduction', 'storageShelfLife', 'preparation', 'ingredientsAllergy'],
+        processed: ['ingredientsAllergy', 'manufacturing', 'tasteTexture', 'storageShelfLife', 'preparation'],
+        living: ['material', 'sizeWeight', 'functions', 'usage', 'care'],
+        electronics: ['modelSpecs', 'sizeWeight', 'components', 'compatibility', 'usage', 'warranty'],
+        craft: ['material', 'sizeWeight', 'makerStory', 'usage', 'care'],
+      }
+      const safeBasicInfo = Object.fromEntries([...commonKeys, ...groupKeys[productGroup]].map(key => {
+        const value = typeof parsed.basicInfo[key] === 'string' ? parsed.basicInfo[key].trim() : ''
+        return [key, value || '이미지와 상품 표시사항을 확인해 실제 정보로 수정해 주세요.']
+      }))
+      return NextResponse.json({ productGroup, basicInfo: safeBasicInfo, provider: aiResult.provider })
+    }
 
     const toneText = PERSONA_TONES[persona] || PERSONA_TONES.shohost
     const groupLabels: Record<string, string> = {

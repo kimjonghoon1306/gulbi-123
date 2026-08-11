@@ -93,10 +93,8 @@ export default function ProductsPage() {
       </div>
 
       <ProductList
-        tab="products" setTab={() => {}}
         products={products} categories={categories} loading={loading}
         onEdit={openEdit} onDelete={deleteProduct} onRemake={remakeDetail}
-        onEditCat={() => {}} onDeleteCat={async () => {}} onAddCat={() => {}}
       />
 
       {/* 상품 폼 모달 */}

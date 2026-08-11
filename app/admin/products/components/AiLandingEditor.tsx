@@ -51,6 +51,7 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
   const [aiMeta, setAiMeta] = useState({ name: '', origin: '', category_id: '', unit: 'kg', wholesale_price: '', member_price: '', retail_price: '', stock: '' })
   const [productGroup, setProductGroup] = useState<ProductGroup>('')
   const [basicInfo, setBasicInfo] = useState<LandingBasicInfo>({})
+  const [basicInfoLoading, setBasicInfoLoading] = useState(false)
   const [aiLandingHtml, setAiLandingHtml] = useState('')
   const [aiLandingData, setAiLandingData] = useState<LandingData | null>(null)
   const [aiPresetKey, setAiPresetKey] = useState<PresetKey>('gold' as PresetKey)
@@ -116,6 +117,27 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
   }
 
   // ── image upload + bg removal ────────────────────────────
+  const autoFillBasicInfo = async () => {
+    if (!productGroup) return setAiError('상품군을 먼저 선택해주세요.')
+    if (!aiImage && !selectedProduct?.image_url) return setAiError('대표 이미지를 먼저 준비해주세요.')
+    setBasicInfoLoading(true)
+    setAiError('')
+    try {
+      const images: { base64: string; mimeType: string }[] = []
+      if (aiImage) images.push(await resizeImg(aiImage))
+      for (const extra of aiExtraImages) images.push(await resizeImg(extra.file))
+      const response = await fetch('/api/generate-landing', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'basic-info', images, imageUrl: aiImage ? undefined : selectedProduct?.image_url, productName: aiMeta.name, productGroup }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error)
+      setBasicInfo(data.basicInfo || {})
+    } catch {
+      setAiError('이미지는 등록됐지만 기본정보 초안은 만들지 못했어요. 직접 입력하거나 다시 올려주세요.')
+    } finally { setBasicInfoLoading(false) }
+  }
+
   const handleImageUpload = async (file: File) => {
     setAiImage(file); setAiBgLoading(true); setAiError('')
     try {
@@ -148,12 +170,15 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
     setSelectedProduct(p)
     setProductGroup(''); setBasicInfo({})
     setAiMeta({ name: p.name, origin: p.origin || '', category_id: p.category_id || '', unit: p.unit || 'kg', wholesale_price: String(p.wholesale_price || ''), member_price: String(p.member_price || ''), retail_price: String(p.retail_price || ''), stock: String(p.stock || '') })
-    if (p.image_url) { setAiImagePreview(p.image_url); setAiBgRemovedPreview(p.image_url) }
+    if (p.image_url) {
+      setAiImagePreview(p.image_url); setAiBgRemovedPreview(p.image_url)
+    }
     setAiExtraImages([])
   }
 
   // ── AI generation ────────────────────────────────────────
   const handleGenerateLanding = async () => {
+    if (basicInfoLoading) return setAiError('상품 기본정보 초안이 완성될 때까지 잠시만 기다려주세요.')
     if (!aiImage && !selectedProduct?.image_url) return setAiError('이미지를 먼저 올려주세요.')
     setAiLoading(true); setAiError('')
     const steps = ['🔍 이미지 분석 중...', '✍️ 상품 스토리 작성 중...', '📋 특징 · 비교표 정리 중...', '⭐ 후기 · FAQ 작성 중...', '🎨 상세페이지 완성 중...']
@@ -293,13 +318,13 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
 
   // ── shared header ────────────────────────────────────────
   const Header = () => (
-    <div style={{ height: '52px', background: aiDark ? 'linear-gradient(135deg,#1a1a1a,#2d2d2d)' : 'linear-gradient(135deg,#f5f5f5,#e8e8e8)', borderBottom: '1px solid rgba(34,197,94,0.25)', display: 'flex', alignItems: 'center', padding: '0 16px', gap: '10px', flexShrink: 0 }}>
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '10px' }}>
+    <div style={{ minHeight: '52px', background: aiDark ? 'linear-gradient(135deg,#1a1a1a,#2d2d2d)' : 'linear-gradient(135deg,#f5f5f5,#e8e8e8)', borderBottom: '1px solid rgba(34,197,94,0.25)', display: 'flex', alignItems: 'center', padding: isMobile ? '8px 10px' : '0 16px', gap: isMobile ? '6px' : '10px', flexShrink: 0, flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+      <div style={{ flex: isMobile ? '1 1 100%' : 1, minWidth: 0, display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'stretch' : 'center', gap: isMobile ? '6px' : '10px' }}>
         <p style={{ color: '#22c55e', fontWeight: 900, fontSize: '14px', margin: 0, flexShrink: 0 }}>✨ 상세페이지 제작</p>
-        <div style={{ display: 'flex', gap: '4px', background: aiDark ? 'rgba(255,255,255,0.06)' : '#fafafa', borderRadius: '8px', padding: '3px' }}>
+        <div style={{ display: 'flex', gap: '4px', background: aiDark ? 'rgba(255,255,255,0.06)' : '#fafafa', borderRadius: '8px', padding: '3px', overflowX: 'auto', maxWidth: '100%' }}>
           {[{ k: 'ai', label: '✨ AI 생성' }, { k: 'manual', label: '✏️ 직접 만들기' }, { k: 'html', label: '</> HTML 붙여넣기' }].map(t => (
             <button key={t.k} onClick={() => setAiTab(t.k as any)}
-              style={{ padding: '4px 12px', borderRadius: '6px', border: 'none', fontSize: '11px', fontWeight: 700, cursor: 'pointer', background: aiTab === t.k ? '#22c55e' : 'transparent', color: aiTab === t.k ? '#111' : aiDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)' }}>
+              style={{ padding: isMobile ? '7px 9px' : '4px 12px', borderRadius: '6px', border: 'none', fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, background: aiTab === t.k ? '#22c55e' : 'transparent', color: aiTab === t.k ? '#111' : aiDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)' }}>
               {t.label}
             </button>
           ))}
@@ -328,7 +353,7 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
     <>
       {/* ── AI STEP 1-3 ── */}
       {aiTab === 'ai' && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: aiDark ? 'rgba(0,0,0,0.95)' : 'rgba(240,240,240,0.97)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: aiDark ? 'rgba(0,0,0,0.95)' : 'rgba(240,240,240,0.97)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
           <Header />
 
           {/* 선택창: 상품관리에서 '상세' 눌러 진입 시 (상품 재선택 없음) */}
@@ -359,7 +384,7 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
 
           {/* STEP 1: 상품 선택 + 이미지 */}
           {!aiChoice && aiStep === 1 && (
-            <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', gap: '20px', minHeight: 0 }}>
+            <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: isMobile ? '14px' : '20px', display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '16px' : '20px', minHeight: 0 }}>
               {/* 상품 리스트 */}
               <div style={{ width: isMobile ? '100%' : '260px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <p style={{ color: aiDark ? 'rgba(255,255,255,0.5)' : '#555', fontSize: '11px', fontWeight: 700, margin: '0 0 4px', letterSpacing: '1px' }}>📦 상품 선택</p>
@@ -505,14 +530,14 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
                 </div>
                 <div style={{ gridColumn: '1 / -1', borderTop: '1px solid ' + (aiDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'), paddingTop: '16px' }}>
                   <h3 style={{ color: aiDark ? 'white' : '#111', fontSize: '17px', fontWeight: 900, margin: '0 0 10px' }}>📝 상세페이지 기본내용</h3>
-                  <LandingBasicInfoFields group={productGroup} setGroup={setProductGroup} value={basicInfo} onChange={setBasicInfo} dark={aiDark} />
+                  <LandingBasicInfoFields group={productGroup} setGroup={setProductGroup} value={basicInfo} onChange={setBasicInfo} dark={aiDark} isAutoFilling={basicInfoLoading} onAutoFill={autoFillBasicInfo} />
                 </div>
                 {aiError && <div style={{ gridColumn: '1 / -1', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '10px', padding: '10px 14px' }}><p style={{ color: '#f87171', fontSize: '13px', margin: 0 }}>{aiError}</p></div>}
                 <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '10px' }}>
                   <button onClick={() => setAiStep(1)} style={{ flex: 1, padding: '15px', borderRadius: '12px', border: '1.5px solid ' + (aiDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)'), background: 'transparent', color: aiDark ? 'rgba(255,255,255,0.5)' : '#555', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}>← 이전</button>
-                  <button onClick={handleGenerateLanding} disabled={aiLoading || !aiMeta.name.trim() || !productGroup}
+                  <button onClick={handleGenerateLanding} disabled={aiLoading || basicInfoLoading || !aiMeta.name.trim() || !productGroup}
                     style={{ flex: 3, padding: '15px', borderRadius: '12px', background: aiLoading || !aiMeta.name.trim() || !productGroup ? 'rgba(34,197,94,0.25)' : 'linear-gradient(135deg,#ec4899,#f43f5e)', color: aiLoading || !aiMeta.name.trim() || !productGroup ? 'rgba(255,255,255,0.3)' : '#111', fontSize: '15px', fontWeight: 900, border: 'none', cursor: aiLoading || !aiMeta.name.trim() || !productGroup ? 'not-allowed' : 'pointer', transition: 'all 0.2s' }}>
-                    {aiLoading ? (aiLoadingMsg || '⏳ 준비 중...') : '✨ 상세페이지 자동 생성'}
+                    {aiLoading ? (aiLoadingMsg || '⏳ 준비 중...') : '✨ AI 상세페이지 제작하기'}
                   </button>
                 </div>
                 {!aiMeta.name.trim() && <p style={{ gridColumn: '1 / -1', color: 'rgba(255,255,255,0.3)', fontSize: '12px', textAlign: 'center', margin: '-10px 0 0' }}>상품명을 입력해야 생성할 수 있어요</p>}
@@ -565,7 +590,7 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
                       <img src={aiBgRemovedPreview} alt="" style={{ width: '85%', height: '85%', objectFit: 'contain' }} />
                     </div>
                   )}
-                  <div id="landing-preview" contentEditable={!aiLandingData} suppressContentEditableWarning dangerouslySetInnerHTML={{ __html: aiLandingHtml }} />
+                  <div id="landing-preview" contentEditable suppressContentEditableWarning dangerouslySetInnerHTML={{ __html: aiLandingHtml }} />
                 </div>
               </div>
               <FloatingToolbar previewId="landing-preview" />

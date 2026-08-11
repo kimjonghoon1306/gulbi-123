@@ -93,6 +93,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
   const [aiMeta, setAiMeta] = useState({ name: '', origin: '', category_id: '', unit: 'kg', suggested_wholesale_price: '', suggested_retail_price: '', stock: '' })
   const [productGroup, setProductGroup] = useState<ProductGroup>('')
   const [basicInfo, setBasicInfo] = useState<LandingBasicInfo>({})
+  const [basicInfoLoading, setBasicInfoLoading] = useState(false)
   const [aiLandingHtml, setAiLandingHtml] = useState('')
   const [aiLandingData, setAiLandingData] = useState<LandingData | null>(null)
   const [aiPresetKey, setAiPresetKey] = useState<PresetKey>('gold' as PresetKey)
@@ -165,6 +166,27 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
     return url
   }
 
+  const autoFillBasicInfo = async () => {
+    if (!productGroup) return setAiError('상품군을 먼저 선택해주세요.')
+    if (!aiImage && !selectedProduct?.image_url) return setAiError('대표 이미지를 먼저 준비해주세요.')
+    setBasicInfoLoading(true)
+    setAiError('')
+    try {
+      const images: { base64: string; mimeType: string }[] = []
+      if (aiImage) images.push(await resizeImg(aiImage))
+      for (const extra of aiExtraImages) images.push(await resizeImg(extra.file))
+      const response = await fetch('/api/generate-landing', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'basic-info', images, imageUrl: aiImage ? undefined : selectedProduct?.image_url, productName: aiMeta.name, productGroup }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error)
+      setBasicInfo(data.basicInfo || {})
+    } catch {
+      setAiError('이미지는 등록됐지만 기본정보 초안은 만들지 못했어요. 직접 입력하거나 다시 올려주세요.')
+    } finally { setBasicInfoLoading(false) }
+  }
+
   const handleImageUpload = async (file: File) => {
     setAiImage(file); setAiError('')
     try {
@@ -195,11 +217,14 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
       suggested_retail_price: String(p.suggested_retail_price || ''),
       stock: String(p.stock || ''),
     })
-    if (p.image_url) setAiImagePreview(p.image_url)
+    if (p.image_url) {
+      setAiImagePreview(p.image_url)
+    }
     setAiExtraImages([])
   }
 
   const handleGenerateLanding = async () => {
+    if (basicInfoLoading) return setAiError('상품 기본정보 초안이 완성될 때까지 잠시만 기다려주세요.')
     if (!aiImage && !selectedProduct?.image_url) return setAiError('이미지를 먼저 올려주세요.')
     setAiLoading(true); setAiError('')
     const steps = ['🔍 이미지 분석 중...', '✍️ 상품 스토리 작성 중...', '📋 특징 · 비교표 정리 중...', '⭐ 후기 · FAQ 작성 중...', '🎨 상세페이지 완성 중...']
@@ -342,13 +367,13 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
   }
 
   const Header = () => (
-    <div style={{ height: '52px', background: aiDark ? 'linear-gradient(135deg,#1a1a1a,#2d2d2d)' : 'linear-gradient(135deg,#f5f5f5,#e8e8e8)', borderBottom: '1px solid rgba(34,197,94,0.25)', display: 'flex', alignItems: 'center', padding: '0 16px', gap: '10px', flexShrink: 0 }}>
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '10px' }}>
+    <div style={{ minHeight: '52px', background: aiDark ? 'linear-gradient(135deg,#1a1a1a,#2d2d2d)' : 'linear-gradient(135deg,#f5f5f5,#e8e8e8)', borderBottom: '1px solid rgba(34,197,94,0.25)', display: 'flex', alignItems: 'center', padding: isMobile ? '8px 10px' : '0 16px', gap: isMobile ? '6px' : '10px', flexShrink: 0, flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+      <div style={{ flex: isMobile ? '1 1 100%' : 1, minWidth: 0, display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'stretch' : 'center', gap: isMobile ? '6px' : '10px' }}>
         <p style={{ color: '#22c55e', fontWeight: 900, fontSize: '14px', margin: 0, flexShrink: 0 }}>✨ 상세페이지 제작</p>
-        <div style={{ display: 'flex', gap: '4px', background: aiDark ? 'rgba(255,255,255,0.06)' : '#fafafa', borderRadius: '8px', padding: '3px' }}>
+        <div style={{ display: 'flex', gap: '4px', background: aiDark ? 'rgba(255,255,255,0.06)' : '#fafafa', borderRadius: '8px', padding: '3px', overflowX: 'auto', maxWidth: '100%' }}>
           {[{ k: 'ai', label: '✨ AI 생성' }, { k: 'manual', label: '✏️ 직접 만들기' }, { k: 'html', label: '</> HTML 붙여넣기' }, { k: 'images', label: '🖼 이미지 올리기' }].map(t => (
             <button key={t.k} onClick={() => setAiTab(t.k as any)}
-              style={{ padding: '4px 12px', borderRadius: '6px', border: 'none', fontSize: '11px', fontWeight: 700, cursor: 'pointer', background: aiTab === t.k ? '#22c55e' : 'transparent', color: aiTab === t.k ? '#111' : aiDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)', whiteSpace: 'nowrap' }}>
+              style={{ padding: isMobile ? '7px 9px' : '4px 12px', borderRadius: '6px', border: 'none', fontSize: '11px', fontWeight: 700, cursor: 'pointer', background: aiTab === t.k ? '#22c55e' : 'transparent', color: aiTab === t.k ? '#111' : aiDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)', whiteSpace: 'nowrap', flexShrink: 0 }}>
               {t.label}
             </button>
           ))}
@@ -377,7 +402,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
     <>
       {/* ── AI 탭 ── */}
       {aiTab === 'ai' && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: aiDark ? 'rgba(0,0,0,0.95)' : 'rgba(240,240,240,0.97)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: aiDark ? 'rgba(0,0,0,0.95)' : 'rgba(240,240,240,0.97)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
           <Header />
 
           {/* 선택창: 상품관리에서 '상세' 눌러 진입 시 (상품 재선택 없음) */}
@@ -408,7 +433,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
 
           {/* STEP 1: 상품 선택 + 이미지 */}
           {!aiChoice && aiStep === 1 && (
-            <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', gap: '20px', minHeight: 0 }}>
+            <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: isMobile ? '14px' : '20px', display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '16px' : '20px', minHeight: 0 }}>
               {/* 상품 리스트 */}
               <div style={{ width: isMobile ? '100%' : '260px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <p style={{ color: aiDark ? 'rgba(255,255,255,0.5)' : '#555', fontSize: '11px', fontWeight: 700, margin: '0 0 4px', letterSpacing: '1px' }}>📦 내 상품 선택</p>
@@ -441,13 +466,13 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
                     <p style={{ color: aiDark ? 'rgba(255,255,255,0.3)' : '#888', fontSize: '11px' }}>JPG · PNG · WEBP</p>
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                  <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '12px', alignItems: 'flex-start' }}>
                     <div style={{ position: 'relative', flexShrink: 0 }}>
-                      <img src={aiImagePreview} alt="" style={{ width: isMobile ? '128px' : '200px', height: isMobile ? '128px' : '200px', objectFit: 'contain', borderRadius: '12px', background: '#111' }} />
+                      <img src={aiImagePreview} alt="" style={{ width: isMobile ? '100%' : '200px', height: isMobile ? '220px' : '200px', objectFit: 'contain', borderRadius: '12px', background: '#111' }} />
                       <button onClick={() => document.getElementById('supplier-ai-img')?.click()}
                         style={{ position: 'absolute', bottom: '6px', right: '6px', background: 'rgba(0,0,0,0.7)', border: 'none', borderRadius: '6px', padding: '4px 8px', color: 'white', fontSize: '10px', cursor: 'pointer' }}>교체</button>
                     </div>
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ flex: 1, width: isMobile ? '100%' : undefined, display: isMobile ? 'grid' : 'flex', gridTemplateColumns: isMobile ? 'repeat(3,minmax(0,1fr))' : undefined, flexDirection: 'column', gap: '8px' }}>
                       <p style={{ color: aiDark ? 'rgba(255,255,255,0.5)' : '#666', fontSize: '11px', fontWeight: 700, margin: 0 }}>배경색 선택</p>
                       {Object.entries(BG_PRESETS).map(([k, v]) => (
                         <button key={k} onClick={() => setAiSelectedBg(k)} style={{ padding: '8px 12px', borderRadius: '8px', border: '2px solid ' + (aiSelectedBg === k ? '#22c55e' : 'rgba(255,255,255,0.1)'), background: 'transparent', color: aiDark ? 'white' : '#111', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -499,7 +524,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
 
                 <div style={{ borderTop: '1px solid ' + (aiDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'), paddingTop: '12px' }}>
                   <p style={{ color: aiDark ? 'white' : '#111', fontSize: '14px', fontWeight: 900, margin: '0 0 9px' }}>📝 상세페이지 기본내용</p>
-                  <LandingBasicInfoFields group={productGroup} setGroup={setProductGroup} value={basicInfo} onChange={setBasicInfo} dark={aiDark} />
+                  <LandingBasicInfoFields group={productGroup} setGroup={setProductGroup} value={basicInfo} onChange={setBasicInfo} dark={aiDark} isAutoFilling={basicInfoLoading} onAutoFill={autoFillBasicInfo} />
                 </div>
 
                 {/* 페르소나 */}
@@ -518,9 +543,9 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
                 {aiError && <p style={{ color: '#f87171', fontSize: '12px', margin: 0 }}>{aiError}</p>}
 
                 <button onClick={() => { if (!selectedProduct) return setAiError('상품을 먼저 선택해주세요.'); if (!aiImagePreview) return setAiError('이미지를 먼저 올려주세요.'); if (!productGroup) return setAiError('상품군을 선택해주세요.'); setAiStep(2); handleGenerateLanding() }}
-                  disabled={aiLoading || !selectedProduct || !aiImagePreview || !productGroup}
+                  disabled={aiLoading || basicInfoLoading || !selectedProduct || !aiImagePreview || !productGroup}
                   style={{ padding: '14px', borderRadius: '12px', background: aiLoading || !selectedProduct || !aiImagePreview || !productGroup ? 'rgba(34,197,94,0.2)' : 'linear-gradient(135deg,#22c55e,#4ade80)', color: aiLoading || !selectedProduct || !aiImagePreview || !productGroup ? 'rgba(255,255,255,0.3)' : '#111', fontSize: '14px', fontWeight: 900, border: 'none', cursor: 'pointer' }}>
-                  ✨ AI 상세페이지 생성하기
+                  ✨ AI 상세페이지 제작하기
                 </button>
               </div>
             </div>

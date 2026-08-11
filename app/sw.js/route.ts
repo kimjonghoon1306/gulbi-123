@@ -1,6 +1,6 @@
 const deploymentVersion =
-  process.env.VERCEL_GIT_COMMIT_SHA ||
   process.env.VERCEL_DEPLOYMENT_ID ||
+  process.env.VERCEL_GIT_COMMIT_SHA ||
   'local-development'
 
 export const dynamic = 'force-dynamic'
@@ -11,7 +11,8 @@ export function GET() {
 const VERSION = ${JSON.stringify(`onjongil-${deploymentVersion}`)};
 
 self.addEventListener('install', () => {
-  // waiting 상태를 유지하고 화면의 업데이트 버튼을 통해 활성화한다.
+  // iOS PWA에서 waiting 감지가 누락될 수 있으므로 새 배포는 즉시 활성화한다.
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
