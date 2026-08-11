@@ -10,6 +10,7 @@ type Product = {
   category_id: string; wholesale_price: number; member_price: number; retail_price: number
   stock: number; unit: string; weight?: number | null; image_url: string; is_active: boolean; is_taxable: boolean
   subscribable?: boolean; subscribe_discount?: number | null
+  shipping_type?: 'free' | 'paid'; shipping_fee?: number | null; free_shipping_threshold?: number | null
 }
 
 export type ProductForm = {
@@ -17,6 +18,7 @@ export type ProductForm = {
   wholesale_price: string; member_price: string; retail_price: string
   stock: string; unit: string; weight: string; image_url: string; is_active: boolean; is_taxable: boolean
   subscribable: boolean; subscribe_discount: string
+  shipping_type: 'free' | 'paid'; shipping_fee: string; free_shipping_threshold: string
 }
 
 export type CatForm = { name: string }
@@ -157,6 +159,51 @@ export function ProductFormModal({ show, onClose, editProduct, form, setForm, on
               </button>
             </div>
             <p className="text-[11px] text-slate-400 mt-1.5">미가공 농·축·수산물은 면세, 젓갈·조미김·밀키트 등 가공식품은 과세입니다. 세금계산서 부가세 계산에 반영됩니다.</p>
+          </div>
+
+          <div className="rounded-xl border-2 border-emerald-100 dark:border-emerald-900/60 bg-emerald-50/50 dark:bg-emerald-950/20 p-4 space-y-4">
+            <div>
+              <p className="text-sm font-bold text-slate-800 dark:text-white">🚚 상품별 택배비 설정</p>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">장바구니 전체가 아닌 이 상품의 가격 × 수량만으로 무료배송 조건을 판단합니다.</p>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button type="button" onClick={() => setForm({ ...form, shipping_type: 'free' })}
+                className={`py-3 rounded-xl text-sm font-bold border-2 transition-all ${form.shipping_type === 'free' ? 'bg-green-600 text-white border-green-600 shadow-md shadow-green-600/20' : 'bg-white dark:bg-gray-700 text-slate-500 dark:text-slate-300 border-slate-200 dark:border-gray-600'}`}>
+                무료배송
+              </button>
+              <button type="button" onClick={() => setForm({ ...form, shipping_type: 'paid' })}
+                className={`py-3 rounded-xl text-sm font-bold border-2 transition-all ${form.shipping_type === 'paid' ? 'bg-amber-500 text-white border-amber-500 shadow-md shadow-amber-500/20' : 'bg-white dark:bg-gray-700 text-slate-500 dark:text-slate-300 border-slate-200 dark:border-gray-600'}`}>
+                유료배송
+              </button>
+            </div>
+            {form.shipping_type === 'free' ? (
+              <div className="rounded-xl bg-white/80 dark:bg-gray-800/80 px-4 py-3 border border-green-200 dark:border-green-900">
+                <p className="text-xs font-bold text-green-700 dark:text-green-400">결제 시 배송비 0원</p>
+                <p className="text-[11px] text-slate-400 mt-1">쇼핑몰 가격 옆에 ‘무료배송’으로 표시됩니다.</p>
+              </div>
+            ) : (
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">기본 택배비 <span className="text-red-500">필수</span></label>
+                  <div className="relative">
+                    <input type="number" inputMode="numeric" min="0" step="100" placeholder="예: 3000" value={form.shipping_fee}
+                      onChange={e => setForm({ ...form, shipping_fee: e.target.value })}
+                      className="w-full border border-amber-300 dark:border-amber-700 rounded-xl pl-4 pr-10 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500" />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-amber-600">원</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">얼마 이상 무료 <span className="font-normal text-slate-400">선택</span></label>
+                  <div className="relative">
+                    <input type="number" inputMode="numeric" min="1" step="1000" placeholder="예: 50000" value={form.free_shipping_threshold}
+                      onChange={e => setForm({ ...form, free_shipping_threshold: e.target.value })}
+                      className="w-full border border-slate-200 dark:border-gray-600 rounded-xl pl-4 pr-10 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500" />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-amber-600">원</span>
+                  </div>
+                </div>
+                <p className="sm:col-span-2 text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">무료 기준을 비워두면 주문금액과 관계없이 기본 택배비가 항상 부과됩니다. 기준을 입력하면 이 상품의 단가 × 수량이 기준 이상일 때만 택배비가 전액 할인됩니다.</p>
+              </div>
+            )}
           </div>
 
           <div className="rounded-xl border border-slate-200 dark:border-gray-600 p-4 space-y-3">

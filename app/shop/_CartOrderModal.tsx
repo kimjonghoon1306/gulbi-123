@@ -15,6 +15,10 @@ type Props = {
   handleOrder: () => void
   orderLoading: boolean
   items: any[]
+  productAmount: number
+  shippingLines: any[]
+  shippingFee: number
+  shippingDiscount: number
   finalAmount: number
   discount: number
   appliedCoupon: any
@@ -40,7 +44,7 @@ type Props = {
   setPointUsed: (v: number) => void
 }
 
-export function CartOrderModal({ orderForm, setOrderForm, orderDone, handleOrder, orderLoading, items, finalAmount, discount, appliedCoupon, memberInfo, addresses, isBiz, D, dark, redirectCount, agreeRefund, setAgreeRefund, vatAmount, exemptSum, taxableSum, getPrice, setShowOrder, gtext, priceColor, pointBalance, pointUsed, pointLimit, payAmount, setPointUsed }: Props) {
+export function CartOrderModal({ orderForm, setOrderForm, orderDone, handleOrder, orderLoading, items, productAmount, shippingLines, shippingFee, shippingDiscount, finalAmount, discount, appliedCoupon, memberInfo, addresses, isBiz, D, dark, redirectCount, agreeRefund, setAgreeRefund, vatAmount, exemptSum, taxableSum, getPrice, setShowOrder, gtext, priceColor, pointBalance, pointUsed, pointLimit, payAmount, setPointUsed }: Props) {
   const router = useRouter()
   const onPointChange = (value: string) => {
     setPointUsed(Number(value.replace(/[^\d]/g, '')) || 0)
@@ -98,6 +102,16 @@ export function CartOrderModal({ orderForm, setOrderForm, orderDone, handleOrder
                       <p style={{ fontSize:'13px', fontWeight:700, color:priceColor, margin:0 }}>{(getPrice(item.products) * item.quantity).toLocaleString()}원</p>
                     </div>
                   ))}
+                  <div style={{height:'1px',background:D.border,margin:'3px 0'}} />
+                  <div style={{display:'flex',justifyContent:'space-between'}}><p style={{fontSize:'12px',color:D.sub,margin:0}}>상품 합계</p><p style={{fontSize:'12px',fontWeight:700,color:D.text,margin:0}}>{productAmount.toLocaleString()}원</p></div>
+                  {shippingLines.map(({ item, calculation }: any) => (
+                    <div key={`shipping-${item.id}`} style={{padding:'8px 10px',borderRadius:'10px',background:D.card,border:`1px solid ${D.border}`}}>
+                      <div style={{display:'flex',justifyContent:'space-between',gap:'12px'}}><span style={{fontSize:'11px',fontWeight:700,color:D.text}}>🚚 {item.products.name}</span><b style={{fontSize:'11px',color:calculation.appliedFee ? priceColor : gtext}}>{calculation.appliedFee ? `${calculation.appliedFee.toLocaleString()}원` : '무료'}</b></div>
+                      <p style={{fontSize:'10.5px',color:D.sub,margin:'3px 0 0'}}>{calculation.reason === 'product_free' ? '상품 기본 설정: 무료배송' : calculation.reason === 'threshold_met' ? `기본 배송비 ${calculation.configuredFee.toLocaleString()}원 · 이 상품 합계 ${calculation.productAmount.toLocaleString()}원이 ${calculation.freeThreshold.toLocaleString()}원 이상이라 배송비 할인` : `이 상품 합계 ${calculation.productAmount.toLocaleString()}원 · 기본 배송비 적용${calculation.freeThreshold ? ` (${calculation.freeThreshold.toLocaleString()}원 이상 시 무료)` : ''}`}</p>
+                    </div>
+                  ))}
+                  <div style={{display:'flex',justifyContent:'space-between'}}><p style={{fontSize:'12px',color:D.sub,margin:0}}>적용 배송비</p><p style={{fontSize:'12px',fontWeight:800,color:D.text,margin:0}}>{shippingFee ? `${shippingFee.toLocaleString()}원` : '무료'}</p></div>
+                  {shippingDiscount > 0 && <div style={{display:'flex',justifyContent:'space-between'}}><p style={{fontSize:'12px',color:D.sub,margin:0}}>무료배송 조건 할인</p><p style={{fontSize:'12px',fontWeight:700,color:'#16a34a',margin:0}}>−{shippingDiscount.toLocaleString()}원</p></div>}
                   {discount > 0 && (
                     <div style={{ display:'flex', justifyContent:'space-between' }}>
                       <p style={{ fontSize:'13px', color:D.sub, margin:0 }}>🎟️ 쿠폰 {appliedCoupon?.code}</p>

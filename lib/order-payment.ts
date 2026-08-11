@@ -47,7 +47,7 @@ export async function expectedPaymentAmount(supabase: any, table: OrderTable, or
 
   const { data: items } = await supabase
     .from(orderItemTable(table))
-    .select('product_id, quantity, supplier_id')
+    .select('product_id, quantity, supplier_id, applied_shipping_fee')
     .eq('order_id', orderId)
   if (!items || items.length === 0) return null
 
@@ -60,6 +60,7 @@ export async function expectedPaymentAmount(supabase: any, table: OrderTable, or
 
   const lineTotal = (item: any) => (priceMap.get(item.product_id) || 0) * item.quantity
   const subtotal = items.reduce((sum: number, item: any) => sum + lineTotal(item), 0)
+  const shippingTotal = items.reduce((sum: number, item: any) => sum + Math.max(0, Number(item.applied_shipping_fee || 0)), 0)
 
   let discount = 0
   if ((order as any).coupon_code) {
@@ -79,7 +80,7 @@ export async function expectedPaymentAmount(supabase: any, table: OrderTable, or
   }
 
   const pointUsed = Number((order as any).point_used || 0)
-  const discountedAmount = Math.max(0, subtotal - discount)
+  const discountedAmount = Math.max(0, subtotal - discount) + shippingTotal
   if (pointUsed < 0 || pointUsed > discountedAmount) return null
 
   return Math.max(0, discountedAmount - pointUsed)

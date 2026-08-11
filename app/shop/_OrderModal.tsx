@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import { payWithInicis } from '@/lib/inicis'
 import { openPostcode } from '@/lib/postcode'
+import { calculateProductShipping } from '@/lib/shipping'
 import { AddressBookPicker } from './_AddressBookPicker'
 import { SellerNotice } from './_SellerNotice'
 
@@ -45,8 +46,10 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
   const id = product.id
   const [pointBalance, setPointBalance] = React.useState(0)
   const [pointUsed, setPointUsed] = React.useState(0)
-  const pointLimit = Math.max(0, Math.min(pointBalance, finalPrice))
-  const payAmount = Math.max(0, finalPrice - pointUsed)
+  const shipping = calculateProductShipping(product, getPrice(), quantity)
+  const orderAmount = finalPrice + shipping.appliedFee
+  const pointLimit = Math.max(0, Math.min(pointBalance, orderAmount))
+  const payAmount = Math.max(0, orderAmount - pointUsed)
 
   React.useEffect(() => {
     if (!user?.id) return
@@ -298,6 +301,9 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
 
                   <div style={{background:D.input,borderRadius:'14px',padding:'14px 16px',display:'flex',flexDirection:'column',gap:'6px'}}>
                     <div style={{display:'flex',justifyContent:'space-between',fontSize:'13px',color:D.sub}}><span>상품 금액</span><span>{totalPrice.toLocaleString()}원</span></div>
+                    <div style={{display:'flex',justifyContent:'space-between',fontSize:'13px',color:D.sub}}><span>배송비</span><span style={{fontWeight:700,color:shipping.appliedFee?D.text:'#16a34a'}}>{shipping.appliedFee ? `${shipping.appliedFee.toLocaleString()}원` : '무료'}</span></div>
+                    {shipping.reason === 'threshold_met' && <div style={{display:'flex',justifyContent:'space-between',fontSize:'12px',color:'#16a34a'}}><span>상품별 무료배송 조건 달성</span><span>−{shipping.discount.toLocaleString()}원</span></div>}
+                    <p style={{fontSize:'11px',color:D.sub,margin:'0 0 3px',lineHeight:1.45}}>{shipping.reason === 'product_free' ? '이 상품은 기본 무료배송 상품입니다.' : shipping.reason === 'threshold_met' ? `이 상품 합계 ${shipping.productAmount.toLocaleString()}원이 ${shipping.freeThreshold?.toLocaleString()}원 이상이어서 기본 배송비 ${shipping.configuredFee.toLocaleString()}원이 할인됐습니다.` : `기본 배송비 ${shipping.configuredFee.toLocaleString()}원이 적용됩니다.${shipping.freeThreshold ? ` 이 상품 합계 ${shipping.freeThreshold.toLocaleString()}원 이상이면 무료입니다.` : ''}`}</p>
                     {couponDiscount > 0 && <div style={{display:'flex',justifyContent:'space-between',fontSize:'13px',color:'#16a34a',fontWeight:700}}><span>쿠폰 할인</span><span>−{couponDiscount.toLocaleString()}원</span></div>}
                     {pointUsed > 0 && <div style={{display:'flex',justifyContent:'space-between',fontSize:'13px',color:'#16a34a',fontWeight:700}}><span>포인트 사용</span><span>−{pointUsed.toLocaleString()}원</span></div>}
                     <div style={{display:'flex',justifyContent:'space-between',fontSize:'15px',color:D.text,fontWeight:900,borderTop:`1px solid ${D.border}`,paddingTop:'6px',marginTop:'2px'}}><span>최종 결제액</span><span>{payAmount.toLocaleString()}원</span></div>
@@ -372,6 +378,11 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
                             unit_price: getPrice(),
                             total_price: totalPrice,
                             supplier_id: product.supplier_id || null,
+                            shipping_type: product.shipping_type || 'free',
+                            shipping_fee: shipping.configuredFee,
+                            free_shipping_threshold: shipping.freeThreshold,
+                            shipping_discount: shipping.discount,
+                            applied_shipping_fee: shipping.appliedFee,
                           })
                           // 쿠폰 사용처리
                           if (appliedCoupon) {

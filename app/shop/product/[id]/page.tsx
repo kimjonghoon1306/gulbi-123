@@ -11,6 +11,7 @@ import { OrderModal } from '../../_OrderModal'
 import { priceFor, weightLabel } from '../../_shopConstants'
 import { addressToText } from '../../_AddressBookPicker'
 import { openPostcode } from '@/lib/postcode'
+import { calculateProductShipping, shippingPolicyLabel } from '@/lib/shipping'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 
@@ -359,6 +360,7 @@ export default function ProductDetailPage() {
   )
 
   const totalPrice = getPrice() * quantity
+  const shipping = product ? calculateProductShipping(product, getPrice(), quantity) : null
 
   const defaultCheckoutAddress = () => {
     const saved = addresses.find((a: any) => a.is_default) || addresses[0]
@@ -469,7 +471,7 @@ export default function ProductDetailPage() {
                 {product.stock > 0 && product.stock < 20 && (
                   <span style={{background:'rgba(239,68,68,0.9)',color:'white',fontSize:'10px',fontWeight:700,padding:'3px 8px',borderRadius:'100px'}}>품절임박</span>
                 )}
-                <span style={{background:'rgba(5,150,105,0.9)',color:'white',fontSize:'10px',fontWeight:700,padding:'3px 8px',borderRadius:'100px'}}>무료배송</span>
+                <span style={{background:'rgba(5,150,105,0.9)',color:'white',fontSize:'10px',fontWeight:700,padding:'3px 8px',borderRadius:'100px'}}>{shippingPolicyLabel(product)}</span>
               </div>
               <button onClick={toggleLike} style={{position:'absolute',top:'12px',right:'12px',width:'36px',height:'36px',borderRadius:'50%',background:'#ffffff',border:'none',cursor:'pointer',fontSize:'18px',display:'flex',alignItems:'center',justifyContent:'center',transition:'transform 0.15s',boxShadow:'0 2px 8px rgba(0,0,0,0.12)'}}>
                 {liked ? '❤️' : '🤍'}
@@ -550,6 +552,7 @@ export default function ProductDetailPage() {
                   <p style={{fontSize:'11px',color:D.gtext,fontWeight:600,margin:0}}>🏭 도매 공급가 {product.wholesale_price.toLocaleString()}원 — 도매회원 전용</p>
                 </div>
               )}
+              {shipping && <div style={{marginTop:'10px',padding:'10px 12px',borderRadius:'10px',background:dark?'rgba(16,185,129,0.10)':'#ecfdf5',border:`1px solid ${dark?'rgba(52,211,153,0.2)':'#a7f3d0'}`}}><p style={{fontSize:'12px',fontWeight:800,color:D.gtext,margin:0}}>🚚 {shippingPolicyLabel(product)}</p><p style={{fontSize:'11px',color:D.sub,margin:'4px 0 0'}}>{shipping.reason==='threshold_met'?`현재 이 상품 합계 ${shipping.productAmount.toLocaleString()}원으로 배송비 ${shipping.discount.toLocaleString()}원 할인 적용`:shipping.reason==='paid'&&shipping.freeThreshold?`현재 이 상품 합계 기준 · ${shipping.freeThreshold.toLocaleString()}원 이상 구매 시 무료배송`:shipping.reason==='paid'?'구매금액과 관계없이 상품별 배송비가 적용됩니다.':'결제 시 배송비가 추가되지 않습니다.'}</p></div>}
             </div>
 
             {/* 재고 */}

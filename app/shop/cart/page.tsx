@@ -8,6 +8,7 @@ import { payWithInicis } from '@/lib/inicis'
 import { addressToText } from '../_AddressBookPicker'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { calculateProductShipping, shippingPolicyLabel } from '@/lib/shipping'
 
 type CartItem = {
   id: string
@@ -17,6 +18,7 @@ type CartItem = {
     id: string; name: string; image_url: string
     retail_price: number; wholesale_price: number; member_price: number
     stock: number; unit: string; is_taxable: boolean; supplier_id: string | null
+    shipping_type?: 'free' | 'paid'; shipping_fee?: number | null; free_shipping_threshold?: number | null
   }
 }
 
@@ -141,6 +143,9 @@ export default function CartPage() {
   }
 
   const totalAmount = items.reduce((sum, item) => sum + getPrice(item.products) * item.quantity, 0)
+  const shippingLines = items.map(item => ({ item, calculation: calculateProductShipping(item.products, getPrice(item.products), item.quantity) }))
+  const shippingFee = shippingLines.reduce((sum, line) => sum + line.calculation.appliedFee, 0)
+  const shippingDiscount = shippingLines.reduce((sum, line) => sum + line.calculation.discount, 0)
 
   // 쿠폰 할인 계산
   const calcDiscount = (c: any, base: number) => {
@@ -158,7 +163,7 @@ export default function CartPage() {
     return totalAmount
   }
   const discount = calcDiscount(appliedCoupon, couponBase(appliedCoupon))
-  const finalAmount = Math.max(0, totalAmount - discount)
+  const finalAmount = Math.max(0, totalAmount - discount) + shippingFee
   const pointLimit = Math.max(0, Math.min(pointBalance, finalAmount))
   const payAmount = Math.max(0, finalAmount - pointUsed)
 
@@ -191,8 +196,8 @@ export default function CartPage() {
 
   const isBiz = memberType === '소매업' || memberType === '도매업'  // 사업자 회원
   // 과세(가공식품)분 / 면세(미가공 농수산물)분 분리 — 부가세는 과세분에만
-  const taxableSum = items.filter(i => i.products.is_taxable).reduce((s, i) => s + getPrice(i.products) * i.quantity, 0)
-  const exemptSum = totalAmount - taxableSum
+  const taxableSum = items.filter(i => i.products.is_taxable).reduce((s, i) => s + getPrice(i.products) * i.quantity + calculateProductShipping(i.products, getPrice(i.products), i.quantity).appliedFee, 0)
+  const exemptSum = totalAmount + shippingFee - taxableSum
   const vatAmount = taxableSum - Math.round(taxableSum / 1.1)  // 과세분(부가세포함가) 중 부가세
 
   const defaultCheckoutAddress = () => {
@@ -264,7 +269,9 @@ export default function CartPage() {
 
       if (newOrder) {
         await supabase.from(itemTable).insert(
-          items.map(item => ({
+          items.map(item => {
+            const shipping = calculateProductShipping(item.products, getPrice(item.products), item.quantity)
+            return ({
             order_id: newOrder.id,
             product_id: item.products.id,
             product_name: item.products.name,
@@ -273,7 +280,12 @@ export default function CartPage() {
             unit_price: getPrice(item.products),
             total_price: getPrice(item.products) * item.quantity,
             supplier_id: item.products.supplier_id || null,  // 정산 귀속(공급사 상품)
-          }))
+            shipping_type: item.products.shipping_type || 'free',
+            shipping_fee: shipping.configuredFee,
+            free_shipping_threshold: shipping.freeThreshold,
+            shipping_discount: shipping.discount,
+            applied_shipping_fee: shipping.appliedFee,
+          })})
         )
       }
 
@@ -296,9 +308,9 @@ export default function CartPage() {
             invoicee_ceo_name: memberInfo?.business_ceo || memberInfo?.name || '', // 대표자명
             invoicee_addr: memberInfo?.business_address || '',                    // 사업장 주소
             invoicee_email: orderForm.evidenceContact || memberInfo?.email || '', // 세금계산서 수신 이메일
-            amount: totalAmount - vatAmount,   // 공급가액(과세 공급가 + 면세금액)
+            amount: totalAmount + shippingFee - vatAmount,   // 공급가액(배송비 포함)
             tax_amount: vatAmount,             // 면세 상품엔 0
-            total_amount: totalAmount,
+            total_amount: totalAmount + shippingFee,
             note: `[자동] 주문 ${table} #${newOrder.id}` + (exemptSum > 0 ? ` · 면세 ${exemptSum.toLocaleString()}원 포함` : ''),
             status: '미발행',
           })
@@ -306,7 +318,7 @@ export default function CartPage() {
           await supabase.from('cash_receipts').insert({
             customer_name: memberInfo?.name || '',
             contact: orderForm.evidenceContact || memberInfo?.contact || '',
-            amount: totalAmount,
+            amount: totalAmount + shippingFee,
             receipt_type: isBiz ? '사업자용' : '소비자용',
             note: `[자동] 주문 ${table} #${newOrder.id}`,
             status: '미발행',
@@ -420,6 +432,7 @@ export default function CartPage() {
                     <div style={{ flex:1, minWidth:0 }}>
                       <p style={{ fontWeight:700, fontSize:'14px', color:D.text, margin:'0 0 4px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.products.name}</p>
                       <p style={{ fontSize:'16px', fontWeight:900, color:priceColor, margin:'0 0 8px' }}>{(price * item.quantity).toLocaleString()}원</p>
+                      <p style={{ fontSize:'11px', fontWeight:700, color:gtext, margin:'0 0 8px' }}>🚚 {shippingPolicyLabel(item.products)}</p>
                       {/* 수량 조절 */}
                       <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
                         <div style={{ display:'flex', alignItems:'center', background:D.input, borderRadius:'10px', overflow:'hidden' }}>
@@ -499,8 +512,9 @@ export default function CartPage() {
               </div>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'4px' }}>
                 <p style={{ fontSize:'13px', color:D.sub, margin:0 }}>배송비</p>
-                <p style={{ fontSize:'13px', color:gtext, fontWeight:700, margin:0 }}>무료</p>
+                <p style={{ fontSize:'13px', color:shippingFee > 0 ? priceColor : gtext, fontWeight:800, margin:0 }}>{shippingFee > 0 ? `${shippingFee.toLocaleString()}원` : '무료'}</p>
               </div>
+              {shippingDiscount > 0 && <div style={{display:'flex',justifyContent:'space-between',marginTop:'4px'}}><p style={{fontSize:'12px',color:D.sub,margin:0}}>상품별 무료배송 할인</p><p style={{fontSize:'12px',color:'#16a34a',fontWeight:700,margin:0}}>−{shippingDiscount.toLocaleString()}원</p></div>}
               {discount > 0 && (
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:'4px' }}>
                   <p style={{ fontSize:'13px', color:D.sub, margin:0 }}>🎟️ 쿠폰 할인</p>
@@ -531,7 +545,7 @@ export default function CartPage() {
       </div>
 
       {/* 주문 모달 */}
-      {showOrder && <CartOrderModal orderForm={orderForm} setOrderForm={setOrderForm} orderDone={orderDone} handleOrder={handleOrder} orderLoading={orderLoading} items={items} finalAmount={finalAmount} discount={discount} appliedCoupon={appliedCoupon} memberInfo={memberInfo} addresses={addresses} isBiz={isBiz} D={D} dark={dark} redirectCount={redirectCount} agreeRefund={agreeRefund} setAgreeRefund={setAgreeRefund} vatAmount={vatAmount} exemptSum={exemptSum} taxableSum={taxableSum} getPrice={getPrice} setShowOrder={setShowOrder} gtext={gtext} priceColor={priceColor} pointBalance={pointBalance} pointUsed={pointUsed} pointLimit={pointLimit} payAmount={payAmount} setPointUsed={updatePointUsed} />}
+      {showOrder && <CartOrderModal orderForm={orderForm} setOrderForm={setOrderForm} orderDone={orderDone} handleOrder={handleOrder} orderLoading={orderLoading} items={items} productAmount={totalAmount} shippingLines={shippingLines} shippingFee={shippingFee} shippingDiscount={shippingDiscount} finalAmount={finalAmount} discount={discount} appliedCoupon={appliedCoupon} memberInfo={memberInfo} addresses={addresses} isBiz={isBiz} D={D} dark={dark} redirectCount={redirectCount} agreeRefund={agreeRefund} setAgreeRefund={setAgreeRefund} vatAmount={vatAmount} exemptSum={exemptSum} taxableSum={taxableSum} getPrice={getPrice} setShowOrder={setShowOrder} gtext={gtext} priceColor={priceColor} pointBalance={pointBalance} pointUsed={pointUsed} pointLimit={pointLimit} payAmount={payAmount} setPointUsed={updatePointUsed} />}
 
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}

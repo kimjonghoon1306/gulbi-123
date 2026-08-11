@@ -6,6 +6,7 @@ export type Product = {
   wholesale_price: number; retail_price: number; member_price: number; stock: number; unit: string
   weight?: number | null
   category_id: string; is_active: boolean
+  shipping_type?: 'free' | 'paid'; shipping_fee?: number | null; free_shipping_threshold?: number | null
 }
 
 // 중량/수량 수치를 단위와 합쳐 "1.5kg"처럼 표시. 값이 없으면 빈 문자열.

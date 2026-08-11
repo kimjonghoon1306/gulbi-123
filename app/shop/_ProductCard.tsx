@@ -4,6 +4,7 @@ import Link from 'next/link'
 import type { Product } from './_shopConstants'
 import { weightLabel } from './_shopConstants'
 import { optimizedImageUrl, responsiveImageSrcSet } from './_imageUrl'
+import { shippingPolicyLabel } from '@/lib/shipping'
 
 // 쇼핑몰 메인 상품 그리드의 카드 한 장 (page.tsx에서 분리 — 동작/디자인 동일)
 type Props = {
@@ -118,6 +119,7 @@ export function ProductCard({ p, i, dark, card, border, text, sub, gtext, member
                 fontSize: '21px', fontWeight: 800, color: text,
                 letterSpacing: '-0.5px', margin: 0
               }}>{price.toLocaleString()}<span style={{ fontSize: '14px', fontWeight: 600, marginLeft: '1px' }}>원</span></p>
+              <p style={{fontSize:'11px',fontWeight:700,color:gtext,margin:'5px 0 0'}}>🚚 {shippingPolicyLabel(p)}</p>
               {memberType === '도매업' && (
                 <p style={{ fontSize: '11px', color: sub, margin: '2px 0 0', textDecoration: 'line-through' }}>
                   일반 {p.retail_price.toLocaleString()}원
