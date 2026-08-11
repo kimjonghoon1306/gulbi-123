@@ -9,7 +9,7 @@ const DROP_WITH_CONTENT = new Set([
   'style', 'script', 'head', 'title', 'meta', 'link', 'noscript', 'template', 'pre', 'code',
 ])
 
-const GLOBAL_ATTRS = new Set(['class', 'id', 'style', 'title', 'aria-label', 'role'])
+const GLOBAL_ATTRS = new Set(['class', 'id', 'style', 'title', 'aria-label', 'role', 'data-landing', 'data-template'])
 const TAG_ATTRS: Record<string, Set<string>> = {
   a: new Set(['href', 'target', 'rel']),
   img: new Set(['src', 'alt', 'width', 'height', 'loading']),

@@ -9,6 +9,7 @@ import { QuestionSection } from '../../_QuestionSection'
 import { SellerNotice } from '../../_SellerNotice'
 import { OrderModal } from '../../_OrderModal'
 import { priceFor, weightLabel } from '../../_shopConstants'
+import { LANDING_ANIM_CSS } from '@/lib/landing-templates'
 import { addressToText } from '../../_AddressBookPicker'
 import { openPostcode } from '@/lib/postcode'
 import { calculateProductShipping, shippingPolicyLabel } from '@/lib/shipping'
@@ -658,7 +659,8 @@ export default function ProductDetailPage() {
                 <div style={{width:'32px',height:'32px',background:'linear-gradient(135deg,#15803d,#16a34a)',borderRadius:'10px',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'16px'}}>✦</div>
                 <h2 style={{fontSize:'16px',fontWeight:900,letterSpacing:'-0.3px'}}>상품 상세</h2>
               </div>
-              <div dangerouslySetInnerHTML={{__html: sanitizeHtml(product.description)}} style={{lineHeight:1.8, pointerEvents:'none', userSelect:'none'}} />
+              <style>{LANDING_ANIM_CSS}</style>
+              <div dangerouslySetInnerHTML={{__html: sanitizeHtml(product.description)}} style={{lineHeight:1.8, userSelect:'none'}} />
             </div>
           </div>
         )}

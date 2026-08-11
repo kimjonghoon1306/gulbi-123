@@ -873,7 +873,40 @@ const SECTION_RENDERERS: Record<string, (d: LandingData, p: Preset) => string> =
 // 메인 렌더 함수
 // ============================================================
 
+// 모든 템플릿에 공통 주입되는 애니메이션(CSS 전용 — JS 불필요, 미지원 브라우저는 자동 무시).
+// 스크롤 등장은 @supports로 가드, hover는 데스크탑만, 모션 최소화 설정 존중.
+export const LANDING_ANIM_CSS = `
+@supports (animation-timeline: view()) {
+  [data-landing] > section,
+  [data-landing] figure {
+    animation: gulbiRise linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 34%;
+  }
+  @keyframes gulbiRise {
+    from { opacity: 0; transform: translateY(26px); }
+    to   { opacity: 1; transform: none; }
+  }
+}
+@media (hover: hover) {
+  [data-landing] img { transition: transform .5s cubic-bezier(.22,1,.36,1); }
+  [data-landing] section:hover > img,
+  [data-landing] figure:hover img { transform: scale(1.02); }
+  [data-landing] button,
+  [data-landing] [style*="cursor:pointer"],
+  [data-landing] [style*="cursor:text"] { transition: transform .16s ease, box-shadow .24s ease, filter .24s ease; }
+  [data-landing] button:hover,
+  [data-landing] [style*="cursor:pointer"]:hover { transform: translateY(-2px); filter: brightness(1.05); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-landing] > section, [data-landing] figure { animation: none !important; opacity: 1 !important; transform: none !important; }
+}`
+
 export function renderLanding(data: LandingData, presetKey: PresetKey = 'gold', templateKey: TemplateKey = 'premium'): string {
+  return `<style>${LANDING_ANIM_CSS}</style>` + renderLandingCore(data, presetKey, templateKey)
+}
+
+function renderLandingCore(data: LandingData, presetKey: PresetKey = 'gold', templateKey: TemplateKey = 'premium'): string {
   const preset = PRESETS[presetKey] || PRESETS.gold
 
   if (templateKey === 'modern')      return renderModernLanding(data, preset)
