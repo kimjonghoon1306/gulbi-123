@@ -144,6 +144,42 @@ function buildFallback(productName: string, retail: number, unit: string): Parti
   }
 }
 
+type OriginStat = { value: string; unit: string; label: string; desc: string }
+
+// originStats는 2×2 고정 그리드로 렌더된다. AI가 덜 주거나 빈 값을 섞어 주면
+// 빈칸이 생기므로, 항상 유효값 4개를 보장하도록 정규화한다.
+// (AI 값 우선 → 빈 desc 등은 보정 → 부족분은 fallback에서 라벨 안 겹치게 채움)
+function normalizeOriginStats(ai: any, fb: OriginStat[]): OriginStat[] {
+  const clean: OriginStat[] = []
+  const seen = new Set<string>()
+  const genericDesc = '엄격한 기준으로 선별한, 믿고 드실 수 있는 품질입니다.'
+
+  const push = (s: any) => {
+    if (clean.length >= 4) return
+    const value = String(s?.value ?? '').trim()
+    const label = String(s?.label ?? '').trim()
+    if (!value || !label) return
+    const key = label.toUpperCase()
+    if (seen.has(key)) return
+    seen.add(key)
+    const fbMatch = fb.find((f) => f.label.toUpperCase() === key)
+    clean.push({
+      value,
+      unit: String(s?.unit ?? '').trim(),
+      label,
+      desc: String(s?.desc ?? '').trim() || fbMatch?.desc || genericDesc,
+    })
+  }
+
+  if (Array.isArray(ai)) ai.forEach(push)
+  // 부족분은 fallback stat으로 채워 항상 4개를 맞춘다.
+  for (const f of fb) {
+    if (clean.length >= 4) break
+    push(f)
+  }
+  return clean.slice(0, 4)
+}
+
 function mergeData(
   ai: any,
   fb: Partial<LandingData>,
@@ -161,7 +197,7 @@ function mergeData(
     artisanName: pick(ai?.artisanName, fb.artisanName!),
     originLocation: pick(ai?.originLocation, fb.originLocation!),
     originStory: pick(ai?.originStory, fb.originStory!),
-    originStats: pick(ai?.originStats, fb.originStats!),
+    originStats: normalizeOriginStats(ai?.originStats, fb.originStats as OriginStat[]),
     story: pick(ai?.story, fb.story!),
     features: pick(ai?.features, fb.features!),
     keyNumber: pick(ai?.keyNumber, fb.keyNumber!),
@@ -220,6 +256,17 @@ export async function POST(req: NextRequest) {
 
     if (imageList.length === 0) {
       return NextResponse.json({ error: '[v2] 이미지를 먼저 올려주세요. (업로드하신 이미지가 서버에 전달되지 않았습니다)' }, { status: 400 })
+    }
+
+    // 완전히 동일한 이미지(같은 파일 중복 업로드)는 1장만 남긴다.
+    {
+      const seen = new Set<string>()
+      imageList = imageList.filter((img) => {
+        const sig = `${img.base64.length}:${img.base64.slice(0, 80)}:${img.base64.slice(-80)}`
+        if (seen.has(sig)) return false
+        seen.add(sig)
+        return true
+      })
     }
 
     const geminiKey = auth.geminiKey
@@ -327,6 +374,8 @@ ${toneText}
 부적절 금지: 해당 섹션에 어울리지 않으면 null. 억지로 넣지 마세요.
 unusedIndices: 어느 섹션에도 안 어울리는 이미지 인덱스들.
 
+★ 유사 이미지 그룹 (nearDuplicateGroups): 시각적으로 거의 같은 사진(같은 피사체를 각도·거리만 살짝 달리해 찍은 것, 사실상 똑같은 컷)들을 한 그룹으로 묶으세요. 그룹 안에서는 대표 1장만 본문에 쓰고 나머지는 아래 갤러리로 내립니다. 조금이라도 다른 정보를 담은 사진(다른 장면·다른 구성)은 절대 같은 그룹에 넣지 마세요. 서로 다른 사진들은 최대한 본문 여러 섹션에 골고루 배치되도록 서로 다른 섹션에 할당하세요.
+
 ★★★ 글 분량 & 품질 요구사항 — 반드시 지킬 것 ★★★
 
 ① catchphrase: 10~16자. 강렬하고 기억에 남는 히어로 카피.
@@ -403,7 +452,8 @@ unusedIndices: 어느 섹션에도 안 어울리는 이미지 인덱스들.
     "recipe": <인덱스 또는 null>,
     "storage": <인덱스 또는 null>
   },
-  "unusedIndices": [<미사용 인덱스>]
+  "unusedIndices": [<미사용 인덱스>],
+  "nearDuplicateGroups": [[<서로 거의 동일한 이미지 인덱스들>]]
 }
 
 중요: sectionAssignment에서 같은 인덱스를 두 번 쓰지 마세요.
@@ -470,53 +520,54 @@ unusedIndices: 어느 섹션에도 안 어울리는 이미지 인덱스들.
     }
     const aiJson = extractJson(rawText)
 
-    // 섹션 배치 매핑 — 중복 제거 안전장치
+    // 섹션 배치 매핑 — 서로 다른 이미지를 본문 5칸에 골고루, 유사본은 갤러리로
     const assignment = aiJson?.sectionAssignment || {}
     const usedIndices = new Set<number>()
     const sectionImages: LandingData['sectionImages'] = {}
     const sectionKeys = ['hero', 'origin', 'story', 'recipe', 'storage'] as const
+    const dataUrl = (i: number) => `data:${imageList[i].mimeType};base64,${imageList[i].base64}`
+
+    // 유사(거의 동일)하다고 판단된 이미지는 대표 1장만 본문에 쓰고 나머지는 갤러리로 강제
+    const forcedGallery = new Set<number>()
+    const groups: unknown[] = Array.isArray(aiJson?.nearDuplicateGroups) ? aiJson.nearDuplicateGroups : []
+    const assignedIdx = Object.values(assignment).filter((v): v is number => typeof v === 'number')
+    for (const g of groups) {
+      if (!Array.isArray(g)) continue
+      const valid = g.filter((i: unknown): i is number => typeof i === 'number' && i >= 0 && i < imageList.length)
+      if (valid.length < 2) continue
+      // 대표: AI가 섹션에 지정한 인덱스가 그룹에 있으면 그것, 없으면 첫 번째
+      const rep = valid.find((i) => assignedIdx.includes(i)) ?? valid[0]
+      for (const i of valid) if (i !== rep) forcedGallery.add(i)
+    }
+
+    // 1) AI가 지정한 섹션 배치 (유사본 제외)
     for (const key of sectionKeys) {
       const idx = assignment[key]
-      if (typeof idx === 'number' && idx >= 0 && idx < imageList.length && !usedIndices.has(idx)) {
+      if (typeof idx === 'number' && idx >= 0 && idx < imageList.length && !usedIndices.has(idx) && !forcedGallery.has(idx)) {
         usedIndices.add(idx)
-        const img = imageList[idx]
-        sectionImages[key] = `data:${img.mimeType};base64,${img.base64}`
+        sectionImages[key] = dataUrl(idx)
       }
     }
 
-    // hero가 할당 안 됐으면 첫 번째 미사용 이미지를 hero로
-    if (!sectionImages.hero && imageList.length > 0) {
+    // 2) hero 미할당 시 서로 다른(유사본 아닌) 첫 이미지로
+    if (!sectionImages.hero) {
       for (let i = 0; i < imageList.length; i++) {
-        if (!usedIndices.has(i)) {
-          usedIndices.add(i)
-          const img = imageList[i]
-          sectionImages.hero = `data:${img.mimeType};base64,${img.base64}`
-          break
-        }
+        if (!usedIndices.has(i) && !forcedGallery.has(i)) { usedIndices.add(i); sectionImages.hero = dataUrl(i); break }
       }
     }
 
-    // 업로드한 사진을 글 사이사이에 분산: 원산지→스토리→레시피→보관 순으로 빈 섹션 채움.
-    // (모든 템플릿이 이 4개 섹션 이미지를 렌더 → 글 중간중간 큰 사진이 들어감)
-    // 5개(hero 포함)를 넘는 사진만 맨 아래 갤러리로.
+    // 3) 빈 섹션을 서로 다른 이미지로 채워 본문에 골고루 분산 (본문 최대 5칸)
     for (const key of ['origin', 'story', 'recipe', 'storage'] as const) {
       if (sectionImages[key]) continue
       for (let i = 0; i < imageList.length; i++) {
-        if (!usedIndices.has(i)) {
-          usedIndices.add(i)
-          const img = imageList[i]
-          sectionImages[key] = `data:${img.mimeType};base64,${img.base64}`
-          break
-        }
+        if (!usedIndices.has(i) && !forcedGallery.has(i)) { usedIndices.add(i); sectionImages[key] = dataUrl(i); break }
       }
     }
 
+    // 4) 본문에 못 들어간 나머지(유사본 + 5칸 초과분)는 맨 아래 갤러리로
     const unusedImages: string[] = []
     for (let i = 0; i < imageList.length; i++) {
-      if (!usedIndices.has(i)) {
-        const img = imageList[i]
-        unusedImages.push(`data:${img.mimeType};base64,${img.base64}`)
-      }
+      if (!usedIndices.has(i)) unusedImages.push(dataUrl(i))
     }
 
     const fb = buildFallback(productName || '상품', Number(retailPrice) || 0, unit || '개')

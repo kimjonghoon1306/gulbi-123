@@ -352,9 +352,10 @@ function fallbackFeatures(d: LandingData, C: any, F: any): string {
 }
 
 function fallbackOrigin(d: LandingData, C: any, F: any): string {
-  const stats = d.originStats || []
+  const stats = (d.originStats || []).filter(s => s.value && s.value.trim()).slice(0,4)
+  if (stats.length === 0) return ''
   return `<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:24px 0;">
-    ${stats.slice(0,4).map((s, i) => `<div style="background:${C.paper};border:1px solid ${C.line};border-radius:12px;padding:20px 14px;text-align:center;">
+    ${stats.map((s, i) => `<div style="background:${C.paper};border:1px solid ${C.line};border-radius:12px;padding:20px 14px;text-align:center;">
       <p ${ce('origin.stat.'+i+'.label')} style="font-family:${F.serif};font-size:10px;color:${C.primary};letter-spacing:0.2em;margin:0 0 8px;">${esc(s.label)}</p>
       <p style="margin:0 0 4px;"><span ${ce('origin.stat.'+i+'.value')} style="font-family:${F.serif};font-size:28px;font-weight:900;color:${C.ink};">${esc(s.value)}</span><span ${ce('origin.stat.'+i+'.unit')} style="font-family:${F.serif};font-size:14px;color:${C.inkSoft};margin-left:2px;">${esc(s.unit)}</span></p>
       <p ${ce('origin.stat.'+i+'.desc')} style="font-size:11px;color:${C.inkSoft};margin:0;line-height:1.5;">${esc(s.desc)}</p>
