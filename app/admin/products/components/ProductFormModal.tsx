@@ -23,6 +23,12 @@ export type ProductForm = {
 
 export type CatForm = { name: string }
 
+const digitsOnly = (value: string) => value.replace(/[^\d]/g, '')
+const formatWon = (value: string) => {
+  const digits = digitsOnly(value)
+  return digits ? Number(digits).toLocaleString('ko-KR') : ''
+}
+
 type ProductModalProps = {
   show: boolean
   onClose: () => void
@@ -108,15 +114,15 @@ export function ProductFormModal({ show, onClose, editProduct, form, setForm, on
 
           <div className="grid grid-cols-2 gap-4">
             {[
-              { label: '🛒 일반 구매가 (원)', key: 'retail_price' },
-              { label: '🏪 소매 공급가 (원)', key: 'member_price' },
-              { label: '🏭 도매 공급가 (원)', key: 'wholesale_price' },
-              { label: '재고 수량', key: 'stock' },
+              { label: '🛒 일반 구매가 (원)', key: 'retail_price', isMoney: true, placeholder: '예: 30,000' },
+              { label: '🏪 소매 공급가 (원)', key: 'member_price', isMoney: true, placeholder: '예: 25,000' },
+              { label: '🏭 도매 공급가 (원)', key: 'wholesale_price', isMoney: true, placeholder: '예: 20,000' },
+              { label: '재고 수량', key: 'stock', isMoney: false, placeholder: '예: 100' },
             ].map(f => (
               <div key={f.key}>
                 <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">{f.label}</label>
-                <input type="number" value={(form as any)[f.key]}
-                  onChange={e => setForm({ ...form, [f.key]: e.target.value })}
+                <input type={f.isMoney ? 'text' : 'number'} inputMode="numeric" placeholder={f.placeholder} value={f.isMoney ? formatWon((form as any)[f.key]) : (form as any)[f.key]}
+                  onChange={e => setForm({ ...form, [f.key]: f.isMoney ? digitsOnly(e.target.value) : e.target.value })}
                   className="w-full border border-slate-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-600" />
               </div>
             ))}
@@ -186,8 +192,8 @@ export function ProductFormModal({ show, onClose, editProduct, form, setForm, on
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">기본 택배비 <span className="text-red-500">필수</span></label>
                   <div className="relative">
-                    <input type="number" inputMode="numeric" min="0" step="100" placeholder="예: 3000" value={form.shipping_fee}
-                      onChange={e => setForm({ ...form, shipping_fee: e.target.value })}
+                    <input type="text" inputMode="numeric" placeholder="예: 3,000" value={formatWon(form.shipping_fee)}
+                      onChange={e => setForm({ ...form, shipping_fee: digitsOnly(e.target.value) })}
                       className="w-full border border-amber-300 dark:border-amber-700 rounded-xl pl-4 pr-10 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500" />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-amber-600">원</span>
                   </div>
@@ -195,8 +201,8 @@ export function ProductFormModal({ show, onClose, editProduct, form, setForm, on
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">얼마 이상 무료 <span className="font-normal text-slate-400">선택</span></label>
                   <div className="relative">
-                    <input type="number" inputMode="numeric" min="1" step="1000" placeholder="예: 50000" value={form.free_shipping_threshold}
-                      onChange={e => setForm({ ...form, free_shipping_threshold: e.target.value })}
+                    <input type="text" inputMode="numeric" placeholder="예: 50,000" value={formatWon(form.free_shipping_threshold)}
+                      onChange={e => setForm({ ...form, free_shipping_threshold: digitsOnly(e.target.value) })}
                       className="w-full border border-slate-200 dark:border-gray-600 rounded-xl pl-4 pr-10 py-3 text-sm bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500" />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-amber-600">원</span>
                   </div>
