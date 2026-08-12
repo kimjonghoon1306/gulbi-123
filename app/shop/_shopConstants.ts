@@ -1,7 +1,7 @@
 // 쇼핑몰 메인에서 쓰는 순수 상수/타입 (화면 로직과 무관 — page.tsx에서 분리)
 
 export type Product = {
-  id: string; name: string; description: string; image_url: string
+  id: string; name: string; description?: string; image_url: string
   origin?: string | null
   wholesale_price: number; retail_price: number; member_price: number; stock: number; unit: string
   weight?: number | null

@@ -12,8 +12,8 @@ const DROP_WITH_CONTENT = new Set([
 const GLOBAL_ATTRS = new Set(['class', 'id', 'style', 'title', 'aria-label', 'role', 'data-landing', 'data-template'])
 const TAG_ATTRS: Record<string, Set<string>> = {
   a: new Set(['href', 'target', 'rel']),
-  img: new Set(['src', 'alt', 'width', 'height', 'loading']),
-  iframe: new Set(['src', 'allow', 'allowfullscreen', 'frameborder']),
+  img: new Set(['src', 'alt', 'width', 'height', 'loading', 'decoding']),
+  iframe: new Set(['src', 'allow', 'allowfullscreen', 'frameborder', 'loading']),
 }
 
 function isSafeUrl(value: string, tag: string) {
@@ -100,6 +100,12 @@ export function sanitizeHtml(html: string) {
       if (tag === 'a' && el.getAttribute('target') === '_blank') {
         el.setAttribute('rel', 'noopener noreferrer')
       }
+      // 화면 아래의 상세 이미지·영상은 진입 렌더링과 네트워크를 막지 않는다.
+      if (tag === 'img') {
+        if (!el.hasAttribute('loading')) el.setAttribute('loading', 'lazy')
+        el.setAttribute('decoding', 'async')
+      }
+      if (tag === 'iframe' && !el.hasAttribute('loading')) el.setAttribute('loading', 'lazy')
       walk(el)
     }
   }
