@@ -898,6 +898,14 @@ function MyPageInner() {
         @media (max-width: 640px) {
           .hero-card { padding: 28px 22px !important; }
           .hero-avatar { width: 64px !important; height: 64px !important; font-size: 30px !important; }
+          .onj-program-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 8px !important; }
+          .onj-program-card { min-height: 138px !important; padding: 12px !important; border-radius: 17px !important; box-shadow: 0 7px 18px rgba(15,23,42,.08) !important; }
+          .onj-program-card > div > div { margin-bottom: 9px !important; }
+          .onj-program-icon { width: 34px !important; height: 34px !important; border-radius: 11px !important; font-size: 18px !important; }
+          .onj-program-badge { max-width: 76px; padding: 4px 6px !important; font-size: 8px !important; line-height: 1.15; text-align: center; }
+          .onj-program-title { min-height: 36px; margin-bottom: 4px !important; font-size: 14px !important; line-height: 1.3; letter-spacing: -.45px; }
+          .onj-program-hook { display: none; }
+          .onj-program-more { font-size: 10px !important; gap: 3px !important; }
           /* 주문 배송 단계 - 작은 화면에서 원 크기 축소 */
           .status-circle {
             width: 24px !important;

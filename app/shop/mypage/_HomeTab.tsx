@@ -81,19 +81,19 @@ export function HomeTab({ D, accent, member, orders, pointBalance, totalAmount, 
                 <p style={{ fontSize:'12px', fontWeight:900, color:accent, margin:'0 0 3px', letterSpacing:'0.08em' }}>MORE WITH ONJONGIL</p>
                 <p style={{ fontSize:'18px', fontWeight:900, color:D.text, margin:0, letterSpacing:'-0.5px' }}>쇼핑만 하기엔 아까운 온종일의 두 가지 기회</p>
               </div>
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(230px,1fr))', gap:'10px' }}>
+              <div className="onj-program-grid" style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(230px,1fr))', gap:'10px' }}>
                 {(Object.entries(PROGRAMS) as [ProgramKey, typeof PROGRAMS[ProgramKey]][]).map(([key, program]) => (
                   <button key={key} type="button" onClick={() => setOpenProgram(key)} className="onj-program-card"
                     style={{ position:'relative', overflow:'hidden', width:'100%', minHeight:'176px', padding:'20px', textAlign:'left', cursor:'pointer', borderRadius:'22px', border:`2px solid ${program.accent}`, background:`linear-gradient(145deg,${program.glow},${D.card} 62%)`, boxShadow:`0 12px 30px ${program.glow}, inset 0 0 0 1px ${program.accent}22`, color:D.text }}>
                     <span aria-hidden="true" style={{ position:'absolute', right:'-18px', top:'-24px', width:'105px', height:'105px', borderRadius:'50%', background:program.glow, filter:'blur(2px)' }} />
                     <div style={{ position:'relative', zIndex:1 }}>
                       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:'8px', marginBottom:'14px' }}>
-                        <span style={{ width:'46px', height:'46px', borderRadius:'15px', display:'grid', placeItems:'center', fontSize:'24px', background:`linear-gradient(135deg,${program.accent},${program.accent2})`, boxShadow:`0 8px 18px ${program.glow}` }}>{program.icon}</span>
-                        <span style={{ fontSize:'11px', fontWeight:900, color:program.accent, border:`1px solid ${program.accent}66`, background:program.glow, borderRadius:'999px', padding:'6px 10px' }}>{program.signup ? '누구나 무료로 알아보기' : '곧 선보입니다'}</span>
+                        <span className="onj-program-icon" style={{ width:'46px', height:'46px', borderRadius:'15px', display:'grid', placeItems:'center', fontSize:'24px', background:`linear-gradient(135deg,${program.accent},${program.accent2})`, boxShadow:`0 8px 18px ${program.glow}` }}>{program.icon}</span>
+                        <span className="onj-program-badge" style={{ fontSize:'11px', fontWeight:900, color:program.accent, border:`1px solid ${program.accent}66`, background:program.glow, borderRadius:'999px', padding:'6px 10px' }}>{program.signup ? '누구나 무료로 알아보기' : '곧 선보입니다'}</span>
                       </div>
-                      <p style={{ fontSize:'17px', fontWeight:900, margin:'0 0 7px', color:D.text }}>{program.title}</p>
-                      <p style={{ fontSize:'12px', fontWeight:650, lineHeight:1.65, margin:'0 0 12px', color:D.sub }}>{program.hook}</p>
-                      <span style={{ display:'inline-flex', alignItems:'center', gap:'6px', color:program.accent, fontSize:'12px', fontWeight:900 }}>혜택 자세히 보기 <span aria-hidden="true">→</span></span>
+                      <p className="onj-program-title" style={{ fontSize:'17px', fontWeight:900, margin:'0 0 7px', color:D.text }}>{program.title}</p>
+                      <p className="onj-program-hook" style={{ fontSize:'12px', fontWeight:650, lineHeight:1.65, margin:'0 0 12px', color:D.sub }}>{program.hook}</p>
+                      <span className="onj-program-more" style={{ display:'inline-flex', alignItems:'center', gap:'6px', color:program.accent, fontSize:'12px', fontWeight:900 }}>혜택 자세히 보기 <span aria-hidden="true">→</span></span>
                     </div>
                   </button>
                 ))}
