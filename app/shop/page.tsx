@@ -15,11 +15,24 @@ export default async function ShopPage() {
   )
 
   const [productsResult, categoriesResult, reviewsResult, bannersResult] = await Promise.all([
-    supabase.from('products').select('*').eq('is_active', true).order('created_at', { ascending: false }),
+    // 목록에는 상세페이지용 대용량 HTML(description)을 절대 포함하지 않는다.
+    // 상세 콘텐츠에 이미지/영상이 많으면 첫 화면 RSC가 수 MB로 커져
+    // 상품 클릭과 페이지 전환까지 함께 느려진다.
+    supabase.from('products').select('id,name,image_url,origin,wholesale_price,retail_price,member_price,stock,unit,weight,category_id,is_active,shipping_type,shipping_fee,free_shipping_threshold,created_at').eq('is_active', true).order('created_at', { ascending: false }),
     supabase.from('categories').select('*').order('sort_order'),
     supabase.from('reviews').select('product_id, rating'),
     supabase.from('ad_banners').select('*').eq('is_active', true).order('sort_order'),
   ])
+
+  // 운영 안전장치: DB 연결/권한 오류를 "상품 0개"로 오인해 캐시하거나
+  // 배포하지 않는다. 렌더링을 실패시키면 기존 ISR 페이지가 그대로 유지되고,
+  // 빌드 중이라면 배포 자체가 중단된다.
+  if (productsResult.error) {
+    throw new Error(`상품 조회 실패: ${productsResult.error.message}`)
+  }
+  if (!productsResult.data || productsResult.data.length === 0) {
+    throw new Error('상품 안전장치 작동: 활성 상품이 0개라 화면 갱신을 중단합니다.')
+  }
 
   const reviewStats: ReviewStats = {}
   for (const review of reviewsResult.data || []) {
@@ -47,7 +60,7 @@ export default async function ShopPage() {
           imageSizes="(max-width: 1140px) calc(100vw - 40px), 1100px" />
       )}
       <ShopClient
-        initialProducts={(productsResult.data || []) as Product[]}
+        initialProducts={productsResult.data as Product[]}
         initialCategories={(categoriesResult.data || []) as Category[]}
         initialBanners={banners}
         initialReviewStats={reviewStats}

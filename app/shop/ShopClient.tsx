@@ -111,7 +111,7 @@ export default function ShopClient({ initialProducts, initialCategories, initial
     const saved = localStorage.getItem('shop-theme')
     if (saved === 'dark') setDark(true)
     const handleScroll = () => setScrolled(window.scrollY > 10)
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
     setTimeout(() => setHeroVisible(true), 100)
     setVisitorCount(Math.floor(Math.random() * 80) + 40)
 

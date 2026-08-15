@@ -26,7 +26,19 @@ type Props = {
 
 export function ProductCard({ p, i, dark, card, border, text, sub, gtext, memberType, sortBy, catIcon, price, rating, reviewCount }: Props) {
   return (
-    <Link href={`/shop/product/${p.id}`} style={{ textDecoration: 'none' }}>
+    <Link
+      href={`/shop/product/${p.id}`}
+      prefetch
+      scroll
+      onClick={() => window.scrollTo(0, 0)}
+      onPointerEnter={() => {
+        if (p.image_url) {
+          const image = new Image()
+          image.src = p.image_url
+        }
+      }}
+      style={{ textDecoration: 'none' }}
+    >
       <div className="product-card" style={{
         background: card,
         border: `1px solid ${border}`,
