@@ -52,6 +52,14 @@ const FAQ: QA[] = [
     a: '온파트너의 제품 판매 캐시는 쇼핑포인트로 전환 후 온종일팜에 사용이 가능합니다.\n\n• 캐시: 온파트너에서 상품 판매로 쌓이는 정산금이에요. 출금하거나 쇼핑포인트로 전환할 수 있어요.\n• 쇼핑포인트: 온종일팜에서 상품 구매에 사용할 수 있어요.\n• 온종일팜 자체 적립 포인트와 온파트너에서 전환한 포인트는 결제 시 합산되어 사용됩니다.\n\n내 쇼핑포인트 잔액은 마이페이지 > 포인트에서 확인하세요.',
   },
   {
+    q: '온파트너 알아보기', icon: Megaphone,
+    a: '온파트너는 온종일팜 상품의 나만의 추천 링크를 만들고, 그 링크를 통해 상품이 판매되면 수익을 적립받는 무료 제휴 프로그램이에요.\n\n• 틱톡·유튜브·인스타그램·블로그·카카오톡·개인 홈페이지 등 채널 제약 없이 홍보\n• 링크 클릭·구매·예상 수익을 대시보드에서 확인\n• 적립 캐시는 출금하거나 온종일팜 쇼핑포인트로 전환\n\n지금 무료로 시작하기\nhttps://partner.yuanfnb.com/pages/signup.html',
+  },
+  {
+    q: '온종일 체험단 알아보기', icon: Star,
+    a: '온종일 체험단은 좋아하는 상품과 매장을 직접 체험하고 솔직한 리뷰 콘텐츠를 만드는 리뷰어 프로그램이에요.\n\n• 맛집·카페·뷰티·숙소·배송형 상품 중 원하는 캠페인 선택\n• 선정 시 상품이나 서비스 체험 혜택 제공\n• 리뷰 활동으로 리워드와 콘텐츠 성장 기회\n\n현재 더 좋은 캠페인을 준비하고 있어요. 신청 기능은 곧 선보입니다 🎁',
+  },
+  {
     q: '배송 조회', icon: Truck,
     a: '마이페이지 > 주문/배송 탭에서 주문을 확인하고,\n[🚚 실시간 배송조회] 버튼을 누르면 택배 위치를 단계별로 볼 수 있어요.\n(판매자가 송장을 입력한 후부터 조회돼요.)',
   },
@@ -111,12 +119,15 @@ const ICON_PALETTE = [
 type Msg = { from: 'bot' | 'user'; text: string }
 
 // 답변 속 이메일을 탭하면 메일 쓰기가 열리게 (mailto 링크)
-const EMAIL_SPLIT = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g
+const EMAIL_SPLIT = /((?:https?:\/\/[^\s]+)|(?:[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}))/g
 const isEmail = (s: string) => /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(s)
+const isUrl = (s: string) => /^https?:\/\//.test(s)
 function renderText(text: string) {
   return text.split(EMAIL_SPLIT).map((p, i) =>
     isEmail(p)
       ? <a key={i} href={`mailto:${p}`} style={{ color: '#15803d', fontWeight: 800, textDecoration: 'underline' }}>{p}</a>
+      : isUrl(p)
+        ? <a key={i} href={p} target="_blank" rel="noopener noreferrer" style={{ color: '#15803d', fontWeight: 800, textDecoration: 'underline', overflowWrap: 'anywhere' }}>온파트너 무료 신청하기 →</a>
       : <span key={i}>{p}</span>
   )
 }
