@@ -28,7 +28,7 @@ export default function ShopClient({ initialProducts, initialCategories, initial
   const [bannerIdx, setBannerIdx] = useState(0)
   const bannerTimer = useRef<any>(null)
   const PAGE_SIZE = 24
-  const [page, setPage] = useState(1)
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [selectedCat, setSelectedCat] = useState('전체')
   const [search, setSearch] = useState('')
   const [searchFocus, setSearchFocus] = useState(false)
@@ -160,7 +160,7 @@ export default function ShopClient({ initialProducts, initialCategories, initial
   }, [banners.length])
 
   // 검색·카테고리·정렬 바뀌면 다시 첫 페이지부터 (페이지네이션)
-  useEffect(() => { setPage(1) }, [search, selectedCat, sortBy])
+  useEffect(() => { setVisibleCount(PAGE_SIZE) }, [search, selectedCat, sortBy])
 
   useEffect(() => {
     if (products.length > 0) startPopupCycle()
@@ -461,8 +461,8 @@ export default function ShopClient({ initialProducts, initialCategories, initial
             )}
           </div>
         ) : (
-          <div id="shop-grid" className="product-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: '20px' }}>
-            {sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((p, i) => (
+          <div className="product-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: '20px' }}>
+            {sorted.slice(0, visibleCount).map((p, i) => (
               <ProductCard
                 key={p.id}
                 p={p} i={i} dark={dark}
@@ -475,37 +475,19 @@ export default function ShopClient({ initialProducts, initialCategories, initial
           </div>
         )}
 
-        {/* 페이지 형식 네비게이션 */}
-        {(() => {
-          if (loading) return null
-          const totalPages = Math.ceil(sorted.length / PAGE_SIZE)
-          if (totalPages <= 1) return null
-          const go = (p: number) => {
-            const np = Math.max(1, Math.min(totalPages, p))
-            setPage(np)
-            document.getElementById('shop-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-          }
-          // 현재 페이지 주변 + 처음/끝만 노출
-          const nums: (number | '…')[] = []
-          for (let n = 1; n <= totalPages; n++) {
-            if (n === 1 || n === totalPages || Math.abs(n - page) <= 1) nums.push(n)
-            else if (nums[nums.length - 1] !== '…') nums.push('…')
-          }
-          const pgBtn = (active: boolean): React.CSSProperties => ({
-            minWidth: '42px', height: '42px', padding: '0 12px', borderRadius: '10px', cursor: 'pointer',
-            border: `2px solid ${active ? '#16a34a' : border}`, background: active ? '#16a34a' : card,
-            color: active ? '#fff' : text, fontSize: '15px', fontWeight: 800, fontFamily: 'inherit', transition: 'all 0.15s',
-          })
-          return (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', marginTop: '32px', flexWrap: 'wrap' }}>
-              <button onClick={() => go(page - 1)} disabled={page === 1} style={{ ...pgBtn(false), opacity: page === 1 ? 0.4 : 1, cursor: page === 1 ? 'default' : 'pointer' }}>‹</button>
-              {nums.map((n, i) => n === '…'
-                ? <span key={`e${i}`} style={{ color: sub, padding: '0 4px', fontWeight: 700 }}>…</span>
-                : <button key={n} onClick={() => go(n)} style={pgBtn(n === page)}>{n}</button>)}
-              <button onClick={() => go(page + 1)} disabled={page === totalPages} style={{ ...pgBtn(false), opacity: page === totalPages ? 0.4 : 1, cursor: page === totalPages ? 'default' : 'pointer' }}>›</button>
-            </div>
-          )
-        })()}
+        {/* 더 보기 (페이지네이션) */}
+        {!loading && sorted.length > visibleCount && (
+          <div style={{ textAlign: 'center', marginTop: '32px' }}>
+            <button onClick={() => setVisibleCount(c => c + PAGE_SIZE)} style={{
+              padding: '14px 32px', borderRadius: '100px', cursor: 'pointer',
+              border: `2px solid ${border}`, background: card, color: text,
+              fontSize: '15px', fontWeight: 800, fontFamily: 'inherit',
+              transition: 'all 0.2s ease', boxShadow: '0 4px 14px rgba(0,0,0,0.06)'
+            }}>
+              상품 더 보기 ({sorted.length - visibleCount}개 남음) ↓
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ── 모바일 하단 네비 ── */}

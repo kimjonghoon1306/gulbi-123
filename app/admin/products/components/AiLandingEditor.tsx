@@ -54,6 +54,7 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
   const [productGroup, setProductGroup] = useState<ProductGroup>('')
   const [freshType, setFreshType] = useState<FreshType>('')
   const [aiSearch, setAiSearch] = useState('')
+  const [aiProdPage, setAiProdPage] = useState(1)
   const [shipCutoff, setShipCutoff] = useState('')
   const [hasHaccp, setHasHaccp] = useState(false)
   const [haccpNo, setHaccpNo] = useState('')
@@ -399,24 +400,48 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
               {/* 상품 리스트 */}
               <div style={{ width: isMobile ? '100%' : '260px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <p style={{ color: aiDark ? 'rgba(255,255,255,0.5)' : '#555', fontSize: '11px', fontWeight: 700, margin: '0 0 4px', letterSpacing: '1px' }}>📦 상품 선택</p>
-                <input value={aiSearch} onChange={e => setAiSearch(e.target.value)} placeholder="🔍 상품 이름으로 검색"
+                <input value={aiSearch} onChange={e => { setAiSearch(e.target.value); setAiProdPage(1) }} placeholder="🔍 상품 이름으로 검색"
                   style={{ width: '100%', boxSizing: 'border-box', padding: '11px 13px', borderRadius: '10px', border: '2px solid ' + (aiDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)'), background: aiDark ? 'rgba(255,255,255,0.07)' : 'white', color: aiDark ? 'white' : '#111', fontSize: '14px', outline: 'none', marginBottom: '2px' }} />
-                <div style={{ flex: 1, overflowY: 'auto', maxHeight: isMobile ? '260px' : undefined, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {products.filter(p => p.is_active && (!aiSearch.trim() || p.name.toLowerCase().includes(aiSearch.trim().toLowerCase()))).map(p => (
-                    <button key={p.id} onClick={() => selectProductForAI(p)}
-                      style={{ padding: '10px 12px', borderRadius: '12px', textAlign: 'left', cursor: 'pointer', border: '2px solid ' + (selectedProduct?.id === p.id ? '#22c55e' : 'rgba(255,255,255,0.08)'), background: selectedProduct?.id === p.id ? 'rgba(34,197,94,0.12)' : 'rgba(255,255,255,0.03)', transition: 'all 0.15s' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        {p.image_url ? <img src={p.image_url} alt="" style={{ width: '36px', height: '36px', borderRadius: '6px', objectFit: 'cover', flexShrink: 0 }} /> : <div style={{ width: '36px', height: '36px', borderRadius: '6px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>🧺</div>}
-                        <div style={{ minWidth: 0 }}>
-                          <p style={{ color: aiDark ? 'white' : '#111', fontSize: '12px', fontWeight: 700, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</p>
-                          <p style={{ color: aiDark ? 'rgba(255,255,255,0.4)' : '#666', fontSize: '10px', margin: '2px 0 0' }}>{p.retail_price?.toLocaleString()}원</p>
-                        </div>
+                {(() => {
+                  const PER = 8
+                  const list = products.filter(p => p.is_active && (!aiSearch.trim() || p.name.toLowerCase().includes(aiSearch.trim().toLowerCase())))
+                  const totalPages = Math.max(1, Math.ceil(list.length / PER))
+                  const pg = Math.min(aiProdPage, totalPages)
+                  const paged = list.slice((pg - 1) * PER, pg * PER)
+                  const pgBtn = (active: boolean, disabled?: boolean) => ({ minWidth: '34px', height: '34px', padding: '0 8px', borderRadius: '8px', border: '2px solid ' + (active ? '#22c55e' : (aiDark ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.15)')), background: active ? '#22c55e' : (aiDark ? 'rgba(255,255,255,0.05)' : 'white'), color: active ? '#fff' : (aiDark ? '#fff' : '#111'), fontSize: '13px', fontWeight: 800, cursor: disabled ? 'default' : 'pointer', opacity: disabled ? 0.4 : 1 } as React.CSSProperties)
+                  return (
+                    <>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        {paged.map(p => (
+                          <button key={p.id} onClick={() => selectProductForAI(p)}
+                            style={{ padding: '10px 12px', borderRadius: '12px', textAlign: 'left', cursor: 'pointer', border: '2px solid ' + (selectedProduct?.id === p.id ? '#22c55e' : 'rgba(255,255,255,0.08)'), background: selectedProduct?.id === p.id ? 'rgba(34,197,94,0.12)' : 'rgba(255,255,255,0.03)', transition: 'all 0.15s' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              {p.image_url ? <img src={p.image_url} alt="" style={{ width: '36px', height: '36px', borderRadius: '6px', objectFit: 'cover', flexShrink: 0 }} /> : <div style={{ width: '36px', height: '36px', borderRadius: '6px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>🧺</div>}
+                              <div style={{ minWidth: 0 }}>
+                                <p style={{ color: aiDark ? 'white' : '#111', fontSize: '12px', fontWeight: 700, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</p>
+                                <p style={{ color: aiDark ? 'rgba(255,255,255,0.4)' : '#666', fontSize: '10px', margin: '2px 0 0' }}>{p.retail_price?.toLocaleString()}원</p>
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                        {products.length === 0 && <div style={{ textAlign: 'center', padding: '24px', color: aiDark ? 'rgba(255,255,255,0.3)' : '#888', fontSize: '12px' }}><p>등록된 상품이 없어요</p></div>}
+                        {products.length > 0 && list.length === 0 && <div style={{ textAlign: 'center', padding: '20px', color: aiDark ? 'rgba(255,255,255,0.3)' : '#888', fontSize: '12px' }}><p>&lsquo;{aiSearch}&rsquo; 검색 결과가 없어요</p></div>}
                       </div>
-                    </button>
-                  ))}
-                  {products.length === 0 && <div style={{ textAlign: 'center', padding: '24px', color: aiDark ? 'rgba(255,255,255,0.3)' : '#888', fontSize: '12px' }}><p>등록된 상품이 없어요</p></div>}
-                  {products.length > 0 && aiSearch.trim() && products.filter(p => p.is_active && p.name.toLowerCase().includes(aiSearch.trim().toLowerCase())).length === 0 && <div style={{ textAlign: 'center', padding: '20px', color: aiDark ? 'rgba(255,255,255,0.3)' : '#888', fontSize: '12px' }}><p>&lsquo;{aiSearch}&rsquo; 검색 결과가 없어요</p></div>}
-                </div>
+                      {totalPages > 1 && (
+                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '5px', marginTop: '10px', flexWrap: 'wrap' }}>
+                          <button onClick={() => setAiProdPage(Math.max(1, pg - 1))} disabled={pg === 1} style={pgBtn(false, pg === 1)}>‹</button>
+                          {Array.from({ length: totalPages }, (_, i) => i + 1).filter(n => n === 1 || n === totalPages || Math.abs(n - pg) <= 1).map((n, i, arr) => (
+                            <span key={n} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                              {i > 0 && n - arr[i - 1] > 1 && <span style={{ color: aiDark ? 'rgba(255,255,255,0.4)' : '#999', fontSize: '12px' }}>…</span>}
+                              <button onClick={() => setAiProdPage(n)} style={pgBtn(n === pg)}>{n}</button>
+                            </span>
+                          ))}
+                          <button onClick={() => setAiProdPage(Math.min(totalPages, pg + 1))} disabled={pg === totalPages} style={pgBtn(false, pg === totalPages)}>›</button>
+                        </div>
+                      )}
+                    </>
+                  )
+                })()}
               </div>
 
               {/* 이미지 업로드 */}
