@@ -9,7 +9,7 @@ import { useLandingImageSwap } from '@/app/components/useLandingImageSwap'
 
 // ── 인라인 FloatingToolbar ──────────────────────────────────
 function FloatingToolbar({ previewId }: { previewId: string }) {
-  const [pos, setPos] = useState<{ x: number; y: number } | null>(null)
+  const [pos, setPos] = useState<{ x: number; y: number; placeBelow: boolean } | null>(null)
   const savedRange = useRef<Range | null>(null)
 
   useEffect(() => {
@@ -22,7 +22,12 @@ function FloatingToolbar({ previewId }: { previewId: string }) {
       if (!container.contains(range.commonAncestorContainer)) { setPos(null); return }
       savedRange.current = range.cloneRange()
       const rect = range.getBoundingClientRect()
-      setPos({ x: rect.left + rect.width / 2, y: rect.top - 6 })
+      const mobileToolbarWidth = Math.min(260, window.innerWidth - 16)
+      const halfWidth = mobileToolbarWidth / 2
+      const x = Math.min(window.innerWidth - halfWidth - 8, Math.max(halfWidth + 8, rect.left + rect.width / 2))
+      const visibleTop = Math.max(8, container.getBoundingClientRect().top)
+      const placeBelow = rect.top - 48 < visibleTop
+      setPos({ x, y: placeBelow ? rect.bottom + 8 : rect.top - 8, placeBelow })
     }
     document.addEventListener('selectionchange', onSelect)
     return () => document.removeEventListener('selectionchange', onSelect)
@@ -38,7 +43,7 @@ function FloatingToolbar({ previewId }: { previewId: string }) {
 
   if (!pos) return null
   return (
-    <div onMouseDown={e => e.preventDefault()} style={{ position: 'fixed', left: pos.x, top: pos.y, transform: 'translate(-50%, -100%)', zIndex: 200000, display: 'flex', alignItems: 'center', gap: '2px', background: '#111', border: '1px solid rgba(34,197,94,0.4)', borderRadius: '10px', padding: '5px 6px', boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}>
+    <div onPointerDown={e => e.preventDefault()} style={{ position: 'fixed', left: pos.x, top: pos.y, transform: pos.placeBelow ? 'translateX(-50%)' : 'translate(-50%, -100%)', zIndex: 200000, display: 'flex', alignItems: 'center', gap: '2px', background: '#111', border: '1px solid rgba(34,197,94,0.4)', borderRadius: '10px', padding: '5px 6px', boxShadow: '0 8px 24px rgba(0,0,0,0.6)', width: 'max-content', maxWidth: 'calc(100vw - 16px)' }}>
       {[{ cmd: 'bold', label: <strong style={{ fontSize: '13px' }}>B</strong> }, { cmd: 'italic', label: <em style={{ fontSize: '13px' }}>I</em> }, { cmd: 'underline', label: <u style={{ fontSize: '12px' }}>U</u> }].map(({ cmd, label }) => (
         <button key={cmd} onClick={() => exec(cmd)} style={{ width: '28px', height: '28px', borderRadius: '6px', border: 'none', background: 'transparent', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{label}</button>
       ))}

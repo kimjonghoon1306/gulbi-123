@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 
 export default function FloatingToolbar({ previewId }: { previewId: string }) {
-  const [pos, setPos] = useState<{ x: number; y: number } | null>(null)
+  const [pos, setPos] = useState<{ x: number; y: number; placeBelow: boolean } | null>(null)
   const savedRange = useRef<Range | null>(null)
 
   useEffect(() => {
@@ -17,7 +17,12 @@ export default function FloatingToolbar({ previewId }: { previewId: string }) {
       if (!container.contains(range.commonAncestorContainer)) { setPos(null); return }
       savedRange.current = range.cloneRange()
       const rect = range.getBoundingClientRect()
-      setPos({ x: rect.left + rect.width / 2, y: rect.top - 6 })
+      const mobileToolbarWidth = Math.min(320, window.innerWidth - 16)
+      const halfWidth = mobileToolbarWidth / 2
+      const x = Math.min(window.innerWidth - halfWidth - 8, Math.max(halfWidth + 8, rect.left + rect.width / 2))
+      const visibleTop = Math.max(8, container.getBoundingClientRect().top)
+      const placeBelow = rect.top - 56 < visibleTop
+      setPos({ x, y: placeBelow ? rect.bottom + 8 : rect.top - 8, placeBelow })
     }
 
     document.addEventListener('selectionchange', onSelect)
@@ -50,17 +55,17 @@ export default function FloatingToolbar({ previewId }: { previewId: string }) {
 
   return (
     <div
-      onMouseDown={e => e.preventDefault()}
+      onPointerDown={e => e.preventDefault()}
       style={{
         position: 'fixed',
         left: pos.x, top: pos.y,
-        transform: 'translate(-50%, -100%)',
+        transform: pos.placeBelow ? 'translateX(-50%)' : 'translate(-50%, -100%)',
         zIndex: 200000,
         display: 'flex', alignItems: 'center', gap: '2px',
         background: '#111', border: '1px solid rgba(200,169,110,0.4)',
         borderRadius: '10px', padding: '5px 6px',
         boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
-        flexWrap: 'wrap', maxWidth: '320px',
+        flexWrap: 'wrap', width: 'max-content', maxWidth: 'calc(100vw - 16px)',
       }}
     >
       {[
