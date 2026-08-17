@@ -117,8 +117,10 @@ export default function InventoryPage() {
               <p className="text-sm text-slate-400 dark:text-slate-500">등록된 상품이 없습니다</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-            <table className="w-full min-w-[560px]">
+            <>
+            {/* PC: 테이블 */}
+            <div className="hidden md:block overflow-x-auto">
+            <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-gray-700">
                   {['상품명', '현재 재고', '최소 재고', '단위', '상태', ''].map(h => (
@@ -138,13 +140,13 @@ export default function InventoryPage() {
                       <td className="px-5 py-4 text-sm text-slate-500 dark:text-slate-400">{p.min_stock || '-'}</td>
                       <td className="px-5 py-4 text-sm text-slate-500 dark:text-slate-400">{p.unit}</td>
                       <td className="px-5 py-4">
-                        <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${isLow ? 'bg-red-100 dark:bg-red-900/30 text-red-500' : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'}`}>
+                        <span className={`inline-block whitespace-nowrap text-xs font-medium px-2.5 py-1 rounded-full ${isLow ? 'bg-red-100 dark:bg-red-900/30 text-red-500' : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'}`}>
                           {isLow ? '⚠️ 부족' : '✅ 정상'}
                         </span>
                       </td>
                       <td className="px-5 py-4">
                         <button onClick={() => { setShowMinForm(p); setMinStock(String(p.min_stock || 0)) }}
-                          className="text-xs text-amber-500 hover:text-amber-600 font-medium px-3 py-1.5 rounded-lg border border-amber-200 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors">
+                          className="text-xs text-amber-500 hover:text-amber-600 font-medium px-3 py-1.5 rounded-lg border border-amber-200 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors whitespace-nowrap">
                           최소재고 설정
                         </button>
                       </td>
@@ -153,8 +155,34 @@ export default function InventoryPage() {
                 })}
               </tbody>
             </table>
-            <div className="px-4 pb-4"><Pager page={stockPg} totalPages={stockTotalPages} onChange={setStockPage} dark={isDark} /></div>
             </div>
+            {/* 모바일: 카드형 */}
+            <div className="md:hidden divide-y divide-slate-100 dark:divide-gray-700">
+              {pagedProducts.map(p => {
+                const isLow = p.min_stock > 0 && p.stock <= p.min_stock
+                return (
+                  <div key={p.id} className="p-4">
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <p className="text-sm font-bold text-slate-800 dark:text-white flex-1 min-w-0">{p.name}</p>
+                      <span className={`inline-block whitespace-nowrap text-[11px] font-bold px-2.5 py-1 rounded-full flex-shrink-0 ${isLow ? 'bg-red-100 dark:bg-red-900/30 text-red-500' : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'}`}>
+                        {isLow ? '⚠️ 부족' : '✅ 정상'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        현재 <b className={isLow ? 'text-red-500' : 'text-slate-800 dark:text-white'}>{p.stock}</b>{p.unit} · 최소 {p.min_stock || '-'}
+                      </p>
+                      <button onClick={() => { setShowMinForm(p); setMinStock(String(p.min_stock || 0)) }}
+                        className="text-xs text-amber-500 font-bold px-3 py-1.5 rounded-lg border border-amber-200 dark:border-amber-800 whitespace-nowrap flex-shrink-0">
+                        최소재고 설정
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+            <div className="px-4 pb-4"><Pager page={stockPg} totalPages={stockTotalPages} onChange={setStockPage} dark={isDark} /></div>
+            </>
           )}
         </div>
       )}

@@ -66,7 +66,7 @@ export default function ProductList({
                         <td className="px-5 py-4 text-sm text-slate-800 dark:text-slate-200">{p.stock}</td>
                         <td className="px-5 py-4 text-sm text-slate-500 dark:text-slate-400">{p.unit}{p.weight != null && Number(p.weight) > 0 ? ` · ${Number(p.weight)}${p.unit}` : ''}</td>
                         <td className="px-5 py-4">
-                          <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${p.is_active ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'bg-slate-100 dark:bg-gray-700 text-slate-400'}`}>
+                          <span className={`inline-block whitespace-nowrap text-xs font-medium px-2.5 py-1 rounded-full ${p.is_active ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'bg-slate-100 dark:bg-gray-700 text-slate-400'}`}>
                             {p.is_active ? '판매중' : '숨김'}
                           </span>
                         </td>

@@ -69,7 +69,7 @@ export default function SupplierProductList({
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
                 <p style={{ fontSize: '14px', fontWeight: 700, color: t.text, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</p>
-                <span style={{ fontSize: '10px', fontWeight: 600, padding: '2px 8px', borderRadius: '20px', flexShrink: 0, background: s.bg, color: s.color }}>{s.label}</span>
+                <span style={{ fontSize: '10px', fontWeight: 600, padding: '2px 8px', borderRadius: '20px', flexShrink: 0, whiteSpace: 'nowrap', background: s.bg, color: s.color }}>{s.label}</span>
               </div>
               <p style={{ fontSize: '11px', color: t.textMuted, margin: 0 }}>
                 도매 공급가 {p.suggested_wholesale_price?.toLocaleString()}원

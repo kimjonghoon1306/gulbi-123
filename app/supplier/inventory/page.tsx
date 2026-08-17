@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import SupplierLayout from '../_layout/layout'
 import { useSupplierTheme } from '../_layout/theme-context'
+import { Pager } from '@/app/components/Pager'
 
 type Product = { id: string; name: string; stock: number; min_stock: number; unit: string }
 type Log = { id: string; product_id: string; product_name: string; type: string; quantity: number; note: string; created_at: string }
@@ -23,6 +24,9 @@ function SupplierInventoryContent() {
   const [showMinForm, setShowMinForm] = useState<Product | null>(null)
   const [minStock, setMinStock] = useState('')
   const [form, setForm] = useState({ product_id: '', type: '입고', quantity: '', note: '' })
+  const [stockPage, setStockPage] = useState(1)
+  const [logPage, setLogPage] = useState(1)
+  const PER = 10
 
   useEffect(() => { init() }, [])
 
@@ -83,6 +87,13 @@ function SupplierInventoryContent() {
   }
 
   const lowStock = products.filter(product => product.min_stock > 0 && product.stock <= product.min_stock)
+  const stockTotalPages = Math.max(1, Math.ceil(products.length / PER))
+  const stockPg = Math.min(stockPage, stockTotalPages)
+  const pagedProducts = products.slice((stockPg - 1) * PER, stockPg * PER)
+  const logTotalPages = Math.max(1, Math.ceil(logs.length / PER))
+  const logPg = Math.min(logPage, logTotalPages)
+  const pagedLogs = logs.slice((logPg - 1) * PER, logPg * PER)
+  const supDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
   const cardStyle = { background: t.card, border: `1px solid ${t.border}`, borderRadius: '18px' }
   const inputStyle = { width: '100%', padding: '12px 14px', borderRadius: '11px', border: `1px solid ${t.inputBorder}`, background: t.input, color: t.text, fontSize: '13px', outline: 'none', boxSizing: 'border-box' as const }
 
@@ -115,37 +126,67 @@ function SupplierInventoryContent() {
       </div>
 
       {tab === 'stock' && (
-        <div style={{ ...cardStyle, overflowX: 'auto' }}>
+        <div style={{ ...cardStyle, overflow: 'hidden' }}>
           {loading ? <p style={{ padding: '48px', textAlign: 'center', color: t.textMuted }}>불러오는 중...</p> : products.length === 0 ? <p style={{ padding: '48px', textAlign: 'center', color: t.textMuted }}>등록된 상품이 없습니다.</p> : (
-            <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse' }}>
-              <thead><tr>{['상품명', '현재 재고', '최소 재고', '단위', '상태', ''].map(label => <th key={label} style={{ padding: '14px 16px', textAlign: 'left', color: t.textMuted, fontSize: '11px', borderBottom: `1px solid ${t.border}` }}>{label}</th>)}</tr></thead>
-              <tbody>{products.map(product => {
-                const isLow = product.min_stock > 0 && product.stock <= product.min_stock
-                return <tr key={product.id} style={{ borderBottom: `1px solid ${t.border}` }}>
-                  <td style={{ padding: '15px 16px', color: t.text, fontSize: '13px', fontWeight: 700 }}>{product.name}</td>
-                  <td style={{ padding: '15px 16px', color: isLow ? '#f87171' : t.text, fontSize: '14px', fontWeight: 900 }}>{product.stock}</td>
-                  <td style={{ padding: '15px 16px', color: t.textMuted, fontSize: '13px' }}>{product.min_stock || '-'}</td>
-                  <td style={{ padding: '15px 16px', color: t.textMuted, fontSize: '13px' }}>{product.unit}</td>
-                  <td style={{ padding: '15px 16px' }}><span style={{ color: isLow ? '#f87171' : '#34d399', fontSize: '11px', fontWeight: 800 }}>{isLow ? '⚠️ 부족' : '✅ 정상'}</span></td>
-                  <td style={{ padding: '15px 16px' }}><button onClick={() => { setShowMinForm(product); setMinStock(String(product.min_stock || 0)) }} style={{ border: '1px solid rgba(245,158,11,0.35)', background: 'transparent', color: '#f59e0b', borderRadius: '9px', padding: '7px 10px', fontSize: '11px', cursor: 'pointer' }}>최소재고 설정</button></td>
-                </tr>
-              })}</tbody>
-            </table>
+            <>
+              {/* 모바일: 카드형 */}
+              <div className="sup-stock-cards">
+                {pagedProducts.map(product => {
+                  const isLow = product.min_stock > 0 && product.stock <= product.min_stock
+                  return (
+                    <div key={product.id} style={{ padding: '14px 16px', borderBottom: `1px solid ${t.border}` }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px', marginBottom: '6px' }}>
+                        <p style={{ margin: 0, color: t.text, fontSize: '14px', fontWeight: 800, flex: 1, minWidth: 0 }}>{product.name}</p>
+                        <span style={{ color: isLow ? '#f87171' : '#34d399', fontSize: '11px', fontWeight: 800, whiteSpace: 'nowrap', flexShrink: 0 }}>{isLow ? '⚠️ 부족' : '✅ 정상'}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                        <p style={{ margin: 0, color: t.textMuted, fontSize: '12px' }}>현재 <b style={{ color: isLow ? '#f87171' : t.text }}>{product.stock}</b>{product.unit} · 최소 {product.min_stock || '-'}</p>
+                        <button onClick={() => { setShowMinForm(product); setMinStock(String(product.min_stock || 0)) }} style={{ border: '1px solid rgba(245,158,11,0.35)', background: 'transparent', color: '#f59e0b', borderRadius: '9px', padding: '7px 10px', fontSize: '11px', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>최소재고 설정</button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+              {/* PC: 테이블 */}
+              <div className="sup-stock-table" style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead><tr>{['상품명', '현재 재고', '최소 재고', '단위', '상태', ''].map(label => <th key={label} style={{ padding: '14px 16px', textAlign: 'left', color: t.textMuted, fontSize: '11px', borderBottom: `1px solid ${t.border}` }}>{label}</th>)}</tr></thead>
+                  <tbody>{pagedProducts.map(product => {
+                    const isLow = product.min_stock > 0 && product.stock <= product.min_stock
+                    return <tr key={product.id} style={{ borderBottom: `1px solid ${t.border}` }}>
+                      <td style={{ padding: '15px 16px', color: t.text, fontSize: '13px', fontWeight: 700 }}>{product.name}</td>
+                      <td style={{ padding: '15px 16px', color: isLow ? '#f87171' : t.text, fontSize: '14px', fontWeight: 900 }}>{product.stock}</td>
+                      <td style={{ padding: '15px 16px', color: t.textMuted, fontSize: '13px' }}>{product.min_stock || '-'}</td>
+                      <td style={{ padding: '15px 16px', color: t.textMuted, fontSize: '13px' }}>{product.unit}</td>
+                      <td style={{ padding: '15px 16px' }}><span style={{ color: isLow ? '#f87171' : '#34d399', fontSize: '11px', fontWeight: 800, whiteSpace: 'nowrap' }}>{isLow ? '⚠️ 부족' : '✅ 정상'}</span></td>
+                      <td style={{ padding: '15px 16px' }}><button onClick={() => { setShowMinForm(product); setMinStock(String(product.min_stock || 0)) }} style={{ border: '1px solid rgba(245,158,11,0.35)', background: 'transparent', color: '#f59e0b', borderRadius: '9px', padding: '7px 10px', fontSize: '11px', cursor: 'pointer', whiteSpace: 'nowrap' }}>최소재고 설정</button></td>
+                    </tr>
+                  })}</tbody>
+                </table>
+              </div>
+              <div style={{ padding: '4px 16px 16px' }}><Pager page={stockPg} totalPages={stockTotalPages} onChange={setStockPage} dark={supDark} /></div>
+            </>
           )}
         </div>
       )}
 
       {tab === 'logs' && (
         <div style={{ ...cardStyle, overflow: 'hidden' }}>
-          {logs.length === 0 ? <p style={{ padding: '48px', textAlign: 'center', color: t.textMuted }}>입출고 이력이 없습니다.</p> : logs.map(log => (
-            <div key={log.id} style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', borderBottom: `1px solid ${t.border}` }}>
-              <span style={{ color: log.type === '입고' ? '#34d399' : '#f87171', fontSize: '11px', fontWeight: 800 }}>{log.type === '입고' ? '▲ 입고' : '▼ 출고'}</span>
-              <div style={{ flex: 1 }}><p style={{ margin: 0, color: t.text, fontSize: '13px', fontWeight: 700 }}>{log.product_name}</p>{log.note && <p style={{ margin: '3px 0 0', color: t.textMuted, fontSize: '11px' }}>{log.note}</p>}</div>
-              <div style={{ textAlign: 'right' }}><p style={{ margin: 0, color: log.type === '입고' ? '#34d399' : '#f87171', fontWeight: 900 }}>{log.type === '입고' ? '+' : '-'}{log.quantity}</p><p style={{ margin: '3px 0 0', color: t.textMuted, fontSize: '10px' }}>{new Date(log.created_at).toLocaleDateString('ko-KR')}</p></div>
-            </div>
-          ))}
+          {logs.length === 0 ? <p style={{ padding: '48px', textAlign: 'center', color: t.textMuted }}>입출고 이력이 없습니다.</p> : (
+            <>
+              {pagedLogs.map(log => (
+                <div key={log.id} style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', borderBottom: `1px solid ${t.border}` }}>
+                  <span style={{ color: log.type === '입고' ? '#34d399' : '#f87171', fontSize: '11px', fontWeight: 800, whiteSpace: 'nowrap' }}>{log.type === '입고' ? '▲ 입고' : '▼ 출고'}</span>
+                  <div style={{ flex: 1 }}><p style={{ margin: 0, color: t.text, fontSize: '13px', fontWeight: 700 }}>{log.product_name}</p>{log.note && <p style={{ margin: '3px 0 0', color: t.textMuted, fontSize: '11px' }}>{log.note}</p>}</div>
+                  <div style={{ textAlign: 'right' }}><p style={{ margin: 0, color: log.type === '입고' ? '#34d399' : '#f87171', fontWeight: 900 }}>{log.type === '입고' ? '+' : '-'}{log.quantity}</p><p style={{ margin: '3px 0 0', color: t.textMuted, fontSize: '10px' }}>{new Date(log.created_at).toLocaleDateString('ko-KR')}</p></div>
+                </div>
+              ))}
+              <div style={{ padding: '4px 16px 16px' }}><Pager page={logPg} totalPages={logTotalPages} onChange={setLogPage} dark={supDark} /></div>
+            </>
+          )}
         </div>
       )}
+      <style>{`.sup-stock-cards{display:block}.sup-stock-table{display:none}@media(min-width:768px){.sup-stock-cards{display:none}.sup-stock-table{display:block}}`}</style>
 
       {showForm && <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '18px' }}>
         <div style={{ ...cardStyle, width: '100%', maxWidth: '430px', padding: '22px' }}>
