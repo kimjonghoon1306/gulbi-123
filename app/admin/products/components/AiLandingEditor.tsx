@@ -512,7 +512,7 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
 
           {/* STEP 2: 상품 정보 + 말투 */}
           {!aiChoice && aiStep === 2 && (
-            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 20px', background: aiDark ? 'transparent' : '#f8f8f8', position: 'relative' }}>
+            <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '24px 20px', background: aiDark ? 'transparent' : '#f8f8f8', position: 'relative' }}>
               {aiLoading && (
                 <div style={{ position: 'absolute', inset: 0, zIndex: 100, background: aiDark ? 'rgba(0,0,0,0.85)' : 'rgba(240,240,240,0.92)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '24px' }}>
                   <div style={{ width: '56px', height: '56px', borderRadius: '50%', border: '3px solid rgba(34,197,94,0.2)', borderTop: '3px solid #22c55e', animation: 'spin 0.9s linear infinite' }} />
