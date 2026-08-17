@@ -17,13 +17,18 @@ function getSupabase() {
 // 현재 판매 중인 상세 경로를 빌드 때 CDN에 미리 생성해 첫 클릭의
 // 서버 콜드 스타트와 DB 왕복을 없앤다. 신규 상품은 dynamicParams로 대응한다.
 export async function generateStaticParams() {
-  const { data, error } = await getSupabase()
-    .from('products')
-    .select('id')
-    .eq('is_active', true)
-
-  if (error) throw new Error(`상품 상세 경로 생성 실패: ${error.message}`)
-  return (data || []).map(({ id }) => ({ id: String(id) }))
+  // 프리렌더 실패가 배포 전체를 막지 않도록 — 에러 시 빈 목록(런타임 dynamicParams로 대응)
+  try {
+    const { data, error } = await getSupabase()
+      .from('products')
+      .select('id')
+      .eq('is_active', true)
+    if (error) throw error
+    return (data || []).map(({ id }) => ({ id: String(id) }))
+  } catch (e) {
+    console.error('[generateStaticParams] 상품 경로 프리렌더 건너뜀:', e)
+    return []
+  }
 }
 
 export default async function ProductDetailPage({ params }: Props) {

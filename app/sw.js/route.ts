@@ -33,6 +33,23 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
+  // 페이지(HTML) 네비게이션과 Next 데이터/청크는 절대 오래된 캐시를 쓰지 않는다.
+  // → 새 배포가 나오면 iOS PWA에서도 즉시 최신 화면이 뜬다. (네트워크 실패 시에만 캐시 폴백)
+  const isNavigation = request.mode === 'navigate' || (request.headers.get('accept') || '').includes('text/html');
+  const isFresh = isNavigation || url.pathname.startsWith('/_next/');
+  if (isFresh) {
+    event.respondWith(
+      fetch(request, { cache: 'no-store' })
+        .then((response) => {
+          const copy = response.clone();
+          caches.open(VERSION).then((cache) => cache.put(request, copy)).catch(() => {});
+          return response;
+        })
+        .catch(() => caches.match(request))
+    );
+    return;
+  }
+
   event.respondWith(
     fetch(request)
       .then((response) => {
