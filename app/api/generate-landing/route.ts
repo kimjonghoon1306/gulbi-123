@@ -72,7 +72,7 @@ function cutoffLabel(hhmm?: string): string {
 function shipNotice(cutoff?: string): string {
   const l = cutoffLabel(cutoff)
   return l
-    ? `${l}까지 주문은 당일배송이 시작됩니다. 택배 사정에 따라 당일배송이 아닌 순차 배송으로 시작될 수 있습니다.`
+    ? `${l}까지 주문한 상품은 당일배송됩니다. 택배 사정으로 순차적으로 주문 상품이 배송됩니다.`
     : '주문 확인 후 순차적으로 배송됩니다.'
 }
 // 짧은 배송 문구(배송 요약 칸·특징용)

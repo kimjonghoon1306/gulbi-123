@@ -24,7 +24,7 @@ export function cutoffLabel(hhmm: string): string {
 export function shipNoticeText(hhmm: string): string {
   const l = cutoffLabel(hhmm)
   return l
-    ? `${l}까지 주문은 당일배송이 시작됩니다. 택배 사정에 따라 당일배송이 아닌 순차 배송으로 시작될 수 있습니다.`
+    ? `${l}까지 주문한 상품은 당일배송됩니다. 택배 사정으로 순차적으로 주문 상품이 배송됩니다.`
     : '주문 확인 후 순차적으로 배송됩니다.'
 }
 
@@ -40,11 +40,11 @@ export default function LandingFactFields({ dark, shipCutoff, setShipCutoff, has
       {/* 당일배송 기준시간 — 시계로 선택 */}
       <div>
         <label style={{ display: 'block', color: sub, fontSize: '11px', fontWeight: 800, marginBottom: '5px' }}>🚚 당일배송 기준시간 <span style={{ fontWeight: 600 }}>(선택 · 시계에서 시간을 고르세요)</span></label>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <input type="time" step={3600} value={shipCutoff} onChange={e => setShipCutoff(e.target.value)}
-            style={{ padding: '13px 15px', borderRadius: '12px', border: `2px solid ${shipCutoff ? '#22c55e' : border}`, background: bg, color: text, fontSize: '16px', fontWeight: 800, outline: 'none', colorScheme: dark ? 'dark' : 'light' }} />
-          {label && <span style={{ color: dark ? '#4ade80' : '#15803d', fontSize: '15px', fontWeight: 800 }}>{label} 기준</span>}
-          {shipCutoff && <button type="button" onClick={() => setShipCutoff('')} style={{ padding: '8px 12px', borderRadius: '9px', border: `1px solid ${border}`, background: 'transparent', color: sub, fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>지우기</button>}
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <input type="time" value={shipCutoff} onChange={e => setShipCutoff(e.target.value)}
+            style={{ flex: '1 1 260px', minWidth: '220px', width: '100%', boxSizing: 'border-box', padding: '16px 20px', borderRadius: '12px', border: `2px solid ${shipCutoff ? '#22c55e' : border}`, background: bg, color: text, fontSize: '22px', fontWeight: 800, letterSpacing: '1px', textAlign: 'center', outline: 'none', cursor: 'pointer', colorScheme: dark ? 'dark' : 'light' }} />
+          {label && <span style={{ color: dark ? '#4ade80' : '#15803d', fontSize: '16px', fontWeight: 800, whiteSpace: 'nowrap' }}>{label} 기준</span>}
+          {shipCutoff && <button type="button" onClick={() => setShipCutoff('')} style={{ padding: '10px 14px', borderRadius: '9px', border: `1px solid ${border}`, background: 'transparent', color: sub, fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>지우기</button>}
         </div>
         {/* 실제 들어갈 문구 미리보기 */}
         <div style={{ marginTop: '8px', padding: '11px 13px', borderRadius: '10px', background: dark ? 'rgba(59,130,246,0.12)' : '#eff6ff', border: `1px solid ${dark ? 'rgba(59,130,246,0.3)' : '#bfdbfe'}` }}>
