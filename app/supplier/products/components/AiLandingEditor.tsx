@@ -95,6 +95,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
   const [aiMeta, setAiMeta] = useState({ name: '', origin: '', category_id: '', unit: 'kg', suggested_wholesale_price: '', suggested_retail_price: '', stock: '' })
   const [productGroup, setProductGroup] = useState<ProductGroup>('')
   const [freshType, setFreshType] = useState<FreshType>('')
+  const [aiSearch, setAiSearch] = useState('')
   const [shipCutoff, setShipCutoff] = useState('')
   const [hasHaccp, setHasHaccp] = useState(false)
   const [haccpNo, setHaccpNo] = useState('')
@@ -450,8 +451,10 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
               {/* 상품 리스트 */}
               <div style={{ width: isMobile ? '100%' : '260px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <p style={{ color: aiDark ? 'rgba(255,255,255,0.5)' : '#555', fontSize: '11px', fontWeight: 700, margin: '0 0 4px', letterSpacing: '1px' }}>📦 내 상품 선택</p>
-                <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {products.map(p => (
+                <input value={aiSearch} onChange={e => setAiSearch(e.target.value)} placeholder="🔍 상품 이름으로 검색"
+                  style={{ width: '100%', boxSizing: 'border-box', padding: '11px 13px', borderRadius: '10px', border: '2px solid ' + (aiDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)'), background: aiDark ? 'rgba(255,255,255,0.07)' : 'white', color: aiDark ? 'white' : '#111', fontSize: '14px', outline: 'none', marginBottom: '2px' }} />
+                <div style={{ flex: 1, overflowY: 'auto', maxHeight: isMobile ? '260px' : undefined, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {products.filter(p => !aiSearch.trim() || p.name.toLowerCase().includes(aiSearch.trim().toLowerCase())).map(p => (
                     <button key={p.id} onClick={() => selectProductForAI(p)}
                       style={{ padding: '10px 12px', borderRadius: '12px', textAlign: 'left', cursor: 'pointer', border: '2px solid ' + (selectedProduct?.id === p.id ? '#22c55e' : 'rgba(255,255,255,0.08)'), background: selectedProduct?.id === p.id ? 'rgba(34,197,94,0.12)' : 'rgba(255,255,255,0.03)', transition: 'all 0.15s' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -464,6 +467,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
                     </button>
                   ))}
                   {products.length === 0 && <div style={{ textAlign: 'center', padding: '24px', color: aiDark ? 'rgba(255,255,255,0.3)' : '#888', fontSize: '12px' }}><p>등록된 상품이 없어요</p></div>}
+                  {products.length > 0 && aiSearch.trim() && products.filter(p => p.name.toLowerCase().includes(aiSearch.trim().toLowerCase())).length === 0 && <div style={{ textAlign: 'center', padding: '20px', color: aiDark ? 'rgba(255,255,255,0.3)' : '#888', fontSize: '12px' }}><p>&lsquo;{aiSearch}&rsquo; 검색 결과가 없어요</p></div>}
                 </div>
               </div>
 
