@@ -1,5 +1,8 @@
 'use client'
 
+import { useState, useEffect } from 'react'
+import { Pager } from '@/app/components/Pager'
+
 type Category = { id: string; name: string; sort_order: number }
 type Product = {
   id: string; name: string; description: string
@@ -17,10 +20,17 @@ type Props = {
   onRemake: (p: Product) => void
 }
 
+const PER = 10
+
 export default function ProductList({
   products, categories, loading, onEdit, onDelete, onRemake
 }: Props) {
   const getCatName = (id: string) => categories.find(c => c.id === id)?.name || '-'
+  const [page, setPage] = useState(1)
+  const totalPages = Math.max(1, Math.ceil(products.length / PER))
+  const pg = Math.min(page, totalPages)
+  const paged = products.slice((pg - 1) * PER, pg * PER)
+  useEffect(() => { if (page > totalPages) setPage(totalPages) }, [totalPages, page])
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-100 dark:border-gray-700 overflow-hidden shadow-sm">
@@ -44,7 +54,7 @@ export default function ProductList({
                     </tr>
                   </thead>
                   <tbody>
-                    {products.map(p => (
+                    {paged.map(p => (
                       <tr key={p.id} className="border-b border-slate-50 dark:border-gray-700/50 hover:bg-slate-50 dark:hover:bg-gray-700/30 transition-colors">
                         <td className="px-5 py-4">
                           <p className="text-sm font-medium text-slate-800 dark:text-white">{p.name}</p>
@@ -74,7 +84,7 @@ export default function ProductList({
               </div>
               {/* 모바일: 카드형 */}
               <div className="md:hidden divide-y divide-slate-100 dark:divide-gray-700">
-                {products.map(p => (
+                {paged.map(p => (
                   <div key={p.id} className="p-4 flex items-center gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
@@ -94,6 +104,9 @@ export default function ProductList({
                     </div>
                   </div>
                 ))}
+              </div>
+              <div className="px-4 pb-4">
+                <Pager page={pg} totalPages={totalPages} onChange={setPage} dark={typeof document !== 'undefined' && document.documentElement.classList.contains('dark')} />
               </div>
             </>
           )}

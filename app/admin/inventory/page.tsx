@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
+import { Pager } from '@/app/components/Pager'
+
+const PER = 10
 
 type Product = { id: string; name: string; stock: number; min_stock: number; unit: string; category_id: string }
 type Log = { id: string; product_name: string; type: string; quantity: number; note: string; created_at: string }
@@ -15,7 +18,16 @@ export default function InventoryPage() {
   const [showMinForm, setShowMinForm] = useState<Product | null>(null)
   const [minStock, setMinStock] = useState('')
   const [form, setForm] = useState({ product_id: '', type: '입고', quantity: '', note: '' })
+  const [stockPage, setStockPage] = useState(1)
+  const [logPage, setLogPage] = useState(1)
   const supabase = createClient()
+  const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
+  const stockTotalPages = Math.max(1, Math.ceil(products.length / PER))
+  const stockPg = Math.min(stockPage, stockTotalPages)
+  const pagedProducts = products.slice((stockPg - 1) * PER, stockPg * PER)
+  const logTotalPages = Math.max(1, Math.ceil(logs.length / PER))
+  const logPg = Math.min(logPage, logTotalPages)
+  const pagedLogs = logs.slice((logPg - 1) * PER, logPg * PER)
 
   useEffect(() => { fetchAll() }, [])
 
@@ -115,7 +127,7 @@ export default function InventoryPage() {
                 </tr>
               </thead>
               <tbody>
-                {products.map(p => {
+                {pagedProducts.map(p => {
                   const isLow = p.min_stock > 0 && p.stock <= p.min_stock
                   return (
                     <tr key={p.id} className="border-b border-slate-50 dark:border-gray-700/50 hover:bg-slate-50 dark:hover:bg-gray-700/30 transition-colors">
@@ -141,6 +153,7 @@ export default function InventoryPage() {
                 })}
               </tbody>
             </table>
+            <div className="px-4 pb-4"><Pager page={stockPg} totalPages={stockTotalPages} onChange={setStockPage} dark={isDark} /></div>
             </div>
           )}
         </div>
@@ -154,25 +167,30 @@ export default function InventoryPage() {
               <p className="text-4xl mb-3">📋</p>
               <p className="text-sm text-slate-400 dark:text-slate-500">입출고 이력이 없습니다</p>
             </div>
-          ) : logs.map(l => (
-            <div key={l.id} className="flex items-center justify-between px-6 py-4 border-b border-slate-50 dark:border-gray-700/50 hover:bg-slate-50 dark:hover:bg-gray-700/30 transition-colors">
-              <div className="flex items-center gap-4">
-                <span className={`text-xs font-semibold px-3 py-1.5 rounded-full ${l.type === '입고' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'bg-red-100 dark:bg-red-900/30 text-red-500'}`}>
-                  {l.type === '입고' ? '▲ 입고' : '▼ 출고'}
-                </span>
-                <div>
-                  <p className="text-sm font-medium text-slate-800 dark:text-white">{l.product_name}</p>
-                  {l.note && <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{l.note}</p>}
+          ) : (
+            <>
+              {pagedLogs.map(l => (
+                <div key={l.id} className="flex items-center justify-between px-6 py-4 border-b border-slate-50 dark:border-gray-700/50 hover:bg-slate-50 dark:hover:bg-gray-700/30 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <span className={`text-xs font-semibold px-3 py-1.5 rounded-full ${l.type === '입고' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'bg-red-100 dark:bg-red-900/30 text-red-500'}`}>
+                      {l.type === '입고' ? '▲ 입고' : '▼ 출고'}
+                    </span>
+                    <div>
+                      <p className="text-sm font-medium text-slate-800 dark:text-white">{l.product_name}</p>
+                      {l.note && <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{l.note}</p>}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className={`text-sm font-bold ${l.type === '입고' ? 'text-emerald-500' : 'text-red-500'}`}>
+                      {l.type === '입고' ? '+' : '-'}{l.quantity}
+                    </p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500">{new Date(l.created_at).toLocaleDateString('ko-KR')}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="text-right">
-                <p className={`text-sm font-bold ${l.type === '입고' ? 'text-emerald-500' : 'text-red-500'}`}>
-                  {l.type === '입고' ? '+' : '-'}{l.quantity}
-                </p>
-                <p className="text-xs text-slate-400 dark:text-slate-500">{new Date(l.created_at).toLocaleDateString('ko-KR')}</p>
-              </div>
-            </div>
-          ))}
+              ))}
+              <div className="px-4 py-4"><Pager page={logPg} totalPages={logTotalPages} onChange={setLogPage} dark={isDark} /></div>
+            </>
+          )}
         </div>
       )}
 

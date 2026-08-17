@@ -1,6 +1,9 @@
 'use client'
 
-import type { Dispatch, SetStateAction } from 'react'
+import { useState, useEffect, type Dispatch, type SetStateAction } from 'react'
+import { Pager } from '@/app/components/Pager'
+
+const PER = 10
 
 type Product = {
   id: string; name: string; description: string
@@ -37,6 +40,12 @@ export default function SupplierProductList({
   handleDelete,
   onRemake,
 }: Props) {
+  const [page, setPage] = useState(1)
+  const totalPages = Math.max(1, Math.ceil(products.length / PER))
+  const pg = Math.min(page, totalPages)
+  const paged = products.slice((pg - 1) * PER, pg * PER)
+  useEffect(() => { if (page > totalPages) setPage(totalPages) }, [totalPages, page])
+  const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
   return products.length === 0 ? (
     <div style={{ textAlign: 'center', padding: '60px 20px', background: t.card, borderRadius: '20px', border: `1px solid ${t.border}` }}>
       <p style={{ fontSize: '40px', marginBottom: '12px' }}>📦</p>
@@ -50,7 +59,7 @@ export default function SupplierProductList({
     </div>
   ) : (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-      {products.map(p => {
+      {paged.map(p => {
         const s = STATUS_STYLE[p.approval_status] || STATUS_STYLE['대기중']
         return (
           <div key={p.id} style={{ background: t.card, border: `1px solid ${t.border}`, borderRadius: '16px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -85,6 +94,7 @@ export default function SupplierProductList({
           </div>
         )
       })}
+      <Pager page={pg} totalPages={totalPages} onChange={setPage} dark={isDark} />
     </div>
   )
 }
