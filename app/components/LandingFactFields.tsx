@@ -77,7 +77,7 @@ export default function LandingFactFields({ dark, shipCutoff, setShipCutoff, has
 
       {/* 시간 선택 모달 (확대) */}
       {clockOpen && typeof document !== 'undefined' && createPortal(
-        <div onClick={() => setClockOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 100000, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '18px' }}>
+        <div onClick={() => setClockOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 2147483647, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '18px' }}>
           <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '440px', maxHeight: '88vh', overflowY: 'auto', background: dark ? '#1a1f2b' : '#fff', borderRadius: '18px', border: `1px solid ${border}`, padding: '20px', boxShadow: '0 24px 60px rgba(0,0,0,0.4)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <span style={{ fontSize: '18px', fontWeight: 900, color: text }}>🕐 당일배송 기준시간</span>
