@@ -403,7 +403,7 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
                 <input value={aiSearch} onChange={e => { setAiSearch(e.target.value); setAiProdPage(1) }} placeholder="🔍 상품 이름으로 검색"
                   style={{ width: '100%', boxSizing: 'border-box', padding: '11px 13px', borderRadius: '10px', border: '2px solid ' + (aiDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)'), background: aiDark ? 'rgba(255,255,255,0.07)' : 'white', color: aiDark ? 'white' : '#111', fontSize: '14px', outline: 'none', marginBottom: '2px' }} />
                 {(() => {
-                  const PER = 8
+                  const PER = 5
                   const list = products.filter(p => p.is_active && (!aiSearch.trim() || p.name.toLowerCase().includes(aiSearch.trim().toLowerCase())))
                   const totalPages = Math.max(1, Math.ceil(list.length / PER))
                   const pg = Math.min(aiProdPage, totalPages)
