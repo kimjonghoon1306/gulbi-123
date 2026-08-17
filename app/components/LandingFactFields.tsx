@@ -12,22 +12,45 @@ type Props = {
   setHaccpNo: (v: string) => void
 }
 
+// "14:00" → "오후 2시" (분이 있으면 "오후 2시 30분")
+export function cutoffLabel(hhmm: string): string {
+  if (!hhmm || !/^\d{1,2}:\d{2}$/.test(hhmm)) return ''
+  const [h, m] = hhmm.split(':').map(Number)
+  const ap = h < 12 ? '오전' : '오후'
+  let hh = h % 12; if (hh === 0) hh = 12
+  return `${ap} ${hh}시${m ? ` ${m}분` : ''}`
+}
+// 상세페이지에 실제로 들어갈 배송 안내 문구(고정)
+export function shipNoticeText(hhmm: string): string {
+  const l = cutoffLabel(hhmm)
+  return l
+    ? `${l}까지 주문은 당일배송이 시작됩니다. 택배 사정에 따라 당일배송이 아닌 순차 배송으로 시작될 수 있습니다.`
+    : '주문 확인 후 순차적으로 배송됩니다.'
+}
+
 export default function LandingFactFields({ dark, shipCutoff, setShipCutoff, hasHaccp, setHasHaccp, haccpNo, setHaccpNo }: Props) {
   const border = dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)'
   const bg = dark ? 'rgba(255,255,255,0.07)' : 'white'
   const text = dark ? '#fff' : '#111'
   const sub = dark ? 'rgba(255,255,255,0.5)' : '#666'
+  const label = cutoffLabel(shipCutoff)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-      {/* 당일배송 기준시간 */}
+      {/* 당일배송 기준시간 — 시계로 선택 */}
       <div>
-        <label style={{ display: 'block', color: sub, fontSize: '11px', fontWeight: 800, marginBottom: '5px' }}>🚚 당일배송 기준시간 <span style={{ fontWeight: 600 }}>(선택)</span></label>
-        <input value={shipCutoff} onChange={e => setShipCutoff(e.target.value)} maxLength={20}
-          placeholder="예: 오후 2시 · 오전 11시 (비우면 '주문 확인 후 순차 출고')"
-          style={{ width: '100%', boxSizing: 'border-box', padding: '13px 15px', borderRadius: '12px', border: `2px solid ${border}`, background: bg, color: text, fontSize: '14px', outline: 'none' }}
-          onFocus={e => { e.target.style.borderColor = '#22c55e' }} onBlur={e => { e.target.style.borderColor = border }} />
-        <p style={{ color: sub, fontSize: '11px', margin: '4px 2px 0' }}>입력한 시간이 그대로 상세페이지에 들어가요. 비워두면 시간을 지어내지 않아요.</p>
+        <label style={{ display: 'block', color: sub, fontSize: '11px', fontWeight: 800, marginBottom: '5px' }}>🚚 당일배송 기준시간 <span style={{ fontWeight: 600 }}>(선택 · 시계에서 시간을 고르세요)</span></label>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <input type="time" step={3600} value={shipCutoff} onChange={e => setShipCutoff(e.target.value)}
+            style={{ padding: '13px 15px', borderRadius: '12px', border: `2px solid ${shipCutoff ? '#22c55e' : border}`, background: bg, color: text, fontSize: '16px', fontWeight: 800, outline: 'none', colorScheme: dark ? 'dark' : 'light' }} />
+          {label && <span style={{ color: dark ? '#4ade80' : '#15803d', fontSize: '15px', fontWeight: 800 }}>{label} 기준</span>}
+          {shipCutoff && <button type="button" onClick={() => setShipCutoff('')} style={{ padding: '8px 12px', borderRadius: '9px', border: `1px solid ${border}`, background: 'transparent', color: sub, fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>지우기</button>}
+        </div>
+        {/* 실제 들어갈 문구 미리보기 */}
+        <div style={{ marginTop: '8px', padding: '11px 13px', borderRadius: '10px', background: dark ? 'rgba(59,130,246,0.12)' : '#eff6ff', border: `1px solid ${dark ? 'rgba(59,130,246,0.3)' : '#bfdbfe'}` }}>
+          <p style={{ color: dark ? '#93c5fd' : '#1d4ed8', fontSize: '10px', fontWeight: 800, margin: '0 0 3px', letterSpacing: '0.5px' }}>📄 상세페이지에 이렇게 들어가요</p>
+          <p style={{ color: text, fontSize: '12.5px', lineHeight: 1.6, margin: 0, fontWeight: 600 }}>“{shipNoticeText(shipCutoff)}”</p>
+        </div>
       </div>
 
       {/* 해썹 인증 */}

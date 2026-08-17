@@ -60,9 +60,25 @@ type LandingCtx = {
   isFreshFood?: boolean
 }
 
-// 배송 문구: 판매자가 기준시간 입력 시 그대로, 없으면 시간 지어내지 않는 안전 문구.
-function shipLine(cutoff?: string): string {
-  return cutoff ? `평일 ${cutoff} 이전 주문 시 당일 출고` : '주문 확인 후 순차 출고됩니다'
+// 배송 기준시간("14:00") → "오후 2시"
+function cutoffLabel(hhmm?: string): string {
+  if (!hhmm || !/^\d{1,2}:\d{2}$/.test(hhmm)) return ''
+  const [h, m] = hhmm.split(':').map(Number)
+  const ap = h < 12 ? '오전' : '오후'
+  let hh = h % 12; if (hh === 0) hh = 12
+  return `${ap} ${hh}시${m ? ` ${m}분` : ''}`
+}
+// 상세페이지 배송 안내(고정 문구) — 판매자가 시간 지정 시 이 문구가 그대로 들어간다.
+function shipNotice(cutoff?: string): string {
+  const l = cutoffLabel(cutoff)
+  return l
+    ? `${l}까지 주문은 당일배송이 시작됩니다. 택배 사정에 따라 당일배송이 아닌 순차 배송으로 시작될 수 있습니다.`
+    : '주문 확인 후 순차적으로 배송됩니다.'
+}
+// 짧은 배송 문구(배송 요약 칸·특징용)
+function shipShort(cutoff?: string): string {
+  const l = cutoffLabel(cutoff)
+  return l ? `${l}까지 주문 시 당일배송 시작` : '주문 확인 후 순차 배송'
 }
 // 교환/반품: 농축수산물은 고정 문구, 그 외(공산품·생활용품 등)는 7일.
 function returnFaq(isFresh?: boolean): string {
@@ -197,16 +213,16 @@ function buildFallback(productName: string, retail: number, unit: string, ctx: L
     hasHaccp
       ? { title: '위생·품질 관리', desc: '식품안전관리인증(HACCP)을 받은 시설에서 위생 기준을 지켜 관리합니다. 정기 점검과 자체 위생 확인을 병행합니다. 상태를 확인한 제품만 포장합니다.' }
       : { title: '꼼꼼한 품질 확인', desc: '출고 전 상태를 한 번 더 확인합니다. 색·상태를 점검하고 이상이 없는 제품만 포장해 보냅니다. 기본에 충실한 것이 가장 중요하다고 생각합니다.' },
-    { title: '주문 후 준비 · 신선 출고', desc: `재고를 오래 쌓아두지 않고 주문을 확인한 뒤 준비합니다. ${shipLine(shipCutoff)}. 신선도를 지키는 포장으로 보내드립니다.` },
+    { title: '주문 후 준비 · 신선 출고', desc: `재고를 오래 쌓아두지 않고 주문을 확인한 뒤 준비합니다. ${shipShort(shipCutoff)}. 신선도를 지키는 포장으로 보내드립니다.` },
   ]
   const faq = [
-    { q: '배송은 얼마나 걸리나요?', a: `${shipLine(shipCutoff)}. 지역과 택배 사정에 따라 하루 정도 차이가 날 수 있으며, 제주·도서산간은 1~2일 더 걸릴 수 있습니다.` },
+    { q: '배송은 얼마나 걸리나요?', a: `${shipNotice(shipCutoff)} 제주·도서산간 지역은 1~2일 더 걸릴 수 있습니다.` },
     { q: '어떻게 포장되어 오나요?', a: isFreshFood ? '신선도 유지를 위해 냉장 또는 냉동 상태로 발송됩니다. 아이스팩·단열 포장재로 배송 중 품질 손상을 줄입니다.' : '상품이 손상되지 않도록 안전하게 포장하여 발송됩니다.' },
     { q: '교환·환불은 어떻게 하나요?', a: returnFaq(isFreshFood) },
     { q: '보관은 어떻게 하나요?', a: storage ? `${storage.recommended}이(가) 좋습니다. ${storage.tips?.[0] || ''}` : '상품 표시사항의 보관 방법을 따라 주세요.' },
   ]
   const delivery = [
-    { label: 'DELIVERY', value: `${shipLine(shipCutoff)}` },
+    { label: 'DELIVERY', value: `${shipShort(shipCutoff)}` },
     { label: 'PACKAGING', value: isFreshFood ? '아이스팩 + 단열 포장재\n신선 포장 발송' : '안전 포장 발송' },
     { label: 'RETURN', value: returnDelivery(isFreshFood) },
     { label: 'CONTACT', value: '평일 10:00 - 18:00\n고객센터·카카오톡 문의' },
@@ -338,9 +354,9 @@ function enforceFacts(d: LandingData, ctx: LandingCtx, fbOriginStats: OriginStat
   const originClean = (ctx.origin || '').trim()
   const { shipCutoff, hasHaccp, isFreshFood } = ctx
 
-  // 1) 배송 시간 문구 전역 치환 — AI가 지어낸 "평일 오후 N시"류를 입력값(없으면 안전 문구)으로 통일
+  // 1) 배송 시간 문구 전역 치환 — AI가 지어낸 "평일 오후 N시"류를 지정 시간(없으면 안전 문구)으로 통일
   const shipReplace = (s: string) =>
-    s.replace(/(평일\s*)?(오전|오후)\s*\d{1,2}\s*시(\s*이전)?/g, shipCutoff ? `평일 ${shipCutoff} 이전` : '주문 확인 후')
+    s.replace(/(평일\s*)?(오전|오후)\s*\d{1,2}\s*시(\s*\d{1,2}\s*분)?(\s*이전)?(\s*주문[^.。\n]*?(당일|출고|발송))?/g, shipShort(shipCutoff))
   const walk = (v: any): any => {
     if (typeof v === 'string') return shipReplace(v)
     if (Array.isArray(v)) return v.map(walk)
@@ -348,6 +364,10 @@ function enforceFacts(d: LandingData, ctx: LandingCtx, fbOriginStats: OriginStat
     return v
   }
   const out = walk(d) as LandingData
+
+  // 1-b) 배송 안내는 판매자 지정 시간 기준 고정 문구로 강제 (faq 배송 답변 + delivery 요약)
+  if (Array.isArray(out.faq)) out.faq = out.faq.map((f: any) => /배송|출고|당일/.test(f?.q || '') ? { ...f, a: `${shipNotice(shipCutoff)} 제주·도서산간 지역은 1~2일 더 걸릴 수 있습니다.` } : f)
+  if (Array.isArray(out.delivery)) out.delivery = out.delivery.map((dv: any) => (dv?.label === 'DELIVERY' || /배송|DELIVERY/i.test(dv?.label || '')) ? { ...dv, value: shipShort(shipCutoff) } : dv)
 
   // 2) 원산지 강제 (입력했을 때만)
   if (originClean) {
@@ -504,7 +524,7 @@ craft: material, sizeWeight, makerStory, usage, care
 - 상품명: ${productName || '(이미지로 파악)'}
 - 상품군: ${groupLabels[productGroup] || productGroup || '(미입력)'}${productGroup === 'fresh' ? ` / 세부품목: ${freshType === 'livestock' ? '축산물(정육)' : freshType === 'seafood' ? '수산물' : freshType === 'produce' ? '농산물' : '(미선택)'}` : ''}
 - 원산지: ${origin || '(미입력)'}
-- 당일배송 기준시간: ${shipCutoff || '(미입력 — 배송 시간을 지어내지 말 것)'}
+- 당일배송 기준시간: ${cutoffLabel(shipCutoff) || '(미입력 — 배송 시간을 지어내지 말 것)'}
 - 해썹(HACCP) 인증: ${hasHaccp ? `있음${haccpNo ? ` (인증번호 ${haccpNo})` : ''}` : '없음 — 인증/HACCP/위해요소 관련 문구 절대 작성 금지'}
 - 소매가: ${retailPrice || '?'}원
 - 도매가: ${wholesalePrice || '-'}원
