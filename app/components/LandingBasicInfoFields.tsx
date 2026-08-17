@@ -1,15 +1,23 @@
 'use client'
 
 export type ProductGroup = '' | 'fresh' | 'processed' | 'living' | 'electronics' | 'craft'
+// 신선식품 하위 세부 품목 — 보관·조리·교환반품 안내가 품목마다 달라서 구분한다.
+export type FreshType = '' | 'livestock' | 'seafood' | 'produce'
 export type LandingBasicInfo = Record<string, string>
 
 export const PRODUCT_GROUPS: { value: ProductGroup; label: string; help: string }[] = [
   { value: '', label: '상품군을 선택해주세요', help: '' },
-  { value: 'fresh', label: '🥬 신선식품·농축수산물', help: '맛·식감·선별·손질·보관·조리 정보' },
-  { value: 'processed', label: '🍱 가공식품·건강식품', help: '원재료·제조·알레르기·섭취·보관 정보' },
+  { value: 'fresh', label: '🥬 신선식품 (농·축·수산물)', help: '아래에서 축산·수산·농산을 고르면 품목에 맞는 보관·조리 안내가 생성돼요' },
+  { value: 'processed', label: '🍜 공산품 (라면·밀키트·고추장·된장 등)', help: '원재료·제조·알레르기·섭취·보관 정보' },
   { value: 'living', label: '🏠 생활용품', help: '소재·크기·사용법·관리법 정보' },
   { value: 'electronics', label: '🔌 전자기기·디바이스', help: '모델·사양·구성품·호환·보증 정보' },
   { value: 'craft', label: '🎁 공예품·패션·기타', help: '소재·제작 과정·크기·관리법 정보' },
+]
+
+export const FRESH_TYPES: { value: FreshType; label: string; emoji: string; help: string }[] = [
+  { value: 'livestock', label: '축산물', emoji: '🥩', help: '한우·돼지·닭 등 정육' },
+  { value: 'seafood', label: '수산물', emoji: '🐟', help: '생선·해산물·건어물' },
+  { value: 'produce', label: '농산물', emoji: '🥬', help: '채소·과일·쌀·잡곡' },
 ]
 
 const COMMON_FIELDS = [
@@ -64,6 +72,8 @@ const GROUP_FIELDS: Record<Exclude<ProductGroup, ''>, readonly (readonly [string
 type Props = {
   group: ProductGroup
   setGroup: (group: ProductGroup) => void
+  freshType?: FreshType
+  setFreshType?: (t: FreshType) => void
   value: LandingBasicInfo
   onChange: (value: LandingBasicInfo) => void
   dark: boolean
@@ -71,7 +81,7 @@ type Props = {
   onAutoFill?: () => void
 }
 
-export default function LandingBasicInfoFields({ group, setGroup, value, onChange, dark, isAutoFilling = false, onAutoFill }: Props) {
+export default function LandingBasicInfoFields({ group, setGroup, freshType = '', setFreshType, value, onChange, dark, isAutoFilling = false, onAutoFill }: Props) {
   const border = dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.14)'
   const inputBg = dark ? 'rgba(255,255,255,0.06)' : '#fff'
   const text = dark ? '#fff' : '#111'
@@ -93,6 +103,25 @@ export default function LandingBasicInfoFields({ group, setGroup, value, onChang
         </select>
         <p style={{ color: sub, fontSize: '11px', margin: '5px 2px 0' }}>{PRODUCT_GROUPS.find(item => item.value === group)?.help || '상품군을 선택하면 필요한 작성칸이 나타나요.'}</p>
       </div>
+
+      {group === 'fresh' && setFreshType && (
+        <div>
+          <label style={{ display: 'block', color: sub, fontSize: '11px', fontWeight: 800, marginBottom: '6px' }}>세부 품목 <span style={{ color: '#f97316' }}>*</span> <span style={{ fontWeight: 600, color: sub }}>(품목마다 보관·조리·교환반품 안내가 달라요)</span></label>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px' }}>
+            {FRESH_TYPES.map(ft => {
+              const on = freshType === ft.value
+              return (
+                <button key={ft.value} type="button" disabled={isAutoFilling} onClick={() => setFreshType(ft.value)}
+                  style={{ padding: '12px 8px', borderRadius: '11px', border: `2px solid ${on ? '#22c55e' : border}`, background: on ? (dark ? 'rgba(34,197,94,0.16)' : '#f0fdf4') : inputBg, color: text, cursor: isAutoFilling ? 'not-allowed' : 'pointer', textAlign: 'center', transition: 'all 0.15s' }}>
+                  <div style={{ fontSize: '22px', lineHeight: 1 }}>{ft.emoji}</div>
+                  <div style={{ fontSize: '13px', fontWeight: 800, marginTop: '4px', color: on ? (dark ? '#4ade80' : '#15803d') : text }}>{ft.label}</div>
+                  <div style={{ fontSize: '10px', color: sub, marginTop: '2px' }}>{ft.help}</div>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {group && onAutoFill && (
         <button type="button" onClick={onAutoFill} disabled={isAutoFilling}

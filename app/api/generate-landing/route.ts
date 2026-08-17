@@ -50,7 +50,172 @@ function extractJson(text: string): any | null {
   try { return JSON.parse(repairTruncatedJson(cleaned.slice(first))) } catch { return null }
 }
 
-function buildFallback(productName: string, retail: number, unit: string): Partial<LandingData> {
+type LandingCtx = {
+  freshType?: string
+  productGroup?: string
+  origin?: string
+  shipCutoff?: string
+  hasHaccp?: boolean
+  haccpNo?: string
+  isFreshFood?: boolean
+}
+
+// 배송 문구: 판매자가 기준시간 입력 시 그대로, 없으면 시간 지어내지 않는 안전 문구.
+function shipLine(cutoff?: string): string {
+  return cutoff ? `평일 ${cutoff} 이전 주문 시 당일 출고` : '주문 확인 후 순차 출고됩니다'
+}
+// 교환/반품: 농축수산물은 고정 문구, 그 외(공산품·생활용품 등)는 7일.
+function returnFaq(isFresh?: boolean): string {
+  return isFresh
+    ? '농·축·수산물은 신선식품 특성상 단순 변심에 의한 교환·반품이 어렵습니다. 상품에 이상이 있는 경우 수령 즉시 사진과 함께 고객센터로 문의해 주시면 신속하게 처리해 드립니다.'
+    : '수령 후 7일 이내 단순 변심 교환·반품이 가능합니다. 상품 이상이 있는 경우 고객센터로 사진과 함께 연락 주시면 신속하게 처리해 드립니다.'
+}
+function returnDelivery(isFresh?: boolean): string {
+  return isFresh ? '상품에 이상이 있을 경우\n고객센터로 문의해 주세요' : '수령 후 7일 이내\n교환·반품 가능'
+}
+
+// 품목별 조리(recipe)·보관(storage) 기본값 — 축산/수산/농산/공산품이 서로 다르게.
+const FRESH_RECIPE: Record<string, any> = {
+  seafood: {
+    title: '가장 맛있게 즐기는 법',
+    intro: '신선한 수산물의 풍미를 살리려면 해동과 손질이 중요합니다. 몇 가지만 지켜주시면 됩니다.',
+    steps: [
+      { name: '해동', detail: '냉동 제품은 냉장실에서 8~12시간 자연 해동하는 것이 가장 좋습니다. 급하실 땐 밀봉해 흐르는 찬물에 30분 해동하세요. 실온·전자레인지 해동은 식감이 떨어지니 피해주세요.' },
+      { name: '손질', detail: '해동 후 흐르는 찬물에 가볍게 헹구고, 키친타월로 물기를 눌러 제거해 주세요. 비린내가 신경 쓰이면 청주나 소금물에 잠깐 담갔다 헹구면 좋습니다.' },
+      { name: '조리', detail: '구이는 중불에서 앞뒤로 노릇하게, 찜·조림은 센 불로 끓인 뒤 중약불로 익혀주세요. 과하게 익히면 살이 질겨지니 주의하세요.' },
+      { name: '완성', detail: '조리 직후 따뜻할 때 드시는 것이 가장 맛있습니다. 레몬·생강을 곁들이면 풍미가 한층 살아납니다.' },
+    ],
+    tip: '해동은 반드시 냉장 저온에서 천천히 하는 것이 핵심입니다. 한 번 해동한 수산물은 재냉동하지 마시고, 그날 안에 조리해 드시는 것을 권장합니다.',
+  },
+  livestock: {
+    title: '가장 맛있게 굽는 법',
+    intro: '좋은 고기는 굽기 전 준비와 불 조절이 맛을 좌우합니다.',
+    steps: [
+      { name: '실온 두기', detail: '조리 30분 전 냉장고에서 꺼내 실온에 두세요. 차가운 상태로 바로 구우면 겉만 익고 속은 덜 익습니다. 표면 핏물은 키친타월로 가볍게 닦아주세요.' },
+      { name: '예열', detail: '팬이나 그릴을 충분히 달군 뒤 고기를 올려야 육즙이 갇힙니다. 기름은 살짝만 두르거나 지방 부위로 팬을 코팅하세요.' },
+      { name: '굽기', detail: '두꺼운 부위는 센 불로 겉면을 시어링한 뒤 중약불로 속까지 익혀주세요. 자주 뒤집지 말고 한 면씩 충분히 구워야 육즙이 유지됩니다.' },
+      { name: '레스팅', detail: '구운 뒤 3~5분 두었다가 썰면 육즙이 고르게 퍼져 훨씬 부드럽습니다. 결 반대로 썰면 식감이 더 좋습니다.' },
+    ],
+    tip: '고기는 굽기 직전 소금을 뿌리는 것이 좋습니다. 미리 뿌리면 수분이 빠져 퍽퍽해질 수 있습니다. 레스팅을 꼭 거쳐야 육즙이 살아있는 최상의 맛을 즐길 수 있습니다.',
+  },
+  produce: {
+    title: '신선하게 즐기는 법',
+    intro: '농산물은 세척과 손질만 잘해도 본연의 맛을 오래 즐길 수 있습니다.',
+    steps: [
+      { name: '세척', detail: '드시기 직전 흐르는 물에 가볍게 씻어주세요. 미리 씻어 보관하면 물기 때문에 쉽게 무를 수 있습니다. 흙이 많은 뿌리채소는 부드러운 솔로 살살 닦아주세요.' },
+      { name: '손질', detail: '무르거나 상한 부분은 잘라내고 사용하세요. 잎채소는 밑동을 살려 보관하면 더 오래갑니다.' },
+      { name: '보관·활용', detail: '바로 드시지 않을 분량은 신문지·키친타월에 싸서 냉장 보관하세요. 조리 시에는 센 불에 짧게 볶거나 데쳐야 아삭한 식감과 영양이 유지됩니다.' },
+    ],
+    tip: '농산물은 수분과 온도에 민감합니다. 씻지 않은 상태로 보관하고, 드실 만큼만 그때그때 손질하는 것이 신선함을 오래 유지하는 비결입니다.',
+  },
+}
+const FRESH_STORAGE: Record<string, any> = {
+  seafood: {
+    title: '신선함을 지키는 보관법', recommended: '냉동 보관 (-18℃ 이하)', duration: '포장지 표시 소비기한까지',
+    tips: [
+      '받으신 즉시 냉동실에 넣어주세요. 상온 방치 시 신선도가 빠르게 떨어집니다.',
+      '한 번 해동한 제품은 재냉동하지 마세요. 세포가 파괴되어 식감과 맛이 크게 떨어집니다.',
+      '원포장 그대로 보관하고, 개봉했다면 밀폐 지퍼백에 공기를 빼고 냉동하세요.',
+      '냉동실 문쪽보다 온도가 일정한 안쪽에 보관하세요.',
+      '포장지의 소비기한을 확인하고 그 안에 드시는 것이 가장 좋습니다.',
+    ],
+  },
+  livestock: {
+    title: '신선함을 지키는 보관법', recommended: '냉장 0~4℃ (단기) · 냉동 -18℃ (장기)', duration: '냉장 2~3일 · 냉동 소비기한까지',
+    tips: [
+      '금방 드실 분량은 냉장(0~4℃), 오래 두실 분량은 냉동 보관하세요.',
+      '냉장 보관 시 핏물이 고이면 키친타월로 감싸 두면 신선도가 오래 유지됩니다.',
+      '냉동한 고기는 냉장실에서 천천히 해동해야 육즙 손실이 적습니다.',
+      '개봉 후에는 공기와 닿지 않게 밀폐 포장하여 보관하세요.',
+      '해동한 고기는 재냉동하지 말고 그날 안에 조리해 드세요.',
+    ],
+  },
+  produce: {
+    title: '신선함을 지키는 보관법', recommended: '냉장 보관 (채소칸) · 일부 서늘한 실온', duration: '품목에 따라 3~10일',
+    tips: [
+      '씻지 않은 상태로 보관하세요. 물기가 있으면 쉽게 무릅니다.',
+      '잎채소는 키친타월에 싸서 밀폐용기에 세워 보관하면 오래갑니다.',
+      '감자·양파·고구마 등은 냉장보다 서늘하고 통풍되는 곳이 좋습니다.',
+      '과일은 종류에 따라 냉장/실온이 다르니 특성에 맞게 보관하세요.',
+      '무르거나 상한 것은 빨리 골라내야 다른 것까지 번지지 않습니다.',
+    ],
+  },
+}
+const PROCESSED_RECIPE = {
+  title: '맛있게 즐기는 법', intro: '간단한 조리·활용법만 알면 더욱 맛있게 드실 수 있습니다.',
+  steps: [
+    { name: '준비', detail: '포장지의 조리 안내를 먼저 확인해 주세요. 필요한 물·부재료를 미리 준비하면 조리가 수월합니다.' },
+    { name: '조리', detail: '표시된 시간과 화력에 맞춰 조리해 주세요. 기호에 따라 부재료(계란·채소 등)를 더하면 풍미가 살아납니다.' },
+    { name: '완성', detail: '조리 직후 따뜻할 때 드시는 것이 가장 맛있습니다. 남은 제품은 밀폐하여 보관하세요.' },
+  ],
+  tip: '제품에 표시된 조리법을 기준으로 하되, 기호에 맞게 부재료를 더하면 나만의 요리로 즐길 수 있습니다.',
+}
+const PROCESSED_STORAGE = {
+  title: '올바른 보관법', recommended: '직사광선을 피한 서늘한 실온 (개봉 후 냉장)', duration: '포장지 표시 소비기한까지',
+  tips: [
+    '개봉 전에는 직사광선을 피해 서늘하고 건조한 곳에 보관하세요.',
+    '개봉 후에는 밀폐하여 냉장 보관하고 되도록 빨리 드세요.',
+    '습기가 많은 곳을 피해 보관하면 품질이 오래 유지됩니다.',
+    '포장지에 표시된 소비기한을 확인하고 그 안에 드세요.',
+  ],
+}
+
+function buildFallback(productName: string, retail: number, unit: string, ctx: LandingCtx = {}): Partial<LandingData> {
+  const { freshType, productGroup, origin, shipCutoff, hasHaccp, isFreshFood } = ctx
+  const originValue = (origin && origin.trim()) || '상품 표시사항 기준 (확인 후 수정)'
+  // 품목별 recipe/storage 선택
+  let recipe: any = null, storage: any = null
+  if (productGroup === 'fresh') {
+    const ft = (freshType && FRESH_RECIPE[freshType]) ? freshType : 'seafood'
+    recipe = FRESH_RECIPE[ft]; storage = FRESH_STORAGE[ft]
+  } else if (productGroup === 'processed') {
+    recipe = PROCESSED_RECIPE; storage = PROCESSED_STORAGE
+  }
+  // 원산지 stat + (해썹 있을 때만) 인증 stat
+  const originStats: OriginStat[] = [
+    { value: '100', unit: '%', label: 'ORIGIN', desc: `원산지 ${originValue} 기준으로 정직하게 표기합니다. 표시사항과 다르면 판매자가 수정합니다.` },
+    hasHaccp
+      ? { value: 'HACCP', unit: '', label: 'SAFETY', desc: '식품안전관리인증(HACCP)을 받은 시설에서 위생 기준을 준수합니다.' }
+      : { value: '신선', unit: '', label: 'FRESH', desc: '주문 확인 후 신선한 상태로 준비해 빠르게 출고합니다.' },
+    { value: 'A+', unit: '', label: 'GRADE', desc: '입고 물량 중 상위 등급만 엄격하게 선별하여 제공합니다.' },
+    { value: '100', unit: '%', label: 'CHECK', desc: '출고 전 상태를 한 번 더 확인한 제품만 포장합니다.' },
+  ]
+  const info: { key: string; value: string }[] = [
+    { key: '상품명', value: productName },
+    { key: '원산지', value: origin && origin.trim() ? origin.trim() : '상품 표시사항 참조' },
+    { key: '중량', value: `1${unit || '개'}` },
+    { key: '보관방법', value: storage?.recommended || '상품 표시사항 참조' },
+    { key: '유통기한', value: storage?.duration || '포장지 표시일까지' },
+    { key: '포장단위', value: `1${unit || '개'} 단위` },
+    { key: '배송방법', value: isFreshFood ? '냉장/냉동 택배' : '택배' },
+  ]
+  if (hasHaccp) info.push({ key: '인증', value: ctx.haccpNo ? `HACCP 인증 (${ctx.haccpNo})` : 'HACCP 인증' })
+
+  const features = [
+    { title: '엄선한 재료', desc: '좋은 산지의 재료를 직접 확인해 선별합니다. 상태가 기준에 못 미치는 것은 보내지 않습니다. 재료의 품질이 곧 상품의 품질이라 믿습니다.' },
+    { title: '정성스러운 준비', desc: '한 번에 대량으로 찍어내지 않습니다. 손이 더 가더라도 상태를 살피며 준비하는 방식을 고집합니다. 그래야 좋은 상태로 보내드릴 수 있습니다.' },
+    hasHaccp
+      ? { title: '위생·품질 관리', desc: '식품안전관리인증(HACCP)을 받은 시설에서 위생 기준을 지켜 관리합니다. 정기 점검과 자체 위생 확인을 병행합니다. 상태를 확인한 제품만 포장합니다.' }
+      : { title: '꼼꼼한 품질 확인', desc: '출고 전 상태를 한 번 더 확인합니다. 색·상태를 점검하고 이상이 없는 제품만 포장해 보냅니다. 기본에 충실한 것이 가장 중요하다고 생각합니다.' },
+    { title: '주문 후 준비 · 신선 출고', desc: `재고를 오래 쌓아두지 않고 주문을 확인한 뒤 준비합니다. ${shipLine(shipCutoff)}. 신선도를 지키는 포장으로 보내드립니다.` },
+  ]
+  const faq = [
+    { q: '배송은 얼마나 걸리나요?', a: `${shipLine(shipCutoff)}. 지역과 택배 사정에 따라 하루 정도 차이가 날 수 있으며, 제주·도서산간은 1~2일 더 걸릴 수 있습니다.` },
+    { q: '어떻게 포장되어 오나요?', a: isFreshFood ? '신선도 유지를 위해 냉장 또는 냉동 상태로 발송됩니다. 아이스팩·단열 포장재로 배송 중 품질 손상을 줄입니다.' : '상품이 손상되지 않도록 안전하게 포장하여 발송됩니다.' },
+    { q: '교환·환불은 어떻게 하나요?', a: returnFaq(isFreshFood) },
+    { q: '보관은 어떻게 하나요?', a: storage ? `${storage.recommended}이(가) 좋습니다. ${storage.tips?.[0] || ''}` : '상품 표시사항의 보관 방법을 따라 주세요.' },
+  ]
+  const delivery = [
+    { label: 'DELIVERY', value: `${shipLine(shipCutoff)}` },
+    { label: 'PACKAGING', value: isFreshFood ? '아이스팩 + 단열 포장재\n신선 포장 발송' : '안전 포장 발송' },
+    { label: 'RETURN', value: returnDelivery(isFreshFood) },
+    { label: 'CONTACT', value: '평일 10:00 - 18:00\n고객센터·카카오톡 문의' },
+  ]
+
+  return _buildFallbackBody(productName, retail, unit, { originValue, origin, recipe, storage, originStats, info, features, faq, delivery, isFreshFood, shipCutoff, hasHaccp })
+}
+
+function _buildFallbackBody(productName: string, retail: number, unit: string, x: any): Partial<LandingData> {
   return {
     brandName: '',
     productName,
@@ -58,54 +223,22 @@ function buildFallback(productName: string, retail: number, unit: string): Parti
     subtitle: '엄선된 원재료로 정성껏 만든, 한 번 맛보면 잊을 수 없는 특별한 상품입니다',
     artisanQuote: '좋은 재료를 고르는 일에서부터 포장을 마무리하는 순간까지, 한 치의 타협도 없이 최선을 다합니다. 고객분들이 드셔보시면 그 차이를 바로 느끼실 거라 자신합니다.',
     artisanName: '대표',
-    originLocation: '국내 엄선 산지',
-    originStory: '오랜 세월 전통을 이어온 산지에서 직접 공수한 최상급 원재료만을 사용합니다. 사계절 일교차가 큰 천혜의 자연환경 덕분에 풍부한 맛과 향을 자랑합니다. 산지 농가와의 긴밀한 협력 관계를 통해 수확 직후 가장 신선한 상태로 받아볼 수 있습니다. 수십 년의 노하우를 가진 장인들이 직접 선별·가공하여 한결같은 품질을 유지합니다. 대형 유통망을 거치지 않고 소비자에게 직접 공급하기 때문에 더욱 신선하고 합리적인 가격으로 제공됩니다.',
-    originStats: [
-      { value: '100', unit: '%', label: 'ORIGIN', desc: '국내산 원재료만을 엄선하여 사용합니다. 수입산 원재료는 일절 사용하지 않습니다.' },
-      { value: 'HACCP', unit: '', label: 'SAFETY', desc: '위해요소 중점관리 기준을 완벽히 준수합니다. 정기적인 위생 점검으로 안전을 보장합니다.' },
-      { value: '24', unit: 'h', label: 'FRESH', desc: '주문 접수 후 24시간 이내 신선한 상태로 출고됩니다. 당일 제조·당일 출고를 원칙으로 합니다.' },
-      { value: 'A+', unit: '', label: 'GRADE', desc: '전체 입고 물량 중 상위 등급만을 엄격하게 선별합니다. 기준에 미달하는 제품은 과감히 반품합니다.' },
-    ],
-    story: '이 상품은 수십 년의 경험과 열정이 담긴 장인의 손에서 태어납니다.\n\n매일 새벽, 가장 신선한 원재료가 도착하면 그날의 작업이 시작됩니다. 육안과 손의 감촉으로 하나하나 꼼꼼히 확인하는 선별 과정은 그 어떤 기계도 대신할 수 없는 사람의 일입니다.\n\n전통 방식을 고집하는 이유는 단 하나, 맛과 품질 때문입니다. 오랜 세월 쌓아온 노하우는 수치로 표현할 수 없는 감각의 영역입니다. 온도 하나, 시간 하나에도 세심하게 신경을 씁니다.\n\n완성된 제품은 다시 한번 품질 검수를 거칩니다. 색상·향·질감·맛을 최종 확인하고 나서야 포장 작업에 들어갑니다. 신선도를 최대한 유지하는 특수 포장재를 사용하여 고객님께 전달됩니다.\n\n저희의 목표는 단순히 상품을 파는 것이 아닙니다. 고객님의 식탁에 진심 어린 정성이 함께 전달되는 것, 그것이 저희가 매일 새벽 일어나는 이유입니다.',
-    features: [
-      { title: '엄선된 국내산 원재료', desc: '전국 최우수 산지에서 직접 공수한 국내산 원재료만을 사용합니다. 수입산이나 혼합 원재료는 일절 사용하지 않으며, 매 입고 시마다 신선도와 품질을 꼼꼼히 확인합니다. 원재료의 품질이 곧 완성품의 품질이라는 신념 하에, 기준에 미달하는 재료는 과감히 반품합니다.' },
-      { title: '전통 제조 방식 고수', desc: '수십 년간 이어온 전통 제조 방식을 그대로 유지합니다. 대량 생산 설비를 도입하면 효율은 높아지지만, 그 과정에서 잃어버리는 맛과 질감이 있습니다. 저희는 생산량보다 품질을 우선시하며, 장인이 직접 손으로 만드는 소규모 생산 방식을 고집합니다.' },
-      { title: '철저한 위생·품질 관리', desc: 'HACCP 인증 시설에서 엄격한 위생 기준을 준수하며 제조됩니다. 정기적인 외부 기관 검사와 매일 자체 위생 점검을 병행합니다. 완성된 제품은 출고 전 최종 품질 검수를 통과한 것들만 포장됩니다.' },
-      { title: '주문 후 제조 · 신선 출고', desc: '재고를 쌓아두지 않습니다. 주문이 들어오면 그때부터 제조에 들어가기 때문에 항상 가장 신선한 상태로 받아보실 수 있습니다. 평일 오후 2시 이전 주문 건은 당일 출고를 원칙으로 하며, 신선도 유지를 위한 특수 포장재로 발송됩니다.' },
-    ],
-    keyNumber: { value: '100', unit: '%', label: '품질 약속', caption: '저희가 사용하는 모든 원재료는 국내산 100%입니다. 단 한 가지 재료도 예외 없이 이 원칙을 지킵니다. 소비자께 드리는 가장 기본적이고 중요한 약속입니다.' },
+    originLocation: (x.origin && String(x.origin).trim()) || '엄선 산지',
+    originStory: '좋은 재료를 찾기 위해 산지를 직접 발로 뛰며 확인합니다. 자연이 키운 재료 본연의 맛을 살리는 것을 가장 중요하게 생각합니다. 수확·손질 직후 가장 신선한 상태로 준비해 빠르게 보내드립니다. 오랜 경험으로 좋은 것과 그렇지 않은 것을 가려내는 눈을 갖췄습니다. 대형 유통을 거치지 않고 직접 공급해 신선함과 합리적인 가격을 함께 드립니다.',
+    originStats: x.originStats,
+    story: '이 상품은 좋은 재료를 고르는 일에서부터 시작됩니다.\n\n가장 신선한 재료가 도착하면 그날의 준비가 시작됩니다. 눈과 손으로 하나하나 확인하는 선별 과정은 사람의 정성이 필요한 일입니다.\n\n좋은 품질을 지키기 위해 번거로운 과정도 마다하지 않습니다. 오랜 경험에서 나오는 감각으로 상태를 세심하게 살핍니다.\n\n준비를 마친 제품은 다시 한번 확인을 거칩니다. 상태를 최종 점검하고 나서야 포장에 들어갑니다. 신선도를 지키는 포장으로 고객님께 전달됩니다.\n\n저희의 목표는 단순히 파는 것이 아닙니다. 고객님의 식탁에 정성이 함께 전달되는 것, 그것이 저희가 일하는 이유입니다.',
+    features: x.features,
+    keyNumber: { value: 'A+', unit: '', label: '품질 약속', caption: '입고되는 물량 중 상위 등급만 골라 드립니다. 좋은 상태의 제품만 보내는 것이 저희가 드리는 가장 기본적인 약속입니다.' },
     differences: [
-      { label: '원산지', theirs: '수입·혼합산 다수', ours: '국내산 100% 보장' },
-      { label: '제조 방식', theirs: '대량 자동화 공장 생산', ours: '장인 소규모 수제 제조' },
-      { label: '신선도', theirs: '장기 유통·재고 보관', ours: '주문 후 당일 제조·출고' },
-      { label: '보존료', theirs: '합성 보존료 사용', ours: '천연 재료만, 무첨가' },
-      { label: '품질 선별', theirs: '기계 선별·일괄 처리', ours: '장인이 직접 하나씩 선별' },
-      { label: '포장', theirs: '일반 비닐 포장', ours: '신선도 유지 특수 포장' },
-      { label: '유통 단계', theirs: '도매상→중간상→소매', ours: '산지 직송·직거래' },
+      { label: '원산지', theirs: '표기 불명확', ours: x.origin && String(x.origin).trim() ? `${String(x.origin).trim()} · 정직 표기` : '표시사항 정직 표기' },
+      { label: '신선도', theirs: '장기 유통·재고 보관', ours: '주문 확인 후 준비·신선 출고' },
+      { label: '품질 선별', theirs: '일괄 처리', ours: '직접 하나씩 선별' },
+      { label: '포장', theirs: '일반 포장', ours: '신선도 유지 포장' },
+      { label: '유통 단계', theirs: '도매→중간→소매', ours: '산지 직송·직거래' },
+      { label: '가격', theirs: '유통 마진 다수', ours: '직거래로 합리적 가격' },
     ],
-    recipe: {
-      title: '가장 맛있게 드시는 법',
-      intro: '올바른 조리법을 따르시면 최고의 맛을 경험하실 수 있습니다. 몇 가지 포인트만 지켜주시면 어렵지 않게 훌륭한 요리가 완성됩니다.',
-      steps: [
-        { name: '해동', detail: '냉동 제품의 경우 냉장실에서 8~12시간 자연 해동해 주세요. 급할 경우 흐르는 찬물에 30분 해동하셔도 됩니다. 전자레인지 해동은 육질 손상 우려가 있으니 피해주세요.' },
-        { name: '전처리', detail: '해동된 제품을 흐르는 찬물에 가볍게 헹구어 주세요. 표면의 수분은 키친타월로 가볍게 눌러 제거해 주시면 조리 시 기름 튀김을 줄일 수 있습니다.' },
-        { name: '가열', detail: '중약불(160~170도)에서 서서히 가열하는 것이 핵심입니다. 너무 강한 불에서는 겉은 타고 속은 덜 익는 문제가 생깁니다. 앞뒤로 각 3~5분씩, 노릇하게 색이 올라올 때까지 조리해 주세요.' },
-        { name: '플레이팅', detail: '완성 직후 바로 그릇에 담아 드세요. 식으면 식감이 달라지므로 따뜻할 때 드시는 것이 가장 맛있습니다. 레몬즙을 살짝 뿌리면 풍미가 한층 살아납니다.' },
-      ],
-      tip: '불 조절이 가장 중요합니다. 처음부터 강불을 사용하면 겉이 타고 속이 익지 않을 수 있습니다. 중약불에서 천천히, 충분한 시간을 들여 조리하시면 육즙이 살아있는 최고의 맛을 경험하실 수 있습니다. 뚜껑을 덮고 조리하시면 증기로 내부까지 고르게 익힐 수 있습니다.',
-    },
-    storage: {
-      title: '신선함을 오래 지키는 보관법',
-      recommended: '냉동 보관 (-18℃ 이하)',
-      duration: '제조일로부터 최대 6개월',
-      tips: [
-        '받으신 즉시 냉동실에 넣어주세요. 상온에 오래 방치하면 신선도가 빠르게 저하되며, 해동 후 다시 냉동하면 품질이 크게 떨어집니다.',
-        '원래 포장 그대로 보관하세요. 포장을 뜯으면 공기와 접촉하여 산화가 시작됩니다. 부득이하게 뜯으셨다면 밀폐 지퍼백에 담아 공기를 최대한 제거한 후 냉동하세요.',
-        '냉동실 문쪽보다는 안쪽 깊숙이 보관하세요. 냉동실 문 부근은 온도 변화가 잦아 식품이 서서히 변질될 수 있습니다. 일정한 저온을 유지하는 안쪽에 보관하시는 것이 좋습니다.',
-        '해동 후 남은 제품은 재냉동하지 마세요. 한 번 해동된 식품을 다시 냉동하면 세포 조직이 파괴되어 식감과 맛이 크게 떨어집니다. 한 번에 먹을 양만큼만 해동하세요.',
-        '유통기한과 제조일을 꼭 확인하세요. 포장지 뒷면에 표기된 유통기한 내에 드시는 것이 가장 좋습니다. 유통기한이 지난 제품은 상태와 무관하게 드시지 않기를 권장합니다.',
-      ],
-    },
+    recipe: x.recipe,
+    storage: x.storage,
     reviews: [
       { text: '처음에는 반신반의하며 주문했는데 정말 깜짝 놀랐습니다. 마트에서 파는 것과는 차원이 다른 신선함이었어요. 특히 포장이 너무 꼼꼼해서 배송 중 손상도 전혀 없었습니다. 가족들이 너무 맛있다며 또 시켜달라고 해서 이미 재주문했습니다.', author: '김○○', date: '2026.03' },
       { text: '부모님 선물로 보냈는데 어머니가 전화하셔서 정말 맛있다고 칭찬을 많이 하셨어요. 백화점 식품관에서 파는 것 못지않다고 하시더라고요. 가격 대비 품질이 너무 좋아서 이제 명절 선물은 여기서만 살 것 같습니다.', author: '이○○', date: '2026.03' },
@@ -113,33 +246,9 @@ function buildFallback(productName: string, retail: number, unit: string): Parti
       { text: '혼자 사는 1인 가구인데 소량 포장이 있어서 좋았어요. 한 번에 다 못 먹을까봐 걱정했는데 개별 포장이라 그때그때 꺼내 먹기 편했습니다. 조리도 간단해서 바쁜 아침에도 금방 먹을 수 있었습니다.', author: '최○○', date: '2026.02' },
       { text: '식품 관련 일을 하는 사람으로서 원재료 품질에 대해 꼼꼼히 따지는 편입니다. 여기 제품은 정말 원재료 관리가 철저하다는 느낌이 왔습니다. 향도 자연스럽고 인공적인 느낌이 전혀 없어요. 가격이 조금 있지만 그 값어치를 충분히 합니다.', author: '정○○', date: '2026.01' },
     ],
-    info: [
-      { key: '상품명', value: productName },
-      { key: '원산지', value: '국내산' },
-      { key: '중량', value: `1${unit || '개'}` },
-      { key: '보관방법', value: '냉동 보관 (-18℃ 이하)' },
-      { key: '유통기한', value: '제조일로부터 6개월' },
-      { key: '제조방법', value: '수제 소규모 생산' },
-      { key: '알레르기', value: '제품 포장지 표기 참조' },
-      { key: '인증', value: 'HACCP 인증' },
-      { key: '포장단위', value: `1${unit || '개'} 단위` },
-      { key: '배송방법', value: '냉동 택배' },
-    ],
-    faq: [
-      { q: '배송은 얼마나 걸리나요?', a: '평일 오후 2시 이전 주문 건은 당일 출고되며, 보통 다음날 수령 가능합니다. 제주·도서산간 지역은 1~2일 추가 소요될 수 있습니다.' },
-      { q: '냉동 상태로 배송되나요?', a: '네, 신선도 유지를 위해 냉동 상태로 발송됩니다. 아이스팩과 단열 포장재를 사용하여 배송 중 품질 손상을 최소화합니다. 여름철에는 드라이아이스를 추가합니다.' },
-      { q: '선물 포장이 가능한가요?', a: '기본 선물 포장으로 발송되며, 리본·메시지 카드 옵션을 추가하실 수 있습니다. 주문 시 요청사항란에 원하시는 내용을 적어주시면 반영해 드립니다.' },
-      { q: '교환·환불은 어떻게 하나요?', a: '수령 후 7일 이내에 단순 변심 교환·환불이 가능합니다. 상품 이상이 있는 경우에는 수령 후 즉시 고객센터로 사진과 함께 연락 주시면 신속하게 처리해 드립니다.' },
-      { q: '알레르기가 있는데 드셔도 될까요?', a: '포장지에 알레르기 유발 원료가 표시되어 있습니다. 구매 전 반드시 확인해 주시고, 특이 체질이시거나 알레르기가 있으신 분은 주치의와 상담 후 드실 것을 권장합니다.' },
-      { q: '유통기한은 얼마나 되나요?', a: '냉동 보관 시 제조일로부터 6개월입니다. 냉장 보관 시에는 3~5일 이내에 드시는 것을 권장합니다. 해동 후에는 당일 내 드시는 것이 가장 좋습니다.' },
-      { q: '대량 구매 시 할인이 되나요?', a: '도매 회원으로 가입하시면 도매 유통가로 구매하실 수 있습니다. 대량 주문은 카카오톡 문의 채널로 연락 주시면 맞춤 견적을 안내해 드립니다.' },
-    ],
-    delivery: [
-      { label: 'DELIVERY', value: '무료 배송\n평일 오후 2시 이전 주문 시 당일 출고' },
-      { label: 'PACKAGING', value: '선물 포장 기본\n아이스팩 + 단열 포장재 사용' },
-      { label: 'RETURN', value: '수령 후 7일 이내\n교환·환불 가능' },
-      { label: 'CONTACT', value: '평일 10:00 - 18:00\n카카오톡 채널 문의' },
-    ],
+    info: x.info,
+    faq: x.faq,
+    delivery: x.delivery,
     price: { retail, wholesale: 0, unit: unit || '개' },
   }
 }
@@ -223,6 +332,49 @@ function mergeData(
   }
 }
 
+// AI가 준 값이라도 판매자가 입력한 '사실'(원산지·배송시간·해썹·교환반품)과 다르면 강제로 바로잡는다.
+// 사실과 다른 상세페이지가 나가면 안 되므로, 생성 후 마지막 안전장치.
+function enforceFacts(d: LandingData, ctx: LandingCtx, fbOriginStats: OriginStat[]): LandingData {
+  const originClean = (ctx.origin || '').trim()
+  const { shipCutoff, hasHaccp, isFreshFood } = ctx
+
+  // 1) 배송 시간 문구 전역 치환 — AI가 지어낸 "평일 오후 N시"류를 입력값(없으면 안전 문구)으로 통일
+  const shipReplace = (s: string) =>
+    s.replace(/(평일\s*)?(오전|오후)\s*\d{1,2}\s*시(\s*이전)?/g, shipCutoff ? `평일 ${shipCutoff} 이전` : '주문 확인 후')
+  const walk = (v: any): any => {
+    if (typeof v === 'string') return shipReplace(v)
+    if (Array.isArray(v)) return v.map(walk)
+    if (v && typeof v === 'object') { const o: any = {}; for (const k in v) o[k] = walk(v[k]); return o }
+    return v
+  }
+  const out = walk(d) as LandingData
+
+  // 2) 원산지 강제 (입력했을 때만)
+  if (originClean) {
+    if (Array.isArray(out.info)) out.info = out.info.map((it: any) => /원산지/.test(it?.key || '') ? { ...it, value: originClean } : it)
+    if (Array.isArray(out.differences)) out.differences = out.differences.map((df: any) => /원산지/.test(df?.label || '') ? { ...df, ours: `${originClean} · 정직 표기` } : df)
+    if (Array.isArray(out.originStats)) out.originStats = out.originStats.map((st: any) => (st?.label || '').toUpperCase() === 'ORIGIN' ? { ...st, desc: `원산지 ${originClean} 기준으로 정직하게 표기합니다.` } : st)
+    out.originLocation = originClean
+  }
+
+  // 3) 해썹 미인증 → 인증/HACCP 언급 제거 (제작자가 해썹 입력했을 때만 노출)
+  if (!hasHaccp) {
+    if (Array.isArray(out.originStats)) out.originStats = out.originStats.filter((st: any) => !/HACCP|해썹|인증/i.test(`${st?.value} ${st?.label} ${st?.desc}`))
+    if (Array.isArray(out.info)) out.info = out.info.filter((it: any) => !(/인증/.test(it?.key || '') || /HACCP|해썹/i.test(it?.value || '')))
+    if (Array.isArray(out.features)) out.features = out.features.map((ft: any) => /HACCP|해썹|위해요소/i.test(ft?.desc || '')
+      ? { ...ft, title: /HACCP|해썹|위생|인증/.test(ft?.title || '') ? '꼼꼼한 품질 확인' : ft.title, desc: '출고 전 상태를 한 번 더 확인합니다. 색·상태를 점검하고 이상이 없는 제품만 포장해 보냅니다. 기본에 충실한 것이 가장 중요하다고 생각합니다.' }
+      : ft)
+    // originStats가 4개 미만이 되면 fallback으로 다시 채움
+    out.originStats = normalizeOriginStats(out.originStats, fbOriginStats)
+  }
+
+  // 4) 교환/반품 강제 — 농축수산물은 고정 문구, 그 외는 7일
+  if (Array.isArray(out.faq)) out.faq = out.faq.map((f: any) => /교환|반품|환불/.test(f?.q || '') ? { ...f, a: returnFaq(isFreshFood) } : f)
+  if (Array.isArray(out.delivery)) out.delivery = out.delivery.map((dv: any) => (dv?.label === 'RETURN' || /반품|교환/.test(dv?.label || '')) ? { ...dv, value: returnDelivery(isFreshFood) } : dv)
+
+  return out
+}
+
 export async function POST(req: NextRequest) {
   try {
     const auth = await getAuthAndGeminiKey()
@@ -232,7 +384,13 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { persona, productName, origin, retailPrice, wholesalePrice, unit, theme, productGroup, basicInfo } = body
+    const { persona, productName, origin, retailPrice, wholesalePrice, unit, theme, productGroup, freshType, basicInfo } = body
+    // 배송 기준시간(예: "오후 2시")·해썹 인증여부 — 판매자 입력. 없으면 안전 문구로.
+    const shipCutoff: string = typeof body.shipCutoff === 'string' ? body.shipCutoff.trim() : ''
+    const hasHaccp: boolean = body.hasHaccp === true
+    const haccpNo: string = typeof body.haccpNo === 'string' ? body.haccpNo.trim() : ''
+    // 농축수산물(신선식품)인지 = 교환/반품 규칙 분기
+    const isFreshFood = productGroup === 'fresh'
 
     let imageList: { base64: string; mimeType: string }[] = []
     if (Array.isArray(body.images) && body.images.length > 0) {
@@ -344,8 +502,10 @@ craft: material, sizeWeight, makerStory, usage, care
 
 [상품 정보]
 - 상품명: ${productName || '(이미지로 파악)'}
-- 상품군: ${groupLabels[productGroup] || productGroup || '(미입력)'}
+- 상품군: ${groupLabels[productGroup] || productGroup || '(미입력)'}${productGroup === 'fresh' ? ` / 세부품목: ${freshType === 'livestock' ? '축산물(정육)' : freshType === 'seafood' ? '수산물' : freshType === 'produce' ? '농산물' : '(미선택)'}` : ''}
 - 원산지: ${origin || '(미입력)'}
+- 당일배송 기준시간: ${shipCutoff || '(미입력 — 배송 시간을 지어내지 말 것)'}
+- 해썹(HACCP) 인증: ${hasHaccp ? `있음${haccpNo ? ` (인증번호 ${haccpNo})` : ''}` : '없음 — 인증/HACCP/위해요소 관련 문구 절대 작성 금지'}
 - 소매가: ${retailPrice || '?'}원
 - 도매가: ${wholesalePrice || '-'}원
 - 단위: ${unit || '개'}
@@ -353,6 +513,13 @@ craft: material, sizeWeight, makerStory, usage, care
 
 [판매자가 직접 작성한 상세 기본정보 — 가장 우선해서 반영]
 ${providedInfo || '- 추가 입력 없음'}
+
+[★★ 절대 지킬 사실 규칙 — 어기면 안 됨 ★★]
+- 원산지: 위 '원산지' 값을 그대로 쓰세요. "국내산"이라고 임의로 쓰지 마세요. 입력값이 노르웨이산이면 노르웨이산으로, 미입력이면 "상품 표시사항 기준"으로.
+- 배송: 위 '당일배송 기준시간'이 입력됐으면 그 시간만 쓰고, 미입력이면 "주문 확인 후 순차 출고"로만 쓰세요. 오전/오후 몇 시 같은 시간을 절대 지어내지 마세요.
+- 해썹: 위 '해썹 인증'이 '없음'이면 HACCP·해썹·위생인증·위해요소 관련 문구를 originStats/info/features/story 어디에도 쓰지 마세요.
+- 교환/반품: ${isFreshFood ? '농·축·수산물이므로 "단순 변심 교환·반품 불가, 이상 시 고객센터 문의"로만 쓰세요. "7일 이내" 같은 문구 금지.' : '"수령 후 7일 이내 교환·반품 가능"으로 쓰세요.'}
+- 보관·조리: ${productGroup === 'fresh' ? (freshType === 'livestock' ? '축산물이므로 냉장/냉동 보관, 실온에 잠깐 두었다 굽기·핏물 제거 등 정육 기준으로 쓰세요. 해동·냉동생선 문구 금지.' : freshType === 'seafood' ? '수산물이므로 해동·냉동 보관 기준으로 쓰세요.' : freshType === 'produce' ? '농산물이므로 세척·냉장 보관, 흙 손질 등 채소·과일 기준으로 쓰세요. 해동 문구 금지.' : '세부품목에 맞게 쓰세요.') : productGroup === 'processed' ? '공산품(가공식품)이므로 조리·활용법과 실온/개봉 후 냉장 보관 기준으로 쓰세요. 해동 문구 금지.' : '해당 상품군에 맞게 쓰세요.'}
 
 [작성 방향]
 - 판매자가 입력한 기본정보를 핵심 근거로 삼아 자연스럽고 풍성한 구매 카피로 확장하세요.
@@ -580,8 +747,10 @@ unusedIndices: 어느 섹션에도 안 어울리는 이미지 인덱스들.
       if (!usedIndices.has(i)) unusedImages.push(dataUrl(i))
     }
 
-    const fb = buildFallback(productName || '상품', Number(retailPrice) || 0, unit || '개')
-    const finalData = mergeData(aiJson, fb, productName || '상품', sectionImages, unusedImages)
+    const landingCtx: LandingCtx = { freshType, productGroup, origin, shipCutoff, hasHaccp, haccpNo, isFreshFood }
+    const fb = buildFallback(productName || '상품', Number(retailPrice) || 0, unit || '개', landingCtx)
+    let finalData = mergeData(aiJson, fb, productName || '상품', sectionImages, unusedImages)
+    finalData = enforceFacts(finalData, landingCtx, fb.originStats as OriginStat[])
 
     // 템플릿 선택: 사용자가 고른 게 있으면 그것, 없으면 AI 추천, 그것도 없으면 랜덤
     // (프리미엄 고정 방지 — 사용자는 나중에 UI에서 바꿀 수 있음)

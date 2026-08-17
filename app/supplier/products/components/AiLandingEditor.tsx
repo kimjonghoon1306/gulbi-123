@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import { renderLanding, type PresetKey, type TemplateKey, type LandingData, TEMPLATES } from '@/lib/landing-templates'
-import LandingBasicInfoFields, { type LandingBasicInfo, type ProductGroup } from '@/app/components/LandingBasicInfoFields'
+import LandingBasicInfoFields, { type LandingBasicInfo, type ProductGroup, type FreshType } from '@/app/components/LandingBasicInfoFields'
+import LandingFactFields from '@/app/components/LandingFactFields'
 
 // ── 인라인 FloatingToolbar ──────────────────────────────────
 function FloatingToolbar({ previewId }: { previewId: string }) {
@@ -92,6 +93,10 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
   const [aiPersona, setAiPersona] = useState('shohost')
   const [aiMeta, setAiMeta] = useState({ name: '', origin: '', category_id: '', unit: 'kg', suggested_wholesale_price: '', suggested_retail_price: '', stock: '' })
   const [productGroup, setProductGroup] = useState<ProductGroup>('')
+  const [freshType, setFreshType] = useState<FreshType>('')
+  const [shipCutoff, setShipCutoff] = useState('')
+  const [hasHaccp, setHasHaccp] = useState(false)
+  const [haccpNo, setHaccpNo] = useState('')
   const [basicInfo, setBasicInfo] = useState<LandingBasicInfo>({})
   const [basicInfoLoading, setBasicInfoLoading] = useState(false)
   const [aiLandingHtml, setAiLandingHtml] = useState('')
@@ -177,7 +182,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
       for (const extra of aiExtraImages) images.push(await resizeImg(extra.file))
       const response = await fetch('/api/generate-landing', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode: 'basic-info', images, imageUrl: aiImage ? undefined : selectedProduct?.image_url, productName: aiMeta.name, productGroup }),
+        body: JSON.stringify({ mode: 'basic-info', images, imageUrl: aiImage ? undefined : selectedProduct?.image_url, productName: aiMeta.name, productGroup, freshType }),
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error)
@@ -257,6 +262,10 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
           wholesalePrice: aiMeta.suggested_wholesale_price,
           unit: aiMeta.unit,
           productGroup,
+          freshType,
+          shipCutoff,
+          hasHaccp,
+          haccpNo,
           basicInfo,
         })
       })
@@ -522,9 +531,11 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
                   ))}
                 </div>
 
+                <LandingFactFields dark={aiDark} shipCutoff={shipCutoff} setShipCutoff={setShipCutoff} hasHaccp={hasHaccp} setHasHaccp={setHasHaccp} haccpNo={haccpNo} setHaccpNo={setHaccpNo} />
+
                 <div style={{ borderTop: '1px solid ' + (aiDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'), paddingTop: '12px' }}>
                   <p style={{ color: aiDark ? 'white' : '#111', fontSize: '14px', fontWeight: 900, margin: '0 0 9px' }}>📝 상세페이지 기본내용</p>
-                  <LandingBasicInfoFields group={productGroup} setGroup={setProductGroup} value={basicInfo} onChange={setBasicInfo} dark={aiDark} isAutoFilling={basicInfoLoading} onAutoFill={autoFillBasicInfo} />
+                  <LandingBasicInfoFields group={productGroup} setGroup={setProductGroup} freshType={freshType} setFreshType={setFreshType} value={basicInfo} onChange={setBasicInfo} dark={aiDark} isAutoFilling={basicInfoLoading} onAutoFill={autoFillBasicInfo} />
                 </div>
 
                 {/* 페르소나 */}

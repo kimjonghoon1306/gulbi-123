@@ -4,7 +4,8 @@ import { useState, useRef, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
 import { renderLanding, type PresetKey, type TemplateKey, type LandingData, TEMPLATES } from '@/lib/landing-templates'
 import FloatingToolbar from './FloatingToolbar'
-import LandingBasicInfoFields, { type LandingBasicInfo, type ProductGroup } from '@/app/components/LandingBasicInfoFields'
+import LandingBasicInfoFields, { type LandingBasicInfo, type ProductGroup, type FreshType } from '@/app/components/LandingBasicInfoFields'
+import LandingFactFields from '@/app/components/LandingFactFields'
 
 type Product = {
   id: string; name: string; description: string
@@ -50,6 +51,10 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
   const [aiPersona, setAiPersona] = useState('shohost')
   const [aiMeta, setAiMeta] = useState({ name: '', origin: '', category_id: '', unit: 'kg', wholesale_price: '', member_price: '', retail_price: '', stock: '' })
   const [productGroup, setProductGroup] = useState<ProductGroup>('')
+  const [freshType, setFreshType] = useState<FreshType>('')
+  const [shipCutoff, setShipCutoff] = useState('')
+  const [hasHaccp, setHasHaccp] = useState(false)
+  const [haccpNo, setHaccpNo] = useState('')
   const [basicInfo, setBasicInfo] = useState<LandingBasicInfo>({})
   const [basicInfoLoading, setBasicInfoLoading] = useState(false)
   const [aiLandingHtml, setAiLandingHtml] = useState('')
@@ -128,7 +133,7 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
       for (const extra of aiExtraImages) images.push(await resizeImg(extra.file))
       const response = await fetch('/api/generate-landing', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode: 'basic-info', images, imageUrl: aiImage ? undefined : selectedProduct?.image_url, productName: aiMeta.name, productGroup }),
+        body: JSON.stringify({ mode: 'basic-info', images, imageUrl: aiImage ? undefined : selectedProduct?.image_url, productName: aiMeta.name, productGroup, freshType }),
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error)
@@ -203,7 +208,7 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
 
       const res = await fetch('/api/generate-landing', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ images, persona: aiPersona, productName: aiMeta.name, origin: aiMeta.origin, retailPrice: aiMeta.retail_price, wholesalePrice: aiMeta.wholesale_price, unit: aiMeta.unit, productGroup, basicInfo })
+        body: JSON.stringify({ images, persona: aiPersona, productName: aiMeta.name, origin: aiMeta.origin, retailPrice: aiMeta.retail_price, wholesalePrice: aiMeta.wholesale_price, unit: aiMeta.unit, productGroup, freshType, shipCutoff, hasHaccp, haccpNo, basicInfo })
       })
       const data = await res.json()
       if (data.error) {
@@ -491,10 +496,11 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
                     <input value={aiMeta.name} onChange={e => setAiMeta(p => ({ ...p, name: e.target.value }))} placeholder="상품명 (예: 산지직송 보리굴비)"
                       style={{ padding: '15px 16px', borderRadius: '12px', border: '2px solid ' + (aiDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)'), background: aiDark ? 'rgba(255,255,255,0.07)' : 'white', color: aiDark ? 'white' : '#111', fontSize: '15px', fontWeight: 600, outline: 'none' }}
                       onFocus={e => { e.target.style.borderColor = '#22c55e' }} onBlur={e => { e.target.style.borderColor = aiDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)' }} />
-                    <input value={aiMeta.origin} onChange={e => setAiMeta(p => ({ ...p, origin: e.target.value }))} placeholder="원산지 (예: 국내산 · 전남 영광)"
+                    <input value={aiMeta.origin} onChange={e => setAiMeta(p => ({ ...p, origin: e.target.value }))} placeholder="원산지 (예: 국내산 · 노르웨이산 · 전남 영광)"
                       maxLength={100}
                       style={{ padding: '15px 16px', borderRadius: '12px', border: '2px solid ' + (aiDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)'), background: aiDark ? 'rgba(255,255,255,0.07)' : 'white', color: aiDark ? 'white' : '#111', fontSize: '14px', outline: 'none' }}
                       onFocus={e => { e.target.style.borderColor = '#22c55e' }} onBlur={e => { e.target.style.borderColor = aiDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)' }} />
+                    <LandingFactFields dark={aiDark} shipCutoff={shipCutoff} setShipCutoff={setShipCutoff} hasHaccp={hasHaccp} setHasHaccp={setHasHaccp} haccpNo={haccpNo} setHaccpNo={setHaccpNo} />
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
                       {[
                         { label: '🛒 일반 구매가', key: 'retail_price', color: '99,102,241' },
@@ -531,7 +537,7 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
                 </div>
                 <div style={{ gridColumn: '1 / -1', borderTop: '1px solid ' + (aiDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'), paddingTop: '16px' }}>
                   <h3 style={{ color: aiDark ? 'white' : '#111', fontSize: '17px', fontWeight: 900, margin: '0 0 10px' }}>📝 상세페이지 기본내용</h3>
-                  <LandingBasicInfoFields group={productGroup} setGroup={setProductGroup} value={basicInfo} onChange={setBasicInfo} dark={aiDark} isAutoFilling={basicInfoLoading} onAutoFill={autoFillBasicInfo} />
+                  <LandingBasicInfoFields group={productGroup} setGroup={setProductGroup} freshType={freshType} setFreshType={setFreshType} value={basicInfo} onChange={setBasicInfo} dark={aiDark} isAutoFilling={basicInfoLoading} onAutoFill={autoFillBasicInfo} />
                 </div>
                 {aiError && <div style={{ gridColumn: '1 / -1', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '10px', padding: '10px 14px' }}><p style={{ color: '#f87171', fontSize: '13px', margin: 0 }}>{aiError}</p></div>}
                 <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '10px' }}>
