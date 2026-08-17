@@ -22,8 +22,16 @@ export default function PwaRegister() {
       setShow(true);
     };
 
-    const hardReload = () => {
-      window.location.reload();
+    const hardReload = async () => {
+      // iOS 홈 화면 앱은 reload()만 하면 이전 문서/청크를 메모리에서
+      // 복원하는 경우가 있다. 앱 캐시를 비우고 새 URL로 다시 진입한다.
+      if ("caches" in window) {
+        const keys = await caches.keys().catch(() => []);
+        await Promise.all(keys.map((key) => caches.delete(key))).catch(() => {});
+      }
+      const url = new URL(window.location.href);
+      url.searchParams.set("app-update", Date.now().toString());
+      window.location.replace(url.toString());
     };
 
     const watchInstalling = (r: ServiceWorkerRegistration, worker: ServiceWorker | null) => {
@@ -74,7 +82,7 @@ export default function PwaRegister() {
       if (reloaded) return;
       reloaded = true;
       sessionStorage.removeItem(UPDATE_IN_PROGRESS_KEY);
-      hardReload();
+      void hardReload();
     };
 
     if (document.readyState === "complete") onLoad();
@@ -103,15 +111,21 @@ export default function PwaRegister() {
     setShow(false);
     applyingUpdate.current = true;
     sessionStorage.setItem(UPDATE_IN_PROGRESS_KEY, "1");
-    const forceReload = () => {
-      window.location.reload();
+    const forceReload = async () => {
+      if ("caches" in window) {
+        const keys = await caches.keys().catch(() => []);
+        await Promise.all(keys.map((key) => caches.delete(key))).catch(() => {});
+      }
+      const url = new URL(window.location.href);
+      url.searchParams.set("app-update", Date.now().toString());
+      window.location.replace(url.toString());
     };
     const r = reg ?? (await navigator.serviceWorker.getRegistration());
     if (r?.waiting) {
       r.waiting.postMessage({ type: "SKIP_WAITING" });
-      setTimeout(forceReload, 3000); // 일부 iOS PWA에서 controllerchange가 늦는 경우 한 번만 새로고침
+      setTimeout(() => void forceReload(), 3000); // 일부 iOS PWA에서 controllerchange가 늦는 경우 강제 최신화
     } else {
-      forceReload();
+      await forceReload();
     }
   };
 
