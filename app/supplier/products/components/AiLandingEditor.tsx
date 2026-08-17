@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase'
 import { renderLanding, type PresetKey, type TemplateKey, type LandingData, TEMPLATES } from '@/lib/landing-templates'
 import LandingBasicInfoFields, { type LandingBasicInfo, type ProductGroup, type FreshType } from '@/app/components/LandingBasicInfoFields'
 import LandingFactFields from '@/app/components/LandingFactFields'
+import { useLandingImageSwap } from '@/app/components/useLandingImageSwap'
 
 // ── 인라인 FloatingToolbar ──────────────────────────────────
 function FloatingToolbar({ previewId }: { previewId: string }) {
@@ -118,6 +119,9 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
     check(); window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
   }, [])
+
+  // 생성된 상세페이지의 이미지를 클릭하면 새 사진으로 교체
+  useLandingImageSwap('supplier-landing-preview', aiTab === 'ai' && !!aiLandingHtml, aiLandingHtml)
 
   // 상품관리에서 '상세' 버튼으로 특정 상품을 지정해 열 때: 상품 재선택 없이 바로 선택창
   useEffect(() => {
@@ -619,6 +623,7 @@ export default function SupplierAiLandingEditor({ show, onClose, products, onDon
                     </div>
                   )}
                   <FloatingToolbar previewId="supplier-landing-preview" />
+                  <div style={{ background: '#eff6ff', color: '#1d4ed8', fontSize: '12px', fontWeight: 700, padding: '9px 14px', textAlign: 'center' }}>🖼️ 사진을 클릭하면 다른 사진으로 바꿀 수 있어요. 글자는 눌러서 수정하세요.</div>
                   <div id="supplier-landing-preview" contentEditable suppressContentEditableWarning
                     dangerouslySetInnerHTML={{ __html: aiLandingHtml }}
                     style={{ outline: 'none' }} />

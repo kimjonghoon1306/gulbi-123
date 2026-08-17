@@ -6,6 +6,7 @@ import { renderLanding, type PresetKey, type TemplateKey, type LandingData, TEMP
 import FloatingToolbar from './FloatingToolbar'
 import LandingBasicInfoFields, { type LandingBasicInfo, type ProductGroup, type FreshType } from '@/app/components/LandingBasicInfoFields'
 import LandingFactFields from '@/app/components/LandingFactFields'
+import { useLandingImageSwap } from '@/app/components/useLandingImageSwap'
 
 type Product = {
   id: string; name: string; description: string
@@ -73,6 +74,9 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
     check(); window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
   }, [])
+
+  // 생성된 상세페이지의 이미지를 클릭하면 새 사진으로 교체
+  useLandingImageSwap('landing-preview', aiTab === 'ai' && !!aiLandingHtml, aiLandingHtml)
 
   // 상품관리에서 '상세' 버튼으로 특정 상품을 지정해 열 때: 상품 재선택 없이 바로 선택창
   useEffect(() => {
@@ -597,6 +601,7 @@ export default function AiLandingEditor({ show, onClose, products, onDone, initi
                       <img src={aiBgRemovedPreview} alt="" style={{ width: '85%', height: '85%', objectFit: 'contain' }} />
                     </div>
                   )}
+                  <div style={{ margin: '0 0 8px', padding: '9px 13px', borderRadius: '9px', background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.3)', color: aiDark ? '#93c5fd' : '#1d4ed8', fontSize: '12px', fontWeight: 700 }}>🖼️ 사진을 <b>클릭</b>하면 다른 사진으로 바꿀 수 있어요. 글자는 바로 눌러서 수정하세요.</div>
                   <div id="landing-preview" contentEditable suppressContentEditableWarning dangerouslySetInnerHTML={{ __html: aiLandingHtml }} />
                 </div>
               </div>
