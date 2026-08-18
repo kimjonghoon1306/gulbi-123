@@ -467,7 +467,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
         </div>
       </header>
 
-      <div style={{maxWidth:'1100px',margin:'0 auto',padding:'24px 20px 120px'}}>
+      <div className="product-main" style={{maxWidth:'1100px',margin:'0 auto',padding:'24px 20px'}}>
 
         {/* 상품 히어로 */}
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'36px',marginBottom:'32px'}} className="product-grid">
@@ -790,6 +790,9 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
         /* 상품 이미지 살짝 줌 */
         .product-grid img { transition: transform 0.4s ease; }
         .product-grid img:hover { transform: scale(1.04); }
+        /* 본문 하단 여백: PC는 작게(구매바 없음), 모바일만 고정 구매바 높이만큼 확보 */
+        .product-main{ padding-bottom: 40px; }
+        @media(max-width:639px){ .product-main{ padding-bottom: calc(84px + env(safe-area-inset-bottom)); } }
         /* 모바일 구매바: 모바일에서만 노출 */
         .mobile-buybar{display:none}
         @media(max-width:639px){ .mobile-buybar{display:flex!important} }
