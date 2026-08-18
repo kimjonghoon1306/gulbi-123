@@ -23,6 +23,8 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
   const { id } = useParams()
   const router = useRouter()
   const supabase = createClient()
+  // 로그인 후 이 상품으로 되돌아오게 next 파라미터 포함
+  const loginHref = '/shop/login?next=' + encodeURIComponent('/shop/product/' + String(id))
 
   const [product, setProduct] = useState<any>(initialProduct)
   const [loading, setLoading] = useState(!initialProduct)
@@ -99,7 +101,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
   }
 
   const submitReview = async () => {
-    if (!user) { router.push('/shop/login'); return }
+    if (!user) { router.push(loginHref); return }
     setReviewSubmitting(true)
     try {
       const res = await fetch('/api/reviews', {
@@ -144,7 +146,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
   }
 
   const submitQuestion = async () => {
-    if (!user) { router.push('/shop/login'); return }
+    if (!user) { router.push(loginHref); return }
     if (!questionText.trim()) return
     setQuestionSubmitting(true)
     try {
@@ -256,7 +258,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
   }
 
   const toggleLike = async () => {
-    if (!user) { router.push('/shop/login'); return }
+    if (!user) { router.push(loginHref); return }
     if (liked) {
       await supabase.from('wishlists').delete().eq('user_id', user.id).eq('product_id', id)
       setLiked(false)
@@ -599,7 +601,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
             {/* 버튼 */}
             {!user ? (
               <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
-                <Link href="/shop/login" style={{display:'block',textAlign:'center',padding:'16px',background:'linear-gradient(135deg,#15803d,#16a34a)',color:'white',fontWeight:900,fontSize:'15px',borderRadius:'14px',textDecoration:'none',boxShadow:'0 8px 20px rgba(22,163,74,0.35)'}}>
+                <Link href={loginHref} style={{display:'block',textAlign:'center',padding:'16px',background:'linear-gradient(135deg,#15803d,#16a34a)',color:'white',fontWeight:900,fontSize:'15px',borderRadius:'14px',textDecoration:'none',boxShadow:'0 8px 20px rgba(22,163,74,0.35)'}}>
                   🛒 로그인 후 구매하기
                 </Link>
                 <Link href="/shop/register" style={{display:'block',textAlign:'center',padding:'13px',background:'transparent',color:D.sub,fontSize:'13px',fontWeight:600,borderRadius:'14px',textDecoration:'none',border:`1.5px solid ${D.border}`}}>
@@ -758,7 +760,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
             <p style={{fontSize:'18px',fontWeight:900,color:D.text,margin:0,letterSpacing:'-0.5px',whiteSpace:'nowrap'}}>{getPrice().toLocaleString()}<span style={{fontSize:'12px',fontWeight:600,color:D.sub}}>원</span></p>
           </div>
           {!user ? (
-            <Link href="/shop/login" style={{flex:1,textAlign:'center',padding:'15px',borderRadius:'14px',background:'linear-gradient(135deg,#15803d,#16a34a)',color:'white',fontWeight:900,fontSize:'15px',textDecoration:'none'}}>로그인 후 구매</Link>
+            <Link href={loginHref} style={{flex:1,textAlign:'center',padding:'15px',borderRadius:'14px',background:'linear-gradient(135deg,#15803d,#16a34a)',color:'white',fontWeight:900,fontSize:'15px',textDecoration:'none'}}>로그인 후 구매</Link>
           ) : product.stock === 0 ? (
             <button disabled style={{flex:1,padding:'15px',borderRadius:'14px',background:D.input,color:D.sub,fontSize:'15px',fontWeight:700,border:'none'}}>품절</button>
           ) : (

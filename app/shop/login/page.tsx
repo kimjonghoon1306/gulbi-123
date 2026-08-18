@@ -57,7 +57,13 @@ export default function ShopLoginPage() {
     const { data: member } = await supabase.from('shop_members').select('status').eq('id', data.user.id).single()
     if (member?.status === '대기중') { await supabase.auth.signOut(); setError('승인 대기 중입니다. 관리자 승인 후 이용 가능해요.'); setLoading(false); return }
     if (member?.status === '거절') { await supabase.auth.signOut(); setError('가입이 거절되었습니다. 관리자에게 문의해주세요.'); setLoading(false); return }
-    router.push('/shop')
+    // 로그인 전에 보던 상품 등으로 되돌려보냄(next). 없거나 안전하지 않으면 쇼핑몰 홈.
+    let next = '/shop'
+    try {
+      const raw = new URLSearchParams(window.location.search).get('next') || ''
+      if (raw && raw.startsWith('/shop')) next = raw
+    } catch {}
+    router.push(next)
   }
 
   // 이메일 찾기: 이름 + 연락처로 shop_members 조회
