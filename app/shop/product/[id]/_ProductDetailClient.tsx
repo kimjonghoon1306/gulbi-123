@@ -749,7 +749,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
 
       {/* ── 모바일 전용 하단 고정 구매바 ── */}
       {!showOrderForm && (
-        <div className="mobile-buybar" style={{position:'fixed',bottom:0,left:0,right:0,zIndex:60,background:D.headerBg,backdropFilter:'blur(20px)',borderTop:`1px solid ${D.border}`,padding:'10px 16px calc(10px + env(safe-area-inset-bottom))',display:'flex',alignItems:'center',gap:'12px',boxShadow:'0 -6px 24px rgba(0,0,0,0.1)'}}>
+        <div className="mobile-buybar" style={{position:'fixed',bottom:0,left:0,right:0,zIndex:60,background:D.headerBg,backdropFilter:'blur(20px)',borderTop:`1px solid ${D.border}`,padding:'10px 16px calc(10px + min(env(safe-area-inset-bottom), 12px))',display:'flex',alignItems:'center',gap:'12px',boxShadow:'0 -6px 24px rgba(0,0,0,0.1)'}}>
           <button onClick={toggleLike} aria-label="찜하기" style={{width:'48px',height:'48px',flexShrink:0,borderRadius:'14px',border:`1.5px solid ${D.border}`,background:'transparent',cursor:'pointer',fontSize:'22px',display:'flex',alignItems:'center',justifyContent:'center'}}>
             {liked ? '❤️' : '🤍'}
           </button>
@@ -792,7 +792,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
         .product-grid img:hover { transform: scale(1.04); }
         /* 본문 하단 여백: PC는 작게(구매바 없음), 모바일만 고정 구매바 높이만큼 확보 */
         .product-main{ padding-bottom: 40px; }
-        @media(max-width:639px){ .product-main{ padding-bottom: calc(84px + env(safe-area-inset-bottom)); } }
+        @media(max-width:639px){ .product-main{ padding-bottom: calc(78px + min(env(safe-area-inset-bottom), 12px)); } }
         /* 모바일 구매바: 모바일에서만 노출 */
         .mobile-buybar{display:none}
         @media(max-width:639px){ .mobile-buybar{display:flex!important} }
