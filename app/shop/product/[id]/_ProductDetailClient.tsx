@@ -57,6 +57,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
   const [quantity, setQuantity] = useState(1)
   const [options, setOptions] = useState<ProductOption[]>([])
   const [selectedOption, setSelectedOption] = useState<ProductOption | null>(null)
+  const [optionsOpen, setOptionsOpen] = useState(false)   // 옵션 드롭다운 펼침 여부
   // 본품(맨 앞 자동 추가 선택지)은 실제 옵션이 아니다.
   //   주문/장바구니에 넘길 "진짜 옵션"만 반환(본품이면 null → 옵션 없는 상품과 동일하게 저장).
   const realOption = (o: ProductOption | null) => (o && !o.id.startsWith('__base__')) ? o : null
@@ -603,30 +604,46 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
               ))}
             </div>
 
-            {options.length > 0 && (
-              <div style={{marginBottom:'14px'}}>
-                <p style={{fontSize:'13px',fontWeight:800,color:D.text,margin:'0 0 10px'}}>옵션 선택 <span style={{fontSize:'11px',fontWeight:600,color:D.sub}}>({options.length}종)</span></p>
-                <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
-                  {options.map(option => {
+            {options.length > 0 && (() => {
+              // 옵션 중 현재 등급 기준 최저가 → '최저가' 뱃지 표시용
+              const prices = options.map(o => priceFor(o, memberType))
+              const minPrice = Math.min(...prices)
+              return (
+              <div style={{marginBottom:'16px'}}>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'10px'}}>
+                  <p style={{fontSize:'14px',fontWeight:900,color:D.text,margin:0,display:'flex',alignItems:'center',gap:'6px'}}>
+                    <span style={{fontSize:'15px'}}>📦</span> 구성 선택
+                    <span style={{fontSize:'11px',fontWeight:700,color:D.accent,background:dark?'rgba(74,222,128,0.14)':'#ecfdf5',padding:'2px 8px',borderRadius:'999px'}}>{options.length}가지</span>
+                  </p>
+                  <span style={{fontSize:'11px',fontWeight:600,color:D.sub}}>원하는 구성을 골라보세요</span>
+                </div>
+                <div style={{display:'flex',flexDirection:'column',gap:'9px'}}>
+                  {options.map((option, idx) => {
                     const selected = selectedOption?.id === option.id
                     const soldOut = option.stock === 0
-                    // 현재 회원 등급 기준 가격(일반/소매/도매)을 옵션마다 표시
                     const optPrice = priceFor(option, memberType)
+                    const isMin = optPrice === minPrice && !soldOut
                     return (
                       <button key={option.id} type="button" disabled={soldOut}
                         onClick={() => { setSelectedOption(option); setQuantity(1) }}
-                        style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'10px',width:'100%',minHeight:'54px',padding:'12px 16px',borderRadius:'14px',border:`2px solid ${selected ? D.accent : D.border}`,background:selected ? (dark?'rgba(74,222,128,0.12)':'#f0fdf4') : soldOut ? D.input : D.card,color:soldOut ? D.sub : D.text,cursor:soldOut?'not-allowed':'pointer',opacity:soldOut?0.55:1,textAlign:'left',transition:'all .18s'}}>
-                        <span style={{display:'flex',alignItems:'center',gap:'8px',fontSize:'15px',fontWeight:800,lineHeight:1.2}}>
-                          {selected && <span style={{color:D.accent,fontSize:'15px'}}>✓</span>}
-                          {option.label}{soldOut && <span style={{fontSize:'12px',fontWeight:700,color:D.sub}}>· 품절</span>}
+                        style={{position:'relative',display:'flex',alignItems:'center',justifyContent:'space-between',gap:'10px',width:'100%',minHeight:'58px',padding:'13px 16px',borderRadius:'15px',border:`2px solid ${selected ? D.accent : D.border}`,background:selected ? (dark?'rgba(74,222,128,0.13)':'#f0fdf4') : soldOut ? D.input : D.card,color:soldOut ? D.sub : D.text,cursor:soldOut?'not-allowed':'pointer',opacity:soldOut?0.5:1,textAlign:'left',transition:'all .18s',boxShadow:selected?`0 4px 14px ${dark?'rgba(74,222,128,0.18)':'rgba(22,163,74,0.14)'}`:'none'}}>
+                        <span style={{display:'flex',alignItems:'center',gap:'10px',minWidth:0}}>
+                          <span style={{flexShrink:0,width:'22px',height:'22px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'11px',fontWeight:900,background:selected?D.accent:(dark?'rgba(255,255,255,0.08)':'#f1f5f9'),color:selected?'#fff':D.sub,transition:'all .18s'}}>{selected ? '✓' : idx+1}</span>
+                          <span style={{fontSize:'15px',fontWeight:800,lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{option.label}</span>
+                          {isMin && options.length>1 && <span style={{flexShrink:0,fontSize:'10px',fontWeight:800,color:'#f43f5e',background:dark?'rgba(244,63,94,0.15)':'#fff1f2',padding:'2px 7px',borderRadius:'999px'}}>최저가</span>}
+                          {soldOut && <span style={{fontSize:'12px',fontWeight:700,color:D.sub}}>· 품절</span>}
                         </span>
-                        <span style={{fontSize:'15px',fontWeight:900,color:selected?D.accent:D.text,whiteSpace:'nowrap'}}>{Number(optPrice).toLocaleString()}<span style={{fontSize:'12px',fontWeight:600,color:D.sub}}>원</span></span>
+                        <span style={{fontSize:'16px',fontWeight:900,color:selected?D.accent:D.text,whiteSpace:'nowrap'}}>{Number(optPrice).toLocaleString()}<span style={{fontSize:'12px',fontWeight:600,color:D.sub}}>원</span></span>
                       </button>
                     )
                   })}
                 </div>
+                <p style={{fontSize:'11.5px',color:D.sub,margin:'10px 2px 0',display:'flex',alignItems:'center',gap:'5px'}}>
+                  <span>✨</span> 더 다양한 구성으로 준비했어요. 필요한 만큼 골라 담아보세요!
+                </p>
               </div>
-            )}
+              )
+            })()}
 
             {/* 가격 */}
             <div style={{background:dark?'#15391f':'#fdf2f8',borderRadius:'18px',padding:'18px 20px',marginBottom:'16px',border:`1px solid ${dark?'rgba(255,255,255,0.06)':'#fce7f3'}`}}>

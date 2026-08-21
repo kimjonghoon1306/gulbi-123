@@ -1,4 +1,5 @@
 export type ProductOptionForm = {
+  client_id: string
   label: string
   unit: string
   weight: string
@@ -17,8 +18,20 @@ export type ProductOptionApprovalForm = ProductOptionForm & {
 export const PRODUCT_OPTION_UNITS = ['kg', 'g', '박스', '마리', '개', '묶음']
 
 export const emptyProductOption = (): ProductOptionForm => ({
+  client_id: `option-${Date.now()}-${Math.random().toString(36).slice(2)}`,
   label: '', unit: 'kg', weight: '', wholesale_price: '', member_price: '', retail_price: '', stock: '',
 })
+
+export function optionLabelError(options: ProductOptionForm[]) {
+  if (!options.length || options.some(option => !option.label.trim())) {
+    return '모든 옵션의 옵션명을 직접 입력해 주세요.'
+  }
+  const normalized = options.map(option => option.label.trim().normalize('NFKC').toLocaleLowerCase('ko-KR'))
+  if (new Set(normalized).size !== normalized.length) {
+    return '옵션명은 중복될 수 없습니다. 서로 다른 옵션명을 입력해 주세요.'
+  }
+  return null
+}
 
 export const digitsOnly = (value: string) => value.replace(/[^\d]/g, '')
 

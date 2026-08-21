@@ -68,6 +68,7 @@ export default function SupplierProductApproval() {
     }
     setReviewProduct(product)
     setReviewOptions((optionRows || []).map(option => ({
+      client_id: String(option.id),
       id: option.id,
       label: option.label,
       unit: option.unit || 'kg',

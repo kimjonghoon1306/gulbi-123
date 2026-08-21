@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase'
 import ProductList from './components/ProductList'
 import { ProductFormModal } from './components/ProductFormModal'
 import type { ProductForm } from './components/ProductFormModal'
-import { emptyProductOption, optionRepresentative, optionsForInsert } from '@/lib/product-options'
+import { emptyProductOption, optionLabelError, optionRepresentative, optionsForInsert } from '@/lib/product-options'
 import AiLandingEditor from './components/AiLandingEditor'
 
 type Category = { id: string; name: string; sort_order: number }
@@ -55,7 +55,7 @@ export default function ProductsPage() {
   const openEdit = async (p: Product) => {
     const { data: optionRows } = await supabase.from('product_options').select('*').eq('product_id', p.id).order('sort_order')
     setEditProduct(p)
-    setForm({ name: p.name, description: p.description || '', origin: p.origin || '', category_id: p.category_id || '', wholesale_price: String(p.wholesale_price), member_price: String(p.member_price || 0), retail_price: String(p.retail_price), stock: p.stock == null ? '' : String(p.stock), unit: p.unit || 'kg', weight: p.weight != null ? String(p.weight) : '', image_url: p.image_url || '', is_active: p.is_active, is_taxable: p.is_taxable ?? false, subscribable: p.subscribable ?? false, subscribe_discount: p.subscribe_discount != null ? String(p.subscribe_discount) : '', shipping_type: p.shipping_type === 'paid' ? 'paid' : 'free', shipping_fee: p.shipping_fee != null ? String(p.shipping_fee) : '', free_shipping_threshold: p.free_shipping_threshold != null ? String(p.free_shipping_threshold) : '', use_options: !!optionRows?.length, options: optionRows?.length ? optionRows.map(o => ({ label: o.label, unit: o.unit || 'kg', weight: o.weight == null ? '' : String(o.weight), wholesale_price: String(o.wholesale_price || 0), member_price: String(o.member_price || 0), retail_price: String(o.retail_price || ''), stock: o.stock == null ? '' : String(o.stock) })) : [emptyProductOption()] })
+    setForm({ name: p.name, description: p.description || '', origin: p.origin || '', category_id: p.category_id || '', wholesale_price: String(p.wholesale_price), member_price: String(p.member_price || 0), retail_price: String(p.retail_price), stock: p.stock == null ? '' : String(p.stock), unit: p.unit || 'kg', weight: p.weight != null ? String(p.weight) : '', image_url: p.image_url || '', is_active: p.is_active, is_taxable: p.is_taxable ?? false, subscribable: p.subscribable ?? false, subscribe_discount: p.subscribe_discount != null ? String(p.subscribe_discount) : '', shipping_type: p.shipping_type === 'paid' ? 'paid' : 'free', shipping_fee: p.shipping_fee != null ? String(p.shipping_fee) : '', free_shipping_threshold: p.free_shipping_threshold != null ? String(p.free_shipping_threshold) : '', use_options: !!optionRows?.length, options: optionRows?.length ? optionRows.map(o => ({ client_id: String(o.id), label: o.label, unit: o.unit || 'kg', weight: o.weight == null ? '' : String(o.weight), wholesale_price: String(o.wholesale_price || 0), member_price: String(o.member_price || 0), retail_price: String(o.retail_price || ''), stock: o.stock == null ? '' : String(o.stock) })) : [emptyProductOption()] })
     setShowForm(true)
   }
 
@@ -69,7 +69,8 @@ export default function ProductsPage() {
       return
     }
     if (!form.name.trim()) { alert('상품명을 입력해 주세요.'); return }
-    if (form.use_options && (!form.options.length || form.options.some(o => !o.label.trim()))) { alert('모든 옵션의 옵션명을 입력해 주세요.'); return }
+    const labelError = form.use_options ? optionLabelError(form.options) : null
+    if (labelError) { alert(labelError); return }
     if (form.use_options && form.options.some(o => !o.retail_price.trim())) { alert('모든 옵션의 일반구매가를 입력해 주세요.'); return }
     const representative = form.use_options ? optionRepresentative(form.options) : null
     const { use_options, options, ...productForm } = form
@@ -89,7 +90,8 @@ export default function ProductsPage() {
     const { error: deleteError } = await supabase.from('product_options').delete().eq('product_id', productId)
     if (deleteError) { await rollbackIfNew(); alert(`옵션 정리에 실패했습니다: ${deleteError.message}`); return }
     if (form.use_options) {
-      const { error: optionError } = await supabase.from('product_options').insert(optionsForInsert(productId, form.options))
+      const optionsToSave = form.options.map(option => ({ ...option, label: option.label.trim() }))
+      const { error: optionError } = await supabase.from('product_options').insert(optionsForInsert(productId, optionsToSave))
       if (optionError) { await rollbackIfNew(); alert(`옵션 저장에 실패했습니다: ${optionError.message}`); return }
     }
     setShowForm(false); setEditProduct(null); setForm(EMPTY_FORM); fetchAll()

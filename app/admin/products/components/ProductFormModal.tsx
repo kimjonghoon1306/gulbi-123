@@ -1,5 +1,6 @@
 'use client'
 
+import type { Dispatch, SetStateAction } from 'react'
 import { createClient } from '@/lib/supabase'
 import StockImagePicker from '@/components/StockImagePicker'
 import { PRODUCT_OPTION_UNITS, digitsOnly, emptyProductOption, formatWon, type ProductOptionForm } from '@/lib/product-options'
@@ -30,7 +31,7 @@ type ProductModalProps = {
   onClose: () => void
   editProduct: Product | null
   form: ProductForm
-  setForm: (f: ProductForm) => void
+  setForm: Dispatch<SetStateAction<ProductForm>>
   onSave: () => void
   categories: Category[]
 }
@@ -55,7 +56,7 @@ export function ProductFormModal({ show, onClose, editProduct, form, setForm, on
     const { error } = await supabase.storage.from('products').upload(fn, f, { upsert: true })
     if (!error) {
       const url = supabase.storage.from('products').getPublicUrl(fn).data.publicUrl
-      setForm({ ...form, image_url: url })
+      setForm(current => ({ ...current, image_url: url }))
     }
   }
 
@@ -87,7 +88,7 @@ export function ProductFormModal({ show, onClose, editProduct, form, setForm, on
                 : <p style={{ color: '#94a3b8', fontSize: '13px', margin: 0 }}>📸 클릭해서 이미지 올리기</p>
               }
             </div>
-            <StockImagePicker onPick={(url) => setForm({ ...form, image_url: url })} />
+            <StockImagePicker onPick={(url) => setForm(current => ({ ...current, image_url: url }))} />
           </div>
 
           <div>
@@ -110,7 +111,7 @@ export function ProductFormModal({ show, onClose, editProduct, form, setForm, on
 
           <div className="rounded-xl border border-slate-200 dark:border-gray-600 p-4 flex items-center gap-3">
             <button type="button" role="switch" aria-checked={form.use_options}
-              onClick={() => setForm({ ...form, use_options: !form.use_options, options: form.options.length ? form.options : [emptyProductOption()] })}
+              onClick={() => setForm(current => ({ ...current, use_options: !current.use_options, options: current.options.length ? current.options : [emptyProductOption()] }))}
               className={`relative w-12 h-6 rounded-full transition-colors duration-200 shrink-0 ${form.use_options ? 'bg-green-600' : 'bg-slate-300 dark:bg-gray-600'}`}>
               <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all duration-200 ${form.use_options ? 'left-7' : 'left-1'}`} />
             </button>
@@ -154,21 +155,25 @@ export function ProductFormModal({ show, onClose, editProduct, form, setForm, on
           </div> : (
             <div className="space-y-3">
               <div className="flex items-center justify-between"><p className="text-sm font-bold text-slate-700 dark:text-white">상품 옵션</p>
-                <button type="button" onClick={() => setForm({ ...form, options: [...form.options, emptyProductOption()] })} className="text-xs font-bold text-green-600">+ 옵션 추가</button>
+                <button type="button" onClick={() => setForm(current => ({ ...current, options: [...current.options, emptyProductOption()] }))} className="text-xs font-bold text-green-600">+ 옵션 추가</button>
+              </div>
+              <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 px-3 py-2.5">
+                <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400 leading-relaxed">📌 손님에게 보이는 무게는 <u>여기 옵션에 넣은 것만</u> 나옵니다.</p>
+                <p className="text-[11px] text-amber-600 dark:text-amber-500 leading-relaxed mt-0.5">상품명에 적은 무게(예: 1.4kg)는 옵션에 자동으로 안 들어가요. 팔 무게를 옵션에 <b>하나씩 다</b> 추가하세요. (맨 위 옵션이 대표로 먼저 보여요)</p>
               </div>
               <div className="space-y-3">
                 {form.options.map((option, index) => {
-                  const update = (key: keyof ProductOptionForm, value: string) => setForm({ ...form, options: form.options.map((item, i) => i === index ? { ...item, [key]: value } : item) })
+                  const update = (key: keyof ProductOptionForm, value: string) => setForm(current => ({ ...current, options: current.options.map(item => item.client_id === option.client_id ? { ...item, [key]: value } : item) }))
                   const cls = 'w-full min-w-0 border border-slate-200 dark:border-gray-600 rounded-lg px-2.5 py-2 text-xs bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-600'
                   const lab = 'block text-[10px] font-semibold text-slate-400 mb-1'
                   return (
-                    <div key={index} className="rounded-xl border border-slate-200 dark:border-gray-600 p-3 space-y-2.5">
+                    <div key={option.client_id} className="rounded-xl border border-slate-200 dark:border-gray-600 p-3 space-y-2.5">
                       <div className="flex items-center justify-between">
                         <p className="text-xs font-bold text-slate-500 dark:text-slate-300">옵션 {index + 1}</p>
-                        <button type="button" aria-label="옵션 삭제" disabled={form.options.length === 1} onClick={() => setForm({ ...form, options: form.options.filter((_, i) => i !== index) })} className="text-xs font-semibold text-red-400 disabled:text-slate-300">✕ 삭제</button>
+                        <button type="button" aria-label="옵션 삭제" disabled={form.options.length === 1} onClick={() => setForm(current => ({ ...current, options: current.options.filter(item => item.client_id !== option.client_id) }))} className="text-xs font-semibold text-red-400 disabled:text-slate-300">✕ 삭제</button>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
-                        <div><label className={lab}>옵션명 *</label><input value={option.label} onChange={e => update('label', e.target.value)} placeholder="예: 1.5kg" className={cls} /></div>
+                        <div><label className={lab}>옵션명 *</label><input value={option.label} onChange={e => update('label', e.target.value)} placeholder="직접 입력 (예: 1.4kg)" className={cls} /></div>
                         <div><label className={lab}>단위</label><select value={option.unit} onChange={e => update('unit', e.target.value)} className={cls}>{PRODUCT_OPTION_UNITS.map(u => <option key={u}>{u}</option>)}</select></div>
                       </div>
                       <div className="grid grid-cols-3 gap-2">
@@ -181,7 +186,7 @@ export function ProductFormModal({ show, onClose, editProduct, form, setForm, on
                   )
                 })}
               </div>
-              <p className="text-[11px] text-slate-400">중량은 옵션명에 입력할 수 있으며, 대표 상품값은 일반구매가가 가장 낮은 옵션을 기준으로 저장됩니다.</p>
+              <p className="text-[11px] text-slate-400">예시는 자동 입력값이 아닙니다. 각 옵션명을 직접 입력하세요. 빈 이름과 중복 이름은 저장할 수 없습니다.</p>
             </div>
           )}
 

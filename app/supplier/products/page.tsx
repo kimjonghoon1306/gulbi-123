@@ -8,7 +8,7 @@ import SupplierLayout from '../_layout/layout'
 import { useSupplierTheme } from '../_layout/theme-context'
 import SupplierAiLandingEditor from './components/AiLandingEditor'
 import SupplierProductList from './_SupplierProductList'
-import { PRODUCT_OPTION_UNITS, digitsOnly, emptyProductOption, formatWon, optionRepresentative, optionsForInsert, type ProductOptionForm } from '@/lib/product-options'
+import { PRODUCT_OPTION_UNITS, digitsOnly, emptyProductOption, formatWon, optionLabelError, optionRepresentative, optionsForInsert, type ProductOptionForm } from '@/lib/product-options'
 
 type Product = {
   id: string; name: string; description: string
@@ -149,7 +149,8 @@ function ProductsContent() {
     if (!form.name || (!form.use_options && (!form.suggested_wholesale_price || !form.suggested_retail_price))) {
       return setError('상품명, 도매 공급가, 소매 공급가는 필수입니다.')
     }
-    if (form.use_options && (!form.options.length || form.options.some(o => !o.label.trim()))) return alert('모든 옵션의 옵션명을 입력해 주세요.')
+    const labelError = form.use_options ? optionLabelError(form.options) : null
+    if (labelError) return alert(labelError)
     if (form.use_options && form.options.some(o => !o.wholesale_price.trim() || !o.member_price.trim())) return alert('모든 옵션의 도매가와 소매가를 입력해 주세요.')
     setSaving(true); setError('')
     const representative = form.use_options ? optionRepresentative(form.options, 'supplier') : null
@@ -176,7 +177,8 @@ function ProductsContent() {
     const { error: deleteError } = await supabase.from('product_options').delete().eq('product_id', productId)
     if (deleteError) { await rollbackIfNew(); setSaving(false); setError(`옵션 정리에 실패했습니다: ${deleteError.message}`); return }
     if (form.use_options) {
-      const { error: optionError } = await supabase.from('product_options').insert(optionsForInsert(productId, form.options, 'supplier'))
+      const optionsToSave = form.options.map(option => ({ ...option, label: option.label.trim() }))
+      const { error: optionError } = await supabase.from('product_options').insert(optionsForInsert(productId, optionsToSave, 'supplier'))
       if (optionError) { await rollbackIfNew(); setSaving(false); setError(`옵션 저장에 실패했습니다: ${optionError.message}`); return }
     }
     setSaving(false); setShowForm(false)
@@ -192,7 +194,7 @@ function ProductsContent() {
   const openEdit = async (p: Product) => {
     const { data: optionRows } = await supabase.from('product_options').select('*').eq('product_id', p.id).order('sort_order')
     setEditProduct(p)
-    setForm({ name: p.name, origin: p.origin || '', category_id: p.category_id || '', suggested_wholesale_price: String(p.suggested_wholesale_price), suggested_retail_price: String(p.suggested_retail_price), stock: p.stock == null ? '' : String(p.stock), unit: p.unit || 'kg', weight: (p as any).weight != null ? String((p as any).weight) : '', image_url: p.image_url || '', description: p.description || '', use_options: !!optionRows?.length, options: optionRows?.length ? optionRows.map(o => ({ label: o.label, unit: o.unit || 'kg', weight: o.weight == null ? '' : String(o.weight), wholesale_price: String(Number(o.suggested_wholesale_price) > 0 ? o.suggested_wholesale_price : (o.wholesale_price || '')), member_price: String(Number(o.suggested_retail_price) > 0 ? o.suggested_retail_price : (o.member_price || '')), retail_price: '', stock: o.stock == null ? '' : String(o.stock) })) : [emptyProductOption()] })
+    setForm({ name: p.name, origin: p.origin || '', category_id: p.category_id || '', suggested_wholesale_price: String(p.suggested_wholesale_price), suggested_retail_price: String(p.suggested_retail_price), stock: p.stock == null ? '' : String(p.stock), unit: p.unit || 'kg', weight: (p as any).weight != null ? String((p as any).weight) : '', image_url: p.image_url || '', description: p.description || '', use_options: !!optionRows?.length, options: optionRows?.length ? optionRows.map(o => ({ client_id: emptyProductOption().client_id, label: o.label, unit: o.unit || 'kg', weight: o.weight == null ? '' : String(o.weight), wholesale_price: String(Number(o.suggested_wholesale_price) > 0 ? o.suggested_wholesale_price : (o.wholesale_price || '')), member_price: String(Number(o.suggested_retail_price) > 0 ? o.suggested_retail_price : (o.member_price || '')), retail_price: '', stock: o.stock == null ? '' : String(o.stock) })) : [emptyProductOption()] })
     setShowForm(true)
   }
 
@@ -393,17 +395,17 @@ function ProductsContent() {
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     {form.options.map((option, index) => {
-                      const update = (key: keyof ProductOptionForm, value: string) => setForm(p => ({ ...p, options: p.options.map((item, i) => i === index ? { ...item, [key]: value } : item) }))
+                      const update = (key: keyof ProductOptionForm, value: string) => setForm(p => ({ ...p, options: p.options.map(item => item.client_id === option.client_id ? { ...item, [key]: value } : item) }))
                       const optionInput = { ...inputStyle, padding: '9px 10px', borderRadius: '9px', fontSize: '12px', width: '100%', minWidth: 0 }
                       const lab = { display: 'block', color: t.textMuted, fontSize: '10px', fontWeight: 700, marginBottom: '4px' } as const
                       return (
-                        <div key={index} style={{ border: `1px solid ${t.inputBorder}`, borderRadius: '11px', padding: '12px' }}>
+                        <div key={option.client_id} style={{ border: `1px solid ${t.inputBorder}`, borderRadius: '11px', padding: '12px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '9px' }}>
                             <p style={{ color: t.textMuted, fontSize: '11px', fontWeight: 800, margin: 0 }}>옵션 {index + 1}</p>
-                            <button type="button" aria-label="옵션 삭제" disabled={form.options.length === 1} onClick={() => setForm(p => ({ ...p, options: p.options.filter((_, i) => i !== index) }))} style={{ border: 'none', background: 'transparent', color: form.options.length === 1 ? t.textMuted : '#f87171', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>✕ 삭제</button>
+                            <button type="button" aria-label="옵션 삭제" disabled={form.options.length === 1} onClick={() => setForm(p => ({ ...p, options: p.options.filter(item => item.client_id !== option.client_id) }))} style={{ border: 'none', background: 'transparent', color: form.options.length === 1 ? t.textMuted : '#f87171', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>✕ 삭제</button>
                           </div>
                           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
-                            <div><label style={lab}>옵션명 *</label><input value={option.label} onChange={e => update('label', e.target.value)} placeholder="예: 1.5kg" style={optionInput} /></div>
+                            <div><label style={lab}>옵션명 *</label><input value={option.label} onChange={e => update('label', e.target.value)} placeholder="직접 입력 (예: 1.4kg)" style={optionInput} /></div>
                             <div><label style={lab}>단위</label><select value={option.unit} onChange={e => update('unit', e.target.value)} style={optionInput}>{PRODUCT_OPTION_UNITS.map(u => <option key={u}>{u}</option>)}</select></div>
                           </div>
                           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
@@ -415,7 +417,7 @@ function ProductsContent() {
                       )
                     })}
                   </div>
-                  <p style={{ color: t.textMuted, fontSize: '11px', margin: '10px 0 0' }}>최종 일반구매가는 관리자 승인 시 확정됩니다.</p>
+                  <p style={{ color: t.textMuted, fontSize: '11px', margin: '10px 0 0' }}>예시는 자동 입력값이 아닙니다. 옵션명을 직접 입력해야 하며 빈 이름과 중복 이름은 저장할 수 없습니다.</p>
                 </div>
               )}
 
