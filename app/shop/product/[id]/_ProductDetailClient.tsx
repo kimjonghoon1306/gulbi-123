@@ -19,6 +19,18 @@ import { useParams, useRouter } from 'next/navigation'
 const KOREAN_NAMES = ['김민준','이서연','박지훈','최유나','정성호','강미래','윤도현','임하은','신준서','오채원','한동욱','배수아','조민서','문지우','권나연','장현우','류소희','노태양','심예린','구민혁','엄지은','변성민','남하린','황준혁','송아영']
 const ACTIONS = ['구매했습니다','장바구니에 담았습니다','관심 상품으로 저장했습니다','구매 문의를 했습니다','리뷰를 작성했습니다']
 
+type ProductOption = {
+  id: string
+  label: string
+  unit: string | null
+  weight: number | null
+  wholesale_price: number
+  member_price: number
+  retail_price: number
+  stock: number | null
+  sort_order: number
+}
+
 export default function ProductDetailClient({ initialProduct }: { initialProduct: any }) {
   const { id } = useParams()
   const router = useRouter()
@@ -31,6 +43,8 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
   const [descriptionHtml, setDescriptionHtml] = useState<string>('')
   const [descriptionLoading, setDescriptionLoading] = useState(true)
   const [quantity, setQuantity] = useState(1)
+  const [options, setOptions] = useState<ProductOption[]>([])
+  const [selectedOption, setSelectedOption] = useState<ProductOption | null>(null)
   const [memberType, setMemberType] = useState('일반')
   const [user, setUser] = useState<any>(null)
   const [dark, setDark] = useState(false)
@@ -199,6 +213,20 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
     setDescriptionLoading(false)
   }
 
+  const fetchOptions = async () => {
+    const { data, error } = await supabase.from('product_options').select('id,label,unit,weight,wholesale_price,member_price,retail_price,stock,sort_order')
+      .eq('product_id', id).eq('is_active', true).order('sort_order')
+    if (error) {
+      console.error('[product options] failed', error)
+      setOptions([])
+      setSelectedOption(null)
+      return
+    }
+    const list = (data || []) as ProductOption[]
+    setOptions(list)
+    setSelectedOption(list[0] || null)
+  }
+
   const [related, setRelated] = useState<any[]>([])
   const [recentProducts, setRecentProducts] = useState<any[]>([])
 
@@ -317,6 +345,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
   useEffect(() => {
     fetchProduct()
     fetchDescription()
+    fetchOptions()
     fetchRecentProducts()
     checkUser()
     fetchReviews()
@@ -331,7 +360,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
 
   const getPrice = () => {
     if (!product) return 0
-    return priceFor(product, memberType)
+    return priceFor(selectedOption || product, memberType)
   }
 
   const getPriceLabel = () => {
@@ -381,6 +410,8 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
 
   const totalPrice = getPrice() * quantity
   const shipping = product ? calculateProductShipping(product, getPrice(), quantity) : null
+  const currentSaleUnit = selectedOption || product
+  const currentStock = currentSaleUnit.stock
 
   const defaultCheckoutAddress = () => {
     const saved = addresses.find((a: any) => a.is_default) || addresses[0]
@@ -482,13 +513,13 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
               ) : (
                 <div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'80px'}}>🧺</div>
               )}
-              {product.stock === 0 && (
+              {currentStock === 0 && (
                 <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.5)',display:'flex',alignItems:'center',justifyContent:'center'}}>
                   <span style={{background:'rgba(0,0,0,0.8)',color:'white',fontSize:'14px',fontWeight:700,padding:'10px 24px',borderRadius:'100px'}}>품절</span>
                 </div>
               )}
               <div style={{position:'absolute',top:'12px',left:'12px',display:'flex',flexDirection:'column',gap:'5px'}}>
-                {product.stock > 0 && product.stock < 20 && (
+                {currentStock != null && currentStock > 0 && currentStock < 20 && (
                   <span style={{background:'rgba(239,68,68,0.9)',color:'white',fontSize:'10px',fontWeight:700,padding:'3px 8px',borderRadius:'100px'}}>품절임박</span>
                 )}
                 <span style={{background:'rgba(5,150,105,0.9)',color:'white',fontSize:'10px',fontWeight:700,padding:'3px 8px',borderRadius:'100px'}}>{shippingPolicyLabel(product)}</span>
@@ -552,6 +583,26 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
               ))}
             </div>
 
+            {options.length > 0 && (
+              <div style={{marginBottom:'14px'}}>
+                <p style={{fontSize:'12px',fontWeight:800,color:D.text,margin:'0 0 9px'}}>옵션 선택</p>
+                <div style={{display:'flex',flexWrap:'wrap',gap:'8px'}}>
+                  {options.map(option => {
+                    const selected = selectedOption?.id === option.id
+                    const soldOut = option.stock === 0
+                    return (
+                      <button key={option.id} type="button" disabled={soldOut}
+                        onClick={() => { setSelectedOption(option); setQuantity(1) }}
+                        style={{minHeight:'48px',padding:'10px 14px',borderRadius:'13px',border:`2px solid ${selected ? D.accent : D.border}`,background:selected ? (dark?'rgba(74,222,128,0.14)':'#ecfdf5') : soldOut ? D.input : D.card,color:soldOut ? D.sub : D.text,cursor:soldOut?'not-allowed':'pointer',opacity:soldOut?0.65:1,textAlign:'left',transition:'all .2s',flex:'1 1 135px',maxWidth:'220px'}}>
+                        <span style={{display:'block',fontSize:'13px',fontWeight:900,lineHeight:1.3}}>{option.label}{soldOut ? ' · 품절' : ''}</span>
+                        <span style={{display:'block',fontSize:'11px',fontWeight:700,color:selected?D.gtext:D.sub,marginTop:'3px'}}>{Number(option.retail_price).toLocaleString()}원</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* 가격 */}
             <div style={{background:dark?'#15391f':'#fdf2f8',borderRadius:'18px',padding:'18px 20px',marginBottom:'16px',border:`1px solid ${dark?'rgba(255,255,255,0.06)':'#fce7f3'}`}}>
               <p style={{fontSize:'11px',fontWeight:700,color:getPriceColor(),marginBottom:'4px',letterSpacing:'0.5px'}}>
@@ -561,15 +612,15 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
                 {getPrice().toLocaleString()}<span style={{fontSize:'16px',fontWeight:600,color:D.sub}}>원</span>
               </p>
               <div style={{display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap'}}>
-                <p style={{fontSize:'12px',color:D.sub,margin:0}}>/{product.unit}</p>
-                {weightLabel(product) && (
-                  <span style={{fontSize:'12px',fontWeight:800,color:'#059669',background:dark?'rgba(16,185,129,0.14)':'#ecfdf5',padding:'3px 10px',borderRadius:'999px'}}>중량 {weightLabel(product)}</span>
+                <p style={{fontSize:'12px',color:D.sub,margin:0}}>/{currentSaleUnit.unit}</p>
+                {weightLabel(currentSaleUnit) && (
+                  <span style={{fontSize:'12px',fontWeight:800,color:'#059669',background:dark?'rgba(16,185,129,0.14)':'#ecfdf5',padding:'3px 10px',borderRadius:'999px'}}>중량 {weightLabel(currentSaleUnit)}</span>
                 )}
               </div>
               {memberType === '일반' && (
                 <div style={{marginTop:'10px',padding:'8px 12px',background:dark?'rgba(255,255,255,0.04)':'#f8fafc',borderRadius:'10px',display:'flex',flexDirection:'column',gap:'4px'}}>
-                  <p style={{fontSize:'11px',color:D.gtext,fontWeight:600,margin:0}}>🏪 소매 공급가 {product.member_price.toLocaleString()}원 — 소매회원 전용</p>
-                  <p style={{fontSize:'11px',color:D.gtext,fontWeight:600,margin:0}}>🏭 도매 공급가 {product.wholesale_price.toLocaleString()}원 — 도매회원 전용</p>
+                  <p style={{fontSize:'11px',color:D.gtext,fontWeight:600,margin:0}}>🏪 소매 공급가 {currentSaleUnit.member_price.toLocaleString()}원 — 소매회원 전용</p>
+                  <p style={{fontSize:'11px',color:D.gtext,fontWeight:600,margin:0}}>🏭 도매 공급가 {currentSaleUnit.wholesale_price.toLocaleString()}원 — 도매회원 전용</p>
                 </div>
               )}
               {shipping && <div style={{marginTop:'10px',padding:'10px 12px',borderRadius:'10px',background:dark?'rgba(16,185,129,0.10)':'#ecfdf5',border:`1px solid ${dark?'rgba(52,211,153,0.2)':'#a7f3d0'}`}}><p style={{fontSize:'12px',fontWeight:800,color:D.gtext,margin:0}}>🚚 {shippingPolicyLabel(product)}</p><p style={{fontSize:'11px',color:D.sub,margin:'4px 0 0'}}>{shipping.reason==='threshold_met'?`현재 이 상품 합계 ${shipping.productAmount.toLocaleString()}원으로 배송비 ${shipping.discount.toLocaleString()}원 할인 적용`:shipping.reason==='paid'&&shipping.freeThreshold?`현재 이 상품 합계 기준 · ${shipping.freeThreshold.toLocaleString()}원 이상 구매 시 무료배송`:shipping.reason==='paid'?'구매금액과 관계없이 상품별 배송비가 적용됩니다.':'결제 시 배송비가 추가되지 않습니다.'}</p></div>}
@@ -577,20 +628,20 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
 
             {/* 재고 */}
             <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'16px'}}>
-              <div style={{width:'8px',height:'8px',borderRadius:'50%',background:(product.stock == null || product.stock > 0) ? '#22c55e' : '#ef4444',animation:(product.stock == null || product.stock > 0) ? 'pulse 1.6s ease-in-out infinite' : 'none'}} />
+              <div style={{width:'8px',height:'8px',borderRadius:'50%',background:(currentStock == null || currentStock > 0) ? '#22c55e' : '#ef4444',animation:(currentStock == null || currentStock > 0) ? 'pulse 1.6s ease-in-out infinite' : 'none'}} />
               <p style={{fontSize:'13px',color:D.sub,fontWeight:500}}>
-                {product.stock == null ? '재고 충분' : product.stock > 0 ? `재고 ${product.stock} 남음` : '현재 품절입니다'}
+                {currentStock == null ? '재고 충분' : currentStock > 0 ? `재고 ${currentStock} 남음` : '현재 품절입니다'}
               </p>
             </div>
 
             {/* 수량 */}
-            {(product.stock == null || product.stock > 0) && (
+            {(currentStock == null || currentStock > 0) && (
               <div style={{display:'flex',alignItems:'center',gap:'14px',marginBottom:'20px'}}>
                 <p style={{fontSize:'13px',color:D.sub,fontWeight:600,flexShrink:0}}>수량</p>
                 <div style={{display:'flex',alignItems:'center',background:D.input,borderRadius:'12px',overflow:'hidden'}}>
                   <button onClick={() => setQuantity(Math.max(1,quantity-1))} style={{width:'40px',height:'40px',background:'none',border:'none',fontSize:'18px',cursor:'pointer',color:D.text,display:'flex',alignItems:'center',justifyContent:'center'}}>−</button>
                   <span style={{width:'40px',textAlign:'center',fontSize:'15px',fontWeight:700,color:D.text}}>{quantity}</span>
-                  <button onClick={() => setQuantity(Math.min(product.stock ?? 9999,quantity+1))} style={{width:'40px',height:'40px',background:'none',border:'none',fontSize:'18px',cursor:'pointer',color:D.text,display:'flex',alignItems:'center',justifyContent:'center'}}>+</button>
+                  <button onClick={() => setQuantity(Math.min(currentStock ?? 9999,quantity+1))} style={{width:'40px',height:'40px',background:'none',border:'none',fontSize:'18px',cursor:'pointer',color:D.text,display:'flex',alignItems:'center',justifyContent:'center'}}>+</button>
                 </div>
                 <p style={{fontSize:'15px',fontWeight:900,color:D.gtext,marginLeft:'auto'}}>
                   = {totalPrice.toLocaleString()}원
@@ -608,7 +659,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
                   회원가입
                 </Link>
               </div>
-            ) : product.stock === 0 ? (
+            ) : currentStock === 0 ? (
               <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
                 <button disabled style={{width:'100%',padding:'16px',borderRadius:'14px',background:D.input,color:D.sub,fontSize:'15px',fontWeight:700,border:'none',cursor:'not-allowed'}}>😢 품절되었어요</button>
                 {restockDone ? (
@@ -761,7 +812,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
           </div>
           {!user ? (
             <Link href={loginHref} style={{flex:1,textAlign:'center',padding:'15px',borderRadius:'14px',background:'linear-gradient(135deg,#15803d,#16a34a)',color:'white',fontWeight:900,fontSize:'15px',textDecoration:'none'}}>로그인 후 구매</Link>
-          ) : product.stock === 0 ? (
+          ) : currentStock === 0 ? (
             <button disabled style={{flex:1,padding:'15px',borderRadius:'14px',background:D.input,color:D.sub,fontSize:'15px',fontWeight:700,border:'none'}}>품절</button>
           ) : (
             <button onClick={() => { const delivery = defaultCheckoutAddress(); setOrderDone(false); setOrderForm({ address: delivery.address, recipient: delivery.recipient, phone: delivery.phone, note: '', payment_method: '가상계좌', evidence: '현금영수증', evidenceContact: '' }); setShowOrderForm(true) }}
