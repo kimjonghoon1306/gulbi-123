@@ -238,26 +238,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
       return
     }
     const list = (data || []) as ProductOption[]
-    // 옵션이 있는 상품이면, 메인 상품(본품)도 맨 앞 선택지로 함께 노출한다.
-    //   메인 가격·중량은 products 값을 그대로 사용(등급별 가격/주문 로직은 selectedOption 그대로 탐).
-    //   옵션이 없는 상품은 이 블록을 지나지 않아 기존 동작 그대로 유지.
-    if (list.length > 0 && product) {
-      const base: ProductOption = {
-        id: `__base__${product.id}`,   // 옵션이 아닌 본품임을 표시(주문 시 option_id로 저장 안 함)
-        label: weightLabel(product) || '기본',
-        unit: product.unit ?? null,
-        weight: product.weight ?? null,
-        wholesale_price: product.wholesale_price,
-        member_price: product.member_price,
-        retail_price: product.retail_price,
-        stock: product.stock ?? null,
-        sort_order: -1,
-      }
-      const merged = [base, ...list]
-      setOptions(merged)
-      setSelectedOption(merged[0])
-      return
-    }
+    // 등록 시 넣은 옵션 그대로 노출. 맨 처음 넣은 옵션(sort_order 0)이 기본 선택(메인).
     setOptions(list)
     setSelectedOption(list[0] || null)
   }
@@ -624,17 +605,22 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
 
             {options.length > 0 && (
               <div style={{marginBottom:'14px'}}>
-                <p style={{fontSize:'12px',fontWeight:800,color:D.text,margin:'0 0 9px'}}>옵션 선택</p>
-                <div style={{display:'flex',flexWrap:'wrap',gap:'8px'}}>
+                <p style={{fontSize:'13px',fontWeight:800,color:D.text,margin:'0 0 10px'}}>옵션 선택 <span style={{fontSize:'11px',fontWeight:600,color:D.sub}}>({options.length}종)</span></p>
+                <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
                   {options.map(option => {
                     const selected = selectedOption?.id === option.id
                     const soldOut = option.stock === 0
+                    // 현재 회원 등급 기준 가격(일반/소매/도매)을 옵션마다 표시
+                    const optPrice = priceFor(option, memberType)
                     return (
                       <button key={option.id} type="button" disabled={soldOut}
                         onClick={() => { setSelectedOption(option); setQuantity(1) }}
-                        style={{minHeight:'48px',padding:'10px 14px',borderRadius:'13px',border:`2px solid ${selected ? D.accent : D.border}`,background:selected ? (dark?'rgba(74,222,128,0.14)':'#ecfdf5') : soldOut ? D.input : D.card,color:soldOut ? D.sub : D.text,cursor:soldOut?'not-allowed':'pointer',opacity:soldOut?0.65:1,textAlign:'left',transition:'all .2s',flex:'1 1 135px',maxWidth:'220px'}}>
-                        <span style={{display:'block',fontSize:'13px',fontWeight:900,lineHeight:1.3}}>{option.label}{soldOut ? ' · 품절' : ''}</span>
-                        <span style={{display:'block',fontSize:'11px',fontWeight:700,color:selected?D.gtext:D.sub,marginTop:'3px'}}>{Number(option.retail_price).toLocaleString()}원</span>
+                        style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'10px',width:'100%',minHeight:'54px',padding:'12px 16px',borderRadius:'14px',border:`2px solid ${selected ? D.accent : D.border}`,background:selected ? (dark?'rgba(74,222,128,0.12)':'#f0fdf4') : soldOut ? D.input : D.card,color:soldOut ? D.sub : D.text,cursor:soldOut?'not-allowed':'pointer',opacity:soldOut?0.55:1,textAlign:'left',transition:'all .18s'}}>
+                        <span style={{display:'flex',alignItems:'center',gap:'8px',fontSize:'15px',fontWeight:800,lineHeight:1.2}}>
+                          {selected && <span style={{color:D.accent,fontSize:'15px'}}>✓</span>}
+                          {option.label}{soldOut && <span style={{fontSize:'12px',fontWeight:700,color:D.sub}}>· 품절</span>}
+                        </span>
+                        <span style={{fontSize:'15px',fontWeight:900,color:selected?D.accent:D.text,whiteSpace:'nowrap'}}>{Number(optPrice).toLocaleString()}<span style={{fontSize:'12px',fontWeight:600,color:D.sub}}>원</span></span>
                       </button>
                     )
                   })}
