@@ -605,8 +605,6 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
             </div>
 
             {options.length > 0 && (() => {
-              const prices = options.map(o => priceFor(o, memberType))
-              const minPrice = Math.min(...prices)
               const selIdx = options.findIndex(o => o.id === selectedOption?.id)
               const selPrice = selectedOption ? priceFor(selectedOption, memberType) : 0
               return (
@@ -642,7 +640,6 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
                       const selected = selectedOption?.id === option.id
                       const soldOut = option.stock === 0
                       const optPrice = priceFor(option, memberType)
-                      const isMin = optPrice === minPrice && !soldOut
                       return (
                         <button key={option.id} type="button" disabled={soldOut}
                           onClick={() => { setSelectedOption(option); setQuantity(1); setOptionsOpen(false) }}
@@ -650,7 +647,6 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
                           <span style={{display:'flex',alignItems:'center',gap:'10px',minWidth:0}}>
                             <span style={{flexShrink:0,width:'22px',height:'22px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'11px',fontWeight:900,background:selected?D.accent:(dark?'rgba(255,255,255,0.08)':'#eef2f7'),color:selected?'#fff':D.sub}}>{selected ? '✓' : idx+1}</span>
                             <span style={{fontSize:'15px',fontWeight:800,lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{option.label}</span>
-                            {isMin && options.length>1 && <span style={{flexShrink:0,fontSize:'10px',fontWeight:800,color:'#f43f5e',background:dark?'rgba(244,63,94,0.15)':'#fff1f2',padding:'2px 7px',borderRadius:'999px'}}>최저가</span>}
                             {soldOut && <span style={{fontSize:'12px',fontWeight:700,color:D.sub}}>· 품절</span>}
                           </span>
                           <span style={{fontSize:'16px',fontWeight:900,color:selected?D.accent:D.text,whiteSpace:'nowrap'}}>{Number(optPrice).toLocaleString()}<span style={{fontSize:'12px',fontWeight:600,color:D.sub}}>원</span></span>
