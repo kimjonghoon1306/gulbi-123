@@ -16,10 +16,10 @@ export const metadata: Metadata = {
     siteName: '온종일팜 관리시스템',
     images: [
       {
-        url: 'https://app.yuanfnb.com/og-image.png',
+        url: 'https://app.yuanfnb.com/og-image.png?v=20260821',
         width: 1200,
         height: 630,
-        alt: '온종일팜 관리시스템 — 농축수산물 도매 전용 솔루션',
+        alt: '온종일팜 — 산지직송 농축수산물',
       },
     ],
     locale: 'ko_KR',
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: '온종일팜 관리시스템 — 농축수산물 도매를 스마트하게',
     description: '주문·재고·정산·세금계산서까지. 도매에 필요한 모든 것을 한 곳에서.',
-    images: ['https://app.yuanfnb.com/og-image.png'],
+    images: ['https://app.yuanfnb.com/og-image.png?v=20260821'],
   },
 }
 
