@@ -171,11 +171,13 @@ function ProductsContent() {
     ) : await supabase.from('products').insert(data).select('id').single()
     if (result.error) { setSaving(false); setError(`상품 저장에 실패했습니다: ${result.error.message}`); return }
     const productId = result.data.id
+    // 옵션 저장 실패 시, 방금 새로 만든 상품은 롤백(삭제)해 중복 상품 생성을 막는다.
+    const rollbackIfNew = async () => { if (!editProduct) await supabase.from('products').delete().eq('id', productId) }
     const { error: deleteError } = await supabase.from('product_options').delete().eq('product_id', productId)
-    if (deleteError) { setSaving(false); setError(`옵션 정리에 실패했습니다: ${deleteError.message}`); return }
+    if (deleteError) { await rollbackIfNew(); setSaving(false); setError(`옵션 정리에 실패했습니다: ${deleteError.message}`); return }
     if (form.use_options) {
       const { error: optionError } = await supabase.from('product_options').insert(optionsForInsert(productId, form.options, 'supplier'))
-      if (optionError) { setSaving(false); setError(`옵션 저장에 실패했습니다: ${optionError.message}`); return }
+      if (optionError) { await rollbackIfNew(); setSaving(false); setError(`옵션 저장에 실패했습니다: ${optionError.message}`); return }
     }
     setSaving(false); setShowForm(false)
     setOkMsg(
