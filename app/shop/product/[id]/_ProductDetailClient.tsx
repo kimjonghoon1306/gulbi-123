@@ -617,19 +617,19 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
                   <span style={{fontSize:'11px',fontWeight:600,color:D.sub}}>탭해서 골라보세요</span>
                 </div>
 
-                {/* 드롭다운 헤더: 선택된 구성만 보임 */}
-                <button type="button" onClick={()=>setOptionsOpen(v=>!v)}
-                  style={{position:'relative',display:'flex',alignItems:'center',justifyContent:'space-between',gap:'10px',width:'100%',minHeight:'60px',padding:'14px 16px',borderRadius:'15px',border:`2px solid ${optionsOpen?D.accent:D.border}`,background:D.card,color:D.text,cursor:'pointer',textAlign:'left',transition:'all .18s',boxShadow:optionsOpen?`0 4px 14px ${dark?'rgba(74,222,128,0.16)':'rgba(22,163,74,0.12)'}`:'none'}}>
+                {/* 드롭다운 헤더: 선택된 구성만 보임 (닫혀있으면 깜빡여서 '누르세요' 유도) */}
+                <button type="button" onClick={()=>setOptionsOpen(v=>!v)} className={optionsOpen?'':'opt-dd-hint'}
+                  style={{position:'relative',display:'flex',alignItems:'center',justifyContent:'space-between',gap:'10px',width:'100%',minHeight:'60px',padding:'14px 16px',borderRadius:'15px',border:`2px solid ${D.accent}`,background:D.card,color:D.text,cursor:'pointer',textAlign:'left',transition:'all .18s'}}>
                   <span style={{display:'flex',alignItems:'center',gap:'10px',minWidth:0}}>
                     <span style={{flexShrink:0,width:'24px',height:'24px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'12px',fontWeight:900,background:D.accent,color:'#fff'}}>✓</span>
                     <span style={{display:'flex',flexDirection:'column',minWidth:0}}>
                       <span style={{fontSize:'15px',fontWeight:800,lineHeight:1.3,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{selectedOption?.label || '구성을 선택하세요'}</span>
-                      <span style={{fontSize:'11px',fontWeight:600,color:D.sub}}>총 {options.length}가지 중 {selIdx>=0?selIdx+1:'-'}번째</span>
+                      <span style={{fontSize:'11px',fontWeight:700,color:D.accent}}>👆 눌러서 {options.length}가지 구성 보기</span>
                     </span>
                   </span>
                   <span style={{display:'flex',alignItems:'center',gap:'8px',flexShrink:0}}>
                     <span style={{fontSize:'17px',fontWeight:900,color:D.accent,whiteSpace:'nowrap'}}>{Number(selPrice).toLocaleString()}<span style={{fontSize:'12px',fontWeight:600,color:D.sub}}>원</span></span>
-                    <span style={{fontSize:'13px',color:D.sub,transform:optionsOpen?'rotate(180deg)':'rotate(0)',transition:'transform .2s'}}>▼</span>
+                    <span className={optionsOpen?'':'opt-dd-arrow'} style={{width:'26px',height:'26px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',background:D.accent,color:'#fff',fontSize:'12px',fontWeight:900,transform:optionsOpen?'rotate(180deg)':'rotate(0)',transition:'transform .2s'}}>▼</span>
                   </span>
                 </button>
 
@@ -655,8 +655,10 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
                     })}
                   </div>
                 )}
-                <p style={{fontSize:'11.5px',color:D.sub,margin:'10px 2px 0',display:'flex',alignItems:'center',gap:'5px'}}>
-                  <span>✨</span> 더 다양한 구성으로 준비했어요. 원하는 걸 골라 담아보세요!
+                <p style={{fontSize:'12px',fontWeight:700,color:optionsOpen?D.sub:D.accent,margin:'10px 2px 0',display:'flex',alignItems:'center',gap:'5px'}}>
+                  {optionsOpen
+                    ? <><span>👇</span> 아래에서 원하는 무게·구성을 골라주세요</>
+                    : <><span>👆</span> 위 칸을 누르면 다른 무게·구성이 더 있어요!</>}
                 </p>
               </div>
               )
@@ -911,6 +913,10 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
         @keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
         @keyframes slideUpSheet{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:translateY(0)}}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+        @keyframes optHintGlow{0%,100%{box-shadow:0 0 0 0 rgba(22,163,74,0)}50%{box-shadow:0 0 0 4px rgba(22,163,74,0.18)}}
+        @keyframes optArrowBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
+        .opt-dd-hint{animation:optHintGlow 1.4s ease-in-out infinite}
+        .opt-dd-arrow{animation:optArrowBounce 1.1s ease-in-out infinite}
         @media(max-width:640px){.product-grid{grid-template-columns:1fr!important;gap:24px!important}}
 
         /* 모바일: 바텀시트 */
