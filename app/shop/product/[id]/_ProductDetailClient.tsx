@@ -31,6 +31,18 @@ type ProductOption = {
   sort_order: number
 }
 
+function descriptionWithOptionPrice(html: string, option: ProductOption | null): string {
+  const sanitized = sanitizeHtml(html)
+  if (!option || typeof document === 'undefined' || !sanitized) return sanitized
+  const template = document.createElement('template')
+  template.innerHTML = sanitized
+  const formattedPrice = Number(option.retail_price).toLocaleString('ko-KR')
+  template.content.querySelectorAll<HTMLElement>('.opt-retail-price').forEach(element => {
+    element.textContent = formattedPrice
+  })
+  return template.innerHTML
+}
+
 export default function ProductDetailClient({ initialProduct }: { initialProduct: any }) {
   const { id } = useParams()
   const router = useRouter()
@@ -414,6 +426,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
   const shipping = product ? calculateProductShipping(product, getPrice(), quantity) : null
   const currentSaleUnit = selectedOption || product
   const currentStock = currentSaleUnit.stock
+  const renderedDescriptionHtml = descriptionWithOptionPrice(descriptionHtml, selectedOption)
 
   const defaultCheckoutAddress = () => {
     const saved = addresses.find((a: any) => a.is_default) || addresses[0]
@@ -737,7 +750,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
                   <div style={{height:'220px',borderRadius:'16px',background:dark?'#15391f':'#f1f5f9'}} />
                 </div>
               ) : (
-                <div className="product-description" dangerouslySetInnerHTML={{__html: sanitizeHtml(descriptionHtml)}} style={{lineHeight:1.8, userSelect:'none', contentVisibility:'auto', containIntrinsicSize:'1px 1200px'}} />
+                <div className="product-description" dangerouslySetInnerHTML={{__html: renderedDescriptionHtml}} style={{lineHeight:1.8, userSelect:'none', contentVisibility:'auto', containIntrinsicSize:'1px 1200px'}} />
               )}
             </div>
           </div>

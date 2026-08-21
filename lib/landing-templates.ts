@@ -292,6 +292,10 @@ function comma(n: number): string {
   return (n || 0).toLocaleString('ko-KR')
 }
 
+function retailPriceMarker(price: number): string {
+  return `<span class="opt-retail-price" data-base-price="${price}">${comma(price)}</span>`
+}
+
 function imgTag(url: string, alt: string, style: string): string {
   return url ? `<img src="${url}" alt="${esc(alt)}" style="${style}" />` : ''
 }
@@ -793,7 +797,7 @@ function renderCta(d: LandingData, p: Preset): string {
   <div style="position:relative;z-index:2;">
     <p ${ce('cta.label')} style="font-family:${F.serif};font-size:11px;letter-spacing:0.4em;color:${C.light};margin:0 0 20px;text-transform:uppercase;">TODAY ONLY</p>
     <h2 ${ce('cta.title')} style="font-family:${F.serif};font-weight:300;font-size:32px;line-height:1.2;margin:0 0 36px;"><em style="font-style:normal;font-weight:700;color:${C.light};">오늘의 가격.</em></h2>
-    <p style="font-family:${F.serif};font-size:clamp(36px,9vw,48px);font-weight:700;color:${C.light};letter-spacing:-0.02em;margin:0 0 10px;line-height:1;"><span ${ce('cta.price')}>${comma(d.price.retail)}</span><span style="font-size:18px;margin-left:4px;">원</span></p>
+    <p style="font-family:${F.serif};font-size:clamp(36px,9vw,48px);font-weight:700;color:${C.light};letter-spacing:-0.02em;margin:0 0 10px;line-height:1;"><span ${ce('cta.price')}>${retailPriceMarker(d.price.retail)}</span><span style="font-size:18px;margin-left:4px;">원</span></p>
     <p ${ce('cta.unit')} style="font-family:${F.deco};font-size:13px;color:${C.light};opacity:0.7;margin:0 0 40px;">/ ${esc(d.price.unit)}</p>
     <div ${ce('cta.button')} style="display:inline-block;background:${C.light};color:${C.ink};padding:18px 52px;font-family:${F.serif};font-weight:700;font-size:15px;letter-spacing:0.3em;border:none;cursor:text;">주&nbsp;&nbsp;문&nbsp;&nbsp;하&nbsp;&nbsp;기</div>
     <p ${ce('cta.note')} style="margin-top:24px;font-size:11px;letter-spacing:0.1em;opacity:0.5;">무료 배송 · 당일 출고 · 7일 이내 교환</p>
@@ -1036,7 +1040,7 @@ ${gallery.length ? `<section style="padding:8px 12px 40px;">
 
 <section style="padding:8px 22px 56px;text-align:center;">
   <div style="background:#1a1a2e;border-radius:32px;padding:44px 24px;color:#fff;">
-    <div style="font-size:clamp(40px,11vw,68px);font-weight:900;line-height:1;">${comma(d.price.retail)}<span style="font-size:0.3em;margin-left:4px;">원</span></div>
+    <div style="font-size:clamp(40px,11vw,68px);font-weight:900;line-height:1;">${retailPriceMarker(d.price.retail)}<span style="font-size:0.3em;margin-left:4px;">원</span></div>
     <p style="opacity:0.6;font-size:13px;margin:8px 0 24px;">/ ${esc(d.price.unit)}</p>
     <div ${ce('cta.button')} style="width:100%;max-width:340px;margin:0 auto;background:linear-gradient(135deg,${acc},${acc2});color:#fff;border:none;border-radius:999px;padding:18px;font-size:16px;font-weight:900;cursor:text;box-shadow:0 10px 30px ${acc}66;">지금 담기 🛒</div>
     <p style="opacity:0.5;font-size:12px;margin:18px 0 0;">무료배송 · 당일출고 · 7일 교환</p>
@@ -1113,7 +1117,7 @@ ${d.sectionImages?.storage ? bleed(d.sectionImages.storage) : ''}
 ${gallery.length ? `<section style="padding:2px 0;"><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:2px;">${gallery.map(src=>`<img src="${src}" alt="${esc(d.productName)}" style="width:100%;aspect-ratio:3/4;object-fit:cover;display:block;" />`).join('')}</div></section>` : ''}
 
 <section style="padding:72px 28px;text-align:center;border-top:1px solid #eee;">
-  <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(38px,10vw,64px);font-weight:500;line-height:1;margin:0 0 8px;">${comma(d.price.retail)}<span style="font-size:0.3em;margin-left:4px;">원</span></div>
+  <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(38px,10vw,64px);font-weight:500;line-height:1;margin:0 0 8px;">${retailPriceMarker(d.price.retail)}<span style="font-size:0.3em;margin-left:4px;">원</span></div>
   <p style="font-size:12px;color:#aaa;margin:0 0 28px;">/ ${esc(d.price.unit)}</p>
   <div ${ce('cta.button')} style="display:inline-block;background:#222;color:#fff;border:none;padding:17px 56px;font-size:13px;font-weight:600;letter-spacing:0.2em;cursor:text;">ADD TO CART</div>
   <p style="font-size:11px;color:#bbb;margin:22px 0 0;letter-spacing:0.05em;">FREE SHIPPING · SAME-DAY · 7-DAY RETURN</p>
@@ -1209,7 +1213,7 @@ ${gallery.length > 0 ? `
 </section>
 
 <section style="padding:64px 24px;text-align:center;background:#1a1a1a;color:#faf9f7;">
-  <div style="font-size:clamp(40px,11vw,72px);font-weight:900;line-height:1;color:${C.light};">${comma(d.price.retail)}<span style="font-size:0.26em;margin-left:4px;">원</span></div>
+  <div style="font-size:clamp(40px,11vw,72px);font-weight:900;line-height:1;color:${C.light};">${retailPriceMarker(d.price.retail)}<span style="font-size:0.26em;margin-left:4px;">원</span></div>
   <p style="font-size:12px;opacity:0.5;margin:8px 0 28px;">/ ${esc(d.price.unit)}</p>
   <div ${ce('cta.button')} style="display:inline-block;font-family:'Pretendard Variable',sans-serif;background:${C.light};color:#1a1a1a;padding:16px 48px;border:none;border-radius:2px;font-size:15px;font-weight:800;letter-spacing:0.2em;cursor:text;">주문하기</div>
   <p ${ce('cta.note')} style="font-size:11px;opacity:0.4;margin:20px 0 0;">무료배송 · 당일출고 · 7일이내 교환</p>
@@ -1298,7 +1302,7 @@ ${gallery.length > 0 ? `
 
 <section style="padding:64px 24px;text-align:center;border-top:1px solid #26241f;">
   ${rule}
-  <div style="font-size:clamp(40px,11vw,72px);font-weight:700;line-height:1;color:${gold};margin:24px 0 8px;">${comma(d.price.retail)}<span style="font-size:0.26em;margin-left:4px;">원</span></div>
+  <div style="font-size:clamp(40px,11vw,72px);font-weight:700;line-height:1;color:${gold};margin:24px 0 8px;">${retailPriceMarker(d.price.retail)}<span style="font-size:0.26em;margin-left:4px;">원</span></div>
   <p style="font-size:12px;color:#8a8272;margin:0 0 28px;">/ ${esc(d.price.unit)}</p>
   <div ${ce('cta.button')} style="display:inline-block;font-family:'Pretendard Variable',sans-serif;background:${gold};color:#0b0b0d;padding:16px 52px;border:none;font-size:14px;font-weight:800;letter-spacing:0.25em;cursor:text;">ORDER</div>
   <p style="font-size:11px;color:#6a6252;margin:22px 0 0;">무료배송 · 당일출고 · 7일이내 교환</p>
@@ -1460,7 +1464,7 @@ ${d.faq && d.faq.length > 0 ? `
 
 <section style="background:${C.ink};color:${C.cream};padding:60px 20px;text-align:center;">
   <p style="font-size:11px;opacity:0.5;letter-spacing:0.15em;margin:0 0 8px;">TODAY ONLY</p>
-  <div style="font-size:clamp(40px,10vw,68px);font-weight:900;line-height:1;margin:0 0 8px;color:${C.light};">${comma(d.price.retail)}<span style="font-size:0.26em;margin-left:4px;">원</span></div>
+  <div style="font-size:clamp(40px,10vw,68px);font-weight:900;line-height:1;margin:0 0 8px;color:${C.light};">${retailPriceMarker(d.price.retail)}<span style="font-size:0.26em;margin-left:4px;">원</span></div>
   <p style="font-size:12px;opacity:0.5;margin:0 0 28px;">/ ${esc(d.price.unit)}</p>
   <div ${ce('cta.button')} style="display:block;width:100%;max-width:320px;margin:0 auto 16px;background:${C.light};color:${C.ink};padding:16px;border-radius:12px;font-size:15px;font-weight:900;border:none;cursor:text;letter-spacing:0.15em;">주 문 하 기</div>
   <p style="font-size:11px;opacity:0.4;margin:0;">무료배송 · 당일출고 · 7일이내교환</p>
@@ -1620,7 +1624,7 @@ ${d.faq && d.faq.length > 0 ? `
 
 <section style="background:${T.dark};color:${T.paper};padding:60px 20px;text-align:center;">
   <p style="font-size:10px;letter-spacing:0.5em;color:${T.gold};margin:0 0 18px;">가 격</p>
-  <div style="font-family:'Noto Serif KR',serif;font-size:clamp(44px,11vw,72px);font-weight:300;line-height:1;margin:0 0 8px;color:${T.paper};">${comma(d.price.retail)}<span style="font-size:0.28em;color:${T.gold};margin-left:8px;">원</span></div>
+  <div style="font-family:'Noto Serif KR',serif;font-size:clamp(44px,11vw,72px);font-weight:300;line-height:1;margin:0 0 8px;color:${T.paper};">${retailPriceMarker(d.price.retail)}<span style="font-size:0.28em;color:${T.gold};margin-left:8px;">원</span></div>
   <p style="font-size:12px;color:${T.gold};opacity:0.8;margin:0 0 32px;">/ ${esc(d.price.unit)}</p>
   <div style="width:160px;height:1px;background:${T.gold}55;margin:0 auto 32px;"></div>
   <div ${ce('cta.button')} style="display:inline-block;background:transparent;color:${T.paper};border:1px solid ${T.gold};padding:15px 48px;font-family:'Noto Serif KR',serif;font-size:14px;letter-spacing:0.4em;cursor:text;">주 문 하 기</div>
@@ -1774,7 +1778,7 @@ ${d.faq && d.faq.length > 0 ? `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
       <div style="padding:14px;background:rgba(255,255,255,0.06);border-radius:8px;border:1px solid rgba(255,255,255,0.1);">
         <p style="font-size:10px;opacity:0.6;margin:0 0 5px;letter-spacing:0.1em;">소매가</p>
-        <p style="font-size:clamp(18px,4.5vw,22px);font-weight:900;color:${C.light};margin:0;">${comma(d.price.retail)}<span style="font-size:11px;">원</span></p>
+        <p style="font-size:clamp(18px,4.5vw,22px);font-weight:900;color:${C.light};margin:0;">${retailPriceMarker(d.price.retail)}<span style="font-size:11px;">원</span></p>
       </div>
       <div style="padding:14px;background:rgba(255,255,255,0.06);border-radius:8px;border:1px solid rgba(255,255,255,0.1);">
         <p style="font-size:10px;opacity:0.6;margin:0 0 5px;letter-spacing:0.1em;">단위</p>
@@ -1921,7 +1925,7 @@ ${d.faq && d.faq.length > 0 ? `
   <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 30%, rgba(255,255,255,0.08), transparent 70%);"></div>
   <div style="position:relative;z-index:2;">
     <p style="font-size:11px;letter-spacing:0.4em;color:rgba(255,255,255,0.6);margin:0 0 20px;">TODAY</p>
-    <div ${ce('cta.price')} style="font-family:'Noto Serif KR',serif;font-size:clamp(48px,12vw,80px);font-weight:300;color:white;line-height:1;margin:0 0 8px;">${comma(d.price.retail)}<span style="font-size:0.24em;margin-left:8px;color:${C.primary};">원</span></div>
+    <div ${ce('cta.price')} style="font-family:'Noto Serif KR',serif;font-size:clamp(48px,12vw,80px);font-weight:300;color:white;line-height:1;margin:0 0 8px;">${retailPriceMarker(d.price.retail)}<span style="font-size:0.24em;margin-left:8px;color:${C.primary};">원</span></div>
     <p ${ce('cta.unit')} style="font-size:12px;color:rgba(255,255,255,0.6);margin:0 0 36px;">/ ${esc(d.price.unit)}</p>
     <div ${ce('cta.button')} style="display:inline-block;background:transparent;color:white;border:1px solid rgba(255,255,255,0.5);padding:16px 52px;font-family:'Noto Serif KR',serif;font-size:14px;letter-spacing:0.4em;cursor:text;">주 문 하 기</div>
     <p ${ce('cta.note')} style="font-size:11px;color:rgba(255,255,255,0.4);margin:16px 0 0;">무료 배송 · 당일 출고 · 7일 이내 교환</p>
