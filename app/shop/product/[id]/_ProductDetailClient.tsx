@@ -605,9 +605,10 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
             </div>
 
             {options.length > 0 && (() => {
-              // 옵션 중 현재 등급 기준 최저가 → '최저가' 뱃지 표시용
               const prices = options.map(o => priceFor(o, memberType))
               const minPrice = Math.min(...prices)
+              const selIdx = options.findIndex(o => o.id === selectedOption?.id)
+              const selPrice = selectedOption ? priceFor(selectedOption, memberType) : 0
               return (
               <div style={{marginBottom:'16px'}}>
                 <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'10px'}}>
@@ -615,31 +616,51 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
                     <span style={{fontSize:'15px'}}>📦</span> 구성 선택
                     <span style={{fontSize:'11px',fontWeight:700,color:D.accent,background:dark?'rgba(74,222,128,0.14)':'#ecfdf5',padding:'2px 8px',borderRadius:'999px'}}>{options.length}가지</span>
                   </p>
-                  <span style={{fontSize:'11px',fontWeight:600,color:D.sub}}>원하는 구성을 골라보세요</span>
+                  <span style={{fontSize:'11px',fontWeight:600,color:D.sub}}>탭해서 골라보세요</span>
                 </div>
-                <div style={{display:'flex',flexDirection:'column',gap:'9px'}}>
-                  {options.map((option, idx) => {
-                    const selected = selectedOption?.id === option.id
-                    const soldOut = option.stock === 0
-                    const optPrice = priceFor(option, memberType)
-                    const isMin = optPrice === minPrice && !soldOut
-                    return (
-                      <button key={option.id} type="button" disabled={soldOut}
-                        onClick={() => { setSelectedOption(option); setQuantity(1) }}
-                        style={{position:'relative',display:'flex',alignItems:'center',justifyContent:'space-between',gap:'10px',width:'100%',minHeight:'58px',padding:'13px 16px',borderRadius:'15px',border:`2px solid ${selected ? D.accent : D.border}`,background:selected ? (dark?'rgba(74,222,128,0.13)':'#f0fdf4') : soldOut ? D.input : D.card,color:soldOut ? D.sub : D.text,cursor:soldOut?'not-allowed':'pointer',opacity:soldOut?0.5:1,textAlign:'left',transition:'all .18s',boxShadow:selected?`0 4px 14px ${dark?'rgba(74,222,128,0.18)':'rgba(22,163,74,0.14)'}`:'none'}}>
-                        <span style={{display:'flex',alignItems:'center',gap:'10px',minWidth:0}}>
-                          <span style={{flexShrink:0,width:'22px',height:'22px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'11px',fontWeight:900,background:selected?D.accent:(dark?'rgba(255,255,255,0.08)':'#f1f5f9'),color:selected?'#fff':D.sub,transition:'all .18s'}}>{selected ? '✓' : idx+1}</span>
-                          <span style={{fontSize:'15px',fontWeight:800,lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{option.label}</span>
-                          {isMin && options.length>1 && <span style={{flexShrink:0,fontSize:'10px',fontWeight:800,color:'#f43f5e',background:dark?'rgba(244,63,94,0.15)':'#fff1f2',padding:'2px 7px',borderRadius:'999px'}}>최저가</span>}
-                          {soldOut && <span style={{fontSize:'12px',fontWeight:700,color:D.sub}}>· 품절</span>}
-                        </span>
-                        <span style={{fontSize:'16px',fontWeight:900,color:selected?D.accent:D.text,whiteSpace:'nowrap'}}>{Number(optPrice).toLocaleString()}<span style={{fontSize:'12px',fontWeight:600,color:D.sub}}>원</span></span>
-                      </button>
-                    )
-                  })}
-                </div>
+
+                {/* 드롭다운 헤더: 선택된 구성만 보임 */}
+                <button type="button" onClick={()=>setOptionsOpen(v=>!v)}
+                  style={{position:'relative',display:'flex',alignItems:'center',justifyContent:'space-between',gap:'10px',width:'100%',minHeight:'60px',padding:'14px 16px',borderRadius:'15px',border:`2px solid ${optionsOpen?D.accent:D.border}`,background:D.card,color:D.text,cursor:'pointer',textAlign:'left',transition:'all .18s',boxShadow:optionsOpen?`0 4px 14px ${dark?'rgba(74,222,128,0.16)':'rgba(22,163,74,0.12)'}`:'none'}}>
+                  <span style={{display:'flex',alignItems:'center',gap:'10px',minWidth:0}}>
+                    <span style={{flexShrink:0,width:'24px',height:'24px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'12px',fontWeight:900,background:D.accent,color:'#fff'}}>✓</span>
+                    <span style={{display:'flex',flexDirection:'column',minWidth:0}}>
+                      <span style={{fontSize:'15px',fontWeight:800,lineHeight:1.3,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{selectedOption?.label || '구성을 선택하세요'}</span>
+                      <span style={{fontSize:'11px',fontWeight:600,color:D.sub}}>총 {options.length}가지 중 {selIdx>=0?selIdx+1:'-'}번째</span>
+                    </span>
+                  </span>
+                  <span style={{display:'flex',alignItems:'center',gap:'8px',flexShrink:0}}>
+                    <span style={{fontSize:'17px',fontWeight:900,color:D.accent,whiteSpace:'nowrap'}}>{Number(selPrice).toLocaleString()}<span style={{fontSize:'12px',fontWeight:600,color:D.sub}}>원</span></span>
+                    <span style={{fontSize:'13px',color:D.sub,transform:optionsOpen?'rotate(180deg)':'rotate(0)',transition:'transform .2s'}}>▼</span>
+                  </span>
+                </button>
+
+                {/* 펼침: 전체 옵션 목록 */}
+                {optionsOpen && (
+                  <div style={{display:'flex',flexDirection:'column',gap:'8px',marginTop:'8px',padding:'8px',borderRadius:'15px',background:dark?'rgba(255,255,255,0.03)':'#f8fafc',border:`1px solid ${D.border}`}}>
+                    {options.map((option, idx) => {
+                      const selected = selectedOption?.id === option.id
+                      const soldOut = option.stock === 0
+                      const optPrice = priceFor(option, memberType)
+                      const isMin = optPrice === minPrice && !soldOut
+                      return (
+                        <button key={option.id} type="button" disabled={soldOut}
+                          onClick={() => { setSelectedOption(option); setQuantity(1); setOptionsOpen(false) }}
+                          style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'10px',width:'100%',minHeight:'52px',padding:'11px 14px',borderRadius:'12px',border:`2px solid ${selected ? D.accent : 'transparent'}`,background:selected ? (dark?'rgba(74,222,128,0.13)':'#f0fdf4') : soldOut ? D.input : D.card,color:soldOut ? D.sub : D.text,cursor:soldOut?'not-allowed':'pointer',opacity:soldOut?0.5:1,textAlign:'left',transition:'all .15s'}}>
+                          <span style={{display:'flex',alignItems:'center',gap:'10px',minWidth:0}}>
+                            <span style={{flexShrink:0,width:'22px',height:'22px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'11px',fontWeight:900,background:selected?D.accent:(dark?'rgba(255,255,255,0.08)':'#eef2f7'),color:selected?'#fff':D.sub}}>{selected ? '✓' : idx+1}</span>
+                            <span style={{fontSize:'15px',fontWeight:800,lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{option.label}</span>
+                            {isMin && options.length>1 && <span style={{flexShrink:0,fontSize:'10px',fontWeight:800,color:'#f43f5e',background:dark?'rgba(244,63,94,0.15)':'#fff1f2',padding:'2px 7px',borderRadius:'999px'}}>최저가</span>}
+                            {soldOut && <span style={{fontSize:'12px',fontWeight:700,color:D.sub}}>· 품절</span>}
+                          </span>
+                          <span style={{fontSize:'16px',fontWeight:900,color:selected?D.accent:D.text,whiteSpace:'nowrap'}}>{Number(optPrice).toLocaleString()}<span style={{fontSize:'12px',fontWeight:600,color:D.sub}}>원</span></span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
                 <p style={{fontSize:'11.5px',color:D.sub,margin:'10px 2px 0',display:'flex',alignItems:'center',gap:'5px'}}>
-                  <span>✨</span> 더 다양한 구성으로 준비했어요. 필요한 만큼 골라 담아보세요!
+                  <span>✨</span> 더 다양한 구성으로 준비했어요. 원하는 걸 골라 담아보세요!
                 </p>
               </div>
               )
