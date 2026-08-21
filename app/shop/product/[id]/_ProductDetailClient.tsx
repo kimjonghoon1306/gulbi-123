@@ -57,6 +57,9 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
   const [quantity, setQuantity] = useState(1)
   const [options, setOptions] = useState<ProductOption[]>([])
   const [selectedOption, setSelectedOption] = useState<ProductOption | null>(null)
+  // 본품(맨 앞 자동 추가 선택지)은 실제 옵션이 아니다.
+  //   주문/장바구니에 넘길 "진짜 옵션"만 반환(본품이면 null → 옵션 없는 상품과 동일하게 저장).
+  const realOption = (o: ProductOption | null) => (o && !o.id.startsWith('__base__')) ? o : null
   const [memberType, setMemberType] = useState('일반')
   const [user, setUser] = useState<any>(null)
   const [dark, setDark] = useState(false)
@@ -235,6 +238,26 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
       return
     }
     const list = (data || []) as ProductOption[]
+    // 옵션이 있는 상품이면, 메인 상품(본품)도 맨 앞 선택지로 함께 노출한다.
+    //   메인 가격·중량은 products 값을 그대로 사용(등급별 가격/주문 로직은 selectedOption 그대로 탐).
+    //   옵션이 없는 상품은 이 블록을 지나지 않아 기존 동작 그대로 유지.
+    if (list.length > 0 && product) {
+      const base: ProductOption = {
+        id: `__base__${product.id}`,   // 옵션이 아닌 본품임을 표시(주문 시 option_id로 저장 안 함)
+        label: weightLabel(product) || '기본',
+        unit: product.unit ?? null,
+        weight: product.weight ?? null,
+        wholesale_price: product.wholesale_price,
+        member_price: product.member_price,
+        retail_price: product.retail_price,
+        stock: product.stock ?? null,
+        sort_order: -1,
+      }
+      const merged = [base, ...list]
+      setOptions(merged)
+      setSelectedOption(merged[0])
+      return
+    }
     setOptions(list)
     setSelectedOption(list[0] || null)
   }
@@ -311,13 +334,14 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
   const addToCart = async () => {
     if (!user) { return }
     setCartLoading(true)
+    const opt = realOption(selectedOption)   // 본품이면 null(옵션 없는 상품과 동일하게 저장)
     let existingQuery = supabase.from('cart_items').select('id,quantity').eq('user_id', user.id).eq('product_id', id)
-    existingQuery = selectedOption ? existingQuery.eq('option_id', selectedOption.id) : existingQuery.is('option_id', null)
+    existingQuery = opt ? existingQuery.eq('option_id', opt.id) : existingQuery.is('option_id', null)
     const { data: existing } = await existingQuery.maybeSingle()
     if (existing) {
       await supabase.from('cart_items').update({ quantity: existing.quantity + quantity }).eq('id', existing.id)
     } else {
-      await supabase.from('cart_items').insert({ user_id: user.id, product_id: id, option_id: selectedOption?.id || null, quantity })
+      await supabase.from('cart_items').insert({ user_id: user.id, product_id: id, option_id: opt?.id || null, quantity })
     }
     // 🛒 헤더 카운트 갱신 신호
     localStorage.setItem('cart-updated', Date.now().toString())
@@ -813,7 +837,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
       </div>
 
         {/* 주문 폼 모달 */}
-      {showOrderForm && product && <OrderModal product={product} selectedOption={selectedOption} quantity={quantity} orderDone={orderDone} memberType={memberType} memberInfo={memberInfo} user={user} addresses={addresses} orderForm={orderForm} setOrderForm={setOrderForm} orderLoading={orderLoading} setOrderLoading={setOrderLoading} setOrderDone={setOrderDone} setShowOrderForm={setShowOrderForm} getPrice={getPrice} totalPrice={totalPrice} finalPrice={finalPrice} couponDiscount={couponDiscount} couponBase={couponBase} appliedCoupon={appliedCoupon} appliedUcId={appliedUcId} ownedCoupons={ownedCoupons} selectCoupon={selectCoupon} removeCoupon={removeCoupon} couponMsg={couponMsg} D={D} dark={dark} />}
+      {showOrderForm && product && <OrderModal product={product} selectedOption={realOption(selectedOption)} quantity={quantity} orderDone={orderDone} memberType={memberType} memberInfo={memberInfo} user={user} addresses={addresses} orderForm={orderForm} setOrderForm={setOrderForm} orderLoading={orderLoading} setOrderLoading={setOrderLoading} setOrderDone={setOrderDone} setShowOrderForm={setShowOrderForm} getPrice={getPrice} totalPrice={totalPrice} finalPrice={finalPrice} couponDiscount={couponDiscount} couponBase={couponBase} appliedCoupon={appliedCoupon} appliedUcId={appliedUcId} ownedCoupons={ownedCoupons} selectCoupon={selectCoupon} removeCoupon={removeCoupon} couponMsg={couponMsg} D={D} dark={dark} />}
 
       {/* ── 모바일 전용 하단 고정 구매바 ── */}
       {!showOrderForm && (
