@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import SupplierApprovalTab from '../products/_SupplierApprovalTab'
 import SupplierReviewModal from '../products/_SupplierReviewModal'
+import { optionRepresentative, type ProductOptionApprovalForm } from '@/lib/product-options'
 
 type Category = { id: string; name: string; sort_order: number }
 type SupplierProduct = {
@@ -33,6 +34,7 @@ export default function SupplierProductApproval() {
     name: '', wholesale_price: '', retail_price: '', member_price: '',
     category_id: '', unit: '', stock: '', description: '',
   })
+  const [reviewOptions, setReviewOptions] = useState<ProductOptionApprovalForm[]>([])
   const [rejectReason, setRejectReason] = useState('')
   const [reviewLoading, setReviewLoading] = useState(false)
   const [showRejectInput, setShowRejectInput] = useState(false)
@@ -57,8 +59,26 @@ export default function SupplierProductApproval() {
     setLoading(false)
   }
 
-  const openReview = (product: SupplierProduct) => {
+  const openReview = async (product: SupplierProduct) => {
+    const { data: optionRows, error } = await supabase.from('product_options').select('*').eq('product_id', product.id).order('sort_order')
+    if (error) {
+      console.error('[admin supplier product options] failed', error)
+      alert('상품 옵션을 불러오지 못했습니다.')
+      return
+    }
     setReviewProduct(product)
+    setReviewOptions((optionRows || []).map(option => ({
+      id: option.id,
+      label: option.label,
+      unit: option.unit || 'kg',
+      weight: option.weight == null ? '' : String(option.weight),
+      wholesale_price: option.wholesale_price > 0 ? String(option.wholesale_price) : '',
+      member_price: option.member_price > 0 ? String(option.member_price) : '',
+      retail_price: option.retail_price > 0 ? String(option.retail_price) : '',
+      stock: option.stock == null ? '' : String(option.stock),
+      suggested_wholesale_price: Number(option.suggested_wholesale_price || 0),
+      suggested_retail_price: Number(option.suggested_retail_price || 0),
+    })))
     setReviewForm({
       name: product.name,
       wholesale_price: String(product.wholesale_price || product.suggested_wholesale_price || ''),
@@ -75,19 +95,39 @@ export default function SupplierProductApproval() {
 
   const handleApprove = async () => {
     if (!reviewProduct) return
-    if (!reviewForm.retail_price || Number(reviewForm.retail_price) <= 0) {
+    if (reviewOptions.length > 0 && reviewOptions.some(option => Number(option.retail_price) <= 0)) {
+      alert('모든 옵션의 판매 일반구매가를 입력해주세요.')
+      return
+    }
+    if (reviewOptions.length === 0 && (!reviewForm.retail_price || Number(reviewForm.retail_price) <= 0)) {
       alert('일반 구매가를 입력해주세요.')
       return
     }
     setReviewLoading(true)
+    if (reviewOptions.length > 0) {
+      const optionResults = await Promise.all(reviewOptions.map(option => supabase.from('product_options').update({
+        wholesale_price: Number(option.wholesale_price) || 0,
+        member_price: Number(option.member_price) || 0,
+        retail_price: Number(option.retail_price),
+      }).eq('id', option.id).eq('product_id', reviewProduct.id)))
+      const optionError = optionResults.find(result => result.error)?.error
+      if (optionError) {
+        setReviewLoading(false)
+        console.error('[admin supplier option approve] failed', optionError)
+        alert('옵션 판매가 저장에 실패했습니다.')
+        return
+      }
+    }
+    const representative = reviewOptions.length > 0 ? optionRepresentative(reviewOptions, 'admin') : null
     const { error } = await supabase.from('products').update({
       name: reviewForm.name,
-      wholesale_price: Number(reviewForm.wholesale_price) || 0,
-      retail_price: Number(reviewForm.retail_price) || 0,
-      member_price: Number(reviewForm.member_price) || 0,
+      wholesale_price: representative?.wholesale_price ?? (Number(reviewForm.wholesale_price) || 0),
+      retail_price: representative?.retail_price ?? (Number(reviewForm.retail_price) || 0),
+      member_price: representative?.member_price ?? (Number(reviewForm.member_price) || 0),
       category_id: reviewForm.category_id || null,
-      unit: reviewForm.unit,
-      stock: Number(reviewForm.stock) || 0,
+      unit: representative?.unit ?? reviewForm.unit,
+      ...(representative ? { weight: representative.weight } : {}),
+      stock: representative ? representative.stock : (Number(reviewForm.stock) || 0),
       description: reviewForm.description,
       approval_status: '승인',
       is_active: true,
@@ -148,6 +188,8 @@ export default function SupplierProductApproval() {
         setReviewProduct={setReviewProduct}
         reviewForm={reviewForm}
         setReviewForm={setReviewForm}
+        reviewOptions={reviewOptions}
+        setReviewOptions={setReviewOptions}
         categories={categories}
         showRejectInput={showRejectInput}
         setShowRejectInput={setShowRejectInput}

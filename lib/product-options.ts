@@ -8,6 +8,12 @@ export type ProductOptionForm = {
   stock: string
 }
 
+export type ProductOptionApprovalForm = ProductOptionForm & {
+  id: string
+  suggested_wholesale_price: number
+  suggested_retail_price: number
+}
+
 export const PRODUCT_OPTION_UNITS = ['kg', 'g', '박스', '마리', '개', '묶음']
 
 export const emptyProductOption = (): ProductOptionForm => ({
@@ -29,8 +35,8 @@ export function optionRepresentative(options: ProductOptionForm[], mode: Product
     Number(option[priceKey]) < Number(best[priceKey]) ? option : best)
   const unlimited = options.some(option => option.stock.trim() === '')
   return {
-    wholesale_price: Number(cheapest.wholesale_price) || 0,
-    member_price: Number(cheapest.member_price) || 0,
+    wholesale_price: mode === 'supplier' ? 0 : (Number(cheapest.wholesale_price) || 0),
+    member_price: mode === 'supplier' ? 0 : (Number(cheapest.member_price) || 0),
     retail_price: mode === 'supplier' ? 0 : Number(cheapest.retail_price),
     stock: unlimited ? null : options.reduce((sum, option) => sum + Number(option.stock), 0),
     unit: cheapest.unit,
@@ -44,8 +50,12 @@ export function optionsForInsert(productId: string, options: ProductOptionForm[]
     label: option.label.trim(),
     unit: option.unit || null,
     weight: option.weight.trim() === '' ? null : Number(option.weight),
-    wholesale_price: Number(option.wholesale_price) || 0,
-    member_price: Number(option.member_price) || 0,
+    ...(mode === 'supplier' ? {
+      suggested_wholesale_price: Number(option.wholesale_price) || 0,
+      suggested_retail_price: Number(option.member_price) || 0,
+    } : {}),
+    wholesale_price: mode === 'supplier' ? 0 : (Number(option.wholesale_price) || 0),
+    member_price: mode === 'supplier' ? 0 : (Number(option.member_price) || 0),
     retail_price: mode === 'supplier' ? 0 : Number(option.retail_price),
     stock: option.stock.trim() === '' ? null : Number(option.stock),
     sort_order,

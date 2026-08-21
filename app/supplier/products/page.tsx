@@ -190,7 +190,7 @@ function ProductsContent() {
   const openEdit = async (p: Product) => {
     const { data: optionRows } = await supabase.from('product_options').select('*').eq('product_id', p.id).order('sort_order')
     setEditProduct(p)
-    setForm({ name: p.name, origin: p.origin || '', category_id: p.category_id || '', suggested_wholesale_price: String(p.suggested_wholesale_price), suggested_retail_price: String(p.suggested_retail_price), stock: p.stock == null ? '' : String(p.stock), unit: p.unit || 'kg', weight: (p as any).weight != null ? String((p as any).weight) : '', image_url: p.image_url || '', description: p.description || '', use_options: !!optionRows?.length, options: optionRows?.length ? optionRows.map(o => ({ label: o.label, unit: o.unit || 'kg', weight: o.weight == null ? '' : String(o.weight), wholesale_price: String(o.wholesale_price || 0), member_price: String(o.member_price || 0), retail_price: String(o.retail_price || ''), stock: o.stock == null ? '' : String(o.stock) })) : [emptyProductOption()] })
+    setForm({ name: p.name, origin: p.origin || '', category_id: p.category_id || '', suggested_wholesale_price: String(p.suggested_wholesale_price), suggested_retail_price: String(p.suggested_retail_price), stock: p.stock == null ? '' : String(p.stock), unit: p.unit || 'kg', weight: (p as any).weight != null ? String((p as any).weight) : '', image_url: p.image_url || '', description: p.description || '', use_options: !!optionRows?.length, options: optionRows?.length ? optionRows.map(o => ({ label: o.label, unit: o.unit || 'kg', weight: o.weight == null ? '' : String(o.weight), wholesale_price: String(Number(o.suggested_wholesale_price) > 0 ? o.suggested_wholesale_price : (o.wholesale_price || '')), member_price: String(Number(o.suggested_retail_price) > 0 ? o.suggested_retail_price : (o.member_price || '')), retail_price: '', stock: o.stock == null ? '' : String(o.stock) })) : [emptyProductOption()] })
     setShowForm(true)
   }
 
@@ -405,8 +405,8 @@ function ProductsContent() {
                             <div><label style={lab}>단위</label><select value={option.unit} onChange={e => update('unit', e.target.value)} style={optionInput}>{PRODUCT_OPTION_UNITS.map(u => <option key={u}>{u}</option>)}</select></div>
                           </div>
                           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
-                            <div><label style={lab}>🏭 도매가 *</label><input inputMode="numeric" value={formatWon(option.wholesale_price)} onChange={e => update('wholesale_price', digitsOnly(e.target.value))} placeholder="20,000" style={optionInput} /></div>
-                            <div><label style={lab}>🏪 소매가 *</label><input inputMode="numeric" value={formatWon(option.member_price)} onChange={e => update('member_price', digitsOnly(e.target.value))} placeholder="25,000" style={optionInput} /></div>
+                            <div><label style={lab}>🏭 제안 도매가 *</label><input inputMode="numeric" value={formatWon(option.wholesale_price)} onChange={e => update('wholesale_price', digitsOnly(e.target.value))} placeholder="20,000" style={optionInput} /></div>
+                            <div><label style={lab}>🏪 제안 소매가 *</label><input inputMode="numeric" value={formatWon(option.member_price)} onChange={e => update('member_price', digitsOnly(e.target.value))} placeholder="25,000" style={optionInput} /></div>
                             <div><label style={lab}>재고</label><input type="number" inputMode="numeric" value={option.stock} onChange={e => update('stock', e.target.value)} placeholder="무제한" style={optionInput} /></div>
                           </div>
                         </div>

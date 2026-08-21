@@ -2,6 +2,7 @@
 
 import type { Dispatch, SetStateAction } from 'react'
 import { sanitizeHtml } from '@/lib/sanitize-html'
+import { digitsOnly, formatWon, type ProductOptionApprovalForm } from '@/lib/product-options'
 
 type Category = { id: string; name: string; sort_order: number }
 type SupplierProduct = {
@@ -22,6 +23,8 @@ type Props = {
   setReviewProduct: Dispatch<SetStateAction<SupplierProduct | null>>
   reviewForm: ReviewForm
   setReviewForm: Dispatch<SetStateAction<ReviewForm>>
+  reviewOptions: ProductOptionApprovalForm[]
+  setReviewOptions: Dispatch<SetStateAction<ProductOptionApprovalForm[]>>
   categories: Category[]
   showRejectInput: boolean
   setShowRejectInput: Dispatch<SetStateAction<boolean>>
@@ -38,6 +41,8 @@ export default function SupplierReviewModal({
   setReviewProduct,
   reviewForm,
   setReviewForm,
+  reviewOptions,
+  setReviewOptions,
   categories,
   showRejectInput,
   setShowRejectInput,
@@ -72,22 +77,25 @@ export default function SupplierReviewModal({
             </div>
           )}
 
-          {/* 공급가 표시 */}
-          <div className="rounded-xl p-3 text-xs" style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)' }}>
-            <p className="font-bold text-purple-400 mb-1">💡 공급업체 공급가 (참고용)</p>
-            <p className="text-slate-400">
-              도매 {reviewProduct.suggested_wholesale_price?.toLocaleString()}원
-              {' · '}소매 {reviewProduct.suggested_retail_price?.toLocaleString()}원
-            </p>
-          </div>
+          {reviewOptions.length === 0 && (
+            <div className="rounded-xl p-3 text-xs" style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)' }}>
+              <p className="font-bold text-purple-400 mb-1">💡 공급업체 공급가 (참고용)</p>
+              <p className="text-slate-400">
+                도매 {reviewProduct.suggested_wholesale_price?.toLocaleString()}원
+                {' · '}소매 {reviewProduct.suggested_retail_price?.toLocaleString()}원
+              </p>
+            </div>
+          )}
 
           {/* 수정 가능 필드들 */}
           {[
             { label: '상품명', key: 'name', type: 'text', full: true },
-            { label: '일반 구매가 (원)', key: 'retail_price', type: 'number' },
-            { label: '소매 공급가 (원)', key: 'member_price', type: 'number' },
-            { label: '도매 공급가 (원)', key: 'wholesale_price', type: 'number' },
-            { label: '재고', key: 'stock', type: 'number' },
+            ...(reviewOptions.length === 0 ? [
+              { label: '일반 구매가 (원)', key: 'retail_price', type: 'number' },
+              { label: '소매 공급가 (원)', key: 'member_price', type: 'number' },
+              { label: '도매 공급가 (원)', key: 'wholesale_price', type: 'number' },
+              { label: '재고', key: 'stock', type: 'number' },
+            ] : []),
           ].map(f => (
             <div key={f.key} style={{ gridColumn: f.full ? '1/-1' : undefined }}>
               <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 mb-1.5">{f.label}</label>
@@ -96,6 +104,42 @@ export default function SupplierReviewModal({
                 className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-white outline-none focus:border-amber-400" />
             </div>
           ))}
+
+          {reviewOptions.length > 0 && (
+            <div className="flex flex-col gap-3">
+              <div>
+                <p className="text-sm font-black text-slate-800 dark:text-white">옵션별 판매가 확정</p>
+                <p className="text-[11px] text-slate-400 mt-1">공급업체 제안가를 참고해 손님에게 적용할 판매가를 입력하세요.</p>
+              </div>
+              {reviewOptions.map((option, index) => {
+                const updatePrice = (key: 'wholesale_price' | 'member_price' | 'retail_price', value: string) => setReviewOptions(current => current.map((item, itemIndex) => itemIndex === index ? { ...item, [key]: digitsOnly(value) } : item))
+                return (
+                  <div key={option.id} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/70 p-4 min-w-0">
+                    <div className="flex items-center justify-between gap-3 mb-3">
+                      <p className="text-sm font-black text-slate-800 dark:text-white min-w-0 truncate">{option.label}</p>
+                      <span className="shrink-0 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">{option.weight ? `${option.weight}${option.unit}` : option.unit}</span>
+                    </div>
+                    <div className="rounded-xl bg-purple-50 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-900/50 px-3 py-2 mb-3">
+                      <p className="text-[11px] font-bold text-purple-600 dark:text-purple-300">제안: 도매 {option.suggested_wholesale_price.toLocaleString()}원 / 소매 {option.suggested_retail_price.toLocaleString()}원</p>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 min-w-0">
+                      {([
+                        ['wholesale_price', '판매 도매가'],
+                        ['member_price', '판매 소매가'],
+                        ['retail_price', '판매 일반구매가 *'],
+                      ] as const).map(([key, label]) => (
+                        <div key={key} className="min-w-0">
+                          <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-1.5 truncate">{label}</label>
+                          <input inputMode="numeric" value={formatWon(option[key])} onChange={event => updatePrice(key, event.target.value)} placeholder="0"
+                            className="w-full min-w-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-3 text-xs text-slate-800 dark:text-white outline-none focus:border-amber-400" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
 
           {/* 카테고리 */}
           <div>
@@ -109,14 +153,14 @@ export default function SupplierReviewModal({
           </div>
 
           {/* 단위 */}
-          <div>
+          {reviewOptions.length === 0 && <div>
             <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 mb-1.5">단위</label>
             <select value={reviewForm.unit}
               onChange={e => setReviewForm(p => ({ ...p, unit: e.target.value }))}
               className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-white outline-none">
               {['kg', 'g', '박스', '마리', '개', '묶음'].map(u => <option key={u}>{u}</option>)}
             </select>
-          </div>
+          </div>}
         </div>
 
         {/* 오른쪽: 상세페이지 미리보기 + 버튼 */}
