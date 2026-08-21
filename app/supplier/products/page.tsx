@@ -389,20 +389,31 @@ function ProductsContent() {
                     <p style={{ color: t.text, fontSize: '13px', fontWeight: 800, margin: 0 }}>상품 옵션</p>
                     <button type="button" onClick={() => setForm(p => ({ ...p, options: [...p.options, emptyProductOption()] }))} style={{ border: 'none', background: 'transparent', color: '#a78bfa', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }}>+ 옵션 추가</button>
                   </div>
-                  <div style={{ overflowX: 'auto' }}><div style={{ minWidth: '620px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr .8fr 1fr 1fr .8fr 34px', gap: '7px', color: t.textMuted, fontSize: '10px' }}><span>옵션명 *</span><span>단위</span><span>도매가 *</span><span>소매가 *</span><span>재고</span><span /></div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     {form.options.map((option, index) => {
                       const update = (key: keyof ProductOptionForm, value: string) => setForm(p => ({ ...p, options: p.options.map((item, i) => i === index ? { ...item, [key]: value } : item) }))
-                      const optionInput = { ...inputStyle, padding: '9px 8px', borderRadius: '9px', fontSize: '12px' }
-                      return <div key={index} style={{ display: 'grid', gridTemplateColumns: '1.2fr .8fr 1fr 1fr .8fr 34px', gap: '7px' }}>
-                        <input value={option.label} onChange={e => update('label', e.target.value)} placeholder="1.5kg" style={optionInput} />
-                        <select value={option.unit} onChange={e => update('unit', e.target.value)} style={optionInput}>{PRODUCT_OPTION_UNITS.map(u => <option key={u}>{u}</option>)}</select>
-                        {(['wholesale_price', 'member_price'] as const).map(key => <input key={key} inputMode="numeric" value={formatWon(option[key])} onChange={e => update(key, digitsOnly(e.target.value))} style={optionInput} />)}
-                        <input type="number" inputMode="numeric" value={option.stock} onChange={e => update('stock', e.target.value)} placeholder="무제한" style={optionInput} />
-                        <button type="button" aria-label="옵션 삭제" disabled={form.options.length === 1} onClick={() => setForm(p => ({ ...p, options: p.options.filter((_, i) => i !== index) }))} style={{ border: 'none', background: 'transparent', color: form.options.length === 1 ? t.textMuted : '#f87171', cursor: 'pointer' }}>✕</button>
-                      </div>
+                      const optionInput = { ...inputStyle, padding: '9px 10px', borderRadius: '9px', fontSize: '12px', width: '100%', minWidth: 0 }
+                      const lab = { display: 'block', color: t.textMuted, fontSize: '10px', fontWeight: 700, marginBottom: '4px' } as const
+                      return (
+                        <div key={index} style={{ border: `1px solid ${t.inputBorder}`, borderRadius: '11px', padding: '12px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '9px' }}>
+                            <p style={{ color: t.textMuted, fontSize: '11px', fontWeight: 800, margin: 0 }}>옵션 {index + 1}</p>
+                            <button type="button" aria-label="옵션 삭제" disabled={form.options.length === 1} onClick={() => setForm(p => ({ ...p, options: p.options.filter((_, i) => i !== index) }))} style={{ border: 'none', background: 'transparent', color: form.options.length === 1 ? t.textMuted : '#f87171', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>✕ 삭제</button>
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
+                            <div><label style={lab}>옵션명 *</label><input value={option.label} onChange={e => update('label', e.target.value)} placeholder="예: 1.5kg" style={optionInput} /></div>
+                            <div><label style={lab}>단위</label><select value={option.unit} onChange={e => update('unit', e.target.value)} style={optionInput}>{PRODUCT_OPTION_UNITS.map(u => <option key={u}>{u}</option>)}</select></div>
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                            <div><label style={lab}>🏭 도매가 *</label><input inputMode="numeric" value={formatWon(option.wholesale_price)} onChange={e => update('wholesale_price', digitsOnly(e.target.value))} placeholder="20,000" style={optionInput} /></div>
+                            <div><label style={lab}>🏪 소매가 *</label><input inputMode="numeric" value={formatWon(option.member_price)} onChange={e => update('member_price', digitsOnly(e.target.value))} placeholder="25,000" style={optionInput} /></div>
+                            <div><label style={lab}>재고</label><input type="number" inputMode="numeric" value={option.stock} onChange={e => update('stock', e.target.value)} placeholder="무제한" style={optionInput} /></div>
+                          </div>
+                        </div>
+                      )
                     })}
-                  </div></div>
+                  </div>
+                  <p style={{ color: t.textMuted, fontSize: '11px', margin: '10px 0 0' }}>최종 일반구매가는 관리자 승인 시 확정됩니다.</p>
                 </div>
               )}
 

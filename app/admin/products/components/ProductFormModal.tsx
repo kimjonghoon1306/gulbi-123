@@ -156,22 +156,31 @@ export function ProductFormModal({ show, onClose, editProduct, form, setForm, on
               <div className="flex items-center justify-between"><p className="text-sm font-bold text-slate-700 dark:text-white">상품 옵션</p>
                 <button type="button" onClick={() => setForm({ ...form, options: [...form.options, emptyProductOption()] })} className="text-xs font-bold text-green-600">+ 옵션 추가</button>
               </div>
-              <div className="overflow-x-auto"><div className="min-w-[760px] space-y-2">
-                <div className="grid grid-cols-[1.2fr_.8fr_1fr_1fr_1fr_.8fr_36px] gap-2 text-[10px] font-semibold text-slate-400 px-1">
-                  <span>옵션명 *</span><span>단위</span><span>도매가</span><span>소매가</span><span>일반구매가 *</span><span>재고</span><span />
-                </div>
+              <div className="space-y-3">
                 {form.options.map((option, index) => {
                   const update = (key: keyof ProductOptionForm, value: string) => setForm({ ...form, options: form.options.map((item, i) => i === index ? { ...item, [key]: value } : item) })
-                  const cls = 'w-full min-w-0 border border-slate-200 dark:border-gray-600 rounded-lg px-2 py-2 text-xs bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-600'
-                  return <div key={index} className="grid grid-cols-[1.2fr_.8fr_1fr_1fr_1fr_.8fr_36px] gap-2">
-                    <input value={option.label} onChange={e => update('label', e.target.value)} placeholder="1.5kg" className={cls} />
-                    <select value={option.unit} onChange={e => update('unit', e.target.value)} className={cls}>{PRODUCT_OPTION_UNITS.map(u => <option key={u}>{u}</option>)}</select>
-                    {(['wholesale_price', 'member_price', 'retail_price'] as const).map(key => <input key={key} inputMode="numeric" value={formatWon(option[key])} onChange={e => update(key, digitsOnly(e.target.value))} className={cls} />)}
-                    <input type="number" inputMode="numeric" value={option.stock} onChange={e => update('stock', e.target.value)} placeholder="무제한" className={cls} />
-                    <button type="button" aria-label="옵션 삭제" disabled={form.options.length === 1} onClick={() => setForm({ ...form, options: form.options.filter((_, i) => i !== index) })} className="text-red-400 disabled:text-slate-300">✕</button>
-                  </div>
+                  const cls = 'w-full min-w-0 border border-slate-200 dark:border-gray-600 rounded-lg px-2.5 py-2 text-xs bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-600'
+                  const lab = 'block text-[10px] font-semibold text-slate-400 mb-1'
+                  return (
+                    <div key={index} className="rounded-xl border border-slate-200 dark:border-gray-600 p-3 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-bold text-slate-500 dark:text-slate-300">옵션 {index + 1}</p>
+                        <button type="button" aria-label="옵션 삭제" disabled={form.options.length === 1} onClick={() => setForm({ ...form, options: form.options.filter((_, i) => i !== index) })} className="text-xs font-semibold text-red-400 disabled:text-slate-300">✕ 삭제</button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div><label className={lab}>옵션명 *</label><input value={option.label} onChange={e => update('label', e.target.value)} placeholder="예: 1.5kg" className={cls} /></div>
+                        <div><label className={lab}>단위</label><select value={option.unit} onChange={e => update('unit', e.target.value)} className={cls}>{PRODUCT_OPTION_UNITS.map(u => <option key={u}>{u}</option>)}</select></div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        <div><label className={lab}>🏭 도매가</label><input inputMode="numeric" value={formatWon(option.wholesale_price)} onChange={e => update('wholesale_price', digitsOnly(e.target.value))} placeholder="20,000" className={cls} /></div>
+                        <div><label className={lab}>🏪 소매가</label><input inputMode="numeric" value={formatWon(option.member_price)} onChange={e => update('member_price', digitsOnly(e.target.value))} placeholder="25,000" className={cls} /></div>
+                        <div><label className={lab}>🛒 일반구매가 *</label><input inputMode="numeric" value={formatWon(option.retail_price)} onChange={e => update('retail_price', digitsOnly(e.target.value))} placeholder="30,000" className={cls} /></div>
+                      </div>
+                      <div className="w-1/2 pr-1"><label className={lab}>재고 (비우면 무제한)</label><input type="number" inputMode="numeric" value={option.stock} onChange={e => update('stock', e.target.value)} placeholder="무제한" className={cls} /></div>
+                    </div>
+                  )
                 })}
-              </div></div>
+              </div>
               <p className="text-[11px] text-slate-400">중량은 옵션명에 입력할 수 있으며, 대표 상품값은 일반구매가가 가장 낮은 옵션을 기준으로 저장됩니다.</p>
             </div>
           )}
