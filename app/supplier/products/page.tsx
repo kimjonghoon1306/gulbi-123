@@ -8,6 +8,7 @@ import SupplierLayout from '../_layout/layout'
 import { useSupplierTheme } from '../_layout/theme-context'
 import SupplierAiLandingEditor from './components/AiLandingEditor'
 import SupplierProductList from './_SupplierProductList'
+import { PRODUCT_OPTION_UNITS, digitsOnly, emptyProductOption, formatWon, optionRepresentative, optionsForInsert, type ProductOptionForm } from '@/lib/product-options'
 
 type Product = {
   id: string; name: string; description: string
@@ -29,7 +30,7 @@ const STATUS_STYLE: Record<string, { bg: string; color: string; label: string }>
 
 const EMPTY_FORM = {
   name: '', origin: '', category_id: '', suggested_wholesale_price: '', suggested_retail_price: '',
-  stock: '', unit: 'kg', weight: '', image_url: '', description: ''
+  stock: '', unit: 'kg', weight: '', image_url: '', description: '', use_options: false, options: [emptyProductOption()]
 }
 
 function ProductsContent() {
@@ -145,27 +146,36 @@ function ProductsContent() {
   }
 
   const handleSave = async () => {
-    if (!form.name || !form.suggested_wholesale_price || !form.suggested_retail_price) {
+    if (!form.name || (!form.use_options && (!form.suggested_wholesale_price || !form.suggested_retail_price))) {
       return setError('상품명, 도매 공급가, 소매 공급가는 필수입니다.')
     }
+    if (form.use_options && (!form.options.length || form.options.some(o => !o.label.trim()))) return alert('모든 옵션의 옵션명을 입력해 주세요.')
+    if (form.use_options && form.options.some(o => !o.wholesale_price.trim() || !o.member_price.trim())) return alert('모든 옵션의 도매가와 소매가를 입력해 주세요.')
     setSaving(true); setError('')
+    const representative = form.use_options ? optionRepresentative(form.options, 'supplier') : null
     const data = {
       name: form.name, description: form.description, origin: form.origin.trim() || null,
       category_id: form.category_id || null,
       suggested_wholesale_price: Number(form.suggested_wholesale_price),
       suggested_retail_price: Number(form.suggested_retail_price),
-      wholesale_price: 0, retail_price: 0, member_price: 0,
-      stock: Number(form.stock) || 0, unit: form.unit,
-      weight: form.weight.trim() === '' ? null : Number(form.weight),
+      wholesale_price: representative?.wholesale_price ?? 0, retail_price: representative?.retail_price ?? 0, member_price: representative?.member_price ?? 0,
+      stock: representative ? representative.stock : (Number(form.stock) || 0), unit: representative?.unit ?? form.unit,
+      weight: representative ? representative.weight : (form.weight.trim() === '' ? null : Number(form.weight)),
       image_url: form.image_url, supplier_id: supplierId,
       approval_status: '대기중', is_active: false,
     }
     const wasResubmit = !!editProduct && (editProduct.approval_status === '거절' || editProduct.approval_status === '수정요청')
-    if (editProduct) {
+    const result = editProduct ? (
       // 공급업체가 수정하면 항상 재검토 대기열로 (거절/수정요청/승인 모두 → 대기중), 이전 거절사유 초기화
-      await supabase.from('products').update({ ...data, approval_status: '대기중', rejection_reason: null }).eq('id', editProduct.id)
-    } else {
-      await supabase.from('products').insert(data)
+      await supabase.from('products').update({ ...data, approval_status: '대기중', rejection_reason: null }).eq('id', editProduct.id).select('id').single()
+    ) : await supabase.from('products').insert(data).select('id').single()
+    if (result.error) { setSaving(false); setError(`상품 저장에 실패했습니다: ${result.error.message}`); return }
+    const productId = result.data.id
+    const { error: deleteError } = await supabase.from('product_options').delete().eq('product_id', productId)
+    if (deleteError) { setSaving(false); setError(`옵션 정리에 실패했습니다: ${deleteError.message}`); return }
+    if (form.use_options) {
+      const { error: optionError } = await supabase.from('product_options').insert(optionsForInsert(productId, form.options, 'supplier'))
+      if (optionError) { setSaving(false); setError(`옵션 저장에 실패했습니다: ${optionError.message}`); return }
     }
     setSaving(false); setShowForm(false)
     setOkMsg(
@@ -177,9 +187,10 @@ function ProductsContent() {
     init()
   }
 
-  const openEdit = (p: Product) => {
+  const openEdit = async (p: Product) => {
+    const { data: optionRows } = await supabase.from('product_options').select('*').eq('product_id', p.id).order('sort_order')
     setEditProduct(p)
-    setForm({ name: p.name, origin: p.origin || '', category_id: p.category_id || '', suggested_wholesale_price: String(p.suggested_wholesale_price), suggested_retail_price: String(p.suggested_retail_price), stock: String(p.stock), unit: p.unit || 'kg', weight: (p as any).weight != null ? String((p as any).weight) : '', image_url: p.image_url || '', description: p.description || '' })
+    setForm({ name: p.name, origin: p.origin || '', category_id: p.category_id || '', suggested_wholesale_price: String(p.suggested_wholesale_price), suggested_retail_price: String(p.suggested_retail_price), stock: p.stock == null ? '' : String(p.stock), unit: p.unit || 'kg', weight: (p as any).weight != null ? String((p as any).weight) : '', image_url: p.image_url || '', description: p.description || '', use_options: !!optionRows?.length, options: optionRows?.length ? optionRows.map(o => ({ label: o.label, unit: o.unit || 'kg', weight: o.weight == null ? '' : String(o.weight), wholesale_price: String(o.wholesale_price || 0), member_price: String(o.member_price || 0), retail_price: String(o.retail_price || ''), stock: o.stock == null ? '' : String(o.stock) })) : [emptyProductOption()] })
     setShowForm(true)
   }
 
@@ -323,16 +334,25 @@ function ProductsContent() {
                 </select>
               </div>
 
+              <div style={{ border: `1px solid ${t.inputBorder}`, borderRadius: '14px', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                <div><p style={{ color: t.text, fontSize: '13px', fontWeight: 700, margin: 0 }}>상품 옵션 사용</p><p style={{ color: t.textMuted, fontSize: '11px', margin: '3px 0 0' }}>중량·구성별 가격과 재고를 따로 관리합니다.</p></div>
+                <button type="button" role="switch" aria-checked={form.use_options} onClick={() => setForm(p => ({ ...p, use_options: !p.use_options, options: p.options.length ? p.options : [emptyProductOption()] }))}
+                  style={{ width: '48px', height: '28px', padding: '3px', border: 'none', borderRadius: '999px', background: form.use_options ? '#7c3aed' : t.inputBorder, cursor: 'pointer', flexShrink: 0 }}>
+                  <span style={{ display: 'block', width: '22px', height: '22px', borderRadius: '50%', background: 'white', transform: `translateX(${form.use_options ? 20 : 0}px)`, transition: 'transform .2s' }} />
+                </button>
+              </div>
+
+              {!form.use_options ? <>
               <div style={{ background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.2)', borderRadius: '14px', padding: '16px' }}>
                 <p style={{ fontSize: '12px', fontWeight: 700, color: '#a78bfa', margin: '0 0 12px' }}>💡 공급가 입력 (관리자가 최종 판매가를 확정합니다)</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                  {[
+                  {([
                     { label: '🏭 도매 공급가 (원) *', key: 'suggested_wholesale_price' },
                     { label: '🛒 소매 공급가 (원) *', key: 'suggested_retail_price' },
-                  ].map(({ label, key }) => (
+                  ] as const).map(({ label, key }) => (
                     <div key={key}>
                       <label style={{ display: 'block', fontSize: '10px', color: t.textMuted, marginBottom: '6px' }}>{label}</label>
-                      <input type="number" value={form[key as keyof typeof form]} onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))}
+                      <input type="number" value={form[key]} onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))}
                         style={{ ...inputStyle, borderRadius: '10px', padding: '11px 12px' }} />
                     </div>
                   ))}
@@ -363,6 +383,28 @@ function ProductsContent() {
                   <span style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', fontSize: '13px', fontWeight: 800, color: '#f59e0b', pointerEvents: 'none' }}>{form.unit || 'kg'}</span>
                 </div>
               </div>
+              </> : (
+                <div style={{ border: `1px solid ${t.inputBorder}`, borderRadius: '14px', padding: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <p style={{ color: t.text, fontSize: '13px', fontWeight: 800, margin: 0 }}>상품 옵션</p>
+                    <button type="button" onClick={() => setForm(p => ({ ...p, options: [...p.options, emptyProductOption()] }))} style={{ border: 'none', background: 'transparent', color: '#a78bfa', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }}>+ 옵션 추가</button>
+                  </div>
+                  <div style={{ overflowX: 'auto' }}><div style={{ minWidth: '620px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr .8fr 1fr 1fr .8fr 34px', gap: '7px', color: t.textMuted, fontSize: '10px' }}><span>옵션명 *</span><span>단위</span><span>도매가 *</span><span>소매가 *</span><span>재고</span><span /></div>
+                    {form.options.map((option, index) => {
+                      const update = (key: keyof ProductOptionForm, value: string) => setForm(p => ({ ...p, options: p.options.map((item, i) => i === index ? { ...item, [key]: value } : item) }))
+                      const optionInput = { ...inputStyle, padding: '9px 8px', borderRadius: '9px', fontSize: '12px' }
+                      return <div key={index} style={{ display: 'grid', gridTemplateColumns: '1.2fr .8fr 1fr 1fr .8fr 34px', gap: '7px' }}>
+                        <input value={option.label} onChange={e => update('label', e.target.value)} placeholder="1.5kg" style={optionInput} />
+                        <select value={option.unit} onChange={e => update('unit', e.target.value)} style={optionInput}>{PRODUCT_OPTION_UNITS.map(u => <option key={u}>{u}</option>)}</select>
+                        {(['wholesale_price', 'member_price'] as const).map(key => <input key={key} inputMode="numeric" value={formatWon(option[key])} onChange={e => update(key, digitsOnly(e.target.value))} style={optionInput} />)}
+                        <input type="number" inputMode="numeric" value={option.stock} onChange={e => update('stock', e.target.value)} placeholder="무제한" style={optionInput} />
+                        <button type="button" aria-label="옵션 삭제" disabled={form.options.length === 1} onClick={() => setForm(p => ({ ...p, options: p.options.filter((_, i) => i !== index) }))} style={{ border: 'none', background: 'transparent', color: form.options.length === 1 ? t.textMuted : '#f87171', cursor: 'pointer' }}>✕</button>
+                      </div>
+                    })}
+                  </div></div>
+                </div>
+              )}
 
               <div>
                 <label style={labelStyle}>상품 설명</label>

@@ -751,7 +751,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
 
       {/* ── 모바일 전용 하단 고정 구매바 ── */}
       {!showOrderForm && (
-        <div className="mobile-buybar" style={{position:'fixed',bottom:0,left:0,right:0,zIndex:60,background:D.headerBg,backdropFilter:'blur(20px)',borderTop:`1px solid ${D.border}`,padding:'10px 16px calc(10px + min(env(safe-area-inset-bottom), 12px))',display:'flex',alignItems:'center',gap:'12px',boxShadow:'0 -6px 24px rgba(0,0,0,0.1)'}}>
+        <div className="mobile-buybar" style={{position:'fixed',bottom:0,left:0,right:0,zIndex:60,background:dark?'#0d2a1d':'#ffffff',borderTop:`1px solid ${D.border}`,padding:'10px 16px calc(10px + min(env(safe-area-inset-bottom), 12px))',display:'flex',alignItems:'center',gap:'12px',boxShadow:'0 -6px 24px rgba(0,0,0,0.1)'}}>
           <button onClick={toggleLike} aria-label="찜하기" style={{width:'48px',height:'48px',flexShrink:0,borderRadius:'14px',border:`1.5px solid ${D.border}`,background:'transparent',cursor:'pointer',fontSize:'22px',display:'flex',alignItems:'center',justifyContent:'center'}}>
             {liked ? '❤️' : '🤍'}
           </button>

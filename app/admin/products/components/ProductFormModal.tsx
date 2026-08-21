@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase'
 import StockImagePicker from '@/components/StockImagePicker'
+import { PRODUCT_OPTION_UNITS, digitsOnly, emptyProductOption, formatWon, type ProductOptionForm } from '@/lib/product-options'
 
 type Category = { id: string; name: string; sort_order: number }
 type Product = {
@@ -19,15 +20,10 @@ export type ProductForm = {
   stock: string; unit: string; weight: string; image_url: string; is_active: boolean; is_taxable: boolean
   subscribable: boolean; subscribe_discount: string
   shipping_type: 'free' | 'paid'; shipping_fee: string; free_shipping_threshold: string
+  use_options: boolean; options: ProductOptionForm[]
 }
 
 export type CatForm = { name: string }
-
-const digitsOnly = (value: string) => value.replace(/[^\d]/g, '')
-const formatWon = (value: string) => {
-  const digits = digitsOnly(value)
-  return digits ? Number(digits).toLocaleString('ko-KR') : ''
-}
 
 type ProductModalProps = {
   show: boolean
@@ -112,7 +108,19 @@ export function ProductFormModal({ show, onClose, editProduct, form, setForm, on
             <p className="text-[11px] text-slate-400 mt-1.5">상품에 표시할 국가나 지역을 입력하세요. 비식품 등 해당 사항이 없으면 비워둘 수 있어요.</p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="rounded-xl border border-slate-200 dark:border-gray-600 p-4 flex items-center gap-3">
+            <button type="button" role="switch" aria-checked={form.use_options}
+              onClick={() => setForm({ ...form, use_options: !form.use_options, options: form.options.length ? form.options : [emptyProductOption()] })}
+              className={`relative w-12 h-6 rounded-full transition-colors duration-200 shrink-0 ${form.use_options ? 'bg-green-600' : 'bg-slate-300 dark:bg-gray-600'}`}>
+              <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all duration-200 ${form.use_options ? 'left-7' : 'left-1'}`} />
+            </button>
+            <div>
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">상품 옵션 사용</p>
+              <p className="text-[11px] text-slate-400">중량·구성별 가격과 재고를 따로 관리합니다.</p>
+            </div>
+          </div>
+
+          {!form.use_options ? <div className="grid grid-cols-2 gap-4">
             {[
               { label: '🛒 일반 구매가 (원)', key: 'retail_price', isMoney: true, placeholder: '예: 30,000' },
               { label: '🏪 소매 공급가 (원)', key: 'member_price', isMoney: true, placeholder: '예: 25,000' },
@@ -143,7 +151,30 @@ export function ProductFormModal({ show, onClose, editProduct, form, setForm, on
               </div>
               <p className="text-[11px] text-slate-400 mt-1.5">생선처럼 마리마다 무게가 다른 상품은 수치를 적어주세요. 뒤에 단위가 자동으로 붙어요.</p>
             </div>
-          </div>
+          </div> : (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between"><p className="text-sm font-bold text-slate-700 dark:text-white">상품 옵션</p>
+                <button type="button" onClick={() => setForm({ ...form, options: [...form.options, emptyProductOption()] })} className="text-xs font-bold text-green-600">+ 옵션 추가</button>
+              </div>
+              <div className="overflow-x-auto"><div className="min-w-[760px] space-y-2">
+                <div className="grid grid-cols-[1.2fr_.8fr_1fr_1fr_1fr_.8fr_36px] gap-2 text-[10px] font-semibold text-slate-400 px-1">
+                  <span>옵션명 *</span><span>단위</span><span>도매가</span><span>소매가</span><span>일반구매가 *</span><span>재고</span><span />
+                </div>
+                {form.options.map((option, index) => {
+                  const update = (key: keyof ProductOptionForm, value: string) => setForm({ ...form, options: form.options.map((item, i) => i === index ? { ...item, [key]: value } : item) })
+                  const cls = 'w-full min-w-0 border border-slate-200 dark:border-gray-600 rounded-lg px-2 py-2 text-xs bg-white dark:bg-gray-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-600'
+                  return <div key={index} className="grid grid-cols-[1.2fr_.8fr_1fr_1fr_1fr_.8fr_36px] gap-2">
+                    <input value={option.label} onChange={e => update('label', e.target.value)} placeholder="1.5kg" className={cls} />
+                    <select value={option.unit} onChange={e => update('unit', e.target.value)} className={cls}>{PRODUCT_OPTION_UNITS.map(u => <option key={u}>{u}</option>)}</select>
+                    {(['wholesale_price', 'member_price', 'retail_price'] as const).map(key => <input key={key} inputMode="numeric" value={formatWon(option[key])} onChange={e => update(key, digitsOnly(e.target.value))} className={cls} />)}
+                    <input type="number" inputMode="numeric" value={option.stock} onChange={e => update('stock', e.target.value)} placeholder="무제한" className={cls} />
+                    <button type="button" aria-label="옵션 삭제" disabled={form.options.length === 1} onClick={() => setForm({ ...form, options: form.options.filter((_, i) => i !== index) })} className="text-red-400 disabled:text-slate-300">✕</button>
+                  </div>
+                })}
+              </div></div>
+              <p className="text-[11px] text-slate-400">중량은 옵션명에 입력할 수 있으며, 대표 상품값은 일반구매가가 가장 낮은 옵션을 기준으로 저장됩니다.</p>
+            </div>
+          )}
 
           <div>
             <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">설명</label>

@@ -19,7 +19,7 @@ export function MobileNav({ headerBg, border, gtext, sub, dark, setDark, cartCou
   return (
     <div style={{
       position: 'fixed', bottom: 0, left: 0, right: 0,
-      background: headerBg, backdropFilter: 'blur(24px)',
+      background: dark ? '#0b1f15' : '#ffffff',
       borderTop: `1px solid ${border}`,
       padding: '10px 0 24px',
       display: 'flex', justifyContent: 'space-around', alignItems: 'center',
