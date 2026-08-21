@@ -13,6 +13,7 @@ import { SellerNotice } from './_SellerNotice'
 type OrderForm = { address: string; recipient: string; phone: string; note: string; payment_method: string; evidence: string; evidenceContact: string }
 type Props = {
   product: any
+  selectedOption?: any | null
   quantity: number
   memberType: string
   memberInfo: any
@@ -40,7 +41,7 @@ type Props = {
   dark: boolean
 }
 
-export function OrderModal({ product, quantity, orderDone, memberType, memberInfo, user, addresses, orderForm, setOrderForm, orderLoading, setOrderLoading, setOrderDone, setShowOrderForm, getPrice, totalPrice, finalPrice, couponDiscount, couponBase, appliedCoupon, appliedUcId, ownedCoupons, selectCoupon, removeCoupon, couponMsg, D, dark }: Props) {
+export function OrderModal({ product, selectedOption, quantity, orderDone, memberType, memberInfo, user, addresses, orderForm, setOrderForm, orderLoading, setOrderLoading, setOrderDone, setShowOrderForm, getPrice, totalPrice, finalPrice, couponDiscount, couponBase, appliedCoupon, appliedUcId, ownedCoupons, selectCoupon, removeCoupon, couponMsg, D, dark }: Props) {
   const supabase = createClient()
   const router = useRouter()
   const id = product.id
@@ -130,7 +131,7 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
                       {product.image_url && <img src={product.image_url} alt="" style={{width:'40px',height:'40px',borderRadius:'8px',objectFit:'cover',flexShrink:0}} />}
                       <div style={{flex:1,minWidth:0}}>
                         <p style={{fontSize:'13px',fontWeight:800,color:'white',margin:'0 0 2px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{product.name}</p>
-                        <p style={{fontSize:'11px',color:'rgba(255,255,255,0.75)',margin:0}}>{quantity}{product.unit} × {getPrice().toLocaleString()}원</p>
+                        <p style={{fontSize:'11px',color:'rgba(255,255,255,0.75)',margin:0}}>{selectedOption?.label ? `${selectedOption.label} · ` : ''}{quantity}{selectedOption?.unit || product.unit} × {getPrice().toLocaleString()}원</p>
                       </div>
                       <p style={{fontSize:'18px',fontWeight:900,color:'white',flexShrink:0}}>{totalPrice.toLocaleString()}원</p>
                     </div>
@@ -345,7 +346,10 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
                         const isPg = isCard || isVbank                         // 둘 다 이니시스 결제창 사용
                         // 재고는 결제/입금 성공 후 차감 → 시작 전 재고 여부만 확인(초과판매 방지)
                         {
-                          const { data: prod } = await supabase.from('products').select('stock').eq('id', product.id).single()
+                          const stockQuery = selectedOption
+                            ? supabase.from('product_options').select('stock').eq('id', selectedOption.id).single()
+                            : supabase.from('products').select('stock').eq('id', product.id).single()
+                          const { data: prod } = await stockQuery
                           if (prod && prod.stock != null && prod.stock < quantity) {
                             setOrderLoading(false)
                             alert('죄송해요, 재고가 부족합니다. 수량을 줄여주세요.')
@@ -373,8 +377,10 @@ export function OrderModal({ product, quantity, orderDone, memberType, memberInf
                             order_id: newOrder.id,
                             product_id: product.id,
                             product_name: product.name,
+                            option_id: selectedOption?.id || null,
+                            option_label: selectedOption?.label || null,
                             quantity,
-                            unit: product.unit,
+                            unit: selectedOption?.unit || product.unit,
                             unit_price: getPrice(),
                             total_price: totalPrice,
                             supplier_id: product.supplier_id || null,

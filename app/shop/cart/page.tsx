@@ -14,12 +14,17 @@ type CartItem = {
   id: string
   quantity: number
   product_id: string
+  option_id: string | null
   products: {
     id: string; name: string; image_url: string
     retail_price: number; wholesale_price: number; member_price: number
-    stock: number; unit: string; is_taxable: boolean; supplier_id: string | null
+    stock: number | null; unit: string; weight?: number | null; is_taxable: boolean; supplier_id: string | null
     shipping_type?: 'free' | 'paid'; shipping_fee?: number | null; free_shipping_threshold?: number | null
   }
+  product_options: {
+    id: string; label: string; retail_price: number; wholesale_price: number; member_price: number
+    stock: number | null; unit: string | null; weight: number | null
+  } | null
 }
 
 type MemberType = '일반' | '소매업' | '도매업'
@@ -103,7 +108,7 @@ export default function CartPage() {
 
     const { data: cartData } = await supabase
       .from('cart_items')
-      .select('*, products(*)')
+      .select('*, products(*), product_options(*)')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
 
@@ -120,12 +125,11 @@ export default function CartPage() {
     setLoading(false)
   }
 
-  const getPrice = (product: CartItem['products']) => {
-    return priceFor(product, memberType)
-  }
+  const saleUnit = (item: CartItem) => item.product_options || item.products
+  const getPrice = (item: CartItem) => priceFor(saleUnit(item), memberType)
 
-  const updateQty = async (itemId: string, qty: number, stock: number) => {
-    if (qty < 1 || qty > stock) return
+  const updateQty = async (itemId: string, qty: number, stock: number | null) => {
+    if (qty < 1 || (stock != null && qty > stock)) return
     setUpdating(itemId)
     await supabase.from('cart_items').update({ quantity: qty }).eq('id', itemId)
     setItems(prev => prev.map(i => i.id === itemId ? { ...i, quantity: qty } : i))
@@ -142,8 +146,8 @@ export default function CartPage() {
     setItems([])
   }
 
-  const totalAmount = items.reduce((sum, item) => sum + getPrice(item.products) * item.quantity, 0)
-  const shippingLines = items.map(item => ({ item, calculation: calculateProductShipping(item.products, getPrice(item.products), item.quantity) }))
+  const totalAmount = items.reduce((sum, item) => sum + getPrice(item) * item.quantity, 0)
+  const shippingLines = items.map(item => ({ item, calculation: calculateProductShipping(item.products, getPrice(item), item.quantity) }))
   const shippingFee = shippingLines.reduce((sum, line) => sum + line.calculation.appliedFee, 0)
   const shippingDiscount = shippingLines.reduce((sum, line) => sum + line.calculation.discount, 0)
 
@@ -158,7 +162,7 @@ export default function CartPage() {
   const couponBase = (c: any) => {
     if (!c) return totalAmount
     if (c.created_by_role === 'supplier') {
-      return items.filter(i => i.products.supplier_id === c.created_by).reduce((s, i) => s + getPrice(i.products) * i.quantity, 0)
+      return items.filter(i => i.products.supplier_id === c.created_by).reduce((s, i) => s + getPrice(i) * i.quantity, 0)
     }
     return totalAmount
   }
@@ -196,7 +200,7 @@ export default function CartPage() {
 
   const isBiz = memberType === '소매업' || memberType === '도매업'  // 사업자 회원
   // 과세(가공식품)분 / 면세(미가공 농수산물)분 분리 — 부가세는 과세분에만
-  const taxableSum = items.filter(i => i.products.is_taxable).reduce((s, i) => s + getPrice(i.products) * i.quantity + calculateProductShipping(i.products, getPrice(i.products), i.quantity).appliedFee, 0)
+  const taxableSum = items.filter(i => i.products.is_taxable).reduce((s, i) => s + getPrice(i) * i.quantity + calculateProductShipping(i.products, getPrice(i), i.quantity).appliedFee, 0)
   const exemptSum = totalAmount + shippingFee - taxableSum
   const vatAmount = taxableSum - Math.round(taxableSum / 1.1)  // 과세분(부가세포함가) 중 부가세
 
@@ -239,10 +243,17 @@ export default function CartPage() {
 
       // 재고는 결제/입금 성공 후 차감 → 결제 시작 전 재고 여부만 확인(초과판매 방지)
       {
-        const { data: prods } = await supabase.from('products').select('id, stock').in('id', items.map(i => i.products.id))
+        const productIds = items.filter(i => !i.option_id).map(i => i.product_id)
+        const optionIds = items.flatMap(i => i.option_id ? [i.option_id] : [])
+        const [{ data: prods }, { data: optionRows }] = await Promise.all([
+          productIds.length ? supabase.from('products').select('id, stock').in('id', productIds) : Promise.resolve({ data: [] as any[] }),
+          optionIds.length ? supabase.from('product_options').select('id, stock').in('id', optionIds) : Promise.resolve({ data: [] as any[] }),
+        ])
         const short = items.filter(it => {
-          const ps = prods?.find((p: any) => p.id === it.products.id)
-          return ps && ps.stock != null && ps.stock < it.quantity
+          const stock = it.option_id
+            ? optionRows?.find((option: any) => option.id === it.option_id)?.stock
+            : prods?.find((product: any) => product.id === it.product_id)?.stock
+          return stock != null && stock < it.quantity
         })
         if (short.length > 0) {
           setOrderLoading(false)
@@ -270,15 +281,17 @@ export default function CartPage() {
       if (newOrder) {
         await supabase.from(itemTable).insert(
           items.map(item => {
-            const shipping = calculateProductShipping(item.products, getPrice(item.products), item.quantity)
+            const shipping = calculateProductShipping(item.products, getPrice(item), item.quantity)
             return ({
             order_id: newOrder.id,
             product_id: item.products.id,
             product_name: item.products.name,
+            option_id: item.option_id || null,
+            option_label: item.product_options?.label || null,
             quantity: item.quantity,
-            unit: item.products.unit,
-            unit_price: getPrice(item.products),
-            total_price: getPrice(item.products) * item.quantity,
+            unit: saleUnit(item).unit || item.products.unit,
+            unit_price: getPrice(item),
+            total_price: getPrice(item) * item.quantity,
             supplier_id: item.products.supplier_id || null,  // 정산 귀속(공급사 상품)
             shipping_type: item.products.shipping_type || 'free',
             shipping_fee: shipping.configuredFee,
@@ -418,7 +431,8 @@ export default function CartPage() {
             {/* 상품 목록 */}
             <div style={{ display:'flex', flexDirection:'column', gap:'12px', marginBottom:'20px' }}>
               {items.map(item => {
-                const price = getPrice(item.products)
+                const price = getPrice(item)
+                const currentUnit = saleUnit(item)
                 return (
                   <div key={item.id} className="cart-item-card" style={{ background:D.card, borderRadius:'20px', padding:'16px', border:`1px solid ${D.border}`, display:'flex', gap:'14px', alignItems:'center' }}>
                     {/* 이미지 */}
@@ -431,20 +445,21 @@ export default function CartPage() {
                     {/* 정보 */}
                     <div style={{ flex:1, minWidth:0 }}>
                       <p style={{ fontWeight:700, fontSize:'14px', color:D.text, margin:'0 0 4px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.products.name}</p>
+                      {item.product_options?.label && <p style={{fontSize:'12px',fontWeight:800,color:gtext,margin:'0 0 5px'}}>옵션 · {item.product_options.label}</p>}
                       <p style={{ fontSize:'16px', fontWeight:900, color:priceColor, margin:'0 0 8px' }}>{(price * item.quantity).toLocaleString()}원</p>
                       <p style={{ fontSize:'11px', fontWeight:700, color:gtext, margin:'0 0 8px' }}>🚚 {shippingPolicyLabel(item.products)}</p>
                       {/* 수량 조절 */}
                       <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
                         <div style={{ display:'flex', alignItems:'center', background:D.input, borderRadius:'10px', overflow:'hidden' }}>
-                          <button onClick={() => updateQty(item.id, item.quantity - 1, item.products.stock)}
+                          <button onClick={() => updateQty(item.id, item.quantity - 1, currentUnit.stock)}
                             style={{ width:'32px', height:'32px', background:'none', border:'none', fontSize:'16px', cursor:'pointer', color:D.text, display:'flex', alignItems:'center', justifyContent:'center' }}>−</button>
                           <span style={{ width:'32px', textAlign:'center', fontSize:'14px', fontWeight:700, color:D.text }}>
                             {updating === item.id ? '...' : item.quantity}
                           </span>
-                          <button onClick={() => updateQty(item.id, item.quantity + 1, item.products.stock)}
+                          <button onClick={() => updateQty(item.id, item.quantity + 1, currentUnit.stock)}
                             style={{ width:'32px', height:'32px', background:'none', border:'none', fontSize:'16px', cursor:'pointer', color:D.text, display:'flex', alignItems:'center', justifyContent:'center' }}>+</button>
                         </div>
-                        <span style={{ fontSize:'11px', color:D.sub }}>{item.products.unit}단위</span>
+                        <span style={{ fontSize:'11px', color:D.sub }}>{currentUnit.unit || item.products.unit}단위{currentUnit.weight ? ` · ${currentUnit.weight}${currentUnit.unit || ''}` : ''}</span>
                       </div>
                     </div>
                     {/* 삭제 */}

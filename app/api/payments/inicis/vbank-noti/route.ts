@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase-admin'
 import { issueTaxinvoice, issueCashbill, popbillReady } from '@/lib/popbill'
+import { decrementOrderStock, type OrderTable } from '@/lib/order-payment'
 
 // KG이니시스 가상계좌 입금통보(노티).
 // 이니시스 상점관리자 > 가상계좌 입금통보 URL 에 등록:  https://app.yuanfnb.com/api/payments/inicis/vbank-noti
@@ -77,7 +78,12 @@ export async function POST(req: NextRequest) {
   if (autoChk?.value === 'off') { await stamp(`입금신호 수신(수동모드) 주문#${order.id}`); return OK() }
 
   // 1) 입금완료 처리
-  await supabase.from(table).update({ status: '입금완료', updated_at: new Date().toISOString() }).eq('id', order.id)
+  const { data: paidOrder, error: paidError } = await supabase.from(table)
+    .update({ status: '입금완료', updated_at: new Date().toISOString() })
+    .eq('id', order.id).not('status', 'in', '("입금완료","결제완료")').select('id').maybeSingle()
+  if (paidError) { await stamp(`입금완료 반영 실패 주문#${order.id}`); return OK() }
+  if (!paidOrder) return OK()
+  await decrementOrderStock(supabase, table as OrderTable, order.id)
   await stamp(`입금완료 주문#${order.id}`)
 
   // 2) 증빙 자동발행 (auto_issue === 'on' + 팝빌 준비됨)

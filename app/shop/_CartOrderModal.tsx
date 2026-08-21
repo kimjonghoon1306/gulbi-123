@@ -98,8 +98,8 @@ export function CartOrderModal({ orderForm, setOrderForm, orderDone, handleOrder
                 <div style={{ background:D.input, borderRadius:'14px', padding:'14px', display:'flex', flexDirection:'column', gap:'8px' }}>
                   {items.map(item => (
                     <div key={item.id} style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                      <p style={{ fontSize:'13px', color:D.text, margin:0 }}>{item.products.name} × {item.quantity}{item.products.unit}</p>
-                      <p style={{ fontSize:'13px', fontWeight:700, color:priceColor, margin:0 }}>{(getPrice(item.products) * item.quantity).toLocaleString()}원</p>
+                      <p style={{ fontSize:'13px', color:D.text, margin:0 }}>{item.products.name}{item.product_options?.label ? ` · ${item.product_options.label}` : ''} × {item.quantity}{item.product_options?.unit || item.products.unit}</p>
+                      <p style={{ fontSize:'13px', fontWeight:700, color:priceColor, margin:0 }}>{(getPrice(item) * item.quantity).toLocaleString()}원</p>
                     </div>
                   ))}
                   <div style={{height:'1px',background:D.border,margin:'3px 0'}} />

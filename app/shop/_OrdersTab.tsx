@@ -173,7 +173,7 @@ export function OrdersTab({ D, tc, accent, member, orders, orderItems, orderRetu
                     ) : (orderItems[order.id] || []).map((item, i, arr) => (
                       <div key={i} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'10px 0', borderBottom: i < arr.length-1 ? `1px solid ${D.border}` : 'none' }}>
                         <div>
-                          <p style={{ fontSize:'13px', fontWeight:600, color:D.text, margin:'0 0 2px' }}>{item.product_name}</p>
+                          <p style={{ fontSize:'13px', fontWeight:600, color:D.text, margin:'0 0 2px' }}>{item.product_name}{item.option_label ? ` · ${item.option_label}` : ''}</p>
                           <p style={{ fontSize:'11px', color:D.sub, margin:0 }}>{item.quantity}{item.unit} × {item.unit_price.toLocaleString()}원</p>
                         </div>
                         <p style={{ fontSize:'13px', fontWeight:800, color:D.text, margin:0 }}>{item.total_price.toLocaleString()}원</p>

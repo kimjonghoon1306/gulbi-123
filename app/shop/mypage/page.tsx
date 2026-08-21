@@ -31,6 +31,7 @@ type Order = {
 type OrderItem = {
   id: string; product_name: string; quantity: number; unit: string
   unit_price: number; total_price: number
+  option_id?: string | null; option_label?: string | null
 }
 
 type OrderReturn = {

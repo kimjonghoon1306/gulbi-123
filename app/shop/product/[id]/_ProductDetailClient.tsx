@@ -299,11 +299,13 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
   const addToCart = async () => {
     if (!user) { return }
     setCartLoading(true)
-    const { data: existing } = await supabase.from('cart_items').select('id,quantity').eq('user_id', user.id).eq('product_id', id).single()
+    let existingQuery = supabase.from('cart_items').select('id,quantity').eq('user_id', user.id).eq('product_id', id)
+    existingQuery = selectedOption ? existingQuery.eq('option_id', selectedOption.id) : existingQuery.is('option_id', null)
+    const { data: existing } = await existingQuery.maybeSingle()
     if (existing) {
       await supabase.from('cart_items').update({ quantity: existing.quantity + quantity }).eq('id', existing.id)
     } else {
-      await supabase.from('cart_items').insert({ user_id: user.id, product_id: id, quantity })
+      await supabase.from('cart_items').insert({ user_id: user.id, product_id: id, option_id: selectedOption?.id || null, quantity })
     }
     // 🛒 헤더 카운트 갱신 신호
     localStorage.setItem('cart-updated', Date.now().toString())
@@ -798,7 +800,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
       </div>
 
         {/* 주문 폼 모달 */}
-      {showOrderForm && product && <OrderModal product={product} quantity={quantity} orderDone={orderDone} memberType={memberType} memberInfo={memberInfo} user={user} addresses={addresses} orderForm={orderForm} setOrderForm={setOrderForm} orderLoading={orderLoading} setOrderLoading={setOrderLoading} setOrderDone={setOrderDone} setShowOrderForm={setShowOrderForm} getPrice={getPrice} totalPrice={totalPrice} finalPrice={finalPrice} couponDiscount={couponDiscount} couponBase={couponBase} appliedCoupon={appliedCoupon} appliedUcId={appliedUcId} ownedCoupons={ownedCoupons} selectCoupon={selectCoupon} removeCoupon={removeCoupon} couponMsg={couponMsg} D={D} dark={dark} />}
+      {showOrderForm && product && <OrderModal product={product} selectedOption={selectedOption} quantity={quantity} orderDone={orderDone} memberType={memberType} memberInfo={memberInfo} user={user} addresses={addresses} orderForm={orderForm} setOrderForm={setOrderForm} orderLoading={orderLoading} setOrderLoading={setOrderLoading} setOrderDone={setOrderDone} setShowOrderForm={setShowOrderForm} getPrice={getPrice} totalPrice={totalPrice} finalPrice={finalPrice} couponDiscount={couponDiscount} couponBase={couponBase} appliedCoupon={appliedCoupon} appliedUcId={appliedUcId} ownedCoupons={ownedCoupons} selectCoupon={selectCoupon} removeCoupon={removeCoupon} couponMsg={couponMsg} D={D} dark={dark} />}
 
       {/* ── 모바일 전용 하단 고정 구매바 ── */}
       {!showOrderForm && (

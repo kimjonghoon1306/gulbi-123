@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase'
 import { COURIERS } from '@/lib/tracking'
 import TrackingInline from './TrackingInline'
 import DepositAutoBar from './DepositAutoBar'
+import { decrementOrderStock, type OrderTable } from '@/lib/order-payment'
 
 export type CustomerField = 'customer_name' | 'company_name'
 export type PriceField = 'retail_price' | 'wholesale_price'
@@ -18,6 +19,7 @@ export type Order = {
 export type OrderItem = {
   id?: string; product_id: string; product_name: string
   quantity: number; unit: string; unit_price: number; total_price: number
+  option_id?: string | null; option_label?: string | null
 }
 type Product = { id: string; name: string; retail_price?: number; wholesale_price?: number; unit: string }
 type FormState = Record<CustomerField | 'contact' | 'address' | 'note' | 'payment_method' | 'status' | 'courier_code' | 'tracking_number', string>
@@ -236,7 +238,14 @@ export default function OrdersAdmin({ config }: { config: OrdersAdminConfig }) {
   }
 
   const updateStatus = async (id: string, status: string) => {
-    await supabase.from(config.tableName).update({ status, updated_at: new Date().toISOString() }).eq('id', id)
+    const previous = orders.find(order => order.id === id)?.status
+    const updateQuery = supabase.from(config.tableName).update({ status, updated_at: new Date().toISOString() }).eq('id', id)
+    const { data: updated } = status === '입금완료'
+      ? await updateQuery.not('status', 'in', '("입금완료","결제완료")').select('id').maybeSingle()
+      : await updateQuery.select('id').maybeSingle()
+    if (updated && status === '입금완료' && previous !== '입금완료' && previous !== '결제완료') {
+      await decrementOrderStock(supabase, config.tableName as OrderTable, id)
+    }
     fetchAll()
     if (viewOrder?.id === id) setViewOrder({ ...viewOrder, status })
   }
@@ -461,7 +470,7 @@ export default function OrdersAdmin({ config }: { config: OrdersAdminConfig }) {
                   {viewItems.map((item, i) => (
                     <div key={i} className="flex justify-between items-center bg-slate-50 dark:bg-gray-700/50 rounded-xl px-4 py-3">
                       <div>
-                        <p className="text-sm font-semibold text-slate-800 dark:text-white">{item.product_name}</p>
+                        <p className="text-sm font-semibold text-slate-800 dark:text-white">{item.product_name}{item.option_label ? ` · ${item.option_label}` : ''}</p>
                         <p className="text-xs text-slate-400 dark:text-slate-500">{item.quantity}{item.unit} × {item.unit_price.toLocaleString()}원</p>
                       </div>
                       <p className={`text-sm font-bold ${config.amountTextClass}`}>{item.total_price.toLocaleString()}원</p>

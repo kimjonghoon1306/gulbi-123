@@ -47,7 +47,7 @@ export async function expectedPaymentAmount(supabase: any, table: OrderTable, or
 
   const { data: items } = await supabase
     .from(orderItemTable(table))
-    .select('product_id, quantity, supplier_id, applied_shipping_fee')
+    .select('product_id, option_id, quantity, supplier_id, applied_shipping_fee')
     .eq('order_id', orderId)
   if (!items || items.length === 0) return null
 
@@ -58,7 +58,13 @@ export async function expectedPaymentAmount(supabase: any, table: OrderTable, or
     .in('id', items.map((item: any) => item.product_id))
   const priceMap = new Map<string, number>((products || []).map((product: any) => [product.id, Number(product[field]) || 0]))
 
-  const lineTotal = (item: any) => (priceMap.get(item.product_id) || 0) * item.quantity
+  const optionIds = items.flatMap((item: any) => item.option_id ? [item.option_id] : [])
+  const { data: options } = optionIds.length
+    ? await supabase.from('product_options').select(`id, ${field}`).in('id', optionIds)
+    : { data: [] }
+  const optionPriceMap = new Map<string, number>((options || []).map((option: any) => [option.id, Number(option[field]) || 0]))
+
+  const lineTotal = (item: any) => (item.option_id ? (optionPriceMap.get(item.option_id) || 0) : (priceMap.get(item.product_id) || 0)) * item.quantity
   const subtotal = items.reduce((sum: number, item: any) => sum + lineTotal(item), 0)
   const shippingTotal = items.reduce((sum: number, item: any) => sum + Math.max(0, Number(item.applied_shipping_fee || 0)), 0)
 
@@ -174,15 +180,33 @@ export async function markOrderPaid(
   }
   if (!updatedOrder) return { found: true, alreadyProcessed: true }
 
-  const { data: items } = await supabase
-    .from(orderItemTable(table))
-    .select('product_id, quantity')
-    .eq('order_id', orderId)
-  if (items && items.length > 0) {
-    await supabase.rpc('decrement_stock_bulk', {
-      items: items.map((item: any) => ({ id: item.product_id, qty: item.quantity })),
-    })
-  }
+  if (!isWaiting) await decrementOrderStock(supabase, table, orderId)
 
   return { found: true, alreadyProcessed: false }
+}
+
+export async function decrementOrderStock(supabase: any, table: OrderTable, orderId: string) {
+  const { data: items } = await supabase
+    .from(orderItemTable(table))
+    .select('product_id, option_id, quantity')
+    .eq('order_id', orderId)
+  if (items && items.length > 0) {
+    // products.stock은 목록 카드용 대표 합계이므로 기존처럼 함께 차감하고,
+    // 옵션 주문은 실제 재고 원장인 product_options.stock도 별도로 차감한다.
+    const productQuantities = new Map<string, number>()
+    items.forEach((item: any) => productQuantities.set(item.product_id, (productQuantities.get(item.product_id) || 0) + item.quantity))
+    await supabase.rpc('decrement_stock_bulk', {
+      items: Array.from(productQuantities, ([id, qty]) => ({ id, qty })),
+    })
+    for (const item of items.filter((row: any) => row.option_id)) {
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        const { data: option } = await supabase.from('product_options').select('stock').eq('id', item.option_id).maybeSingle()
+        if (option?.stock == null) break
+        const { data: updated } = await supabase.from('product_options')
+          .update({ stock: Math.max(0, option.stock - item.quantity) })
+          .eq('id', item.option_id).eq('stock', option.stock).select('id').maybeSingle()
+        if (updated) break
+      }
+    }
+  }
 }
