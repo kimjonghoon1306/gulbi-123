@@ -894,7 +894,8 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
         .product-description img{content-visibility:auto}
         .product-description video{content-visibility:auto}
         /* 진입 애니메이션 */
-        .product-grid > div { animation: pdFadeUp 0.5s ease both; }
+        /* 그리드 1fr 트랙이 내부 nowrap 요소(구성 안내 등)에 밀려 가로로 넘치는 것 방지 */
+        .product-grid > div { animation: pdFadeUp 0.5s ease both; min-width: 0; }
         .product-grid > div:nth-child(2){ animation-delay: 0.08s; }
         /* 모든 버튼/링크 터치·hover 반응 */
         button, a { -webkit-tap-highlight-color: transparent; }
