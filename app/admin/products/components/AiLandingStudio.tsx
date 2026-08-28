@@ -514,26 +514,46 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
                   </div>
                 </div>
                 <div className="st-pbody">
-                  {/* 컨셉 탭 — 통합 목록(쇼케이스 6 + 옛 템플릿 6). 상품 카테고리 색 자동. */}
+                  {/* 컨셉 탭 — 미리캔버스처럼 각 컨셉의 실제 디자인 잔상(미니 미리보기)을 카드에 표시 */}
                   {panelTab === 'concept' && (() => {
                     const cat = inferCategory({ productGroup: s.productGroup, freshType: s.freshType, productName: s.aiMeta.name || s.selectedProduct?.name })
                     const showcaseList = SHOWCASE_STYLES.filter(x => x.category === cat)
                     const cards = [
-                      ...showcaseList.map(st => ({ id: st.id, name: st.name, paper: st.paper, ink: st.ink, accent: st.accent })),
-                      ...LEGACY_STYLES.map(l => ({ id: 'legacy.' + l.tpl, name: l.name, paper: l.paper, ink: l.ink, accent: l.accent })),
+                      ...showcaseList.map(st => ({ id: st.id, name: st.name, paper: st.paper, ink: st.ink, accent: st.accent, legacy: false })),
+                      ...LEGACY_STYLES.map(l => ({ id: 'legacy.' + l.tpl, name: l.name, paper: l.paper, ink: l.ink, accent: l.accent, legacy: true })),
                     ]
+                    // 각 카드용 미니 미리보기 HTML(실제 렌더를 축소). 생성 데이터 있을 때만.
+                    const miniHtml = (id: string, legacy: boolean) => {
+                      if (!s.aiLandingData) return ''
+                      try {
+                        if (legacy) {
+                          const tpl = id.slice(7) as TemplateKey
+                          return renderLanding(s.aiLandingData, CAT_PRESET[cat] || 'gold', tpl, layoutMode)
+                        }
+                        return renderShowcase(s.aiLandingData, id, layoutMode)
+                      } catch { return '' }
+                    }
                     return (
                       <>
                         <div className="st-lab">✨ 컨셉 선택 <span style={{ color: 'var(--muted2)', fontWeight: 700 }}>· {cards.length}가지</span></div>
-                        <p className="st-tiny" style={{ marginTop: 0, marginBottom: 14 }}>클릭하면 미리보기가 바로 바뀌어요. 같은 상품도 완전 다른 느낌으로.</p>
+                        <p className="st-tiny" style={{ marginTop: 0, marginBottom: 14 }}>각 컨셉의 실제 디자인이 미리 보여요. 클릭하면 큰 미리보기가 바뀝니다.</p>
                         <div className="st-stylegrid">
-                          {cards.map(st => (
-                            <button key={st.id} className={'st-stylecard' + (styleId === st.id ? ' on' : '')} onClick={() => setStyleId(st.id)}
-                              style={{ background: st.paper }}>
-                              <span className="st-styleswatch" style={{ background: st.accent }} />
-                              <span className="st-stylenm" style={{ color: st.ink }}>{st.name}</span>
-                            </button>
-                          ))}
+                          {cards.map(st => {
+                            const html = miniHtml(st.id, st.legacy)
+                            return (
+                              <button key={st.id} className={'st-stylecard' + (styleId === st.id ? ' on' : '')} onClick={() => setStyleId(st.id)}>
+                                <div className="st-cardprev" style={{ background: st.paper }}>
+                                  {html
+                                    ? <iframe className="st-cardframe" tabIndex={-1} scrolling="no" srcDoc={`<style>html,body{margin:0;padding:0;overflow:hidden;pointer-events:none}</style>${html}`} />
+                                    : <span className="st-cardswatch" style={{ background: st.accent }} />}
+                                </div>
+                                <div className="st-cardname">
+                                  <span className="st-carddot" style={{ background: st.accent }} />
+                                  <span className="st-stylenm">{st.name}</span>
+                                </div>
+                              </button>
+                            )
+                          })}
                         </div>
                       </>
                     )
@@ -820,11 +840,16 @@ const CSS = `
 .st-stock{border-radius:9px;overflow:hidden;aspect-ratio:3/4;border:1px solid var(--line)}
 .st-stock img{width:100%;height:100%;object-fit:cover}
 .st-stock:hover{outline:2px solid var(--accent)}
-.st-stylegrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.st-stylecard{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:20px 16px;border-radius:13px;border:2px solid var(--line);text-align:left;min-height:88px;transition:.15s;overflow:hidden}
+.st-stylegrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.st-stylecard{position:relative;display:flex;flex-direction:column;padding:0;border-radius:13px;border:2px solid var(--line);text-align:left;transition:.15s;overflow:hidden;background:var(--panel)}
 .st-stylecard:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
 .st-stylecard.on{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
-.st-styleswatch{position:absolute;top:11px;right:11px;width:16px;height:16px;border-radius:50%;box-shadow:0 0 0 2px rgba(255,255,255,.3)}
-.st-stylenm{font-size:15px;font-weight:800;letter-spacing:-.01em}
+/* 미니 미리보기(실제 디자인 잔상) — 460px 실제폭을 카드폭으로 축소 */
+.st-cardprev{position:relative;width:100%;aspect-ratio:3/4;overflow:hidden}
+.st-cardframe{position:absolute;top:0;left:0;width:460px;height:613px;border:0;transform:scale(0.318);transform-origin:top left;pointer-events:none}
+.st-cardswatch{position:absolute;inset:0}
+.st-cardname{display:flex;align-items:center;gap:7px;padding:11px 13px}
+.st-carddot{width:12px;height:12px;border-radius:50%;flex:none;box-shadow:0 0 0 1px var(--line)}
+.st-stylenm{font-size:14px;font-weight:800;letter-spacing:-.01em;color:var(--ink)}
 .st-stylecat{font-size:12px;font-weight:600;opacity:.8}
 `
