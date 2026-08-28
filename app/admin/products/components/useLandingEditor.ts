@@ -201,6 +201,10 @@ export function useLandingEditor(opts: {
     if (basicInfoLoading) return setAiError('상품 기본정보 초안이 완성될 때까지 잠시만 기다려주세요.')
     if (!aiImage && !selectedProduct?.image_url) return setAiError('이미지를 먼저 올려주세요.')
     setAiLoading(true); setAiError('')
+    // ★ 생성 중 화면이 꺼지거나 백그라운드로 가도 멈추지 않게: Wake Lock으로 화면 유지.
+    //   (아이패드 사파리가 탭을 얼리는 것을 방지 — 화면이 켜져 있으면 JS가 계속 돈다)
+    let wakeLock: any = null
+    try { if ('wakeLock' in navigator) wakeLock = await (navigator as any).wakeLock.request('screen') } catch {}
     const steps = ['🔍 이미지 분석 중...', '✍️ 상품 스토리 작성 중...', '📋 특징 · 비교표 정리 중...', '⭐ 후기 · FAQ 작성 중...', '🎨 상세페이지 완성 중...']
     let idx = 0; setAiLoadingMsg(steps[0])
     aiLoadingTimer.current = setInterval(() => { idx = Math.min(idx + 1, steps.length - 1); setAiLoadingMsg(steps[idx]) }, 5000)
@@ -219,7 +223,7 @@ export function useLandingEditor(opts: {
       if (images.length === 0) { setAiLoading(false); return setAiError('이미지가 준비되지 않았어요.') }
 
       const res = await fetch('/api/generate-landing', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, keepalive: true,
         body: JSON.stringify({ images, persona: aiPersona, productName: aiMeta.name, origin: aiMeta.origin, retailPrice: aiMeta.retail_price, wholesalePrice: aiMeta.wholesale_price, unit: aiMeta.unit, productGroup, freshType, shipCutoff, hasHaccp, haccpNo, basicInfo })
       })
       const data = await res.json()
@@ -236,7 +240,7 @@ export function useLandingEditor(opts: {
       console.error('[studio generate] unexpected error', e)
       setAiError('상세페이지 생성 중 오류가 발생했습니다. 서버 로그를 확인해 주세요.')
     }
-    finally { setAiLoading(false); clearInterval(aiLoadingTimer.current); setAiLoadingMsg('') }
+    finally { setAiLoading(false); clearInterval(aiLoadingTimer.current); setAiLoadingMsg(''); try { await wakeLock?.release() } catch {} }
   }
 
   // ── 컨셉(템플릿)/배색 변경 → 미리보기 갱신 ─────────────────
