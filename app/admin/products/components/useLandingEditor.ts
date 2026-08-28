@@ -68,13 +68,26 @@ export function useLandingEditor(opts: {
   const aiLoadingTimer = useRef<any>(null)
 
   // ── 진입: 상품 지정 시 수정/새로만들기 선택 ─────────────────
+  // ★ initialProduct는 "다른 상품으로 새로 열 때"만 재초기화한다.
+  //   remakeDetail이 description을 나중에 비동기로 채워 같은 상품 객체를 다시 넘겨도
+  //   (id가 같으면) 재초기화하지 않는다 → 생성 중 에디터가 1단계로 리셋되어 "튕기는" 버그 방지.
+  const initedIdRef = useRef<string | null>(null)
   useEffect(() => {
     if (show && initialProduct) {
+      if (initedIdRef.current === initialProduct.id) {
+        // 같은 상품: description이 뒤늦게 도착한 경우에만 수정용 HTML만 갱신(단계·상태는 유지)
+        if (initialProduct.description?.trim() && !aiLandingHtml && aiStep === 3) {
+          setAiLandingHtml(initialProduct.description)
+        }
+        return
+      }
+      initedIdRef.current = initialProduct.id
       selectProductForAI(initialProduct)
       const hasDetail = !!(initialProduct.description && initialProduct.description.trim())
       setAiChoice(hasDetail)
       if (!hasDetail) setAiStep(1)
     } else if (!show) {
+      initedIdRef.current = null
       setAiChoice(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

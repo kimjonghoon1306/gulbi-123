@@ -41,11 +41,12 @@ export default function ProductsPage() {
   // AI 에디터
   const [showAiForm, setShowAiForm] = useState(false)
   const [aiInitialProduct, setAiInitialProduct] = useState<Product | null>(null)
-  // 상세페이지 재생성: 목록엔 description이 없으므로 그 상품만 따로 불러와 채운다.
+  // 상세페이지 재생성: 목록엔 description이 없으므로 그 상품만 따로 불러와 채운 뒤 연다.
+  // (먼저 열고 나중에 채우면 에디터가 재초기화되어 튕기므로, description을 받은 뒤 한 번에 연다)
   const remakeDetail = async (p: Product) => {
-    setShowAiForm(true); setAiInitialProduct(p)
     const { data } = await supabase.from('products').select('description').eq('id', p.id).single()
     setAiInitialProduct({ ...p, description: data?.description || '' })
+    setShowAiForm(true)
   }
 
   useEffect(() => { fetchAll() }, [])
