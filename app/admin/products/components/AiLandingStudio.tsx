@@ -59,6 +59,7 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
   const [previewMode, setPreviewMode] = useState<'mobile' | 'pc'>('mobile')
   const [autoBgLoading, setAutoBgLoading] = useState(false)
   const [styleId, setStyleId] = useState<string>('')   // 선택된 쇼케이스 스타일
+  const [dragOver, setDragOver] = useState(false)      // 사진 드래그앤드롭 하이라이트
   const [fontCss, setFontCss] = useState('')
   const [headingWeight, setHeadingWeight] = useState(800)
   const [stockQuery, setStockQuery] = useState('')
@@ -127,11 +128,19 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
     setToolMsg('✅ 미리보기 맨 아래에 추가했어요.')
   }
 
-  // 로컬 파일을 미리보기에 삽입(중간 이미지 추가). 저장 시 innerHTML로 함께 저장됨.
-  const insertUploadedImage = (file: File) => {
-    const reader = new FileReader()
-    reader.onload = () => insertImageToPreview(reader.result as string)
-    reader.readAsDataURL(file)
+  // 로컬 파일을 미리보기에 삽입(중간 이미지 추가). 여러 장을 순서대로. 저장 시 innerHTML로 함께 저장.
+  const insertUploadedImages = (files: FileList | File[]) => {
+    const imgs = Array.from(files).filter(f => f.type.startsWith('image/'))
+    if (imgs.length === 0) return
+    // 순서 보장: 하나씩 순차로 읽어 추가
+    let i = 0
+    const next = () => {
+      if (i >= imgs.length) { setToolMsg(`✅ 사진 ${imgs.length}장을 추가했어요.`); return }
+      const reader = new FileReader()
+      reader.onload = () => { insertImageToPreview(reader.result as string); i++; next() }
+      reader.readAsDataURL(imgs[i])
+    }
+    next()
   }
 
   // ★ 배경 자동 채우기: 생성 직후 Gemini 카피 기반으로 히어로/주요 섹션 배경을
@@ -253,7 +262,11 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
                     <button className={previewMode === 'pc' ? 'on' : ''} onClick={() => setPreviewMode('pc')}>🖥️ PC</button>
                   </div>
                 </div>
-                <div className={'st-stage ' + previewMode}>
+                {/* 미리보기 전체가 드롭존 — 사진을 끌어다 놓으면 여러 장 한 번에 추가 */}
+                <div className={'st-stage ' + previewMode + (dragOver ? ' dragover' : '')}
+                  onDragOver={e => { e.preventDefault(); if (!dragOver) setDragOver(true) }}
+                  onDragLeave={e => { if (e.currentTarget === e.target) setDragOver(false) }}
+                  onDrop={e => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files?.length) insertUploadedImages(e.dataTransfer.files) }}>
                   <div className={'st-device ' + previewMode}>
                     {previewMode === 'mobile' && <div className="st-notch" />}
                     <div className="st-screen">
@@ -261,12 +274,13 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
                         style={{ minHeight: '100%', outline: 'none' }} />
                     </div>
                   </div>
+                  {dragOver && <div className="st-dropmsg">📥 여기에 놓으면 사진이 추가돼요</div>}
                 </div>
-                {/* 중간 이미지 추가 바 */}
+                {/* 중간 이미지 추가 바 — 여러 장 선택 + 드래그 안내 */}
                 <div className="st-addimg-bar">
                   <label className="st-addimg-btn">
-                    <input type="file" accept="image/*" hidden onChange={e => e.target.files?.[0] && insertUploadedImage(e.target.files[0])} />
-                    <span className="st-plus">＋</span> 상세페이지에 사진 추가
+                    <input type="file" accept="image/*" multiple hidden onChange={e => e.target.files && insertUploadedImages(e.target.files)} />
+                    <span className="st-plus">＋</span> 사진 추가 <span className="st-addimg-hint">(여러 장 선택 · 끌어다 놓기 가능)</span>
                   </label>
                 </div>
               </>
@@ -286,11 +300,13 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
                   </select>
 
                   <div className="st-lab" style={{ marginTop: 18 }}>대표 이미지</div>
-                  <label className="st-drop">
+                  <label className="st-drop"
+                    onDragOver={e => e.preventDefault()}
+                    onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f?.type.startsWith('image/')) s.handleImageUpload(f) }}>
                     <input type="file" accept="image/*" hidden onChange={e => e.target.files?.[0] && s.handleImageUpload(e.target.files[0])} />
                     {enhancedUrl || s.aiBgRemovedPreview || s.aiImagePreview
                       ? <img src={enhancedUrl || s.aiBgRemovedPreview || s.aiImagePreview} alt="" />
-                      : <span>{s.aiBgLoading ? '배경 처리 중…' : '＋ 클릭해서 이미지 올리기'}</span>}
+                      : <span>{s.aiBgLoading ? '배경 처리 중…' : '＋ 클릭 또는 사진을 끌어다 놓기'}</span>}
                   </label>
                   {s.selectedProduct?.image_url && (
                     <button className="st-add" style={{ marginTop: 8 }} disabled={enhanceLoading} onClick={enhancePhoto}>
@@ -299,10 +315,12 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
                   )}
                   {toolMsg && <div className="st-toolmsg">{toolMsg}</div>}
 
-                  <div className="st-lab" style={{ marginTop: 18 }}>추가 사진 (선택)</div>
-                  <label className="st-add">
+                  <div className="st-lab" style={{ marginTop: 18 }}>추가 사진 <span style={{ color: 'var(--muted2)', fontWeight: 700 }}>· 여러 장 한 번에</span></div>
+                  <label className="st-add"
+                    onDragOver={e => e.preventDefault()}
+                    onDrop={e => { e.preventDefault(); if (e.dataTransfer.files?.length) s.addExtraImages(e.dataTransfer.files) }}>
                     <input type="file" accept="image/*" multiple hidden onChange={e => e.target.files && s.addExtraImages(e.target.files)} />
-                    ＋ 사진 추가
+                    ＋ 여러 장 선택 · 끌어다 놓기
                   </label>
                   <div className="st-thumbs">
                     {s.aiExtraImages.map(x => (
@@ -526,7 +544,7 @@ const CSS = `
 .st-viewseg button{padding:6px 13px;border-radius:7px;font-size:12px;font-weight:700;color:var(--muted)}
 .st-viewseg button.on{background:var(--panel);color:var(--accent-d);box-shadow:var(--shadow)}
 /* 스테이지(미리보기 영역) — 크게 */
-.st-stage{flex:1;overflow-y:auto;display:flex;justify-content:center;padding:16px 14px}
+.st-stage{position:relative;flex:1;overflow-y:auto;display:flex;justify-content:center;padding:16px 14px}
 .st-device{background:#111;box-shadow:0 20px 50px -12px rgba(0,0,0,.4);position:relative;align-self:flex-start}
 .st-device.mobile{width:min(400px,96%);border-radius:36px;padding:10px}
 .st-device.pc{width:100%;max-width:680px;border-radius:14px;padding:0;background:#fff;border:1px solid var(--line)}
@@ -538,9 +556,14 @@ const CSS = `
 .st-screen #landing-preview{min-height:400px}
 /* 하단 사진 추가 바 — 크고 잘 보이게 */
 .st-addimg-bar{flex:none;padding:12px 18px;border-top:1px solid var(--line);background:var(--panel);display:flex;justify-content:center}
-.st-addimg-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:11px;border:2px dashed var(--accent);color:var(--accent-d);font-size:13.5px;font-weight:800;cursor:pointer;background:var(--accent-soft);transition:.15s}
+.st-addimg-btn{display:inline-flex;align-items:center;gap:8px;padding:14px 24px;border-radius:11px;border:2px dashed var(--accent);color:var(--accent-d);font-size:14.5px;font-weight:800;cursor:pointer;background:var(--accent-soft);transition:.15s}
 .st-addimg-btn:hover{background:var(--accent);color:#fff;border-style:solid}
+.st-addimg-btn:hover .st-addimg-hint{color:rgba(255,255,255,.85)}
 .st-addimg-btn .st-plus{font-size:18px;line-height:1}
+.st-addimg-hint{font-size:12px;font-weight:600;color:var(--muted)}
+/* 드래그앤드롭 하이라이트 */
+.st-stage.dragover{outline:3px dashed var(--accent);outline-offset:-8px;background:var(--accent-soft)}
+.st-dropmsg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10;background:var(--accent);color:#fff;padding:14px 24px;border-radius:12px;font-size:15px;font-weight:800;box-shadow:0 10px 30px rgba(18,183,106,.4);pointer-events:none}
 .st-panel{background:var(--panel);border-left:1px solid var(--line);overflow-y:auto;display:flex;flex-direction:column}
 .st-phead{padding:22px 22px 16px;border-bottom:1px solid var(--line2)}
 .st-phead h3{font-size:19px;font-weight:800}
