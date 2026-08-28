@@ -89,7 +89,7 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
       if (styleId.startsWith('legacy.')) {
         const tpl = styleId.slice(7) as TemplateKey
         const cat = inferCategory({ productGroup: s.productGroup, freshType: s.freshType, productName: s.aiMeta.name || s.selectedProduct?.name })
-        el.innerHTML = renderLanding(s.aiLandingData, CAT_PRESET[cat] || 'gold', tpl)
+        el.innerHTML = renderLanding(s.aiLandingData, CAT_PRESET[cat] || 'gold', tpl, layoutMode)
       } else {
         el.innerHTML = renderShowcase(s.aiLandingData, styleId, layoutMode)
       }

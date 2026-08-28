@@ -910,8 +910,22 @@ export const LANDING_ANIM_CSS = `
   [data-landing] > section, [data-landing] figure { animation: none !important; opacity: 1 !important; transform: none !important; }
 }`
 
-export function renderLanding(data: LandingData, presetKey: PresetKey = 'gold', templateKey: TemplateKey = 'premium'): string {
-  return `<style>${LANDING_ANIM_CSS}</style>` + renderLandingCore(data, presetKey, templateKey)
+export function renderLanding(data: LandingData, presetKey: PresetKey = 'gold', templateKey: TemplateKey = 'premium', layout: 'balanced' | 'visual' = 'balanced'): string {
+  const core = `<style>${LANDING_ANIM_CSS}</style>` + renderLandingCore(data, presetKey, templateKey)
+  if (layout !== 'visual') return core
+  // 이미지 집중형: 옛 템플릿의 개성(색·폰트)은 유지하되, 긴 본문 문단을 접어 시각 위주로 + 스크롤 애니메이션.
+  const visualCss = `
+<style>
+[data-landing] [data-section="story"] div[contenteditable],
+[data-landing] [data-section="origin"] p[contenteditable]{
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden
+}
+@media (prefers-reduced-motion: no-preference){
+  [data-landing] figure img{animation:lgKen linear both;animation-timeline:view();animation-range:cover 0% cover 100%}
+  @keyframes lgKen{from{transform:scale(1.12)}to{transform:scale(1)}}
+}
+</style>`
+  return visualCss + core
 }
 
 function renderLandingCore(data: LandingData, presetKey: PresetKey = 'gold', templateKey: TemplateKey = 'premium'): string {
