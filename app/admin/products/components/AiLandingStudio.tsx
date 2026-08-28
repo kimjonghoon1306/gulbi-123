@@ -10,7 +10,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { renderLanding, type PresetKey, type TemplateKey } from '@/lib/landing-templates'
-import { SHOWCASE_STYLES, renderShowcase, inferCategory, type ShowcaseStyle, type ShowcaseCategory } from '@/lib/showcase-templates'
+import { SHOWCASE_STYLES, renderShowcase, inferCategory, type ShowcaseStyle, type ShowcaseCategory, type ShowcaseLayout } from '@/lib/showcase-templates'
 import LandingBasicInfoFields from '@/app/components/LandingBasicInfoFields'
 import LandingFactFields from '@/app/components/LandingFactFields'
 import { useLandingEditor, type Product } from './useLandingEditor'
@@ -60,6 +60,7 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
   const [autoBgLoading, setAutoBgLoading] = useState(false)
   const [styleId, setStyleId] = useState<string>('')   // 선택된 쇼케이스 스타일
   const [dragOver, setDragOver] = useState(false)      // 사진 드래그앤드롭 하이라이트
+  const [layoutMode, setLayoutMode] = useState<ShowcaseLayout>('balanced') // 혼합형/이미지집중형
   const [fontCss, setFontCss] = useState('')
   const [headingWeight, setHeadingWeight] = useState(800)
   const [stockQuery, setStockQuery] = useState('')
@@ -90,13 +91,13 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
         const cat = inferCategory({ productGroup: s.productGroup, freshType: s.freshType, productName: s.aiMeta.name || s.selectedProduct?.name })
         el.innerHTML = renderLanding(s.aiLandingData, CAT_PRESET[cat] || 'gold', tpl)
       } else {
-        el.innerHTML = renderShowcase(s.aiLandingData, styleId)
+        el.innerHTML = renderShowcase(s.aiLandingData, styleId, layoutMode)
       }
     } else if (s.aiLandingHtml) {
       el.innerHTML = s.aiLandingHtml
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [s.aiLandingData, styleId, s.aiLandingHtml, s.aiStep, s.aiTab])
+  }, [s.aiLandingData, styleId, s.aiLandingHtml, s.aiStep, s.aiTab, layoutMode])
 
   // 폰트 오버라이드를 미리보기 안에 <style>로 주입(저장 HTML에 함께 남아 상품페이지에도 적용)
   const applyFontOverride = (css: string, weight: number) => {
@@ -341,6 +342,22 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
                   <LandingFactFields dark={s.aiDark} shipCutoff={s.shipCutoff} setShipCutoff={s.setShipCutoff} hasHaccp={s.hasHaccp} setHasHaccp={s.setHasHaccp} haccpNo={s.haccpNo} setHaccpNo={s.setHaccpNo} />
                   <div style={{ height: 14 }} />
                   <LandingBasicInfoFields group={s.productGroup} setGroup={s.setProductGroup} freshType={s.freshType} setFreshType={s.setFreshType} value={s.basicInfo} onChange={s.setBasicInfo} dark={s.aiDark} isAutoFilling={s.basicInfoLoading} onAutoFill={s.autoFillBasicInfo} />
+
+                  {/* 레이아웃 방향 선택 (생성 전) */}
+                  <div className="st-lab" style={{ marginTop: 22 }}>상세페이지 방향</div>
+                  <div className="st-layoutsel">
+                    <button className={'st-layoutcard' + (layoutMode === 'balanced' ? ' on' : '')} onClick={() => setLayoutMode('balanced')}>
+                      <span className="st-layicon">📝🖼️</span>
+                      <span className="st-laynm">이미지 + 글 혼합형</span>
+                      <span className="st-laydesc">설명과 사진 균형. 정보가 중요한 상품에.</span>
+                    </button>
+                    <button className={'st-layoutcard' + (layoutMode === 'visual' ? ' on' : '')} onClick={() => setLayoutMode('visual')}>
+                      <span className="st-layicon">🖼️✨</span>
+                      <span className="st-laynm">이미지 집중형</span>
+                      <span className="st-laydesc">큰 사진 위주. 비주얼로 파는 상품에.</span>
+                    </button>
+                  </div>
+
                   {s.aiError && <div className="st-err">{s.aiError}</div>}
                   <div className="st-row2">
                     <button className="st-ghost" onClick={() => s.setAiStep(1)}>← 이전</button>
@@ -561,6 +578,14 @@ const CSS = `
 .st-addimg-btn:hover .st-addimg-hint{color:rgba(255,255,255,.85)}
 .st-addimg-btn .st-plus{font-size:18px;line-height:1}
 .st-addimg-hint{font-size:12px;font-weight:600;color:var(--muted)}
+/* 레이아웃 방향 선택 카드 */
+.st-layoutsel{display:flex;flex-direction:column;gap:10px}
+.st-layoutcard{display:flex;flex-direction:column;gap:4px;text-align:left;padding:16px 18px;border:2px solid var(--line);border-radius:13px;background:var(--panel);transition:.15s;cursor:pointer}
+.st-layoutcard:hover{border-color:var(--muted2)}
+.st-layoutcard.on{border-color:var(--accent);background:var(--accent-soft)}
+.st-layicon{font-size:22px}
+.st-laynm{font-size:16px;font-weight:800;color:var(--ink)}
+.st-laydesc{font-size:12.5px;color:var(--muted);line-height:1.5}
 /* 드래그앤드롭 하이라이트 */
 .st-stage.dragover{outline:3px dashed var(--accent);outline-offset:-8px;background:var(--accent-soft)}
 .st-dropmsg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10;background:var(--accent);color:#fff;padding:14px 24px;border-radius:12px;font-size:15px;font-weight:800;box-shadow:0 10px 30px rgba(18,183,106,.4);pointer-events:none}

@@ -159,8 +159,11 @@ const FONT_LINK = `<link href="https://fonts.googleapis.com/css2?family=Black+Ha
 const ed = (key: string) => `contenteditable="true" data-key="${key}" spellcheck="false"`
 const esc = (s: any) => String(s ?? '').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
-export function renderShowcase(d: LandingData, styleId: string): string {
+export type ShowcaseLayout = 'balanced' | 'visual'
+
+export function renderShowcase(d: LandingData, styleId: string, layout: ShowcaseLayout = 'balanced'): string {
   const s = getShowcaseStyle(styleId)
+  const isVisual = layout === 'visual'
   // ★ 사용자가 올린 사진을 하나도 버리지 않는다. 모든 이미지를 모아 중복 제거.
   const si = d.sectionImages || {}
   const allImages = Array.from(new Set([
@@ -199,7 +202,7 @@ export function renderShowcase(d: LandingData, styleId: string): string {
 .sc-brand{font-family:${s.brandFont};font-weight:800;color:${s.brandColor};font-size:14px;letter-spacing:.2em}
 .sc-badge{font-size:10px;font-weight:800;color:${s.badgeColor};background:${s.badgeBg};padding:5px 11px;border-radius:${s.badgeRadius};backdrop-filter:blur(3px)}
 .sc-hin{position:relative;z-index:3;padding:0 26px 44px;text-align:${s.heroAlign}}
-.sc-eyebrow{display:inline-block;color:${s.accent};font-size:13px;letter-spacing:.22em;font-weight:800;margin-bottom:14px;font-family:${s.eyebrowFont};text-shadow:0 2px 10px rgba(0,0,0,.7)}
+.sc-eyebrow{display:inline-block;color:${s.accent};font-size:15px;letter-spacing:.12em;font-weight:800;margin-bottom:14px;font-family:${s.eyebrowFont};text-shadow:0 2px 10px rgba(0,0,0,.75)}
 .sc-title{font-family:${s.titleFont};font-weight:${s.titleWeight};color:${s.titleColor};font-size:${s.titleSize};line-height:${s.titleLh};letter-spacing:${s.titleLs};text-shadow:0 4px 24px rgba(0,0,0,.45)}
 .sc-title em{font-style:normal;color:${s.accent};display:${s.titleEmBlock ? 'block' : 'inline'}}
 .sc-sub{color:${s.titleColor};opacity:.92;font-size:17px;margin-top:16px;font-weight:400;line-height:1.75;${s.heroAlign === 'center' ? 'max-width:340px;margin-left:auto;margin-right:auto' : 'max-width:320px'}}
@@ -217,8 +220,14 @@ export function renderShowcase(d: LandingData, styleId: string): string {
 .sc-impact .tail{color:${s.impactFg};opacity:.8;font-size:16px;margin-top:20px;font-weight:400;line-height:1.85}
 .sc-shot{position:relative}
 .sc-shot::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.55),transparent 45%)}
-.sc-shot .cap{position:absolute;left:24px;bottom:22px;color:#fff;z-index:2}
+.sc-shot .cap{position:absolute;left:24px;bottom:22px;right:24px;color:#fff;z-index:2}
 .sc-shot .cap .t{font-family:${s.titleFont};font-weight:800;font-size:22px;text-shadow:0 2px 12px rgba(0,0,0,.7)}
+/* 이미지 집중형: 사진 더 크게(min-height), 캡션도 크게 */
+.sc-shot.big{min-height:74vh;display:flex}
+.sc-shot.big img{width:100%;height:74vh;object-fit:cover}
+.sc-shot.big::after{background:linear-gradient(0deg,rgba(0,0,0,.72),transparent 50%)}
+.sc-shot.big .cap{bottom:34px}
+.sc-shot.big .cap .t{font-size:30px;line-height:1.25}
 .sc-points{padding:64px 26px;background:${s.ptBg}}
 .sc-sh{text-align:center;margin-bottom:40px}
 .sc-sh .en{font-size:12px;letter-spacing:.35em;color:${s.accent2};font-weight:800}
@@ -251,14 +260,58 @@ export function renderShowcase(d: LandingData, styleId: string): string {
 .sc-foot b{font-family:${s.brandFont};color:${s.accent};letter-spacing:.25em;font-weight:800;font-size:13px;display:block;margin-bottom:7px}
 </style>`
 
-  // 사진 섹션 헬퍼(캡션 옵션)
-  const photo = (url: string, cap?: string) => url
-    ? `<section class="sc-shot"><img src="${url}" alt=""/>${cap ? `<div class="cap"><div class="t">${esc(cap)}</div></div>` : ''}</section>`
+  // 사진 섹션 헬퍼. big=이미지 집중형용 큰 캡션 오버레이
+  const photo = (url: string, cap?: string, big = false) => url
+    ? `<section class="sc-shot${big ? ' big' : ''}"><img src="${url}" alt=""/>${cap ? `<div class="cap"><div class="t">${esc(cap)}</div></div>` : ''}</section>`
     : ''
   const storyParas = esc(d.story || '').split('\n').map(x => x.trim()).filter(Boolean).map(x => `<p>${x}</p>`).join('')
 
+  // ── 본문 섹션: 레이아웃에 따라 다르게 ──
+  // balanced(혼합형): 스토리 본문 + 포인트 리스트(설명 포함) + 사진 사이사이
+  // visual(이미지 집중형): 큰 사진 연속 + 사진 위 짧은 카피(포인트 제목만), 긴 글 제거
+  let bodyHtml = ''
+  if (isVisual) {
+    bodyHtml = `
+  ${photo(bodyImages[0], feats[0]?.title || d.productName, true)}
+  ${feats[0] ? `<section class="sc-impact"><h2><span ${ed('impact1')}>${esc(feats[0].title)}</span></h2></section>` : ''}
+  ${photo(bodyImages[1], feats[1]?.title, true)}
+  ${photo(bodyImages[2], feats[2]?.title, true)}
+  ${kn ? `<section class="sc-num">
+    <div class="lead" ${ed('numlead')}>${esc(kn.label || '누적 판매')}</div>
+    <div class="fig"><span ${ed('numval')}>${esc(kn.value)}</span><span class="u" ${ed('numunit')}>${esc(kn.unit || '건')}</span></div>
+    <div class="st">★★★★★</div>
+  </section>` : ''}
+  ${bodyImages.slice(3).map((u, i) => photo(u, shotCaps[(i + 3) % shotCaps.length], true)).join('')}`
+  } else {
+    bodyHtml = `
+  ${storyParas ? `<section class="sc-story">
+    <div class="k">STORY</div>
+    <h2 ${ed('storytitle')}>${esc(d.productName || '')}의 이야기</h2>
+    <div class="body" ${ed('storybody')}>${storyParas}</div>
+  </section>` : ''}
+  ${photo(bodyImages[0], d.productName)}
+  ${feats[0] ? `<section class="sc-impact">
+    <div class="k">WHY</div>
+    <h2><span ${ed('impact1')}>${esc(feats[0].title)}</span></h2>
+    <p class="tail" ${ed('impacttail')}>${esc(feats[0].desc)}</p>
+  </section>` : ''}
+  ${photo(bodyImages[1], shotCaps[1])}
+  ${feats.length ? `<section class="sc-points">
+    <div class="sc-sh"><div class="en">POINT</div><div class="ko" ${ed('ptko')}>이 상품이 다른 이유</div></div>
+    ${feats.map((f, i) => `<div class="sc-pt"><div class="no">${String(i + 1).padStart(2, '0')}</div><div><h3 ${ed('ptt' + i)}>${esc(f.title)}</h3><p ${ed('ptd' + i)}>${esc(f.desc)}</p></div></div>`).join('')}
+  </section>` : ''}
+  ${photo(bodyImages[2], shotCaps[2])}
+  ${kn ? `<section class="sc-num">
+    <div class="lead" ${ed('numlead')}>${esc(kn.label || '누적 판매')}</div>
+    <div class="fig"><span ${ed('numval')}>${esc(kn.value)}</span><span class="u" ${ed('numunit')}>${esc(kn.unit || '건')}</span></div>
+    <div class="st">★★★★★</div>
+    <div class="desc" ${ed('numcap')}>${esc(kn.caption || '')}</div>
+  </section>` : ''}
+  ${bodyImages.slice(3).map((u, i) => photo(u, shotCaps[(i + 3) % shotCaps.length])).join('')}`
+  }
+
   return `${FONT_LINK}${css}
-<div data-showcase data-style="${s.id}">
+<div data-showcase data-style="${s.id}" data-layout="${layout}">
   <section class="sc-hero"><div class="sc-hbg"></div>
     <div class="sc-htop"><div class="sc-brand" ${ed('brand')}>${esc(brand)}</div><span class="sc-badge" ${ed('badge')}>${esc(d.originLocation || '국내산')}</span></div>
     <div class="sc-hin">
@@ -267,41 +320,10 @@ export function renderShowcase(d: LandingData, styleId: string): string {
       ${heroLine ? `<p class="sc-sub" ${ed('heroline')}>${esc(heroLine)}</p>` : ''}
     </div>
   </section>
+  ${bodyHtml}
 
-  ${storyParas ? `<section class="sc-story">
-    <div class="k">STORY</div>
-    <h2 ${ed('storytitle')}>${esc(d.productName || '')}의 이야기</h2>
-    <div class="body" ${ed('storybody')}>${storyParas}</div>
-  </section>` : ''}
-
-  ${photo(bodyImages[0], d.productName)}
-
-  ${feats[0] ? `<section class="sc-impact">
-    <div class="k">WHY</div>
-    <h2><span ${ed('impact1')}>${esc(feats[0].title)}</span></h2>
-    <p class="tail" ${ed('impacttail')}>${esc(feats[0].desc)}</p>
-  </section>` : ''}
-
-  ${photo(bodyImages[1], shotCaps[1])}
-
-  ${feats.length ? `<section class="sc-points">
-    <div class="sc-sh"><div class="en">POINT</div><div class="ko" ${ed('ptko')}>이 상품이 다른 이유</div></div>
-    ${feats.map((f, i) => `<div class="sc-pt"><div class="no">${String(i + 1).padStart(2, '0')}</div><div><h3 ${ed('ptt' + i)}>${esc(f.title)}</h3><p ${ed('ptd' + i)}>${esc(f.desc)}</p></div></div>`).join('')}
-  </section>` : ''}
-
-  ${photo(bodyImages[2], shotCaps[2])}
-
-  ${kn ? `<section class="sc-num">
-    <div class="lead" ${ed('numlead')}>${esc(kn.label || '누적 판매')}</div>
-    <div class="fig"><span ${ed('numval')}>${esc(kn.value)}</span><span class="u" ${ed('numunit')}>${esc(kn.unit || '건')}</span></div>
-    <div class="st">★★★★★</div>
-    <div class="desc" ${ed('numcap')}>${esc(kn.caption || '')}</div>
-  </section>` : ''}
-
-  ${bodyImages.slice(3).map((u, i) => photo(u, shotCaps[(i + 3) % shotCaps.length])).join('')}
-
-  ${reviews.length ? `<section class="sc-rev">
-    ${reviews.map((r, i) => `<div class="sc-rc"><div class="top"><div class="av">${esc((r.author || '고').slice(0, 1))}</div><div class="nm" ${ed('rvn' + i)}>${esc(r.author || '고객')}</div><div class="stars">★★★★★</div></div><p ${ed('rvt' + i)}>${esc(r.text)}</p></div>`).join('')}
+  ${reviews.slice(0, isVisual ? 2 : 3).length ? `<section class="sc-rev">
+    ${reviews.slice(0, isVisual ? 2 : 3).map((r, i) => `<div class="sc-rc"><div class="top"><div class="av">${esc((r.author || '고').slice(0, 1))}</div><div class="nm" ${ed('rvn' + i)}>${esc(r.author || '고객')}</div><div class="stars">★★★★★</div></div><p ${ed('rvt' + i)}>${esc(r.text)}</p></div>`).join('')}
   </section>` : ''}
 
   ${infoRows.length ? `<section class="sc-info"><h4>상품 · 배송 안내</h4>
