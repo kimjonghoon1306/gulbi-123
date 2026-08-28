@@ -13,6 +13,7 @@ import { useState, useRef, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
 import { renderLanding, type PresetKey, type TemplateKey, type LandingData } from '@/lib/landing-templates'
 import { type LandingBasicInfo, type ProductGroup, type FreshType } from '@/app/components/LandingBasicInfoFields'
+import { logClientError } from '@/lib/log-error'
 
 export type Product = {
   id: string; name: string; description: string
@@ -222,7 +223,11 @@ export function useLandingEditor(opts: {
         body: JSON.stringify({ images, persona: aiPersona, productName: aiMeta.name, origin: aiMeta.origin, retailPrice: aiMeta.retail_price, wholesalePrice: aiMeta.wholesale_price, unit: aiMeta.unit, productGroup, freshType, shipCutoff, hasHaccp, haccpNo, basicInfo })
       })
       const data = await res.json()
-      if (data.error) { console.error('[studio generate] failed', data); return setAiError('상세페이지 생성에 실패했습니다. 서버 로그를 확인해 주세요.') }
+      if (data.error) {
+        console.error('[studio generate] failed', data)
+        logClientError({ area: 'ai-generate', message: '상세페이지 생성 실패(응답)', detail: `status=${res.status} ${String(data.error).slice(0, 500)}` })
+        return setAiError(res.status === 400 && /키/.test(String(data.error)) ? data.error : '상세페이지 생성에 실패했습니다. 서버 로그를 확인해 주세요.')
+      }
       setAiLandingData(data.data || null)
       setAiLandingHtml(data.html)
       setAiPresetKey((data.presetKey as PresetKey) || 'gold'); setAiTemplateKey((data.templateKey as TemplateKey) || 'premium')
@@ -268,6 +273,7 @@ export function useLandingEditor(opts: {
       reset(); onDone()
     } catch (e: any) {
       console.error('[studio save] failed', e)
+      logClientError({ area: 'product', message: '상세페이지 저장 실패', detail: String(e?.message || e).slice(0, 1000) })
       setAiError('상세페이지 저장에 실패했습니다. 서버 로그를 확인해 주세요.')
     }
     finally { setAiSaving(false) }

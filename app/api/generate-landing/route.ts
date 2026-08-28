@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { renderLanding, type LandingData, type PresetKey, type TemplateKey } from '@/lib/landing-templates'
-import { getAuthAndGeminiKey } from '@/lib/supabase-server'
+import { getAuthAndGeminiKey, createServerSupabase } from '@/lib/supabase-server'
 import { callAI } from '@/lib/ai'
+import { logServerError } from '@/lib/log-error'
 
 // 페르소나별 카피 톤 지침
 const PERSONA_TONES: Record<string, string> = {
@@ -686,9 +687,11 @@ unusedIndices: 어느 섹션에도 안 어울리는 이미지 인덱스들.
           const err = await res.json().catch(() => ({}))
           const msg = (err.error?.message || '').toLowerCase()
           if (res.status === 400 && msg.includes('api key')) {
+            try { await logServerError(await createServerSupabase(), { area: 'ai-generate', message: 'Gemini API 키 오류 (잘못된 키)', detail: `model=${model} status=400 ${JSON.stringify(err.error || {}).slice(0, 500)}`, path: '/api/generate-landing' }) } catch {}
             return NextResponse.json({ error: 'Gemini API 키가 잘못되었습니다. 설정에서 확인해주세요.' }, { status: 400 })
           }
           if (res.status === 403) {
+            try { await logServerError(await createServerSupabase(), { area: 'ai-generate', message: 'Gemini API 키 권한 없음 (403)', detail: `model=${model} ${JSON.stringify(err.error || {}).slice(0, 500)}`, path: '/api/generate-landing' }) } catch {}
             return NextResponse.json({ error: 'Gemini API 키 권한이 없습니다.' }, { status: 403 })
           }
           if ([429, 503, 404].includes(res.status) || msg.includes('quota') || msg.includes('resource_exhausted') || msg.includes('rate') || msg.includes('overloaded')) {
@@ -713,6 +716,7 @@ unusedIndices: 어느 섹션에도 안 어울리는 이미지 인덱스들.
 
     if (!rawText) {
       console.error('[generate-landing] all models failed', lastError)
+      try { await logServerError(await createServerSupabase(), { area: 'ai-generate', message: `상세페이지 생성 실패 — 모든 Gemini 모델 실패`, detail: String(lastError || '').slice(0, 1000) + ' (한도초과면 키 사용량 확인)', path: '/api/generate-landing' }) } catch {}
       return NextResponse.json({ error: '상세페이지 생성에 실패했습니다. 잠시 후 다시 시도해 주세요.' }, { status: 500 })
     }
     const aiJson = extractJson(rawText)
