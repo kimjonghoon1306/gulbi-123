@@ -9,8 +9,8 @@
 // ─────────────────────────────────────────────────────────────
 
 import { useEffect, useState, useRef } from 'react'
-import { TEMPLATES, PRESETS, type PresetKey, type TemplateKey } from '@/lib/landing-templates'
-import { SHOWCASE_STYLES, renderShowcase, inferCategory, recommendStyles, type ShowcaseStyle } from '@/lib/showcase-templates'
+import { renderLanding, type PresetKey, type TemplateKey } from '@/lib/landing-templates'
+import { SHOWCASE_STYLES, renderShowcase, inferCategory, type ShowcaseStyle, type ShowcaseCategory } from '@/lib/showcase-templates'
 import LandingBasicInfoFields from '@/app/components/LandingBasicInfoFields'
 import LandingFactFields from '@/app/components/LandingFactFields'
 import { useLandingEditor, type Product } from './useLandingEditor'
@@ -23,8 +23,19 @@ type Props = {
   initialProduct?: Product | null
 }
 
-const PRESET_SWATCH: Record<PresetKey, string> = {
-  gold: '#c69a4c', dark: '#1c1c1c', blue: '#1a6fff', red: '#b23a28', pink: '#ff6fa5', white: '#e8e8e8',
+// 옛 landing-templates 중 쇼케이스와 겹치지 않는 것만(팝·클린·매거진·럭셔리·비즈니스·감성).
+// premium/modern/traditional은 쇼케이스 무드와 중복이라 제외.
+const LEGACY_STYLES: { tpl: TemplateKey; name: string; paper: string; ink: string; accent: string }[] = [
+  { tpl: 'pop', name: '팝 · 컬러풀', paper: '#fff5fa', ink: '#2a1a24', accent: '#ff5fa2' },
+  { tpl: 'clean', name: '클린 · 화이트', paper: '#fafafa', ink: '#1a1a1a', accent: '#22c55e' },
+  { tpl: 'magazine', name: '매거진', paper: '#111111', ink: '#f0f0f0', accent: '#e8e8e8' },
+  { tpl: 'luxury', name: '럭셔리 골드', paper: '#0a0a0a', ink: '#eadfc8', accent: '#c8a45c' },
+  { tpl: 'business', name: '비즈니스', paper: '#f4f7fb', ink: '#16233a', accent: '#1a6fff' },
+  { tpl: 'emotional', name: '감성 · 스토리', paper: '#f2ede4', ink: '#2a2018', accent: '#2c4842' },
+]
+// 카테고리 → 옛 템플릿용 배색(preset) 매핑
+const CAT_PRESET: Record<ShowcaseCategory, PresetKey> = {
+  seafood: 'blue', health: 'gold', produce: 'white', meat: 'red', processed: 'dark',
 }
 
 // 폰트 목록 (한글/영문). 값은 실제 font-family, 라벨은 표시용.
@@ -68,12 +79,18 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [s.aiStep, s.aiLandingData])
 
-  // 미리보기 렌더: 쇼케이스 스타일로. styleId나 생성데이터 바뀌면 재렌더.
-  // (생성 데이터가 있으면 renderShowcase, 없으면(기존 수정) 원본 HTML)
+  // 미리보기 렌더: 스타일 선택에 따라. styleId나 생성데이터 바뀌면 재렌더.
+  // legacy.* = 옛 landing-templates(팝 등), 그 외 = 쇼케이스. 없으면 원본 HTML.
   useEffect(() => {
     const el = document.getElementById('landing-preview'); if (!el) return
     if (s.aiLandingData && styleId) {
-      el.innerHTML = renderShowcase(s.aiLandingData, styleId)
+      if (styleId.startsWith('legacy.')) {
+        const tpl = styleId.slice(7) as TemplateKey
+        const cat = inferCategory({ productGroup: s.productGroup, freshType: s.freshType, productName: s.aiMeta.name || s.selectedProduct?.name })
+        el.innerHTML = renderLanding(s.aiLandingData, CAT_PRESET[cat] || 'gold', tpl)
+      } else {
+        el.innerHTML = renderShowcase(s.aiLandingData, styleId)
+      }
     } else if (s.aiLandingHtml) {
       el.innerHTML = s.aiLandingHtml
     }
@@ -325,22 +342,24 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
                   </div>
                 </div>
                 <div className="st-pbody">
-                  {/* 컨셉 탭 — 카테고리별 다양한 스타일 갤러리 */}
+                  {/* 컨셉 탭 — 통합 목록(쇼케이스 6 + 옛 템플릿 6). 상품 카테고리 색 자동. */}
                   {panelTab === 'concept' && (() => {
-                    const cur = SHOWCASE_STYLES.find(x => x.id === styleId)
-                    const ordered = cur ? recommendStyles(cur.category) : SHOWCASE_STYLES
-                    const recCat = cur?.catLabel
+                    const cat = inferCategory({ productGroup: s.productGroup, freshType: s.freshType, productName: s.aiMeta.name || s.selectedProduct?.name })
+                    const showcaseList = SHOWCASE_STYLES.filter(x => x.category === cat)
+                    const cards = [
+                      ...showcaseList.map(st => ({ id: st.id, name: st.name, paper: st.paper, ink: st.ink, accent: st.accent })),
+                      ...LEGACY_STYLES.map(l => ({ id: 'legacy.' + l.tpl, name: l.name, paper: l.paper, ink: l.ink, accent: l.accent })),
+                    ]
                     return (
                       <>
-                        <div className="st-lab">✨ 이 상품에 어울리는 스타일 {recCat && <span style={{ color: 'var(--accent-d)', fontWeight: 800 }}>· {recCat}</span>}</div>
-                        <p className="st-tiny" style={{ marginTop: 0, marginBottom: 12 }}>클릭하면 미리보기가 바로 바뀌어요. 같은 상품도 완전 다른 느낌으로.</p>
+                        <div className="st-lab">✨ 컨셉 선택 <span style={{ color: 'var(--muted2)', fontWeight: 700 }}>· {cards.length}가지</span></div>
+                        <p className="st-tiny" style={{ marginTop: 0, marginBottom: 14 }}>클릭하면 미리보기가 바로 바뀌어요. 같은 상품도 완전 다른 느낌으로.</p>
                         <div className="st-stylegrid">
-                          {ordered.map(st => (
+                          {cards.map(st => (
                             <button key={st.id} className={'st-stylecard' + (styleId === st.id ? ' on' : '')} onClick={() => setStyleId(st.id)}
                               style={{ background: st.paper }}>
                               <span className="st-styleswatch" style={{ background: st.accent }} />
                               <span className="st-stylenm" style={{ color: st.ink }}>{st.name}</span>
-                              <span className="st-stylecat" style={{ color: st.muted }}>{st.catLabel}</span>
                             </button>
                           ))}
                         </div>
