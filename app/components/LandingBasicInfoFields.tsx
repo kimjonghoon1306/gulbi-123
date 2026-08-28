@@ -1,5 +1,7 @@
 'use client'
 
+import { useState, useEffect } from 'react'
+
 export type ProductGroup = '' | 'fresh' | 'processed' | 'living' | 'electronics' | 'craft'
 // 신선식품 하위 세부 품목 — 보관·조리·교환반품 안내가 품목마다 달라서 구분한다.
 export type FreshType = '' | 'livestock' | 'seafood' | 'produce'
@@ -88,6 +90,19 @@ export default function LandingBasicInfoFields({ group, setGroup, freshType = ''
   const sub = dark ? 'rgba(255,255,255,0.48)' : '#666'
   const fields = group ? [...COMMON_FIELDS, ...GROUP_FIELDS[group]] : []
 
+  // 큰 편집 모달: 칸을 누르면 확대되어 크게 쓰고, 저장/취소.
+  const [editKey, setEditKey] = useState<string | null>(null)
+  const [editLabel, setEditLabel] = useState('')
+  const [draft, setDraft] = useState('')
+  const openEdit = (key: string, label: string) => { setEditKey(key); setEditLabel(label); setDraft(value[key] || '') }
+  const closeEdit = () => setEditKey(null)
+  const saveEdit = () => { if (editKey) onChange({ ...value, [editKey]: draft }); setEditKey(null) }
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setEditKey(null) }
+    if (editKey) window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [editKey])
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
       <div style={{ padding: '11px 13px', borderRadius: '10px', border: `1px solid ${dark ? 'rgba(34,197,94,0.28)' : '#bbf7d0'}`, background: dark ? 'rgba(34,197,94,0.08)' : '#f0fdf4', color: dark ? 'rgba(255,255,255,0.72)' : '#166534', fontSize: '11px', lineHeight: 1.6 }}>
@@ -132,17 +147,48 @@ export default function LandingBasicInfoFields({ group, setGroup, freshType = ''
 
       {group && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: '9px' }}>
-          {fields.map(([key, label]) => (
-            <label key={key} style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-              <span style={{ color: sub, fontSize: '10px', fontWeight: 800 }}>{label} <span style={{ fontWeight: 500 }}>(선택)</span></span>
-              <textarea value={value[key] || ''} disabled={isAutoFilling} onChange={e => onChange({ ...value, [key]: e.target.value })}
-                placeholder={isAutoFilling ? 'AI가 내용을 작성하고 있어요...' : ''} rows={2} maxLength={500}
-                style={{ width: '100%', minHeight: '62px', resize: 'vertical', boxSizing: 'border-box', padding: '10px 11px', borderRadius: '9px', border: `1px solid ${border}`, background: inputBg, color: text, fontSize: '12px', lineHeight: 1.5, outline: 'none', fontFamily: 'inherit' }} />
-            </label>
-          ))}
+          {fields.map(([key, label]) => {
+            const v = value[key] || ''
+            return (
+              <button key={key} type="button" disabled={isAutoFilling} onClick={() => openEdit(key, label)}
+                style={{ display: 'flex', flexDirection: 'column', gap: '5px', textAlign: 'left', padding: '11px 12px', borderRadius: '10px', border: `1px solid ${v ? '#22c55e' : border}`, background: inputBg, cursor: isAutoFilling ? 'wait' : 'pointer', minHeight: '76px', transition: 'all .15s' }}>
+                <span style={{ color: sub, fontSize: '10px', fontWeight: 800, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>{label}</span>
+                  <span style={{ color: '#22c55e', fontSize: '11px', fontWeight: 700 }}>✏️ 크게 쓰기</span>
+                </span>
+                <span style={{ color: v ? text : sub, fontSize: '12px', lineHeight: 1.5, whiteSpace: 'pre-wrap', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                  {isAutoFilling ? 'AI가 작성 중이에요...' : (v || '눌러서 입력하세요')}
+                </span>
+              </button>
+            )
+          })}
         </div>
       )}
-      {group && <p style={{ color: dark ? '#e5e7eb' : '#334155', fontSize: '13px', lineHeight: 1.65, fontWeight: 700, margin: '2px 0 0' }}>AI가 작성한 내용을 확인하고 필요한 부분을 수정하세요. 원산지·함량·인증·소비기한은 상품 표시사항과 대조한 뒤 AI 상세페이지 제작하기를 눌러주세요.</p>}
+      {group && <p style={{ color: dark ? '#e5e7eb' : '#334155', fontSize: '13px', lineHeight: 1.65, fontWeight: 700, margin: '2px 0 0' }}>각 칸을 누르면 크게 확대돼요. AI가 작성한 내용을 확인하고 필요한 부분을 수정하세요. 원산지·함량·인증·소비기한은 상품 표시사항과 대조해 주세요.</p>}
+
+      {/* 큰 편집 모달 — 칸을 누르면 확대되어 크게 쓰고 저장/취소 */}
+      {editKey && (
+        <div onClick={closeEdit} style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '560px', maxHeight: '86vh', display: 'flex', flexDirection: 'column', background: dark ? '#24292f' : '#fff', borderRadius: '18px', overflow: 'hidden', boxShadow: '0 24px 60px rgba(0,0,0,0.4)' }}>
+            <div style={{ padding: '18px 20px', borderBottom: `1px solid ${border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: '16px', fontWeight: 800, color: text }}>{editLabel}</div>
+                <div style={{ fontSize: '11px', color: sub, marginTop: '3px' }}>크게 편집한 뒤 저장을 눌러주세요</div>
+              </div>
+              <span style={{ fontSize: '12px', color: sub, fontWeight: 600 }}>{draft.length}/500</span>
+            </div>
+            <textarea autoFocus value={draft} maxLength={500} onChange={e => setDraft(e.target.value)}
+              style={{ flex: 1, minHeight: '260px', resize: 'none', boxSizing: 'border-box', padding: '18px 20px', border: 'none', background: dark ? 'rgba(255,255,255,0.04)' : '#fafafa', color: text, fontSize: '16px', lineHeight: 1.7, outline: 'none', fontFamily: 'inherit' }}
+              placeholder="여기에 크게 편집하세요" />
+            <div style={{ padding: '14px 20px', borderTop: `1px solid ${border}`, display: 'flex', gap: '10px' }}>
+              <button type="button" onClick={closeEdit}
+                style={{ flex: '0 0 auto', padding: '13px 22px', borderRadius: '11px', border: `1px solid ${border}`, background: 'transparent', color: text, fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}>취소</button>
+              <button type="button" onClick={saveEdit}
+                style={{ flex: 1, padding: '13px', borderRadius: '11px', border: 'none', background: '#22c55e', color: '#fff', fontSize: '14px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 6px 16px rgba(34,197,94,0.3)' }}>💾 저장하기</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

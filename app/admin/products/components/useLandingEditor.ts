@@ -120,10 +120,22 @@ export function useLandingEditor(opts: {
     try {
       const images: { base64: string; mimeType: string }[] = []
       if (aiImage) images.push(await resizeImg(aiImage))
+      // 업로드 이미지가 없으면 기존 대표이미지 URL을 받아 클라이언트에서 축소해 전송.
+      // (원본이 20MB 넘는 경우가 있어 서버가 그대로 fetch하면 8MB 초과로 실패 → 여기서 1024px로 줄임)
+      else if (selectedProduct?.image_url) {
+        try {
+          const imgRes = await fetch(selectedProduct.image_url)
+          if (imgRes.ok) {
+            const blob = await imgRes.blob()
+            images.push(await resizeImg(new File([blob], 'product.jpg', { type: blob.type || 'image/jpeg' })))
+          }
+        } catch { /* 실패 시 아래 length 체크에서 안내 */ }
+      }
       for (const extra of aiExtraImages) images.push(await resizeImg(extra.file))
+      if (images.length === 0) { setBasicInfoLoading(false); return setAiError('대표 이미지를 불러오지 못했어요. 사진을 새로 올려주세요.') }
       const response = await fetch('/api/generate-landing', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode: 'basic-info', images, imageUrl: aiImage ? undefined : selectedProduct?.image_url, productName: aiMeta.name, productGroup, freshType }),
+        body: JSON.stringify({ mode: 'basic-info', images, productName: aiMeta.name, productGroup, freshType }),
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error)
