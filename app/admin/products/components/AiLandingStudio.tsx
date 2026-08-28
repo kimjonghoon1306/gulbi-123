@@ -8,8 +8,9 @@
 //   → 앞뒤 프로세스(상품→생성→미리보기→저장→상품 반영)가 안 끊긴다.
 // ─────────────────────────────────────────────────────────────
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { TEMPLATES, PRESETS, type PresetKey, type TemplateKey } from '@/lib/landing-templates'
+import { SHOWCASE_STYLES, renderShowcase, inferCategory, recommendStyles, type ShowcaseStyle } from '@/lib/showcase-templates'
 import LandingBasicInfoFields from '@/app/components/LandingBasicInfoFields'
 import LandingFactFields from '@/app/components/LandingFactFields'
 import { useLandingEditor, type Product } from './useLandingEditor'
@@ -44,6 +45,9 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
 
   // 로컬 UI 상태 (에디터 셸 전용 — 저장 로직과 무관)
   const [panelTab, setPanelTab] = useState<'concept' | 'text' | 'bg'>('concept')
+  const [previewMode, setPreviewMode] = useState<'mobile' | 'pc'>('mobile')
+  const [autoBgLoading, setAutoBgLoading] = useState(false)
+  const [styleId, setStyleId] = useState<string>('')   // 선택된 쇼케이스 스타일
   const [fontCss, setFontCss] = useState('')
   const [headingWeight, setHeadingWeight] = useState(800)
   const [stockQuery, setStockQuery] = useState('')
@@ -54,11 +58,27 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
   const [enhancedUrl, setEnhancedUrl] = useState('')
   const [toolMsg, setToolMsg] = useState('')
 
-  // 미리보기 캔버스에 생성된 HTML 주입 (contentEditable → 저장 시 innerHTML 읽음)
+  // 생성 완료 시 카테고리 추론 → 그 카테고리 기본 스타일 자동 선택(한 번만)
   useEffect(() => {
-    const el = document.getElementById('landing-preview')
-    if (el && s.aiLandingHtml) el.innerHTML = s.aiLandingHtml
-  }, [s.aiLandingHtml, s.aiStep, s.aiTab])
+    if (s.aiStep === 3 && s.aiLandingData && !styleId) {
+      const cat = inferCategory({ productGroup: s.productGroup, freshType: s.freshType, productName: s.aiMeta.name || s.selectedProduct?.name })
+      setStyleId(`${cat}.premium`)
+    }
+    if (s.aiStep !== 3 && styleId) setStyleId('')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [s.aiStep, s.aiLandingData])
+
+  // 미리보기 렌더: 쇼케이스 스타일로. styleId나 생성데이터 바뀌면 재렌더.
+  // (생성 데이터가 있으면 renderShowcase, 없으면(기존 수정) 원본 HTML)
+  useEffect(() => {
+    const el = document.getElementById('landing-preview'); if (!el) return
+    if (s.aiLandingData && styleId) {
+      el.innerHTML = renderShowcase(s.aiLandingData, styleId)
+    } else if (s.aiLandingHtml) {
+      el.innerHTML = s.aiLandingHtml
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [s.aiLandingData, styleId, s.aiLandingHtml, s.aiStep, s.aiTab])
 
   // 폰트 오버라이드를 미리보기 안에 <style>로 주입(저장 HTML에 함께 남아 상품페이지에도 적용)
   const applyFontOverride = (css: string, weight: number) => {
@@ -87,7 +107,47 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
   const insertImageToPreview = (url: string) => {
     const el = document.getElementById('landing-preview'); if (!el) return
     el.insertAdjacentHTML('beforeend', `<div style="width:100%;overflow:hidden"><img src="${url}" style="width:100%;display:block"/></div>`)
-    setToolMsg('✅ 미리보기 맨 아래에 추가했어요. 위치는 드래그로 옮기세요.')
+    setToolMsg('✅ 미리보기 맨 아래에 추가했어요.')
+  }
+
+  // 로컬 파일을 미리보기에 삽입(중간 이미지 추가). 저장 시 innerHTML로 함께 저장됨.
+  const insertUploadedImage = (file: File) => {
+    const reader = new FileReader()
+    reader.onload = () => insertImageToPreview(reader.result as string)
+    reader.readAsDataURL(file)
+  }
+
+  // ★ 배경 자동 채우기: 생성 직후 Gemini 카피 기반으로 히어로/주요 섹션 배경을
+  //   Pexels/Pixabay/Flux에서 자동 조달해 미리보기에 깔아준다(사용자가 검색 안 해도 이쁘게).
+  const autoFillBackground = async () => {
+    const el = document.getElementById('landing-preview'); if (!el) return
+    setAutoBgLoading(true)
+    try {
+      // 상품명·카테고리 기반 검색어(한글→영문 힌트). Gemini 자동선택 대신 간단·안전한 규칙.
+      const name = (s.aiMeta.name || s.selectedProduct?.name || '').toLowerCase()
+      const q = /굴비|박대|고등어|생선|도미|조기/.test(name) ? 'korean grilled fish rustic dark'
+        : /게장|게|새우|전복|조개|해산물|수산/.test(name) ? 'fresh seafood dark moody'
+        : /채소|과일|농산|쌀/.test(name) ? 'fresh farm vegetables wooden'
+        : 'korean food premium dark background'
+      const r = await fetch('/api/landing-images', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'search', query: q, orientation: 'portrait', perPage: 6 }),
+      })
+      const d = await r.json()
+      const imgs: { url: string }[] = d.images || []
+      if (imgs.length === 0) { setToolMsg('배경을 찾지 못했어요. 배경 탭에서 직접 검색해보세요.'); return }
+      // 히어로(첫 섹션)에 배경 이미지가 없으면 은은하게 깔아준다
+      const firstSection = el.querySelector('section, div[data-landing] > *') as HTMLElement | null
+      const bg = imgs[0].url
+      if (firstSection) {
+        firstSection.style.backgroundImage = `linear-gradient(rgba(20,16,12,.55),rgba(20,16,12,.75)), url('${bg}')`
+        firstSection.style.backgroundSize = 'cover'
+        firstSection.style.backgroundPosition = 'center'
+        firstSection.style.color = '#fff'
+      }
+      setToolMsg('✨ AI가 어울리는 배경을 자동으로 깔았어요.')
+    } catch { setToolMsg('배경 자동 채우기에 실패했어요.') }
+    finally { setAutoBgLoading(false) }
   }
 
   const enhancePhoto = async () => {
@@ -168,12 +228,29 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
               </div>
             ) : (
               <>
-                <div className="st-canvas-tag"><span className="st-live" />실시간 미리보기 · 글자를 눌러 바로 수정</div>
-                <div className="st-device">
-                  <div className="st-notch" />
-                  <div className="st-screen">
-                    <div id="landing-preview" contentEditable suppressContentEditableWarning style={{ height: '100%', overflowY: 'auto', outline: 'none' }} />
+                {/* 상단 미리보기 툴바: PC/모바일 토글 + 안내 */}
+                <div className="st-preview-bar">
+                  <div className="st-canvas-tag"><span className="st-live" />글자를 눌러 바로 수정 · 사진을 눌러 교체</div>
+                  <div className="st-viewseg">
+                    <button className={previewMode === 'mobile' ? 'on' : ''} onClick={() => setPreviewMode('mobile')}>📱 모바일</button>
+                    <button className={previewMode === 'pc' ? 'on' : ''} onClick={() => setPreviewMode('pc')}>🖥️ PC</button>
                   </div>
+                </div>
+                <div className={'st-stage ' + previewMode}>
+                  <div className={'st-device ' + previewMode}>
+                    {previewMode === 'mobile' && <div className="st-notch" />}
+                    <div className="st-screen">
+                      <div id="landing-preview" contentEditable suppressContentEditableWarning
+                        style={{ minHeight: '100%', outline: 'none' }} />
+                    </div>
+                  </div>
+                </div>
+                {/* 중간 이미지 추가 바 */}
+                <div className="st-addimg-bar">
+                  <label className="st-addimg-btn">
+                    <input type="file" accept="image/*" hidden onChange={e => e.target.files?.[0] && insertUploadedImage(e.target.files[0])} />
+                    <span className="st-plus">＋</span> 상세페이지에 사진 추가
+                  </label>
                 </div>
               </>
             )}
@@ -248,25 +325,28 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
                   </div>
                 </div>
                 <div className="st-pbody">
-                  {/* 컨셉 탭 */}
-                  {panelTab === 'concept' && (
-                    <>
-                      <div className="st-lab">컨셉</div>
-                      <div className="st-concepts">
-                        {TEMPLATES.map(t => (
-                          <button key={t.key} className={'st-concept' + (s.aiTemplateKey === t.key ? ' on' : '')} onClick={() => s.handleChangeTemplate(t.key as TemplateKey)}>
-                            <span className="st-cemoji">{t.emoji}</span><span className="st-cnm">{t.name}</span><span className="st-cds">{t.desc}</span>
-                          </button>
-                        ))}
-                      </div>
-                      <div className="st-lab" style={{ marginTop: 18 }}>배색</div>
-                      <div className="st-palette">
-                        {(Object.keys(PRESETS) as PresetKey[]).map(k => (
-                          <button key={k} className={'st-sw' + (s.aiPresetKey === k ? ' on' : '')} style={{ background: PRESET_SWATCH[k] }} onClick={() => s.handleChangePreset(k)} title={k} />
-                        ))}
-                      </div>
-                    </>
-                  )}
+                  {/* 컨셉 탭 — 카테고리별 다양한 스타일 갤러리 */}
+                  {panelTab === 'concept' && (() => {
+                    const cur = SHOWCASE_STYLES.find(x => x.id === styleId)
+                    const ordered = cur ? recommendStyles(cur.category) : SHOWCASE_STYLES
+                    const recCat = cur?.catLabel
+                    return (
+                      <>
+                        <div className="st-lab">✨ 이 상품에 어울리는 스타일 {recCat && <span style={{ color: 'var(--accent-d)', fontWeight: 800 }}>· {recCat}</span>}</div>
+                        <p className="st-tiny" style={{ marginTop: 0, marginBottom: 12 }}>클릭하면 미리보기가 바로 바뀌어요. 같은 상품도 완전 다른 느낌으로.</p>
+                        <div className="st-stylegrid">
+                          {ordered.map(st => (
+                            <button key={st.id} className={'st-stylecard' + (styleId === st.id ? ' on' : '')} onClick={() => setStyleId(st.id)}
+                              style={{ background: st.paper }}>
+                              <span className="st-styleswatch" style={{ background: st.accent }} />
+                              <span className="st-stylenm" style={{ color: st.ink }}>{st.name}</span>
+                              <span className="st-stylecat" style={{ color: st.muted }}>{st.catLabel}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )
+                  })()}
 
                   {/* 텍스트/폰트 탭 */}
                   {panelTab === 'text' && (
@@ -415,15 +495,31 @@ const CSS = `
 .st-stepnum{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;background:var(--bg)}
 .st-step.on .st-stepnum{background:var(--accent);color:#fff}
 .st-steplb{font-size:10.5px;font-weight:700}
-.st-canvas{position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(circle at 50% 0%,rgba(0,0,0,.02),var(--bg) 70%)}
-.st-hint{text-align:center;color:var(--muted)}
+.st-canvas{position:relative;display:flex;flex-direction:column;overflow:hidden;background:radial-gradient(circle at 50% 0%,rgba(0,0,0,.02),var(--bg) 70%)}
+.st-hint{margin:auto;text-align:center;color:var(--muted)}
 .st-hint-ic{font-size:44px;margin-bottom:14px;opacity:.5}
 .st-hint p{font-size:13px;line-height:1.7}
-.st-canvas-tag{position:absolute;top:16px;left:18px;z-index:3;display:flex;align-items:center;gap:7px;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:7px 11px;font-size:11.5px;font-weight:600;color:var(--muted)}
+/* 상단 미리보기 바 */
+.st-preview-bar{flex:none;display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--line);background:var(--panel)}
+.st-canvas-tag{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:600;color:var(--muted)}
 .st-live{width:7px;height:7px;border-radius:50%;background:var(--accent)}
-.st-device{width:330px;height:calc(100vh - 120px);max-height:680px;background:#111;border-radius:36px;padding:9px;box-shadow:0 20px 50px -12px rgba(0,0,0,.35);position:relative}
-.st-notch{position:absolute;top:16px;left:50%;transform:translateX(-50%);width:90px;height:20px;background:#111;border-radius:12px;z-index:5}
-.st-screen{width:100%;height:100%;border-radius:28px;overflow:hidden;background:#fff}
+.st-viewseg{display:flex;gap:3px;background:var(--bg);padding:4px;border-radius:9px}
+.st-viewseg button{padding:6px 13px;border-radius:7px;font-size:12px;font-weight:700;color:var(--muted)}
+.st-viewseg button.on{background:var(--panel);color:var(--accent-d);box-shadow:var(--shadow)}
+/* 스테이지(미리보기 영역) — 크게 */
+.st-stage{flex:1;overflow-y:auto;display:flex;justify-content:center;padding:24px 20px}
+.st-device{background:#111;box-shadow:0 20px 50px -12px rgba(0,0,0,.4);position:relative;align-self:flex-start}
+.st-device.mobile{width:min(430px,90%);border-radius:38px;padding:11px}
+.st-device.pc{width:100%;max-width:900px;border-radius:14px;padding:0;background:#fff;border:1px solid var(--line)}
+.st-notch{position:absolute;top:17px;left:50%;transform:translateX(-50%);width:96px;height:22px;background:#111;border-radius:13px;z-index:5}
+.st-device.mobile .st-screen{border-radius:30px}
+.st-screen{width:100%;overflow:hidden;background:#fff}
+.st-screen #landing-preview{min-height:400px}
+/* 하단 사진 추가 바 — 크고 잘 보이게 */
+.st-addimg-bar{flex:none;padding:12px 18px;border-top:1px solid var(--line);background:var(--panel);display:flex;justify-content:center}
+.st-addimg-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:11px;border:2px dashed var(--accent);color:var(--accent-d);font-size:13.5px;font-weight:800;cursor:pointer;background:var(--accent-soft);transition:.15s}
+.st-addimg-btn:hover{background:var(--accent);color:#fff;border-style:solid}
+.st-addimg-btn .st-plus{font-size:18px;line-height:1}
 .st-panel{background:var(--panel);border-left:1px solid var(--line);overflow-y:auto;display:flex;flex-direction:column}
 .st-phead{padding:18px 18px 13px;border-bottom:1px solid var(--line2)}
 .st-phead h3{font-size:16px;font-weight:800}
@@ -504,4 +600,11 @@ const CSS = `
 .st-stock{border-radius:9px;overflow:hidden;aspect-ratio:3/4;border:1px solid var(--line)}
 .st-stock img{width:100%;height:100%;object-fit:cover}
 .st-stock:hover{outline:2px solid var(--accent)}
+.st-stylegrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.st-stylecard{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:16px 13px;border-radius:12px;border:2px solid var(--line);text-align:left;min-height:74px;transition:.15s;overflow:hidden}
+.st-stylecard:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.st-stylecard.on{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.st-styleswatch{position:absolute;top:11px;right:11px;width:16px;height:16px;border-radius:50%;box-shadow:0 0 0 2px rgba(255,255,255,.3)}
+.st-stylenm{font-size:13.5px;font-weight:800;letter-spacing:-.01em}
+.st-stylecat{font-size:10.5px;font-weight:600;opacity:.8}
 `
