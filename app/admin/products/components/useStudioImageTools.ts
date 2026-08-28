@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 // 파일 → 리사이즈 dataURL(용량 억제)
 function resizeToDataUrl(file: File, maxPx = 1400, quality = 0.85): Promise<string> {
@@ -38,8 +38,18 @@ function resizeToDataUrl(file: File, maxPx = 1400, quality = 0.85): Promise<stri
  */
 export function useStudioImageTools(
   previewId: string, active: boolean, htmlKey: string,
-  onAiFill?: (img: HTMLImageElement) => void,
+  handlers?: {
+    onAiFill?: (img: HTMLImageElement) => void
+    onEnhance?: (img: HTMLImageElement) => void
+    onCutout?: (img: HTMLImageElement) => void
+  },
 ) {
+  // 핸들러를 ref로 안정화(매 렌더 새 객체여도 useEffect 재실행 안 되게)
+  const hRef = useRef(handlers)
+  hRef.current = handlers
+  const onAiFill = handlers?.onAiFill ? (img: HTMLImageElement) => hRef.current?.onAiFill?.(img) : undefined
+  const onEnhance = handlers?.onEnhance ? (img: HTMLImageElement) => hRef.current?.onEnhance?.(img) : undefined
+  const onCutout = handlers?.onCutout ? (img: HTMLImageElement) => hRef.current?.onCutout?.(img) : undefined
   useEffect(() => {
     if (!active) return
     const container = document.getElementById(previewId)
@@ -70,27 +80,32 @@ export function useStudioImageTools(
 
       const bar = document.createElement('div')
       bar.contentEditable = 'false'
-      bar.style.cssText = 'position:absolute;top:10px;right:10px;z-index:20;display:none;gap:8px'
+      bar.style.cssText = 'position:absolute;top:10px;right:10px;left:10px;z-index:20;display:none;flex-wrap:wrap;justify-content:flex-end;gap:7px'
       bar.className = 'st-imgtools'
 
       const mkBtn = (label: string, bg: string) => {
         const btn = document.createElement('button')
         btn.type = 'button'; btn.textContent = label
-        btn.style.cssText = `display:inline-flex;align-items:center;gap:4px;padding:8px 12px;border:none;border-radius:8px;background:${bg};color:#fff;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.35);margin-left:8px`
+        btn.style.cssText = `display:inline-flex;align-items:center;gap:4px;padding:8px 11px;border:none;border-radius:8px;background:${bg};color:#fff;font-size:12.5px;font-weight:800;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.4)`
         return btn
       }
       const swapBtn = mkBtn('🔄 교체', 'rgba(20,20,20,.85)')
+      const enhBtn = mkBtn('🔍 선명하게', 'rgba(20,20,20,.85)')
+      const cutBtn = mkBtn('✂️ 배경정리', 'rgba(20,20,20,.85)')
       const aiBtn = mkBtn('✨ AI 채우기', '#12b76a')
       const delBtn = mkBtn('✕ 삭제', '#e53935')
       swapBtn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); target = img; input.click() }
+      enhBtn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); onEnhance?.(img) }
+      cutBtn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); onCutout?.(img) }
       aiBtn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); onAiFill?.(img) }
       delBtn.onclick = (e) => {
         e.preventDefault(); e.stopPropagation()
-        // 이미지가 든 섹션(figure/section/div)째 지운다. 없으면 이미지만.
         const sec = img.closest('section, figure') as HTMLElement | null
         ;(sec && container.contains(sec) ? sec : wrap).remove()
       }
       bar.appendChild(swapBtn)
+      if (onEnhance) bar.appendChild(enhBtn)
+      if (onCutout) bar.appendChild(cutBtn)
       if (onAiFill) bar.appendChild(aiBtn)
       bar.appendChild(delBtn)
       wrap.appendChild(bar)

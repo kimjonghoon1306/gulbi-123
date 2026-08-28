@@ -112,9 +112,14 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [s.aiLandingData, styleId, s.aiLandingHtml, s.aiStep, s.aiTab, layoutMode])
 
-  // 미리보기 이미지에 호버/탭 → 🔄교체 / ✨AI채우기 / ✕삭제 툴바 부착.
+  // 미리보기 이미지에 호버/탭 → 교체/선명하게/배경정리/AI채우기/삭제 툴바 부착.
   useStudioImageTools('landing-preview', s.aiStep === 3 || !!s.aiLandingHtml,
-    `${styleId}|${layoutMode}|${s.aiLandingHtml.slice(0, 30)}`, (img) => { void aiFillImage(img) })
+    `${styleId}|${layoutMode}|${s.aiLandingHtml.slice(0, 30)}`,
+    {
+      onAiFill: (img) => { void aiFillImage(img) },
+      onEnhance: (img) => { void enhanceImage(img) },
+      onCutout: (img) => { void cutoutImage(img) },
+    })
 
   // 폰트 오버라이드를 미리보기 안에 <style>로 주입(저장 HTML에 함께 남아 상품페이지에도 적용)
   const applyFontOverride = (css: string, weight: number) => {
@@ -143,18 +148,25 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
     for (const [re, en] of map) if (re.test(nm)) return en
     return s.aiMeta.name || s.selectedProduct?.name || 'Korean food'
   }
-  // 상품·주제를 반영한 시네마틱 프롬프트 자동 생성
+  // 상품·주제·특징을 모두 반영한 퀄리티 프롬프트 (상품명만이 아니라 카피·특징·원산지까지)
   const aiArtPrompt = () => {
     const cat = inferCategory({ productGroup: s.productGroup, freshType: s.freshType, productName: s.aiMeta.name || s.selectedProduct?.name })
     const subject = productHint()
+    const d = s.aiLandingData
+    // 생성 카피/특징에서 시각 키워드 추출(주제 강화)
+    const feats = (d?.features || []).slice(0, 2).map(f => f.title).join(', ')
+    const catch_ = d?.catchphrase || ''
+    const origin = s.aiMeta.origin || d?.originLocation || ''
+    const extra = [origin && `${origin} origin`, feats, catch_].filter(Boolean).join(', ')
     const scene = ({
-      seafood: 'on rustic wet dark stone with soft steam, moody deep shadows, dramatic side light',
-      health: 'on dark wood with dried herbs, warm golden light, elegant premium mood',
-      produce: 'on natural wooden table with morning light, fresh and bright, natural styling',
-      meat: 'on dark slate with glowing embers, rich red warm tones, dramatic',
-      processed: 'in ceramic bowls on dark table, warm moody light, traditional Korean',
+      seafood: 'plated on rustic wet dark stone with soft rising steam, moody deep shadows, dramatic rim light, michelin-style food styling',
+      health: 'on dark walnut wood with dried herbs and ceramic, warm golden light, elegant premium editorial',
+      produce: 'on natural linen and wooden table with soft morning light, fresh vivid colors, clean bright food styling',
+      meat: 'on dark slate board with glowing embers and rosemary, rich warm red tones, dramatic steakhouse mood',
+      processed: 'in traditional Korean ceramic bowls on dark table, warm moody light, homey editorial',
     } as const)[cat]
-    return `cinematic professional food photograph of ${subject}, ${scene}, high detail, appetizing, no text, no letters, no watermark`
+    // 강화된 프롬프트: 주제(상품+특징+원산지) + 전문 스타일 + 고품질 지시
+    return `professional cinematic food photography of ${subject}${extra ? ` (${extra})` : ''}, ${scene}, ultra detailed, sharp focus, appetizing, 8k, commercial quality, no text, no letters, no watermark, no people`
   }
   const fetchAiImage = async (): Promise<string | null> => {
     const r = await fetch('/api/landing-images', {
@@ -162,16 +174,64 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
       body: JSON.stringify({ action: 'background', prompt: aiArtPrompt(), aspectRatio: '3:4' }),
     })
     const d = await r.json().catch(() => ({}))
-    if (!r.ok || !d.url) { setToolMsg(d.error || 'AI 이미지 생성에 실패했어요. (Replicate 토큰 확인)'); return null }
+    if (!r.ok || !d.url) { setToolMsg(d.error || 'AI 이미지 생성 실패 — Replicate 토큰을 확인해주세요.'); return null }
     return d.url
   }
 
-  // ✨ 미리보기 개별 이미지의 "AI 채우기" — 그 이미지를 AI 생성 컷으로 교체. 토큰 없으면 안내만.
+  // 이미지 위에 로딩 오버레이(별도 레이어). ★이미지·캡션 글자를 흐리지 않게(opacity 안 건드림).
+  const withImgLoading = async (img: HTMLImageElement, label: string, run: () => Promise<string | null>) => {
+    const wrap = img.parentElement
+    let ov: HTMLDivElement | null = null
+    if (wrap) {
+      if (getComputedStyle(wrap).position === 'static') wrap.style.position = 'relative'
+      ov = document.createElement('div')
+      ov.contentEditable = 'false'
+      ov.style.cssText = 'position:absolute;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5);color:#fff;font-size:15px;font-weight:800;backdrop-filter:blur(2px)'
+      ov.textContent = label
+      wrap.appendChild(ov)
+    }
+    try {
+      const url = await run()
+      if (url) {
+        // 새 이미지 완전 로드 후 교체(흐릿하게 보이는 것 방지)
+        await new Promise<void>(res => { const t = new Image(); t.onload = () => res(); t.onerror = () => res(); t.src = url })
+        img.src = url; img.removeAttribute('srcset')
+      }
+      return url
+    } finally { ov?.remove() }
+  }
+
+  // ✨ AI 채우기 — 그 이미지를 AI 생성 컷으로 교체(주제 강화 프롬프트). 토큰 없으면 안내만.
   const aiFillImage = async (img: HTMLImageElement) => {
-    img.style.opacity = '0.35'; setToolMsg('✨ AI가 이미지를 만드는 중… (약 5초)')
-    const url = await fetchAiImage()
-    if (url) { img.src = url; img.removeAttribute('srcset'); setToolMsg('✨ AI 이미지로 교체했어요.') }
-    img.style.opacity = ''
+    setToolMsg('✨ AI가 이미지를 만드는 중… (약 5초)')
+    const url = await withImgLoading(img, '✨ 만드는 중…', fetchAiImage)
+    if (url) setToolMsg('✨ AI 이미지로 교체했어요.')
+  }
+
+  // 🔍 화질 개선 — 이 사진(사용자 사진)을 업스케일. 상품은 그대로, 선명도만↑.
+  const enhanceImage = async (img: HTMLImageElement) => {
+    if (!/^https?:/.test(img.src)) { setToolMsg('업스케일은 URL 이미지에만 가능해요. (사진을 먼저 저장/업로드)'); return }
+    setToolMsg('🔍 화질을 개선하는 중…')
+    await withImgLoading(img, '🔍 선명하게…', async () => {
+      const r = await fetch('/api/landing-images', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'enhance', imageUrl: img.src, upscale: true }) })
+      const d = await r.json().catch(() => ({}))
+      if (!r.ok || !d.url) { setToolMsg(d.error || '화질 개선 실패 — Replicate 토큰 확인'); return null }
+      return d.url
+    })
+    setToolMsg('🔍 더 선명하게 개선했어요.')
+  }
+
+  // ✂️ 배경 시네마틱 — 이 상품 사진의 배경을 제거해 상품만 살림(배경은 컨셉색이 비침).
+  const cutoutImage = async (img: HTMLImageElement) => {
+    if (!/^https?:/.test(img.src)) { setToolMsg('배경 정리는 URL 이미지에만 가능해요.'); return }
+    setToolMsg('✂️ 배경을 정리하는 중…')
+    await withImgLoading(img, '✂️ 배경 정리…', async () => {
+      const r = await fetch('/api/landing-images', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'enhance', imageUrl: img.src, upscale: false, removeBg: true }) })
+      const d = await r.json().catch(() => ({}))
+      if (!r.ok || !d.url) { setToolMsg(d.error || '배경 정리 실패 — Replicate 토큰 확인'); return null }
+      return d.url
+    })
+    setToolMsg('✂️ 배경을 깔끔하게 정리했어요.')
   }
 
   // ✨ AI 화보 만들기(배경 탭 버튼) — 미리보기에 새 컷 추가.
