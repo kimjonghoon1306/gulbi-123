@@ -769,35 +769,33 @@ unusedIndices: 어느 섹션에도 안 어울리는 이미지 인덱스들.
       if (!usedIndices.has(i)) unusedImages.push(dataUrl(i))
     }
 
-    // 5) ★ AI 자동 채움: 상품에 어울리는 분위기컷을 무료 스톡(Pexels/Pixabay)에서 자동 삽입.
-    //    - 사진 부족 → 빈 섹션(origin/story/recipe/storage)을 채움
-    //    - 사진 충분해도 → 사이사이 분위기컷 1~2장을 추가(갤러리로 흘러들어가 사진섹션이 됨)
-    //    완전 자동, 무료.
+    // 5) ★ AI 자동 채움(보수적): 사용자 사진이 "부족할 때만" 배경/분위기컷을 채운다.
+    //    ★교훈: 스톡엔 특정 상품(박대 등) 정확한 사진이 없다. "비슷한 수산물"을 막 넣으면
+    //    조개관자·가게 간판 같은 엉뚱한 사진이 들어가 오히려 페이지를 망친다.
+    //    → 사진이 이미 충분(대표+본문 2장 이상)하면 아예 안 넣는다. 부족할 때만 "음식 클로즈업"만.
     try {
-      const keys = await getImageSourceKeys()
-      if (keys.pexels || keys.pixabay) {
-        const nm = (productName || '').toLowerCase()
-        const q = freshType === 'seafood' || /생선|굴비|박대|고등어|갈치|새우|게|전복|조개|오징어|낙지|수산|해물/.test(nm) ? 'korean seafood fine dining moody dark'
-          : freshType === 'livestock' || /한우|소고기|돼지|정육|삼겹|목살|등심/.test(nm) ? 'premium korean beef grilled dark moody'
-          : freshType === 'produce' || /과일|채소|사과|배|참외|딸기|쌀|농산/.test(nm) ? 'fresh korean vegetables farm natural bright'
-          : productGroup === 'processed' || /홍삼|즙|비타민|영양|건강/.test(nm) ? 'korean traditional health food herbs dark'
-          : /젓갈|김치|장|반찬|장아찌/.test(nm) ? 'korean side dish banchan ceramic table'
-          : 'korean premium food styling cinematic'
-        const emptyKeys = (['origin', 'story', 'recipe', 'storage'] as const).filter(k => !sectionImages[k])
-        // 빈 섹션 채울 만큼 + 사진 충분해도 최소 2장 여유분(사이사이 분위기컷)
-        const want = emptyKeys.length + 2
-        let pool: string[] = []
-        try {
-          if (keys.pexels) pool = (await searchPexels(keys.pexels, q, { perPage: want + 3, orientation: 'portrait' })).map(x => x.url)
-          if (pool.length < want && keys.pixabay) pool = pool.concat((await searchPixabay(keys.pixabay, q, { perPage: want + 3, orientation: 'portrait' })).map(x => x.url))
-        } catch { /* 스톡 실패해도 생성은 계속 */ }
-        // 빈 섹션 먼저 채우고
-        emptyKeys.forEach((k, i) => { if (pool[i]) sectionImages[k] = pool[i] })
-        // 남은 스톡컷을 갤러리(unusedImages)에 추가 → 사진섹션으로 사이사이 배치됨. 사용자 사진 뒤에.
-        const rest = pool.slice(emptyKeys.length, emptyKeys.length + 2)
-        for (const u of rest) if (u && !unusedImages.includes(u)) unusedImages.push(u)
+      const userImgCount = imageList.length
+      const emptyKeys = (['story', 'recipe', 'storage'] as const).filter(k => !sectionImages[k])
+      // 사용자 사진이 2장 미만이고 빈 섹션이 있을 때만 채운다(그 이상이면 손대지 않음).
+      if (userImgCount < 2 && emptyKeys.length > 0) {
+        const keys = await getImageSourceKeys()
+        if (keys.pexels || keys.pixabay) {
+          const nm = (productName || '').toLowerCase()
+          // 배경/분위기컷 위주(간판·사람 배제). 상품 자체보다 "질감/배경"으로 안전하게.
+          const q = freshType === 'seafood' || /생선|굴비|박대|고등어|갈치|수산|해물/.test(nm) ? 'dark rustic wooden board texture background food'
+            : freshType === 'livestock' || /한우|소고기|정육|삼겹|등심/.test(nm) ? 'dark slate stone board texture background'
+            : freshType === 'produce' || /과일|채소|농산/.test(nm) ? 'natural wooden table linen texture bright background'
+            : productGroup === 'processed' || /홍삼|즙|건강/.test(nm) ? 'warm wooden table dark texture background'
+            : 'rustic food background texture dark'
+          let pool: string[] = []
+          try {
+            if (keys.pexels) pool = (await searchPexels(keys.pexels, q, { perPage: emptyKeys.length + 2, orientation: 'portrait' })).map(x => x.url)
+            if (pool.length < emptyKeys.length && keys.pixabay) pool = pool.concat((await searchPixabay(keys.pixabay, q, { perPage: emptyKeys.length + 2, orientation: 'portrait' })).map(x => x.url))
+          } catch { /* 실패해도 진행 */ }
+          emptyKeys.forEach((k, i) => { if (pool[i]) sectionImages[k] = pool[i] })
+        }
       }
-    } catch { /* 자동채움 실패는 무시 — 원래 결과로 진행 */ }
+    } catch { /* 자동채움 실패는 무시 */ }
 
     const landingCtx: LandingCtx = { freshType, productGroup, origin, shipCutoff, hasHaccp, haccpNo, isFreshFood }
     const fb = buildFallback(productName || '상품', Number(retailPrice) || 0, unit || '개', landingCtx)
