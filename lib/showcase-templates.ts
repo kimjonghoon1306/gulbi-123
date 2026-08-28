@@ -223,10 +223,27 @@ export function renderShowcase(d: LandingData, styleId: string, layout: Showcase
 .sc-shot .cap{position:absolute;left:24px;bottom:22px;right:24px;color:#fff;z-index:2}
 .sc-shot .cap .t{font-family:${s.titleFont};font-weight:800;font-size:22px;text-shadow:0 2px 12px rgba(0,0,0,.7)}
 /* 이미지 집중형: 사진 더 크게(min-height), 캡션도 크게 */
-.sc-shot.big{min-height:74vh;display:flex}
-.sc-shot.big img{width:100%;height:74vh;object-fit:cover}
-.sc-shot.big::after{background:linear-gradient(0deg,rgba(0,0,0,.72),transparent 50%)}
-.sc-shot.big .cap{bottom:34px}
+.sc-shot.big{min-height:82vh;display:flex;overflow:hidden}
+.sc-shot.big img{width:100%;height:88vh;object-fit:cover}
+.sc-shot.big::after{background:linear-gradient(0deg,rgba(0,0,0,.75),rgba(0,0,0,0) 55%)}
+.sc-shot.big .cap{bottom:40px}
+/* ── 스크롤 등장 애니메이션(무료·후킹) : 사진 살짝 확대되며, 캡션 밑에서 올라옴 ── */
+@media (prefers-reduced-motion: no-preference){
+  [data-showcase][data-layout="visual"] .sc-shot.big img{
+    animation:scKen linear both; animation-timeline:view(); animation-range:cover 0% cover 100%;
+  }
+  @keyframes scKen{ from{transform:scale(1.18) translateY(2%)} to{transform:scale(1) translateY(-2%)} }
+  [data-showcase][data-layout="visual"] .sc-shot.big .cap{
+    animation:scRise linear both; animation-timeline:view(); animation-range:entry 10% entry 60%;
+  }
+  @keyframes scRise{ from{opacity:0;transform:translateY(40px)} to{opacity:1;transform:none} }
+  /* 모든 텍스트 섹션: 들어올 때 스르륵 등장 */
+  [data-showcase][data-layout="visual"] .sc-impact,
+  [data-showcase][data-layout="visual"] .sc-num,
+  [data-showcase][data-layout="visual"] .sc-rc{
+    animation:scRise linear both; animation-timeline:view(); animation-range:entry 0% entry 45%;
+  }
+}
 .sc-shot.big .cap .t{font-size:30px;line-height:1.25}
 .sc-points{padding:64px 26px;background:${s.ptBg}}
 .sc-sh{text-align:center;margin-bottom:40px}
@@ -271,17 +288,31 @@ export function renderShowcase(d: LandingData, styleId: string, layout: Showcase
   // visual(이미지 집중형): 큰 사진 연속 + 사진 위 짧은 카피(포인트 제목만), 긴 글 제거
   let bodyHtml = ''
   if (isVisual) {
+    // 이미지 집중형: 사진마다 후킹 카피(Gemini feature 제목 우선, 없으면 기본 후킹).
+    // 사진이 많아도 카피가 안 비게 순환 + 기본 후킹 풀로 채움.
+    const hooks = [
+      ...feats.map(f => f.title),
+      ...shotCaps,
+      '한 번 보면 못 잊는 맛', '식탁의 주인공', '눈으로 먼저 반하는', '오늘 저녁이 특별해져요',
+    ].filter(Boolean)
+    const capFor = (i: number) => hooks[i % hooks.length] || d.productName
+    // 사진 2장마다 임팩트 문구 1개 삽입(feats 소진). 큰 사진 연속으로 몰입감.
+    const parts: string[] = []
+    bodyImages.forEach((url, i) => {
+      parts.push(photo(url, capFor(i), true))
+      // 첫 사진 뒤 임팩트, 이후 3장마다
+      if ((i === 0 && feats[0]) || (i > 0 && i % 3 === 0 && feats[Math.floor(i / 3)])) {
+        const f = feats[i === 0 ? 0 : Math.floor(i / 3)]
+        if (f) parts.push(`<section class="sc-impact"><div class="k">POINT</div><h2><span ${ed('impact' + i)}>${esc(f.title)}</span></h2>${f.desc ? `<p class="tail" ${ed('impactd' + i)}>${esc(f.desc)}</p>` : ''}</section>`)
+      }
+    })
     bodyHtml = `
-  ${photo(bodyImages[0], feats[0]?.title || d.productName, true)}
-  ${feats[0] ? `<section class="sc-impact"><h2><span ${ed('impact1')}>${esc(feats[0].title)}</span></h2></section>` : ''}
-  ${photo(bodyImages[1], feats[1]?.title, true)}
-  ${photo(bodyImages[2], feats[2]?.title, true)}
+  ${parts.join('\n')}
   ${kn ? `<section class="sc-num">
     <div class="lead" ${ed('numlead')}>${esc(kn.label || '누적 판매')}</div>
     <div class="fig"><span ${ed('numval')}>${esc(kn.value)}</span><span class="u" ${ed('numunit')}>${esc(kn.unit || '건')}</span></div>
     <div class="st">★★★★★</div>
-  </section>` : ''}
-  ${bodyImages.slice(3).map((u, i) => photo(u, shotCaps[(i + 3) % shotCaps.length], true)).join('')}`
+  </section>` : ''}`
   } else {
     bodyHtml = `
   ${storyParas ? `<section class="sc-story">
