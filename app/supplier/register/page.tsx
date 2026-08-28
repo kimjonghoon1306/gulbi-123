@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import RegisterView from './_RegisterView'
 import { useRouter } from 'next/navigation'
+import { logClientError } from '@/lib/log-error'
 
 export default function SupplierRegisterPage() {
   const router = useRouter()
@@ -57,7 +58,7 @@ export default function SupplierRegisterPage() {
     })
     await supabase.auth.signOut()
     setLoading(false)
-    if (dbErr) return setError('정보 저장 실패: ' + dbErr.message)
+    if (dbErr) { logClientError({ area: 'supplier', message: '공급업체 등록 정보저장 실패', detail: `${dbErr.message} (email=${form.email})` }); return setError('정보 저장 실패: ' + dbErr.message) }
     setDone(true)
   }
 

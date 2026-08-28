@@ -1,10 +1,12 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 
 const UPDATE_IN_PROGRESS_KEY = "onjongil-pwa-update-in-progress";
 
 /** 온종일팜 PWA 업데이트 배너 */
 export default function PwaRegister() {
+  const pathname = usePathname();
   const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(false);
   const [reg, setReg] = useState<ServiceWorkerRegistration | null>(null);
@@ -129,7 +131,9 @@ export default function PwaRegister() {
     }
   };
 
-  if (!show) return null;
+  // 업데이트 배너는 관리자 페이지에서만 노출. 쇼핑몰 고객·공급업체에겐 숨김.
+  // (서비스워커 등록·백그라운드 업데이트 체크는 위 useEffect에서 계속 동작 — SW 자체는 최신 유지)
+  if (!show || !pathname?.startsWith("/admin")) return null;
 
   return (
     <div

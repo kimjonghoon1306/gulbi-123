@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { logClientError } from '@/lib/log-error'
 
 type MemberType = '일반' | '소매업' | '도매업'
 
@@ -77,6 +78,7 @@ export default function ShopRegisterPage() {
         if (msg.includes('password') && msg.includes('short'))
           return setError('비밀번호는 6자 이상이어야 해요.')
         console.error('[shop register] sign up failed', signUpError)
+        logClientError({ area: 'auth', message: '쇼핑몰 회원가입 실패', detail: `${msg} (email=${form.email})` })
         return setError('가입 처리 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.')
       }
       if (data.user) {
@@ -107,6 +109,7 @@ export default function ShopRegisterPage() {
         }, { onConflict: 'id' })
         if (insertError) {
           console.error('[shop register] member upsert failed', insertError)
+          logClientError({ area: 'auth', message: '쇼핑몰 회원정보 저장 실패', detail: `${insertError.message} (email=${form.email})` })
           return setError('회원 정보 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.')
         }
         setStep(3)
