@@ -37,6 +37,11 @@ const LEGACY_STYLES: { tpl: TemplateKey; name: string; paper: string; ink: strin
 const CAT_PRESET: Record<ShowcaseCategory, PresetKey> = {
   seafood: 'blue', health: 'gold', produce: 'white', meat: 'red', processed: 'dark',
 }
+// 옛 템플릿 → 가장 가까운 쇼케이스 무드. 이미지 집중형일 때 이 무드로 renderShowcase(visual).
+// (옛 템플릿은 구조상 글-이미지 반복이라 이미지 집중형이 안 됨 → 무드만 살려 쇼케이스로 렌더)
+const LEGACY_TO_MOOD: Record<string, string> = {
+  pop: 'market', clean: 'clean', magazine: 'modern', luxury: 'modern', business: 'clean', emotional: 'story',
+}
 
 // 폰트 목록 (한글/영문). 값은 실제 font-family, 라벨은 표시용.
 const FONTS = [
@@ -89,7 +94,14 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
       if (styleId.startsWith('legacy.')) {
         const tpl = styleId.slice(7) as TemplateKey
         const cat = inferCategory({ productGroup: s.productGroup, freshType: s.freshType, productName: s.aiMeta.name || s.selectedProduct?.name })
-        el.innerHTML = renderLanding(s.aiLandingData, CAT_PRESET[cat] || 'gold', tpl, layoutMode)
+        // 이미지 집중형: 옛 템플릿은 글-이미지 반복 구조라 진짜 이미지집중이 안 됨.
+        // → 옛 템플릿 무드를 쇼케이스로 매핑해 renderShowcase(visual)로 렌더(진짜 이미지 위주).
+        if (layoutMode === 'visual') {
+          const mood = LEGACY_TO_MOOD[tpl] || 'premium'
+          el.innerHTML = renderShowcase(s.aiLandingData, `${cat}.${mood}`, 'visual')
+        } else {
+          el.innerHTML = renderLanding(s.aiLandingData, CAT_PRESET[cat] || 'gold', tpl, 'balanced')
+        }
       } else {
         el.innerHTML = renderShowcase(s.aiLandingData, styleId, layoutMode)
       }

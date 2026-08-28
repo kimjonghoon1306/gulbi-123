@@ -214,10 +214,11 @@ export function renderShowcase(d: LandingData, styleId: string, layout: Showcase
 .sc-photo{position:relative;width:100%;background:${s.ptBg}}
 .sc-photo img{width:100%;display:block}
 .sc-impact{background:${s.impactBg};color:${s.impactFg};padding:70px 30px;text-align:center}
-.sc-impact .k{font-size:12px;letter-spacing:.35em;color:${s.accent};font-weight:800;margin-bottom:18px}
-.sc-impact h2{font-family:${s.titleFont};font-weight:${s.titleWeight};font-size:38px;line-height:1.25;color:${s.impactFg}}
-.sc-impact h2 em{font-style:normal;color:${s.accent}}
-.sc-impact .tail{color:${s.impactFg};opacity:.8;font-size:16px;margin-top:20px;font-weight:400;line-height:1.85}
+/* POINT 라벨: impactBg가 accent색일 때 묻히지 않게 impactFg(대개 흰색) 기반 */
+.sc-impact .k{font-size:13px;letter-spacing:.3em;color:${s.impactFg};opacity:.7;font-weight:800;margin-bottom:18px}
+.sc-impact h2{font-family:${s.titleFont};font-weight:${s.titleWeight};font-size:32px;line-height:1.3;letter-spacing:-.01em;color:${s.impactFg};word-break:keep-all}
+.sc-impact h2 em{font-style:normal;color:${s.impactFg}}
+.sc-impact .tail{color:${s.impactFg};opacity:.85;font-size:16px;margin-top:20px;font-weight:400;line-height:1.85}
 .sc-shot{position:relative}
 .sc-shot::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.55),transparent 45%)}
 .sc-shot .cap{position:absolute;left:24px;bottom:22px;right:24px;color:#fff;z-index:2}
