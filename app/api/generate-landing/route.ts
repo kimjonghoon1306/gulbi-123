@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { renderLanding, type LandingData, type PresetKey, type TemplateKey } from '@/lib/landing-templates'
 import { getAuthAndGeminiKey } from '@/lib/supabase-server'
 import { callAI } from '@/lib/ai'
+import { getImageSourceKeys } from '@/lib/ai-image-keys'
+import { searchPexels, searchPixabay } from '@/lib/image-sources'
 
 // 페르소나별 카피 톤 지침
 const PERSONA_TONES: Record<string, string> = {
@@ -766,6 +768,30 @@ unusedIndices: 어느 섹션에도 안 어울리는 이미지 인덱스들.
     for (let i = 0; i < imageList.length; i++) {
       if (!usedIndices.has(i)) unusedImages.push(dataUrl(i))
     }
+
+    // 5) ★ AI 자동 채움: 사진이 부족해 빈 섹션이 있으면 무료 스톡(Pexels/Pixabay)에서
+    //    상품에 어울리는 분위기컷을 자동으로 가져와 채운다(완전 자동, 무료).
+    try {
+      const emptyKeys = (['origin', 'story', 'recipe', 'storage'] as const).filter(k => !sectionImages[k])
+      if (emptyKeys.length > 0) {
+        const keys = await getImageSourceKeys()
+        if (keys.pexels || keys.pixabay) {
+          const nm = (productName || '').toLowerCase()
+          const q = freshType === 'seafood' || /생선|굴비|박대|고등어|갈치|새우|게|전복|조개|오징어|낙지|수산|해물/.test(nm) ? 'korean grilled fish rustic dark'
+            : freshType === 'livestock' || /한우|소고기|돼지|정육|삼겹|목살|등심/.test(nm) ? 'premium korean beef grilled dark'
+            : freshType === 'produce' || /과일|채소|사과|배|참외|딸기|쌀|농산/.test(nm) ? 'fresh korean vegetables farm bright'
+            : productGroup === 'processed' || /홍삼|즙|비타민|영양|건강/.test(nm) ? 'korean traditional health food dark'
+            : /젓갈|김치|장|반찬|장아찌/.test(nm) ? 'korean side dish banchan table'
+            : 'korean premium food styling'
+          let pool: string[] = []
+          try {
+            if (keys.pexels) pool = (await searchPexels(keys.pexels, q, { perPage: emptyKeys.length + 4, orientation: 'portrait' })).map(x => x.url)
+            if (pool.length < emptyKeys.length && keys.pixabay) pool = pool.concat((await searchPixabay(keys.pixabay, q, { perPage: emptyKeys.length + 4, orientation: 'portrait' })).map(x => x.url))
+          } catch { /* 스톡 실패해도 생성은 계속 */ }
+          emptyKeys.forEach((k, i) => { if (pool[i]) sectionImages[k] = pool[i] })
+        }
+      }
+    } catch { /* 자동채움 실패는 무시 — 원래 결과로 진행 */ }
 
     const landingCtx: LandingCtx = { freshType, productGroup, origin, shipCutoff, hasHaccp, haccpNo, isFreshFood }
     const fb = buildFallback(productName || '상품', Number(retailPrice) || 0, unit || '개', landingCtx)
