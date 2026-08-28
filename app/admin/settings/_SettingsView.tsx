@@ -1,6 +1,7 @@
 'use client'
 
 import type { Dispatch, SetStateAction } from 'react'
+import ImageSourceKeysCard from './ImageSourceKeysCard'
 
 type Message = { type: 'success' | 'error'; text: string }
 type Bubble = { id: number; x: number; size: number; delay: number }
@@ -339,6 +340,11 @@ export default function SettingsView({
                   </div>
 
                 </div>
+              </div>
+
+              {/* 이미지 소스 키 (Pexels / Pixabay / Replicate) */}
+              <div className="mt-4">
+                <ImageSourceKeysCard />
               </div>
             </div>
           )}

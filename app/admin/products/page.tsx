@@ -7,6 +7,10 @@ import { ProductFormModal } from './components/ProductFormModal'
 import type { ProductForm } from './components/ProductFormModal'
 import { emptyProductOption, optionLabelError, optionRepresentative, optionsForInsert } from '@/lib/product-options'
 import AiLandingEditor from './components/AiLandingEditor'
+import AiLandingStudio from './components/AiLandingStudio'
+
+// 새 모던 에디터 사용 여부. 문제 생기면 false 로 바꾸면 옛 에디터로 즉시 복귀(안전 스위치).
+const USE_STUDIO = true
 
 type Category = { id: string; name: string; sort_order: number }
 type Product = {
@@ -138,13 +142,23 @@ export default function ProductsPage() {
         categories={categories}
       />
 
-      <AiLandingEditor
-        show={showAiForm}
-        onClose={() => { setShowAiForm(false); setAiInitialProduct(null) }}
-        products={products}
-        initialProduct={aiInitialProduct}
-        onDone={() => { setAiInitialProduct(null); fetchAll() }}
-      />
+      {USE_STUDIO ? (
+        <AiLandingStudio
+          show={showAiForm}
+          onClose={() => { setShowAiForm(false); setAiInitialProduct(null) }}
+          products={products}
+          initialProduct={aiInitialProduct}
+          onDone={() => { setAiInitialProduct(null); fetchAll() }}
+        />
+      ) : (
+        <AiLandingEditor
+          show={showAiForm}
+          onClose={() => { setShowAiForm(false); setAiInitialProduct(null) }}
+          products={products}
+          initialProduct={aiInitialProduct}
+          onDone={() => { setAiInitialProduct(null); fetchAll() }}
+        />
+      )}
     </div>
   )
 }

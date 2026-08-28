@@ -880,6 +880,10 @@ const SECTION_RENDERERS: Record<string, (d: LandingData, p: Preset) => string> =
 // 모든 템플릿에 공통 주입되는 애니메이션(CSS 전용 — JS 불필요, 미지원 브라우저는 자동 무시).
 // 스크롤 등장은 @supports로 가드, hover는 데스크탑만, 모션 최소화 설정 존중.
 export const LANDING_ANIM_CSS = `
+/* 한글이 줄 끝에서 단어 중간에 잘리지 않게(어절 단위 줄바꿈) — 전 템플릿 공통. 굵은 제목 뭉개짐 방지. */
+[data-landing]{ -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; }
+[data-landing] h1,[data-landing] h2,[data-landing] h3,[data-landing] h4,
+[data-landing] p,[data-landing] li,[data-landing] strong,[data-landing] b,[data-landing] span{ word-break:keep-all; }
 @supports (animation-timeline: view()) {
   [data-landing] > section,
   [data-landing] figure {

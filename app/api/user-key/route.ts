@@ -12,7 +12,7 @@ export async function GET() {
   const supabase = await createServerSupabase()
   const { data, error } = await supabase
     .from('user_api_keys')
-    .select('key_hint, gemini_key_hint, is_valid, validated_at, updated_at')
+    .select('key_hint, gemini_key_hint, pexels_key_hint, pixabay_key_hint, replicate_key_hint, is_valid, validated_at, updated_at')
     .eq('user_id', user.id)
     .maybeSingle()
 
@@ -21,10 +21,16 @@ export async function GET() {
     return NextResponse.json({ error: 'API 키 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.' }, { status: 500 })
   }
 
+  // 이미지 소스 키는 DB에 없어도 서버 env 기본값이 있으면 "기본 키 사용 중"으로 표시
+  const envHint = (v?: string) => (v ? '기본 키 사용 중' : null)
+
   return NextResponse.json({
     hasKey: !!data,
     keyHint: data?.key_hint || null,
     geminiKeyHint: data?.gemini_key_hint || null,
+    pexelsKeyHint: data?.pexels_key_hint || envHint(process.env.PEXELS_API_KEY),
+    pixabayKeyHint: data?.pixabay_key_hint || envHint(process.env.PIXABAY_API_KEY),
+    replicateKeyHint: data?.replicate_key_hint || envHint(process.env.REPLICATE_API_TOKEN),
     isValid: data?.is_valid || false,
     validatedAt: data?.validated_at || null,
     updatedAt: data?.updated_at || null,
@@ -38,6 +44,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const user = await getAuthUser()
   if (!user) return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 })
+  const userId = user.id
 
   const body = await req.json()
   const supabase = await createServerSupabase()
@@ -153,6 +160,65 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ ok: true, geminiKeyHint: makeKeyHint(trimmed) })
+  }
+
+  // ── 이미지 소스 키 3종 공통 저장 헬퍼 ───────────────────────
+  // validate: 키 유효성 검증 함수(true면 저장), col: DB 컬럼 prefix
+  async function saveImageKey(
+    raw: string,
+    colEnc: string,
+    colHint: string,
+    validate: (k: string) => Promise<boolean>,
+    label: string,
+  ) {
+    const trimmed = (raw || '').trim()
+    if (!trimmed) return NextResponse.json({ error: 'API 키를 입력해주세요.' }, { status: 400 })
+    if (trimmed.includes('...')) {
+      return NextResponse.json({ error: '새 키를 입력해주세요. (현재 표시된 것은 마스킹된 힌트입니다)' }, { status: 400 })
+    }
+    let ok = false
+    try { ok = await validate(trimmed) } catch (e) { console.error(`[user-key] ${label} validate failed`, e) }
+    if (!ok) return NextResponse.json({ error: `입력한 ${label} 키를 확인해 주세요.` }, { status: 400 })
+
+    let encrypted: string
+    try { encrypted = encryptKey(trimmed) } catch (e: any) {
+      console.error(`[user-key] ${label} encrypt failed`, e)
+      return NextResponse.json({ error: 'API 키 저장 준비 중 문제가 발생했습니다.' }, { status: 500 })
+    }
+    const { data: exist } = await supabase.from('user_api_keys').select('user_id').eq('user_id', userId).maybeSingle()
+    const payload: any = { [colEnc]: encrypted, [colHint]: makeKeyHint(trimmed), updated_at: new Date().toISOString() }
+    const { error } = exist
+      ? await supabase.from('user_api_keys').update(payload).eq('user_id', userId)
+      : await supabase.from('user_api_keys').insert({ user_id: userId, ...payload })
+    if (error) {
+      console.error(`[user-key] ${label} save failed`, error)
+      return NextResponse.json({ error: 'API 키 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.' }, { status: 500 })
+    }
+    return NextResponse.json({ ok: true, hint: makeKeyHint(trimmed) })
+  }
+
+  // ── Pexels 키 저장 ─────────────────────────────────────────
+  if (body.pexelsKey !== undefined) {
+    return saveImageKey(body.pexelsKey, 'pexels_key_enc', 'pexels_key_hint', async (k) => {
+      const res = await fetch('https://api.pexels.com/v1/search?query=test&per_page=1', { headers: { Authorization: k } })
+      return res.ok
+    }, 'Pexels')
+  }
+
+  // ── Pixabay 키 저장 ────────────────────────────────────────
+  if (body.pixabayKey !== undefined) {
+    return saveImageKey(body.pixabayKey, 'pixabay_key_enc', 'pixabay_key_hint', async (k) => {
+      const res = await fetch(`https://pixabay.com/api/?key=${encodeURIComponent(k)}&q=test&per_page=3`)
+      return res.ok
+    }, 'Pixabay')
+  }
+
+  // ── Replicate 키 저장 ──────────────────────────────────────
+  if (body.replicateKey !== undefined) {
+    return saveImageKey(body.replicateKey, 'replicate_key_enc', 'replicate_key_hint', async (k) => {
+      const res = await fetch('https://api.replicate.com/v1/account', { headers: { Authorization: `Bearer ${k}` } })
+      return res.ok
+    }, 'Replicate')
   }
 
   return NextResponse.json({ error: '저장할 키가 없습니다.' }, { status: 400 })
