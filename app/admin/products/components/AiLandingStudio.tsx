@@ -108,6 +108,30 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
     st.textContent = `${fam}\n#landing-preview h1,#landing-preview h2,#landing-preview h3{font-weight:${weight} !important;word-break:keep-all}`
   }
 
+  // ✨ AI 화보 만들기(반자동, Flux) — 상품 카테고리에 맞는 시네마틱 배경컷 생성 → 삽입.
+  const [artLoading, setArtLoading] = useState(false)
+  const makeAiArt = async () => {
+    const cat = inferCategory({ productGroup: s.productGroup, freshType: s.freshType, productName: s.aiMeta.name || s.selectedProduct?.name })
+    const prompt = ({
+      seafood: 'cinematic dark moody photograph of fresh Korean seafood on rustic wet stone with soft steam, dramatic side light, deep shadows, no text',
+      health: 'cinematic warm photograph of Korean traditional health tonic and herbs on dark wood, golden light, elegant, no text',
+      produce: 'bright cinematic photograph of fresh Korean farm vegetables and fruits with morning light, natural wooden table, no text',
+      meat: 'cinematic dramatic photograph of premium Korean beef on dark slate with glowing embers, rich red tones, no text',
+      processed: 'cinematic warm photograph of Korean traditional side dishes in ceramic bowls on dark table, moody light, no text',
+    } as const)[cat]
+    setArtLoading(true); setToolMsg('AI가 화보 배경을 만드는 중… (약 5초)')
+    try {
+      const r = await fetch('/api/landing-images', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'background', prompt, aspectRatio: '3:4' }),
+      })
+      const d = await r.json()
+      if (!r.ok || !d.url) { setToolMsg(d.error || 'AI 화보 생성에 실패했어요. (Replicate 토큰 확인)') }
+      else { insertImageToPreview(d.url); setToolMsg('✨ AI 화보를 미리보기에 추가했어요.') }
+    } catch { setToolMsg('AI 화보 생성 중 오류가 발생했어요.') }
+    finally { setArtLoading(false) }
+  }
+
   const searchStock = async () => {
     if (!stockQuery.trim()) return
     setStockLoading(true); setToolMsg('')
@@ -431,7 +455,15 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
                   {/* 배경 탭 */}
                   {panelTab === 'bg' && (
                     <>
-                      <div className="st-lab">무료 배경 검색</div>
+                      {/* ✨ AI 화보 만들기 (반자동, Flux) */}
+                      <div className="st-artbox">
+                        <div className="st-artnm">✨ AI 화보 만들기</div>
+                        <div className="st-artdesc">상품에 어울리는 시네마틱 배경컷을 AI가 만들어 추가해요. (이미지 1장당 소량 과금)</div>
+                        <button className="st-artbtn" disabled={artLoading} onClick={makeAiArt}>
+                          {artLoading ? '만드는 중…' : '✨ 화보 배경 생성'}
+                        </button>
+                      </div>
+                      <div className="st-lab" style={{ marginTop: 20 }}>무료 배경 검색</div>
                       <div className="st-srcseg">
                         {([['', '전체'], ['pexels', 'Pexels'], ['pixabay', 'Pixabay']] as const).map(([k, lb]) => (
                           <button key={k} className={stockSource === k ? 'on' : ''} onClick={() => setStockSource(k)}>{lb}</button>
@@ -665,6 +697,12 @@ const CSS = `
 .st-searchrow input{flex:1;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px;background:var(--panel);color:var(--ink);outline:none}
 .st-searchrow input:focus{border-color:var(--accent)}
 .st-searchrow button{padding:0 16px;border-radius:10px;background:var(--accent);color:#fff;font-size:13px;font-weight:700}
+.st-artbox{background:linear-gradient(135deg,var(--accent-soft),rgba(59,160,255,.1));border:1.5px solid var(--accent);border-radius:13px;padding:16px}
+.st-artnm{font-size:15px;font-weight:800;color:var(--accent-d)}
+.st-artdesc{font-size:12.5px;color:var(--muted);line-height:1.55;margin:6px 0 12px}
+.st-artbtn{width:100%;padding:13px;border-radius:11px;background:var(--accent);color:#fff;font-size:14.5px;font-weight:800;box-shadow:0 6px 16px rgba(18,183,106,.3)}
+.st-artbtn:hover{background:var(--accent-d)}
+.st-artbtn:disabled{opacity:.55}
 .st-stockgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
 .st-stock{border-radius:9px;overflow:hidden;aspect-ratio:3/4;border:1px solid var(--line)}
 .st-stock img{width:100%;height:100%;object-fit:cover}
