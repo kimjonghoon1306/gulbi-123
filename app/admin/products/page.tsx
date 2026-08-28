@@ -41,7 +41,12 @@ export default function ProductsPage() {
   // AI 에디터
   const [showAiForm, setShowAiForm] = useState(false)
   const [aiInitialProduct, setAiInitialProduct] = useState<Product | null>(null)
-  const remakeDetail = (p: Product) => { setAiInitialProduct(p); setShowAiForm(true) }
+  // 상세페이지 재생성: 목록엔 description이 없으므로 그 상품만 따로 불러와 채운다.
+  const remakeDetail = async (p: Product) => {
+    setShowAiForm(true); setAiInitialProduct(p)
+    const { data } = await supabase.from('products').select('description').eq('id', p.id).single()
+    setAiInitialProduct({ ...p, description: data?.description || '' })
+  }
 
   useEffect(() => { fetchAll() }, [])
 
@@ -49,15 +54,25 @@ export default function ProductsPage() {
     setLoading(true)
     const [{ data: cats }, { data: prods }] = await Promise.all([
       supabase.from('categories').select('*').order('sort_order'),
-      supabase.from('products').select('*').order('created_at', { ascending: false }),
+      // ★ 목록은 description(상세페이지 HTML, base64 이미지 포함 수 MB) 제외 → 상품 많아도 빠름.
+      //   description은 편집/상세재생성 진입 시 그 상품만 따로 조회한다.
+      supabase.from('products')
+        .select('id,name,origin,category_id,wholesale_price,member_price,retail_price,stock,unit,weight,image_url,is_active,is_taxable,subscribable,subscribe_discount,shipping_type,shipping_fee,free_shipping_threshold,supplier_id,created_at')
+        .order('created_at', { ascending: false }),
     ])
     setCategories(cats || [])
-    setProducts((prods || []).filter((p: any) => !p.supplier_id))
+    // description은 목록에서 제외했으므로 빈 문자열로 채움(편집/재생성 시 따로 조회).
+    setProducts((prods || []).filter((p: any) => !p.supplier_id).map((p: any) => ({ ...p, description: '' })))
     setLoading(false)
   }
 
   const openEdit = async (p: Product) => {
-    const { data: optionRows } = await supabase.from('product_options').select('*').eq('product_id', p.id).order('sort_order')
+    // 목록엔 description이 없으므로 편집 진입 시 그 상품만 따로 조회(옵션과 함께).
+    const [{ data: optionRows }, { data: descRow }] = await Promise.all([
+      supabase.from('product_options').select('*').eq('product_id', p.id).order('sort_order'),
+      supabase.from('products').select('description').eq('id', p.id).single(),
+    ])
+    p = { ...p, description: descRow?.description || '' }
     setEditProduct(p)
     setForm({ name: p.name, description: p.description || '', origin: p.origin || '', category_id: p.category_id || '', wholesale_price: String(p.wholesale_price), member_price: String(p.member_price || 0), retail_price: String(p.retail_price), stock: p.stock == null ? '' : String(p.stock), unit: p.unit || 'kg', weight: p.weight != null ? String(p.weight) : '', image_url: p.image_url || '', is_active: p.is_active, is_taxable: p.is_taxable ?? false, subscribable: p.subscribable ?? false, subscribe_discount: p.subscribe_discount != null ? String(p.subscribe_discount) : '', shipping_type: p.shipping_type === 'paid' ? 'paid' : 'free', shipping_fee: p.shipping_fee != null ? String(p.shipping_fee) : '', free_shipping_threshold: p.free_shipping_threshold != null ? String(p.free_shipping_threshold) : '', use_options: !!optionRows?.length, options: optionRows?.length ? optionRows.map(o => ({ client_id: String(o.id), label: o.label, unit: o.unit || 'kg', weight: o.weight == null ? '' : String(o.weight), wholesale_price: String(o.wholesale_price || 0), member_price: String(o.member_price || 0), retail_price: String(o.retail_price || ''), stock: o.stock == null ? '' : String(o.stock) })) : [emptyProductOption()] })
     setShowForm(true)
