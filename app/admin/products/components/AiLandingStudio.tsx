@@ -487,14 +487,14 @@ const CSS = `
 .st-btn.primary{background:var(--accent);color:#fff;box-shadow:0 6px 16px rgba(18,183,106,.32)}
 .st-btn.primary:hover{background:var(--accent-d)}
 .st-btn.primary:disabled{opacity:.5}
-.st-body{flex:1;display:grid;grid-template-columns:88px 1fr 340px;overflow:hidden}
-.st-rail{background:var(--panel);border-right:1px solid var(--line);padding:14px 8px;display:flex;flex-direction:column;gap:6px}
-.st-step{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px;border-radius:13px;color:var(--muted);cursor:default}
+.st-body{flex:1;display:grid;grid-template-columns:104px 1fr 460px;overflow:hidden}
+.st-rail{background:var(--panel);border-right:1px solid var(--line);padding:16px 9px;display:flex;flex-direction:column;gap:8px}
+.st-step{display:flex;flex-direction:column;align-items:center;gap:7px;padding:15px 4px;border-radius:14px;color:var(--muted);cursor:default}
 .st-step.on{background:var(--accent-soft);color:var(--accent-d)}
 .st-step.done{color:var(--accent);cursor:pointer}
-.st-stepnum{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;background:var(--bg)}
+.st-stepnum{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;background:var(--bg)}
 .st-step.on .st-stepnum{background:var(--accent);color:#fff}
-.st-steplb{font-size:10.5px;font-weight:700}
+.st-steplb{font-size:12px;font-weight:700}
 .st-canvas{position:relative;display:flex;flex-direction:column;overflow:hidden;background:radial-gradient(circle at 50% 0%,rgba(0,0,0,.02),var(--bg) 70%)}
 .st-hint{margin:auto;text-align:center;color:var(--muted)}
 .st-hint-ic{font-size:44px;margin-bottom:14px;opacity:.5}
@@ -507,12 +507,14 @@ const CSS = `
 .st-viewseg button{padding:6px 13px;border-radius:7px;font-size:12px;font-weight:700;color:var(--muted)}
 .st-viewseg button.on{background:var(--panel);color:var(--accent-d);box-shadow:var(--shadow)}
 /* 스테이지(미리보기 영역) — 크게 */
-.st-stage{flex:1;overflow-y:auto;display:flex;justify-content:center;padding:24px 20px}
+.st-stage{flex:1;overflow-y:auto;display:flex;justify-content:center;padding:16px 14px}
 .st-device{background:#111;box-shadow:0 20px 50px -12px rgba(0,0,0,.4);position:relative;align-self:flex-start}
-.st-device.mobile{width:min(430px,90%);border-radius:38px;padding:11px}
-.st-device.pc{width:100%;max-width:900px;border-radius:14px;padding:0;background:#fff;border:1px solid var(--line)}
-.st-notch{position:absolute;top:17px;left:50%;transform:translateX(-50%);width:96px;height:22px;background:#111;border-radius:13px;z-index:5}
-.st-device.mobile .st-screen{border-radius:30px}
+.st-device.mobile{width:min(400px,96%);border-radius:36px;padding:10px}
+.st-device.pc{width:100%;max-width:680px;border-radius:14px;padding:0;background:#fff;border:1px solid var(--line)}
+/* PC 모드: 상세페이지를 넓게(모바일과 확실히 다르게) */
+.st-device.pc #landing-preview [data-showcase]{max-width:100% !important}
+.st-notch{position:absolute;top:17px;left:50%;transform:translateX(-50%);width:90px;height:21px;background:#111;border-radius:13px;z-index:5}
+.st-device.mobile .st-screen{border-radius:28px}
 .st-screen{width:100%;overflow:hidden;background:#fff}
 .st-screen #landing-preview{min-height:400px}
 /* 하단 사진 추가 바 — 크고 잘 보이게 */
@@ -521,12 +523,12 @@ const CSS = `
 .st-addimg-btn:hover{background:var(--accent);color:#fff;border-style:solid}
 .st-addimg-btn .st-plus{font-size:18px;line-height:1}
 .st-panel{background:var(--panel);border-left:1px solid var(--line);overflow-y:auto;display:flex;flex-direction:column}
-.st-phead{padding:18px 18px 13px;border-bottom:1px solid var(--line2)}
-.st-phead h3{font-size:16px;font-weight:800}
-.st-phead p{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5}
-.st-pbody{padding:16px 18px 40px}
-.st-lab{font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.04em;margin-bottom:8px}
-.st-select{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:13px;font-weight:600;background:var(--panel);color:var(--ink);outline:none}
+.st-phead{padding:22px 22px 16px;border-bottom:1px solid var(--line2)}
+.st-phead h3{font-size:19px;font-weight:800}
+.st-phead p{font-size:13.5px;color:var(--muted);margin-top:6px;line-height:1.55}
+.st-pbody{padding:22px 22px 48px}
+.st-lab{font-size:13px;font-weight:800;color:var(--muted);letter-spacing:.02em;margin-bottom:11px}
+.st-select{width:100%;border:1.5px solid var(--line);border-radius:11px;padding:14px 15px;font-size:15px;font-weight:600;background:var(--panel);color:var(--ink);outline:none}
 .st-select:focus{border-color:var(--accent)}
 .st-drop{display:flex;align-items:center;justify-content:center;min-height:150px;border:2px dashed var(--line);border-radius:12px;cursor:pointer;overflow:hidden;color:var(--muted);font-size:13px;font-weight:600;background:var(--bg)}
 .st-drop.sm{min-height:80px}
@@ -539,10 +541,10 @@ const CSS = `
 .st-thumb button{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:12px;line-height:1}
 .st-err{background:#fdecea;color:#c0392b;border:1px solid #f5c6c0;border-radius:10px;padding:10px 12px;font-size:12.5px;font-weight:600;margin-top:14px}
 .st-root[data-theme="dark"] .st-err{background:#3a1f1c;color:#ff9b8f;border-color:#5a2f2a}
-.st-next{width:100%;margin-top:18px;padding:13px;border-radius:11px;background:var(--accent);color:#fff;font-size:14px;font-weight:800;box-shadow:0 6px 16px rgba(18,183,106,.3)}
+.st-next{width:100%;margin-top:20px;padding:16px;border-radius:12px;background:var(--accent);color:#fff;font-size:16px;font-weight:800;box-shadow:0 6px 16px rgba(18,183,106,.3)}
 .st-next:hover{background:var(--accent-d)}
 .st-next:disabled{opacity:.45;box-shadow:none}
-.st-ghost{padding:13px 16px;border-radius:11px;border:1px solid var(--line);font-size:13px;font-weight:700;color:var(--ink);flex:none}
+.st-ghost{padding:16px 18px;border-radius:12px;border:1.5px solid var(--line);font-size:15px;font-weight:700;color:var(--ink);flex:none}
 .st-row2{display:flex;gap:10px;align-items:center;margin-top:18px}
 .st-row2 .st-next{margin-top:0;flex:1}
 .st-concepts{display:grid;grid-template-columns:1fr 1fr;gap:9px}
@@ -576,7 +578,7 @@ const CSS = `
 .st-code{width:100%;min-height:280px;border:1px solid var(--line);border-radius:12px;padding:14px;font-family:'SF Mono',Menlo,monospace;font-size:12.5px;line-height:1.6;background:var(--bg);color:var(--ink);resize:vertical;outline:none}
 .st-codeprev{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;min-height:120px}
 .st-ptabs{display:flex;gap:4px;background:var(--bg);padding:4px;border-radius:10px}
-.st-ptabs button{flex:1;padding:8px;border-radius:7px;font-size:12px;font-weight:700;color:var(--muted)}
+.st-ptabs button{flex:1;padding:11px;border-radius:8px;font-size:14px;font-weight:700;color:var(--muted)}
 .st-ptabs button.on{background:var(--panel);color:var(--accent-d);box-shadow:var(--shadow)}
 .st-toolmsg{background:var(--accent-soft);color:var(--accent-d);border-radius:9px;padding:9px 11px;font-size:12px;font-weight:600;margin-top:12px}
 .st-tiny{font-size:11px;color:var(--muted);margin-top:12px;line-height:1.6}
@@ -601,10 +603,10 @@ const CSS = `
 .st-stock img{width:100%;height:100%;object-fit:cover}
 .st-stock:hover{outline:2px solid var(--accent)}
 .st-stylegrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.st-stylecard{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:16px 13px;border-radius:12px;border:2px solid var(--line);text-align:left;min-height:74px;transition:.15s;overflow:hidden}
+.st-stylecard{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:20px 16px;border-radius:13px;border:2px solid var(--line);text-align:left;min-height:88px;transition:.15s;overflow:hidden}
 .st-stylecard:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
 .st-stylecard.on{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
 .st-styleswatch{position:absolute;top:11px;right:11px;width:16px;height:16px;border-radius:50%;box-shadow:0 0 0 2px rgba(255,255,255,.3)}
-.st-stylenm{font-size:13.5px;font-weight:800;letter-spacing:-.01em}
-.st-stylecat{font-size:10.5px;font-weight:600;opacity:.8}
+.st-stylenm{font-size:15px;font-weight:800;letter-spacing:-.01em}
+.st-stylecat{font-size:12px;font-weight:600;opacity:.8}
 `

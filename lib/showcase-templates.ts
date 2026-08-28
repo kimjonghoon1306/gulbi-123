@@ -154,14 +154,23 @@ const esc = (s: any) => String(s ?? '').replace(/</g, '&lt;').replace(/>/g, '&gt
 
 export function renderShowcase(d: LandingData, styleId: string): string {
   const s = getShowcaseStyle(styleId)
-  const heroImg = d.sectionImages?.hero || d.mainImageUrl || ''
-  const featImg = d.sectionImages?.feature || d.sectionImages?.story || ''
+  // ★ 사용자가 올린 사진을 하나도 버리지 않는다. 모든 이미지를 모아 중복 제거.
+  const si = d.sectionImages || {}
+  const allImages = Array.from(new Set([
+    si.hero, si.origin, si.story, si.feature, si.recipe, si.storage,
+    ...(d.unusedImages || []), d.mainImageUrl,
+  ].filter(Boolean))) as string[]
+  const heroImg = allImages[0] || ''
+  const bodyImages = allImages.slice(1)   // 히어로 배경 뺀 나머지는 큰 사진 섹션으로
   const title = d.catchphrase || d.productName || '상품명'
   const brand = d.brandName || '온종일팜'
   const feats = (d.features || []).slice(0, 3)
   const kn = d.keyNumber
   const reviews = (d.reviews || []).slice(0, 3)
   const infoRows = [...(d.info || []), ...(d.delivery || []).map(x => ({ key: x.label, value: x.value }))].slice(0, 6)
+  // 히어로엔 짧은 한 줄만(긴 본문이 사진 위에 겹치지 않게). 본문 story는 별도 섹션.
+  const heroLine = (d.subtitle || d.catchphrase || '').slice(0, 60)
+  const shotCaps = ['정성껏 준비한 상품', '신선함을 그대로', '믿고 드시는 품질', '식탁 위의 완성']
 
   // 히어로 타이틀: 2줄로 나눠 두 번째 줄을 accent로(감성/임팩트)
   const words = title.split(' ')
@@ -186,7 +195,15 @@ export function renderShowcase(d: LandingData, styleId: string): string {
 .sc-eyebrow{display:inline-block;color:${s.accent};font-size:11px;letter-spacing:.3em;font-weight:700;margin-bottom:14px;font-family:${s.eyebrowFont}}
 .sc-title{font-family:${s.titleFont};font-weight:${s.titleWeight};color:${s.titleColor};font-size:${s.titleSize};line-height:${s.titleLh};letter-spacing:${s.titleLs};text-shadow:0 4px 24px rgba(0,0,0,.45)}
 .sc-title em{font-style:normal;color:${s.accent};display:${s.titleEmBlock ? 'block' : 'inline'}}
-.sc-sub{color:${s.subColor};font-size:14px;margin-top:15px;font-weight:300;line-height:1.85;${s.heroAlign === 'center' ? 'max-width:320px;margin-left:auto;margin-right:auto' : 'max-width:300px'}}
+.sc-sub{color:${s.subColor};font-size:14.5px;margin-top:15px;font-weight:400;line-height:1.7;${s.heroAlign === 'center' ? 'max-width:320px;margin-left:auto;margin-right:auto' : 'max-width:300px'}}
+/* 본문 스토리 섹션(이미지 위 아님, 별도 밝은 섹션) */
+.sc-story{background:${s.ptBg};color:${s.ink};padding:56px 28px}
+.sc-story .k{font-size:11px;letter-spacing:.35em;color:${s.accent2};font-weight:800;margin-bottom:14px}
+.sc-story h2{font-family:${s.titleFont};font-weight:800;font-size:24px;line-height:1.35;margin-bottom:26px;color:${s.ink}}
+.sc-story .body p{font-size:14.5px;line-height:2;color:${s.muted};margin:0 0 16px}
+/* 사용자 업로드 사진 섹션 — 여러 장 다 배치 */
+.sc-photo{position:relative;width:100%;background:${s.ptBg}}
+.sc-photo img{width:100%;display:block}
 .sc-impact{background:${s.impactBg};color:${s.impactFg};padding:64px 30px;text-align:center}
 .sc-impact .k{font-size:11px;letter-spacing:.35em;color:${s.accent};font-weight:700;margin-bottom:16px}
 .sc-impact h2{font-family:${s.titleFont};font-weight:${s.titleWeight};font-size:32px;line-height:1.28}
@@ -227,6 +244,12 @@ export function renderShowcase(d: LandingData, styleId: string): string {
 .sc-foot b{font-family:${s.brandFont};color:${s.accent};letter-spacing:.25em;font-weight:800;font-size:13px;display:block;margin-bottom:7px}
 </style>`
 
+  // 사진 섹션 헬퍼(캡션 옵션)
+  const photo = (url: string, cap?: string) => url
+    ? `<section class="sc-shot"><img src="${url}" alt=""/>${cap ? `<div class="cap"><div class="t">${esc(cap)}</div></div>` : ''}</section>`
+    : ''
+  const storyParas = esc(d.story || '').split('\n').map(x => x.trim()).filter(Boolean).map(x => `<p>${x}</p>`).join('')
+
   return `${FONT_LINK}${css}
 <div data-showcase data-style="${s.id}">
   <section class="sc-hero"><div class="sc-hbg"></div>
@@ -234,9 +257,17 @@ export function renderShowcase(d: LandingData, styleId: string): string {
     <div class="sc-hin">
       <div class="sc-eyebrow" ${ed('eyebrow')}>${esc(d.subtitle || '정성으로 준비한')}</div>
       <h1 class="sc-title"><span ${ed('title1')}>${esc(t1)}</span>${t2 ? `<em ${ed('title2')}>${esc(t2)}</em>` : ''}</h1>
-      <p class="sc-sub" ${ed('herodesc')}>${esc(d.story || d.subtitle || '')}</p>
+      ${heroLine ? `<p class="sc-sub" ${ed('heroline')}>${esc(heroLine)}</p>` : ''}
     </div>
   </section>
+
+  ${storyParas ? `<section class="sc-story">
+    <div class="k">STORY</div>
+    <h2 ${ed('storytitle')}>${esc(d.productName || '')}의 이야기</h2>
+    <div class="body" ${ed('storybody')}>${storyParas}</div>
+  </section>` : ''}
+
+  ${photo(bodyImages[0], d.productName)}
 
   ${feats[0] ? `<section class="sc-impact">
     <div class="k">WHY</div>
@@ -244,12 +275,14 @@ export function renderShowcase(d: LandingData, styleId: string): string {
     <p class="tail" ${ed('impacttail')}>${esc(feats[0].desc)}</p>
   </section>` : ''}
 
-  ${featImg ? `<section class="sc-shot"><img src="${featImg}" alt=""><div class="cap"><div class="t" ${ed('shotcap')}>${esc(d.productName || '')}</div></div></section>` : ''}
+  ${photo(bodyImages[1], shotCaps[1])}
 
   ${feats.length ? `<section class="sc-points">
     <div class="sc-sh"><div class="en">POINT</div><div class="ko" ${ed('ptko')}>이 상품이 다른 이유</div></div>
     ${feats.map((f, i) => `<div class="sc-pt"><div class="no">${String(i + 1).padStart(2, '0')}</div><div><h3 ${ed('ptt' + i)}>${esc(f.title)}</h3><p ${ed('ptd' + i)}>${esc(f.desc)}</p></div></div>`).join('')}
   </section>` : ''}
+
+  ${photo(bodyImages[2], shotCaps[2])}
 
   ${kn ? `<section class="sc-num">
     <div class="lead" ${ed('numlead')}>${esc(kn.label || '누적 판매')}</div>
@@ -257,6 +290,8 @@ export function renderShowcase(d: LandingData, styleId: string): string {
     <div class="st">★★★★★</div>
     <div class="desc" ${ed('numcap')}>${esc(kn.caption || '')}</div>
   </section>` : ''}
+
+  ${bodyImages.slice(3).map((u, i) => photo(u, shotCaps[(i + 3) % shotCaps.length])).join('')}
 
   ${reviews.length ? `<section class="sc-rev">
     ${reviews.map((r, i) => `<div class="sc-rc"><div class="top"><div class="av">${esc((r.author || '고').slice(0, 1))}</div><div class="nm" ${ed('rvn' + i)}>${esc(r.author || '고객')}</div><div class="stars">★★★★★</div></div><p ${ed('rvt' + i)}>${esc(r.text)}</p></div>`).join('')}
