@@ -14,6 +14,7 @@ import { SHOWCASE_STYLES, renderShowcase, inferCategory, type ShowcaseStyle, typ
 import LandingBasicInfoFields from '@/app/components/LandingBasicInfoFields'
 import LandingFactFields from '@/app/components/LandingFactFields'
 import { useLandingEditor, type Product } from './useLandingEditor'
+import { useStudioImageTools } from './useStudioImageTools'
 
 type Props = {
   show: boolean
@@ -111,6 +112,10 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [s.aiLandingData, styleId, s.aiLandingHtml, s.aiStep, s.aiTab, layoutMode])
 
+  // 미리보기 이미지에 호버/탭 → 🔄교체 / ✨AI채우기 / ✕삭제 툴바 부착.
+  useStudioImageTools('landing-preview', s.aiStep === 3 || !!s.aiLandingHtml,
+    `${styleId}|${layoutMode}|${s.aiLandingHtml.slice(0, 30)}`, (img) => { void aiFillImage(img) })
+
   // 폰트 오버라이드를 미리보기 안에 <style>로 주입(저장 HTML에 함께 남아 상품페이지에도 적용)
   const applyFontOverride = (css: string, weight: number) => {
     const el = document.getElementById('landing-preview'); if (!el) return
@@ -120,26 +125,62 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
     st.textContent = `${fam}\n#landing-preview h1,#landing-preview h2,#landing-preview h3{font-weight:${weight} !important;word-break:keep-all}`
   }
 
-  // ✨ AI 화보 만들기(반자동, Flux) — 상품 카테고리에 맞는 시네마틱 배경컷 생성 → 삽입.
+  // 상품 특정 영문 힌트(고정 카테고리 대신 실제 상품을 반영)
+  const productHint = () => {
+    const nm = (s.aiMeta.name || s.selectedProduct?.name || '').toLowerCase()
+    const map: [RegExp, string][] = [
+      [/박대/, 'Korean half-dried bakdae flatfish (tonguefish) fillet'],
+      [/굴비|조기/, 'Korean dried yellow croaker (gulbi)'],
+      [/고등어/, 'Korean mackerel fillet'], [/갈치/, 'Korean cutlassfish'],
+      [/새우/, 'fresh shrimp'], [/전복/, 'fresh abalone'], [/게|대게|꽃게/, 'fresh crab'],
+      [/오징어|낙지/, 'fresh squid'], [/굴/, 'fresh oysters'], [/멸치/, 'dried anchovies'],
+      [/한우|소고기/, 'premium Korean hanwoo beef'], [/삼겹|돼지/, 'Korean pork belly'],
+      [/닭|계육/, 'Korean chicken'], [/사과/, 'fresh apples'], [/배/, 'fresh Korean pears'],
+      [/참외/, 'Korean chamoe melon'], [/딸기/, 'fresh strawberries'], [/감귤|귤/, 'Korean tangerines'],
+      [/쌀/, 'Korean rice'], [/홍삼|인삼/, 'Korean red ginseng'], [/젓갈/, 'Korean salted seafood jeotgal'],
+      [/김치/, 'Korean kimchi'], [/장아찌|절임/, 'Korean pickled side dish'],
+    ]
+    for (const [re, en] of map) if (re.test(nm)) return en
+    return s.aiMeta.name || s.selectedProduct?.name || 'Korean food'
+  }
+  // 상품·주제를 반영한 시네마틱 프롬프트 자동 생성
+  const aiArtPrompt = () => {
+    const cat = inferCategory({ productGroup: s.productGroup, freshType: s.freshType, productName: s.aiMeta.name || s.selectedProduct?.name })
+    const subject = productHint()
+    const scene = ({
+      seafood: 'on rustic wet dark stone with soft steam, moody deep shadows, dramatic side light',
+      health: 'on dark wood with dried herbs, warm golden light, elegant premium mood',
+      produce: 'on natural wooden table with morning light, fresh and bright, natural styling',
+      meat: 'on dark slate with glowing embers, rich red warm tones, dramatic',
+      processed: 'in ceramic bowls on dark table, warm moody light, traditional Korean',
+    } as const)[cat]
+    return `cinematic professional food photograph of ${subject}, ${scene}, high detail, appetizing, no text, no letters, no watermark`
+  }
+  const fetchAiImage = async (): Promise<string | null> => {
+    const r = await fetch('/api/landing-images', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'background', prompt: aiArtPrompt(), aspectRatio: '3:4' }),
+    })
+    const d = await r.json().catch(() => ({}))
+    if (!r.ok || !d.url) { setToolMsg(d.error || 'AI 이미지 생성에 실패했어요. (Replicate 토큰 확인)'); return null }
+    return d.url
+  }
+
+  // ✨ 미리보기 개별 이미지의 "AI 채우기" — 그 이미지를 AI 생성 컷으로 교체. 토큰 없으면 안내만.
+  const aiFillImage = async (img: HTMLImageElement) => {
+    img.style.opacity = '0.35'; setToolMsg('✨ AI가 이미지를 만드는 중… (약 5초)')
+    const url = await fetchAiImage()
+    if (url) { img.src = url; img.removeAttribute('srcset'); setToolMsg('✨ AI 이미지로 교체했어요.') }
+    img.style.opacity = ''
+  }
+
+  // ✨ AI 화보 만들기(배경 탭 버튼) — 미리보기에 새 컷 추가.
   const [artLoading, setArtLoading] = useState(false)
   const makeAiArt = async () => {
-    const cat = inferCategory({ productGroup: s.productGroup, freshType: s.freshType, productName: s.aiMeta.name || s.selectedProduct?.name })
-    const prompt = ({
-      seafood: 'cinematic dark moody photograph of fresh Korean seafood on rustic wet stone with soft steam, dramatic side light, deep shadows, no text',
-      health: 'cinematic warm photograph of Korean traditional health tonic and herbs on dark wood, golden light, elegant, no text',
-      produce: 'bright cinematic photograph of fresh Korean farm vegetables and fruits with morning light, natural wooden table, no text',
-      meat: 'cinematic dramatic photograph of premium Korean beef on dark slate with glowing embers, rich red tones, no text',
-      processed: 'cinematic warm photograph of Korean traditional side dishes in ceramic bowls on dark table, moody light, no text',
-    } as const)[cat]
     setArtLoading(true); setToolMsg('AI가 화보 배경을 만드는 중… (약 5초)')
     try {
-      const r = await fetch('/api/landing-images', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'background', prompt, aspectRatio: '3:4' }),
-      })
-      const d = await r.json()
-      if (!r.ok || !d.url) { setToolMsg(d.error || 'AI 화보 생성에 실패했어요. (Replicate 토큰 확인)') }
-      else { insertImageToPreview(d.url); setToolMsg('✨ AI 화보를 미리보기에 추가했어요.') }
+      const url = await fetchAiImage()
+      if (url) { insertImageToPreview(url); setToolMsg('✨ AI 화보를 미리보기에 추가했어요.') }
     } catch { setToolMsg('AI 화보 생성 중 오류가 발생했어요.') }
     finally { setArtLoading(false) }
   }

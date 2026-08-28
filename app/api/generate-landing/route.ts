@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { renderLanding, type LandingData, type PresetKey, type TemplateKey } from '@/lib/landing-templates'
 import { getAuthAndGeminiKey } from '@/lib/supabase-server'
 import { callAI } from '@/lib/ai'
-import { getImageSourceKeys } from '@/lib/ai-image-keys'
-import { searchPexels, searchPixabay } from '@/lib/image-sources'
 
 // 페르소나별 카피 톤 지침
 const PERSONA_TONES: Record<string, string> = {
@@ -769,33 +767,11 @@ unusedIndices: 어느 섹션에도 안 어울리는 이미지 인덱스들.
       if (!usedIndices.has(i)) unusedImages.push(dataUrl(i))
     }
 
-    // 5) ★ AI 자동 채움(보수적): 사용자 사진이 "부족할 때만" 배경/분위기컷을 채운다.
-    //    ★교훈: 스톡엔 특정 상품(박대 등) 정확한 사진이 없다. "비슷한 수산물"을 막 넣으면
-    //    조개관자·가게 간판 같은 엉뚱한 사진이 들어가 오히려 페이지를 망친다.
-    //    → 사진이 이미 충분(대표+본문 2장 이상)하면 아예 안 넣는다. 부족할 때만 "음식 클로즈업"만.
-    try {
-      const userImgCount = imageList.length
-      const emptyKeys = (['story', 'recipe', 'storage'] as const).filter(k => !sectionImages[k])
-      // 사용자 사진이 2장 미만이고 빈 섹션이 있을 때만 채운다(그 이상이면 손대지 않음).
-      if (userImgCount < 2 && emptyKeys.length > 0) {
-        const keys = await getImageSourceKeys()
-        if (keys.pexels || keys.pixabay) {
-          const nm = (productName || '').toLowerCase()
-          // 배경/분위기컷 위주(간판·사람 배제). 상품 자체보다 "질감/배경"으로 안전하게.
-          const q = freshType === 'seafood' || /생선|굴비|박대|고등어|갈치|수산|해물/.test(nm) ? 'dark rustic wooden board texture background food'
-            : freshType === 'livestock' || /한우|소고기|정육|삼겹|등심/.test(nm) ? 'dark slate stone board texture background'
-            : freshType === 'produce' || /과일|채소|농산/.test(nm) ? 'natural wooden table linen texture bright background'
-            : productGroup === 'processed' || /홍삼|즙|건강/.test(nm) ? 'warm wooden table dark texture background'
-            : 'rustic food background texture dark'
-          let pool: string[] = []
-          try {
-            if (keys.pexels) pool = (await searchPexels(keys.pexels, q, { perPage: emptyKeys.length + 2, orientation: 'portrait' })).map(x => x.url)
-            if (pool.length < emptyKeys.length && keys.pixabay) pool = pool.concat((await searchPixabay(keys.pixabay, q, { perPage: emptyKeys.length + 2, orientation: 'portrait' })).map(x => x.url))
-          } catch { /* 실패해도 진행 */ }
-          emptyKeys.forEach((k, i) => { if (pool[i]) sectionImages[k] = pool[i] })
-        }
-      }
-    } catch { /* 자동채움 실패는 무시 */ }
+    // 5) ★ 스톡 자동채움은 폐기함(2026-08-29 테리 결정).
+    //    ★교훈: 스톡엔 특정 상품(박대 등) 정확한 사진이 없어, "비슷한 수산물"을 막 넣으면
+    //    조개관자·가게 간판 같은 엉뚱한 사진이 들어가 페이지를 망친다. + 지울 방법도 없었다.
+    //    → 자동 삽입 안 함. 빈 섹션은 그대로 두고, 사용자가 미리보기에서 "✨AI 채우기"(Flux,
+    //    상품 특정 프롬프트)나 사진 추가로 직접 채운다. 통제권을 사용자에게.
 
     const landingCtx: LandingCtx = { freshType, productGroup, origin, shipCutoff, hasHaccp, haccpNo, isFreshFood }
     const fb = buildFallback(productName || '상품', Number(retailPrice) || 0, unit || '개', landingCtx)
