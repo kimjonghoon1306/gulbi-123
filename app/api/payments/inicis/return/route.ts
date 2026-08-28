@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase-admin'
+import { logServerError } from '@/lib/log-error'
 import {
   ORDER_TABLES, OrderTable,
   expectedPaymentAmount, markOrderPaid, spendOrderPoints, refundOrderPoints,
@@ -82,6 +83,7 @@ export async function POST(req: NextRequest) {
     const data: any = await res.json().catch(() => ({}))
     if (data.resultCode !== '0000') {
       console.error('[inicis/return] approval failed', { resultCode: data.resultCode, resultMsg: data.resultMsg })
+      try { await logServerError(admin, { area: 'payment', message: `결제 승인 실패: ${data.resultMsg || data.resultCode}`, detail: `orderId=${orderId} table=${table} code=${data.resultCode}`, path: '/api/payments/inicis/return' }) } catch {}
       return fail(data.resultMsg || 'APPROVAL_FAIL')
     }
 
@@ -90,6 +92,7 @@ export async function POST(req: NextRequest) {
     const totPrice = Number(data.TotPrice || data.price || 0)
     if (expected === null || totPrice !== expected) {
       console.error('[inicis/return] amount mismatch', { expected, totPrice, orderId, table })
+      try { await logServerError(admin, { area: 'payment', message: `결제 금액 불일치 (위변조 의심)`, detail: `expected=${expected} totPrice=${totPrice} orderId=${orderId} table=${table}`, path: '/api/payments/inicis/return' }) } catch {}
       return fail('AMOUNT_MISMATCH')
     }
 
@@ -111,6 +114,7 @@ export async function POST(req: NextRequest) {
     }
     const result = await markOrderPaid(admin, table, orderId, tid, expected, normalized)
     if (!result.found || result.error) {
+      try { await logServerError(admin, { area: 'payment', message: `결제는 승인됐으나 주문 업데이트 실패 (포인트 환불 처리)`, detail: `orderId=${orderId} table=${table} tid=${tid} err=${result.error || 'not found'}`, path: '/api/payments/inicis/return' }) } catch {}
       if (spend.spent) await refundOrderPoints(admin, table, orderId, result.error || 'inicis approved but order update failed')
       return fail('ORDER_UPDATE')
     }
@@ -124,8 +128,9 @@ export async function POST(req: NextRequest) {
       q.set('due', String(data.VACT_Date || ''))
     }
     return NextResponse.redirect(`${base}/shop/payment/success?${q.toString()}`, 302)
-  } catch (e) {
+  } catch (e: any) {
     console.error('[inicis/return] unexpected error', e)
+    try { const a = await createAdminSupabase(); if (a) await logServerError(a, { area: 'payment', message: '결제 처리 중 예외 발생', detail: String(e?.message || e).slice(0, 1000), path: '/api/payments/inicis/return' }) } catch {}
     return fail('ERROR')
   }
 }

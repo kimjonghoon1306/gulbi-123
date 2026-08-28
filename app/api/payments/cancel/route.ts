@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
-import { requireAdminUser } from '@/lib/supabase-server'
+import { requireAdminUser, createServerSupabase } from '@/lib/supabase-server'
+import { logServerError } from '@/lib/log-error'
 import { INICIS_MID } from '@/lib/inicis-server'
 
 export const runtime = 'nodejs'
@@ -85,12 +86,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(resData, { status: 200 })
     }
     console.error('[payments/cancel] inicis refund failed', { status: res.status, resData })
+    try { await logServerError(await createServerSupabase(), { area: 'payment', message: `환불 실패: ${resData.resultMsg || res.status}`, detail: `status=${res.status} ${JSON.stringify(resData).slice(0, 500)}`, path: '/api/payments/cancel' }) } catch {}
     return NextResponse.json(
       { message: resData.resultMsg || '이니시스 환불 처리에 실패했습니다. 상점관리자에서 직접 취소해 주세요.' },
       { status: 502 }
     )
   } catch (e: any) {
     console.error('[payments/cancel] unexpected error', e)
+    try { await logServerError(await createServerSupabase(), { area: 'payment', message: '환불 처리 중 예외', detail: String(e?.message || e).slice(0, 1000), path: '/api/payments/cancel' }) } catch {}
     return NextResponse.json({ message: '환불 처리 중 오류가 발생했습니다. 서버 로그를 확인해 주세요.' }, { status: 500 })
   }
 }

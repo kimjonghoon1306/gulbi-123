@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthUser } from '@/lib/supabase-server'
+import { getAuthUser, createServerSupabase } from '@/lib/supabase-server'
 import { getImageSourceKeys } from '@/lib/ai-image-keys'
+import { logServerError } from '@/lib/log-error'
 import {
   searchPexels, searchPixabay, upscaleImage, removeBackground,
   generateFluxBackground, isLowRes, type StockImage, type Orientation,
@@ -83,6 +84,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '알 수 없는 action 입니다.' }, { status: 400 })
   } catch (e: any) {
     console.error('[landing-images] failed', action, e)
+    try { await logServerError(await createServerSupabase(), { area: 'ai-image', message: `이미지 처리 실패 (${action})`, detail: String(e?.message || e).slice(0, 1000) + ' — Flux/스톡 실패면 Replicate 토큰·한도 확인', path: '/api/landing-images' }) } catch {}
     return NextResponse.json({ error: '이미지 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.', detail: e?.message }, { status: 500 })
   }
 }

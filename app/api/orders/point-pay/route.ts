@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase-admin'
 import { createServerSupabase } from '@/lib/supabase-server'
 import { ORDER_TABLES, OrderTable, expectedPaymentAmount, getOrderPointInfo, markOrderPaid, refundOrderPoints, spendOrderPoints } from '@/lib/order-payment'
+import { logServerError } from '@/lib/log-error'
 
 export const runtime = 'nodejs'
 
@@ -58,8 +59,9 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ ok: true })
-  } catch (e) {
+  } catch (e: any) {
     console.error('[orders/point-pay] unexpected error', e)
+    try { await logServerError(await createServerSupabase(), { area: 'shop-order', message: '포인트 결제 처리 예외', detail: String(e?.message || e).slice(0, 1000), path: '/api/orders/point-pay' }) } catch {}
     return NextResponse.json({ message: '포인트 결제 처리 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.' }, { status: 500 })
   }
 }
