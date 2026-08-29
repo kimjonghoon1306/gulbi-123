@@ -4,6 +4,7 @@ import React from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import { payWithInicis } from '@/lib/inicis'
+import { logClientError } from '@/lib/log-error'
 import { openPostcode } from '@/lib/postcode'
 import { calculateProductShipping } from '@/lib/shipping'
 import { AddressBookPicker } from './_AddressBookPicker'
@@ -460,7 +461,13 @@ export function OrderModal({ product, selectedOption, quantity, orderDone, membe
                           return  // 이니시스 결제창이 열리므로 이후 코드 실행 안 함
                         }
                         setOrderDone(true)
-                      } catch { alert('주문 중 오류가 발생했어요. 다시 시도해주세요.') }
+                      } catch (e: any) {
+                        // Supabase 에러 객체는 Error 인스턴스가 아니라 message/code/hint/details를 직접 들고 있음
+                        const msg = e?.message || e?.error_description || (typeof e === 'string' ? e : JSON.stringify(e))
+                        const detail = [e?.message, e?.code && `code=${e.code}`, e?.details, e?.hint].filter(Boolean).join(' | ')
+                        logClientError({ area: 'shop-order', message: '상품상세 주문 실패', detail: detail || msg })
+                        alert('주문 중 오류가 발생했어요. 다시 시도해주세요.\n\n(원인: ' + msg + ')')
+                      }
                       finally { setOrderLoading(false) }
                     }}
                     disabled={orderLoading}

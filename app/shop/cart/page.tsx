@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase'
 import { CartOrderModal } from '../_CartOrderModal'
 import { priceFor } from '../_shopConstants'
 import { payWithInicis } from '@/lib/inicis'
+import { logClientError } from '@/lib/log-error'
 import { addressToText } from '../_AddressBookPicker'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -374,7 +375,13 @@ export default function CartPage() {
       // 🛒 헤더 카운트 0 갱신 신호
       localStorage.setItem('cart-updated', Date.now().toString())
       setOrderDone(true)
-    } catch { alert('주문 중 오류가 발생했습니다.') }
+    } catch (e: any) {
+      // Supabase 에러 객체는 Error 인스턴스가 아니라 message/code/hint/details를 직접 들고 있음
+      const msg = e?.message || e?.error_description || (typeof e === 'string' ? e : JSON.stringify(e))
+      const detail = [e?.message, e?.code && `code=${e.code}`, e?.details, e?.hint].filter(Boolean).join(' | ')
+      logClientError({ area: 'shop-order', message: '장바구니 주문 실패', detail: detail || msg })
+      alert('주문 중 오류가 발생했습니다.\n\n(원인: ' + msg + ')')
+    }
     finally { setOrderLoading(false) }
   }
 
