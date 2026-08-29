@@ -139,8 +139,11 @@ export function useLandingEditor(opts: {
   const postGenerate = async (payload: any, area: 'ai-generate' = 'ai-generate') => {
     let res: Response
     try {
+      // ★ keepalive 금지: Fetch 규격상 keepalive 요청은 본문 64KB 초과 시 브라우저가 예외를 던진다.
+      //   이미지 base64는 수 MB라 keepalive를 켜면 무조건 "Failed to fetch"로 터진다(생성 깨짐의 진짜 원인).
+      //   화면 유지는 Wake Lock이 담당하므로 keepalive는 필요 없다.
       res = await fetch('/api/generate-landing', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, keepalive: true,
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
     } catch (e: any) {
