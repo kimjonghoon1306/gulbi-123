@@ -36,6 +36,9 @@ export type ShowcaseStyle = {
   footBg: string; footFg: string
   // 폰트
   titleFont: string; titleWeight: string; bodyFont: string; brandFont: string; numFont: string
+  // ★headFont: 특징 제목·소제목 등 '중간 크기' 글씨용. 큰 히어로 제목엔 개성 폰트(titleFont)를,
+  //   작은 제목엔 깔끔한 폰트를 써서 예시가 기본으로 이쁘게(예: 활기찬 시장의 Black Han Sans는 큰 제목만).
+  headFont: string
   titleSize: string; titleLh: string; titleLs: string
   eyebrowFont: string
 }
@@ -71,6 +74,7 @@ function buildStyle(category: ShowcaseCategory, mood: ShowcaseMood): ShowcaseSty
     eyebrowFont: `'Pretendard',sans-serif`, brandFont: `'Pretendard',sans-serif`,
     bodyFont: `'Pretendard',sans-serif`, numFont: `'Pretendard',sans-serif`, titleFont: `'Pretendard',sans-serif`,
     brandColor: '#fff', badgeRadius: '40px', titleColor: '#fff', subColor: 'rgba(255,255,255,.86)',
+    headFont: `'Pretendard',sans-serif`,   // 기본: 깔끔한 산세리프(무드별로 아래에서 덮어씀)
   }
   switch (mood) {
     case 'premium': return { ...base, layoutKind: 'cinematic',
@@ -97,7 +101,7 @@ function buildStyle(category: ShowcaseCategory, mood: ShowcaseMood): ShowcaseSty
       impactBg: '#ffffff', impactFg: c.deep, impactSub: '#8a97a3',
       ptBg: '#ffffff', numBg: c.deep, numFg: '#fff', numFig: c.accent, footBg: c.deep, footFg: 'rgba(210,220,228,.5)',
     }
-    case 'traditional': return { ...base, layoutKind: 'framed',
+    case 'traditional': return { ...base, layoutKind: 'framed', headFont: `'Nanum Myeongjo',serif`,
       heroJustify: 'center', heroAlign: 'center', titleFont: `'Nanum Myeongjo',serif`, titleWeight: '800',
       titleSize: '42px', titleLh: '1.4', titleLs: '0', brandFont: `'Nanum Myeongjo',serif`, numFont: `'Nanum Myeongjo',serif`,
       eyebrowFont: `'Nanum Myeongjo',serif`, bodyFont: `'Nanum Myeongjo',serif`,
@@ -108,7 +112,7 @@ function buildStyle(category: ShowcaseCategory, mood: ShowcaseMood): ShowcaseSty
       ptBg: '#ede4d2', numBg: 'linear-gradient(160deg,#33260f,#1a130a)', numFg: '#f2ebdc', numFig: '#f2ebdc',
       footBg: '#1a130a', footFg: 'rgba(230,215,190,.45)',
     }
-    case 'modern': return { ...base, layoutKind: 'split',
+    case 'modern': return { ...base, layoutKind: 'split', headFont: `'Playfair Display',serif`,
       titleFont: `'Playfair Display',serif`, titleWeight: '700', titleSize: '44px', titleLs: '-.01em',
       brandFont: `'Playfair Display',serif`, numFont: `'Playfair Display',serif`, eyebrowFont: `'Playfair Display',serif`,
       paper: '#101010', ink: '#e8e8e8', accent: c.accent, accent2: '#9a9a9a', muted: '#888', line: 'rgba(200,200,200,.14)',
@@ -117,7 +121,7 @@ function buildStyle(category: ShowcaseCategory, mood: ShowcaseMood): ShowcaseSty
       impactBg: '#181818', impactFg: '#fff', impactSub: 'rgba(220,220,220,.5)',
       ptBg: '#141414', numBg: '#000', numFg: '#fff', numFig: '#fff', footBg: '#000', footFg: 'rgba(200,200,200,.4)',
     }
-    case 'story': return { ...base, layoutKind: 'editorial',
+    case 'story': return { ...base, layoutKind: 'editorial', headFont: `'Gowun Batang',serif`,
       titleFont: `'Gowun Batang',serif`, titleWeight: '700', titleSize: '40px', titleLh: '1.35', titleLs: '-.01em',
       brandFont: `'Gowun Batang',serif`, numFont: `'Gowun Batang',serif`, eyebrowFont: `'Gowun Batang',serif`, bodyFont: `'Gowun Batang',serif`,
       paper: c.warmDeep, ink: '#f0e4d8', accent: c.warm, accent2: c.warm, muted: '#a08a78', line: 'rgba(200,150,110,.16)',
@@ -214,7 +218,7 @@ export function renderShowcase(d: LandingData, styleId: string, layout: Showcase
 /* 본문 스토리 섹션(이미지 위 아님, 별도 섹션) — 글씨 크게, 대비 확보 */
 .sc-story{background:${s.ptBg};color:${s.ink};padding:60px 28px}
 .sc-story .k{font-size:12px;letter-spacing:.35em;color:${s.accent2};font-weight:800;margin-bottom:14px}
-.sc-story h2{font-family:${s.titleFont};font-weight:800;font-size:28px;line-height:1.35;margin-bottom:28px;color:${s.ink}}
+.sc-story h2{font-family:${s.headFont};font-weight:800;font-size:28px;line-height:1.35;margin-bottom:28px;color:${s.ink}}
 .sc-story .body p{font-size:17px;line-height:1.95;color:${s.ink};opacity:.82;margin:0 0 18px}
 .sc-photo{position:relative;width:100%;background:${s.ptBg}}
 .sc-photo img{width:100%;display:block}
@@ -227,7 +231,7 @@ export function renderShowcase(d: LandingData, styleId: string, layout: Showcase
 .sc-shot{position:relative}
 .sc-shot::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.55),transparent 45%)}
 .sc-shot .cap{position:absolute;left:24px;bottom:22px;right:24px;color:#fff;z-index:2}
-.sc-shot .cap .t{font-family:${s.titleFont};font-weight:800;font-size:22px;text-shadow:0 2px 12px rgba(0,0,0,.7)}
+.sc-shot .cap .t{font-family:${s.headFont};font-weight:800;font-size:22px;text-shadow:0 2px 12px rgba(0,0,0,.7)}
 /* 이미지 집중형: 사진 더 크게(min-height), 캡션도 크게 */
 .sc-shot.big{min-height:82vh;display:flex;overflow:hidden}
 .sc-shot.big img{width:100%;height:88vh;object-fit:cover}
@@ -254,11 +258,11 @@ export function renderShowcase(d: LandingData, styleId: string, layout: Showcase
 .sc-points{padding:64px 26px;background:${s.ptBg}}
 .sc-sh{text-align:center;margin-bottom:40px}
 .sc-sh .en{font-size:12px;letter-spacing:.35em;color:${s.accent2};font-weight:800}
-.sc-sh .ko{font-family:${s.titleFont};font-weight:800;font-size:30px;margin-top:10px;color:${s.ink}}
+.sc-sh .ko{font-family:${s.headFont};font-weight:800;font-size:30px;margin-top:10px;color:${s.ink}}
 .sc-pt{display:flex;gap:18px;padding:24px 0;border-top:1px solid ${s.line}}
 .sc-pt:last-child{border-bottom:1px solid ${s.line}}
 .sc-pt .no{font-family:${s.numFont};font-size:34px;color:${s.accent2};line-height:1;flex:none;width:50px;font-weight:800}
-.sc-pt h3{font-family:${s.titleFont};font-weight:800;font-size:19px;margin-bottom:7px;color:${s.ink}}
+.sc-pt h3{font-family:${s.headFont};font-weight:800;font-size:19px;margin-bottom:7px;color:${s.ink}}
 .sc-pt p{font-size:16px;color:${s.ink};opacity:.78;line-height:1.75}
 .sc-num{background:${s.numBg};color:${s.numFg};text-align:center;padding:66px 24px}
 .sc-num .lead{font-size:14px;letter-spacing:.2em;color:${s.accent};font-weight:800;margin-bottom:14px}
@@ -275,7 +279,7 @@ export function renderShowcase(d: LandingData, styleId: string, layout: Showcase
 .sc-rc p{font-size:15.5px;color:${s.mood === 'clean' || s.mood === 'market' || s.mood === 'traditional' ? '#444' : s.ink};opacity:.88;line-height:1.75}
 /* 정보 섹션 — 본문 배경/글씨로 대비 확보(어두운 footBg에 안 묻히게) */
 .sc-info{background:${s.ptBg};color:${s.ink};padding:48px 26px;border-top:1px solid ${s.line}}
-.sc-info h4{font-family:${s.titleFont};font-weight:800;font-size:18px;color:${s.accent2};margin-bottom:18px}
+.sc-info h4{font-family:${s.headFont};font-weight:800;font-size:18px;color:${s.accent2};margin-bottom:18px}
 .sc-info .row{display:flex;gap:14px;padding:14px 0;border-top:1px solid ${s.line};font-size:15.5px}
 .sc-info .row span:first-child{color:${s.accent2};flex:none;width:84px;font-weight:800}
 .sc-info .row span:last-child{color:${s.ink};opacity:.85;line-height:1.6}
@@ -330,7 +334,7 @@ export function renderShowcase(d: LandingData, styleId: string, layout: Showcase
 .lk-split .sbody .row img{width:100%;display:block}
 .lk-split .sbody .lbl{background:${s.paper};color:${s.ink};padding:26px;display:flex;gap:16px;align-items:baseline;border-bottom:1px solid ${s.line}}
 .lk-split .sbody .lbl .n{font-family:${s.numFont};font-size:30px;color:${s.accent};flex:none}
-.lk-split .sbody .lbl h3{font-family:${s.titleFont};font-size:18px;font-weight:${s.titleWeight};margin-bottom:6px}
+.lk-split .sbody .lbl h3{font-family:${s.headFont};font-size:18px;font-weight:800;margin-bottom:6px}
 .lk-split .sbody .lbl p{color:${s.muted};font-size:14.5px;line-height:1.7}
 
 /* editorial(감성 스토리): 매거진 표지(사진+겹친 제목 카드) + 좌우 교차 본문 */
@@ -344,7 +348,7 @@ export function renderShowcase(d: LandingData, styleId: string, layout: Showcase
 .lk-editorial .erow img{width:100%;height:100%;min-height:180px;object-fit:cover}
 .lk-editorial .erow .tx{padding:26px 22px;background:${s.paper};display:flex;flex-direction:column;justify-content:center}
 .lk-editorial .erow .tx .n{font-family:${s.numFont};color:${s.accent};font-size:24px;margin-bottom:8px}
-.lk-editorial .erow .tx h3{font-family:${s.titleFont};font-weight:${s.titleWeight};font-size:19px;margin-bottom:8px;color:${s.ink}}
+.lk-editorial .erow .tx h3{font-family:${s.headFont};font-weight:800;font-size:19px;margin-bottom:8px;color:${s.ink}}
 .lk-editorial .erow .tx p{color:${s.muted};font-size:14px;line-height:1.75}
 </style>`
 
