@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { renderLanding, type LandingData, type PresetKey, type TemplateKey } from '@/lib/landing-templates'
+
+// 이미지 여러 장 + Gemini 8192토큰 생성은 시간이 걸린다 — 기본 타임아웃에 걸려 504가 나지 않도록 여유를 준다.
+export const maxDuration = 120
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 import { getAuthAndGeminiKey, createServerSupabase } from '@/lib/supabase-server'
 import { callAI } from '@/lib/ai'
 import { logServerError } from '@/lib/log-error'

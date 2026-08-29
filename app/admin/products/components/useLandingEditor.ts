@@ -120,6 +120,48 @@ export function useLandingEditor(opts: {
       img.src = url
     })
 
+  // ── 전송 페이로드 안전장치 ───────────────────────────────
+  // Vercel 서버리스 요청 본문은 ~4.5MB가 하드 한계(next.config bodySizeLimit은 Route Handler엔 안 먹힘).
+  // 이미지 base64 합이 이를 넘으면 함수 실행 '전에' 413이 나고 서버 로그조차 안 남는다.
+  // → 대표 1장은 보장하고, 예산(≈3.8MB)을 넘는 뒷 이미지는 잘라 보낸다.
+  const capImagesToBudget = (imgs: { base64: string; mimeType: string }[], budget = 3_800_000) => {
+    const out: { base64: string; mimeType: string }[] = []
+    let total = 0
+    for (const im of imgs) {
+      const sz = im.base64.length
+      if (out.length > 0 && total + sz > budget) break
+      out.push(im); total += sz
+    }
+    return { images: out, dropped: imgs.length - out.length, total }
+  }
+
+  // 어떤 실패든(비-JSON·413·타임아웃·throw) 반드시 로그로 남기고, 사용자에게는 원인을 알려준다.
+  const postGenerate = async (payload: any, area: 'ai-generate' = 'ai-generate') => {
+    let res: Response
+    try {
+      res = await fetch('/api/generate-landing', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, keepalive: true,
+        body: JSON.stringify(payload),
+      })
+    } catch (e: any) {
+      logClientError({ area, message: '상세페이지 생성 실패(네트워크)', detail: `fetch throw :: ${String(e?.message || e).slice(0, 300)}` })
+      throw new Error('서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.')
+    }
+    const raw = await res.text().catch(() => '')
+    let data: any = null
+    try { data = raw ? JSON.parse(raw) : null } catch {}
+    if (!res.ok || !data || data.error) {
+      const detail = `status=${res.status} ${data?.error ? String(data.error).slice(0, 400) : (raw ? raw.slice(0, 300) : '빈 응답(플랫폼 단 실패 가능 — 413/타임아웃)')}`
+      logClientError({ area, message: '상세페이지 생성 실패(응답)', detail })
+      const msg = data?.error
+        || (res.status === 413 ? '이미지 용량이 너무 커서 서버가 거절했어요. 사진 수나 크기를 줄여 다시 시도해 주세요.'
+          : res.status >= 500 ? '상세페이지 생성 중 문제가 발생했습니다. 서버 로그를 확인해 주세요.'
+          : '요청이 실패했어요. 잠시 후 다시 시도해 주세요.')
+      const err: any = new Error(msg); err.status = res.status; throw err
+    }
+    return data
+  }
+
   const getYoutubeEmbedUrl = (url: string): string => {
     const regexes = [/youtube\.com\/watch\?v=([^&]+)/, /youtu\.be\/([^?]+)/, /youtube\.com\/embed\/([^?]+)/]
     for (const regex of regexes) { const m = url.match(regex); if (m) return 'https://www.youtube.com/embed/' + m[1] }
@@ -147,15 +189,12 @@ export function useLandingEditor(opts: {
       }
       for (const extra of aiExtraImages) images.push(await resizeImg(extra.file))
       if (images.length === 0) { setBasicInfoLoading(false); return setAiError('대표 이미지를 불러오지 못했어요. 사진을 새로 올려주세요.') }
-      const response = await fetch('/api/generate-landing', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode: 'basic-info', images, productName: aiMeta.name, productGroup, freshType }),
-      })
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error)
+      // 기본정보 분석은 앞 3장만 쓰므로 3장으로 줄여 용량도 자연히 작다.
+      const { images: sendImages } = capImagesToBudget(images.slice(0, 3))
+      const data = await postGenerate({ mode: 'basic-info', images: sendImages, productName: aiMeta.name, productGroup, freshType })
       setBasicInfo(data.basicInfo || {})
-    } catch {
-      setAiError('이미지는 등록됐지만 기본정보 초안은 만들지 못했어요. 직접 입력하거나 다시 올려주세요.')
+    } catch (e: any) {
+      setAiError(String(e?.message || '이미지는 등록됐지만 기본정보 초안은 만들지 못했어요. 직접 입력하거나 다시 올려주세요.'))
     } finally { setBasicInfoLoading(false) }
   }
 
@@ -222,23 +261,17 @@ export function useLandingEditor(opts: {
       for (const ex of aiExtraImages) { try { images.push(await resizeImg(ex.file)) } catch { /* skip */ } }
       if (images.length === 0) { setAiLoading(false); return setAiError('이미지가 준비되지 않았어요.') }
 
-      const res = await fetch('/api/generate-landing', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, keepalive: true,
-        body: JSON.stringify({ images, persona: aiPersona, productName: aiMeta.name, origin: aiMeta.origin, retailPrice: aiMeta.retail_price, wholesalePrice: aiMeta.wholesale_price, unit: aiMeta.unit, productGroup, freshType, shipCutoff, hasHaccp, haccpNo, basicInfo })
-      })
-      const data = await res.json()
-      if (data.error) {
-        console.error('[studio generate] failed', data)
-        logClientError({ area: 'ai-generate', message: '상세페이지 생성 실패(응답)', detail: `status=${res.status} ${String(data.error).slice(0, 500)}` })
-        return setAiError(res.status === 400 && /키/.test(String(data.error)) ? data.error : '상세페이지 생성에 실패했습니다. 서버 로그를 확인해 주세요.')
-      }
+      // 413 예방: 총 용량이 크면 대표 1장은 남기고 뒷 이미지는 잘라 보낸다.
+      const { images: sendImages, dropped } = capImagesToBudget(images)
+      const data = await postGenerate({ images: sendImages, persona: aiPersona, productName: aiMeta.name, origin: aiMeta.origin, retailPrice: aiMeta.retail_price, wholesalePrice: aiMeta.wholesale_price, unit: aiMeta.unit, productGroup, freshType, shipCutoff, hasHaccp, haccpNo, basicInfo })
       setAiLandingData(data.data || null)
       setAiLandingHtml(data.html)
       setAiPresetKey((data.presetKey as PresetKey) || 'gold'); setAiTemplateKey((data.templateKey as TemplateKey) || 'premium')
       setAiStep(3)
+      if (dropped > 0) setAiError(`사진 ${dropped}장은 용량 제한으로 이번 생성에서 제외했어요. 생성 후 미리보기에서 추가할 수 있어요.`)
     } catch (e: any) {
       console.error('[studio generate] unexpected error', e)
-      setAiError('상세페이지 생성 중 오류가 발생했습니다. 서버 로그를 확인해 주세요.')
+      setAiError(String(e?.message || '상세페이지 생성 중 오류가 발생했습니다. 서버 로그를 확인해 주세요.'))
     }
     finally { setAiLoading(false); clearInterval(aiLoadingTimer.current); setAiLoadingMsg(''); try { await wakeLock?.release() } catch {} }
   }
