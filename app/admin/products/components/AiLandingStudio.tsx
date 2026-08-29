@@ -132,7 +132,7 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
       el.innerHTML = s.aiLandingHtml
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [s.aiLandingData, styleId, s.aiLandingHtml, s.aiStep, s.aiTab, layoutMode])
+  }, [s.aiLandingData, styleId, s.aiLandingHtml, s.aiStep, s.aiTab, layoutMode, previewMode])
 
   // 미리보기 이미지에 호버/탭 → 교체/선명하게/배경정리/AI채우기/삭제 툴바 부착.
   useStudioImageTools('landing-preview', s.aiStep === 3 || !!s.aiLandingHtml,
@@ -430,8 +430,12 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
                   <div className={'st-device ' + previewMode}>
                     {previewMode === 'mobile' && <div className="st-notch" />}
                     <div className="st-screen">
+                      {/* ★React가 이 안의 innerHTML(직접 주입한 상세페이지 DOM)을 재조정하지 않게 격리.
+                          PC/모바일 토글 등으로 부모가 리렌더돼도 React가 자기가 안 넣은 노드를
+                          지우려다 'removeChild' 크래시(튕김)나던 것 방지. */}
                       <div id="landing-preview" contentEditable suppressContentEditableWarning
-                        style={{ minHeight: '100%', outline: 'none' }} />
+                        style={{ minHeight: '100%', outline: 'none' }}
+                        dangerouslySetInnerHTML={{ __html: '' }} />
                     </div>
                   </div>
                   {dragOver && <div className="st-dropmsg">📥 여기에 놓으면 사진이 추가돼요</div>}
