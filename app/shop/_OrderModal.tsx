@@ -177,6 +177,15 @@ export function OrderModal({ product, selectedOption, quantity, orderDone, membe
                     <input type="text" value={orderForm.address} onChange={e => setOrderForm(p => ({...p, address: e.target.value}))}
                       placeholder="주소 검색 후 상세주소(동·호수)를 입력해주세요"
                       style={{width:'100%',padding:'14px 16px',borderRadius:'14px',border:`2px solid ${orderForm.address ? '#15803d' : D.border}`,background:D.input,color:D.text,fontSize:'14px',outline:'none',boxSizing:'border-box',transition:'border-color 0.2s'}} />
+                    {/* 받는 분 이름·연락처 — 주소록 선택 시 자동 채움, 직접 수정 가능 */}
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px',marginTop:'8px'}}>
+                      <input type="text" value={orderForm.recipient} onChange={e => setOrderForm(p => ({...p, recipient: e.target.value}))}
+                        placeholder="받는 분 이름"
+                        style={{width:'100%',padding:'14px 16px',borderRadius:'14px',border:`2px solid ${orderForm.recipient ? '#15803d' : D.border}`,background:D.input,color:D.text,fontSize:'14px',outline:'none',boxSizing:'border-box',transition:'border-color 0.2s'}} />
+                      <input type="tel" inputMode="numeric" value={orderForm.phone} onChange={e => setOrderForm(p => ({...p, phone: e.target.value}))}
+                        placeholder="받는 분 연락처"
+                        style={{width:'100%',padding:'14px 16px',borderRadius:'14px',border:`2px solid ${orderForm.phone ? '#15803d' : D.border}`,background:D.input,color:D.text,fontSize:'14px',outline:'none',boxSizing:'border-box',transition:'border-color 0.2s'}} />
+                    </div>
                   </div>
 
                   {/* 결제방법 */}
