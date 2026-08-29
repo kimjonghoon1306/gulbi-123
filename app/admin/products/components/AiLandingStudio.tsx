@@ -57,8 +57,30 @@ const FONTS = [
 
 type StockImg = { url: string; thumb: string; source: string }
 
+// 미리보기 카드: 460px 폭 실제 페이지를 카드 폭에 딱 맞게 축소.
+// ★scale()은 순수 숫자만 받으므로 CSS의 cqw는 무효였다 → JS로 (카드폭/460) 배율 직접 계산.
+//   상세페이지 전체 흐름(히어로+본문 앞부분)이 카드에 담기도록 iframe을 세로로 크게 렌더 후 통째 축소.
+const CARD_BASE_W = 460
+function fitCardFrame(iframe: HTMLIFrameElement) {
+  const prev = iframe.parentElement
+  if (!prev) return
+  const w = prev.clientWidth
+  if (!w) return
+  const scale = w / CARD_BASE_W
+  iframe.style.transform = `scale(${scale})`
+  // 카드 높이(3:4)에 맞춰 iframe 세로도 역산 → 히어로+본문 시작까지 보이게
+  iframe.style.height = `${prev.clientHeight / scale}px`
+}
+
 export default function AiLandingStudio({ show, onClose, products, onDone, initialProduct }: Props) {
   const s = useLandingEditor({ show, products, onDone, initialProduct })
+
+  // 미리보기 카드들이 창 크기 변화에 맞춰 다시 축소되도록(반응형 폭)
+  useEffect(() => {
+    const refit = () => document.querySelectorAll<HTMLIFrameElement>('.st-cardframe').forEach(fitCardFrame)
+    window.addEventListener('resize', refit)
+    return () => window.removeEventListener('resize', refit)
+  }, [])
 
   // 로컬 UI 상태 (에디터 셸 전용 — 저장 로직과 무관)
   const [panelTab, setPanelTab] = useState<'concept' | 'text' | 'bg'>('concept')
@@ -544,7 +566,10 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
                               <button key={st.id} className={'st-stylecard' + (styleId === st.id ? ' on' : '')} onClick={() => setStyleId(st.id)}>
                                 <div className="st-cardprev" style={{ background: st.paper }}>
                                   {html
-                                    ? <iframe className="st-cardframe" tabIndex={-1} scrolling="no" srcDoc={`<style>html,body{margin:0;padding:0;overflow:hidden;pointer-events:none}</style>${html}`} />
+                                    ? <iframe className="st-cardframe" tabIndex={-1} scrolling="no"
+                                        ref={(el) => { if (el) fitCardFrame(el) }}
+                                        onLoad={(e) => fitCardFrame(e.currentTarget)}
+                                        srcDoc={`<style>html,body{margin:0;padding:0;overflow:hidden;pointer-events:none}</style>${html}`} />
                                     : <span className="st-cardswatch" style={{ background: st.accent }} />}
                                 </div>
                                 <div className="st-cardname">
@@ -844,11 +869,11 @@ const CSS = `
 .st-stylecard{position:relative;display:flex;flex-direction:column;padding:0;border-radius:13px;border:2px solid var(--line);text-align:left;transition:.15s;overflow:hidden;background:var(--panel)}
 .st-stylecard:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
 .st-stylecard.on{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
-/* 미니 미리보기(실제 디자인 잔상) — 460px 실제폭을 카드폭으로 축소.
-   ★카드 폭이 반응형이라 하드코딩 scale(0.318)은 오른쪽·아래 여백(검은 틈)이 남았다.
-   → 컨테이너 폭 단위(cqw)로 카드 폭에 정확히 맞춰 꽉 채운다. 460×613(=3:4)을 (카드폭/460)배 축소. */
-.st-cardprev{position:relative;width:100%;aspect-ratio:3/4;overflow:hidden;container-type:inline-size;background:var(--card2)}
-.st-cardframe{position:absolute;top:0;left:0;width:460px;height:613px;border:0;transform:scale(calc(100cqw / 460));transform-origin:top left;pointer-events:none}
+/* 미니 미리보기(실제 디자인 잔상) — 460px 실제폭 페이지를 카드폭에 딱 맞게 축소.
+   ★scale()은 순수 숫자만 받아 CSS cqw/calc는 무효였다(그래서 축소 안 돼 제목이 잘림).
+   → transform/height는 JS fitCardFrame이 카드 실측 폭으로 설정한다. 여기선 초기값만. */
+.st-cardprev{position:relative;width:100%;aspect-ratio:3/4;overflow:hidden;background:var(--card2)}
+.st-cardframe{position:absolute;top:0;left:0;width:460px;height:900px;border:0;transform:scale(.32);transform-origin:top left;pointer-events:none}
 .st-cardswatch{position:absolute;inset:0}
 .st-cardname{display:flex;align-items:center;gap:7px;padding:11px 13px}
 .st-carddot{width:12px;height:12px;border-radius:50%;flex:none;box-shadow:0 0 0 1px var(--line)}
