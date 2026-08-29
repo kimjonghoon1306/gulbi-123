@@ -280,7 +280,7 @@ export default function CartPage() {
       if (orderError || !newOrder) throw orderError || new Error('order insert failed')
 
       if (newOrder) {
-        await supabase.from(itemTable).insert(
+        const { error: itemError } = await supabase.from(itemTable).insert(
           items.map(item => {
             const shipping = calculateProductShipping(item.products, getPrice(item), item.quantity)
             return ({
@@ -301,6 +301,8 @@ export default function CartPage() {
             applied_shipping_fee: shipping.appliedFee,
           })})
         )
+        // 주문상품 저장 실패 시 결제 불가(서버가 금액 못 구함) → 즉시 중단하고 원인 노출
+        if (itemError) throw itemError
       }
 
       // 쿠폰 사용 횟수 증가 (한도 관리) + 받은 쿠폰 사용처리

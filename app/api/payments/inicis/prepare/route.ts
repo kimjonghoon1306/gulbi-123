@@ -3,6 +3,7 @@ import { createAdminSupabase } from '@/lib/supabase-admin'
 import { createServerSupabase } from '@/lib/supabase-server'
 import { ORDER_TABLES, OrderTable, expectedPaymentAmount, getOrderPointInfo } from '@/lib/order-payment'
 import { INICIS_MID, INICIS_SIGN_KEY, sha256 } from '@/lib/inicis-server'
+import { logServerError } from '@/lib/log-error'
 
 export const runtime = 'nodejs'
 
@@ -43,6 +44,25 @@ export async function POST(req: NextRequest) {
     // 서버측 실가격 재계산(클라이언트 금액 신뢰 안 함)
     const expected = await expectedPaymentAmount(admin, table as OrderTable, String(orderId))
     if (expected === null || expected <= 0) {
+      // 왜 금액을 못 구했는지 정밀 진단 → 관리자 🩺 시스템 로그에서 원인 확인
+      try {
+        const itemTable = table === 'wholesale_orders' ? 'wholesale_order_items' : table === 'retail_orders' ? 'retail_order_items' : 'general_order_items'
+        const priceCol = table === 'wholesale_orders' ? 'wholesale_price' : table === 'retail_orders' ? 'member_price' : 'retail_price'
+        const { data: items } = await admin.from(itemTable).select('product_id, option_id, quantity').eq('order_id', orderId)
+        const productIds = Array.from(new Set((items || []).map((i: any) => i.product_id)))
+        const optionIds = Array.from(new Set((items || []).flatMap((i: any) => i.option_id ? [i.option_id] : [])))
+        const { data: prods } = productIds.length ? await admin.from('products').select(`id, ${priceCol}`).in('id', productIds) : { data: [] }
+        const { data: opts } = optionIds.length ? await admin.from('product_options').select(`id, ${priceCol}`).in('id', optionIds) : { data: [] }
+        const detail = [
+          `expected=${expected}`,
+          `itemCount=${items?.length ?? 0}`,
+          `priceCol=${priceCol}`,
+          `productPrices=${JSON.stringify(prods)}`,
+          `optionPrices=${JSON.stringify(opts)}`,
+          `items=${JSON.stringify(items)}`,
+        ].join(' | ')
+        await logServerError(supabase, { area: 'payment', message: `결제 금액 확인 실패(${table}#${orderId})`, detail })
+      } catch { /* 진단 실패는 무시 */ }
       return NextResponse.json({ message: '결제 금액을 확인할 수 없습니다.' }, { status: 400 })
     }
 

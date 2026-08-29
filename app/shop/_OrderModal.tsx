@@ -383,7 +383,7 @@ export function OrderModal({ product, selectedOption, quantity, orderDone, membe
                         const { data: newOrder, error: orderError } = await supabase.from(table).insert(orderData).select().single()
                         if (orderError || !newOrder) throw orderError || new Error('order insert failed')
                         if (newOrder) {
-                          await supabase.from(itemTable).insert({
+                          const { error: itemError } = await supabase.from(itemTable).insert({
                             order_id: newOrder.id,
                             product_id: product.id,
                             product_name: product.name,
@@ -400,6 +400,8 @@ export function OrderModal({ product, selectedOption, quantity, orderDone, membe
                             shipping_discount: shipping.discount,
                             applied_shipping_fee: shipping.appliedFee,
                           })
+                          // 주문상품(order_item) 저장 실패 시 결제 진행 불가(서버가 금액을 못 구함) → 즉시 중단하고 원인 노출
+                          if (itemError) throw itemError
                           // 쿠폰 사용처리
                           if (appliedCoupon) {
                             try { await supabase.rpc('increment_coupon_usage', { coupon_code: appliedCoupon.code }) } catch {}

@@ -16,8 +16,14 @@ type PointSpendResult = {
   pointUsed?: number
 }
 
-const priceField = (table: OrderTable): 'retail_price' | 'member_price' | 'wholesale_price' =>
-  table === 'wholesale_orders' ? 'wholesale_price' : table === 'retail_orders' ? 'member_price' : 'retail_price'
+// 회원유형별 판매가 — 클라이언트 priceFor(_shopConstants)와 반드시 동일한 폴백 규칙을 써야 한다.
+// 소매/도매 회원이라도 member_price·wholesale_price가 비어 있으면 retail_price로 폴백한다.
+// (서버가 단일 컬럼만 보면 클라 표시가와 어긋나 '결제 금액을 확인할 수 없습니다'가 발생)
+const priceFor = (row: any, table: OrderTable): number => {
+  if (table === 'wholesale_orders') return (Number(row?.wholesale_price) || Number(row?.retail_price)) || 0
+  if (table === 'retail_orders') return (Number(row?.member_price) || Number(row?.retail_price)) || 0
+  return Number(row?.retail_price) || 0
+}
 
 const orderItemTable = (table: OrderTable) =>
   table === 'wholesale_orders'
@@ -51,18 +57,18 @@ export async function expectedPaymentAmount(supabase: any, table: OrderTable, or
     .eq('order_id', orderId)
   if (!items || items.length === 0) return null
 
-  const field = priceField(table)
+  // 세 가격 컬럼을 모두 읽어 클라이언트와 동일한 폴백(priceFor)으로 계산
   const { data: products } = await supabase
     .from('products')
-    .select(`id, ${field}`)
+    .select('id, wholesale_price, member_price, retail_price')
     .in('id', items.map((item: any) => item.product_id))
-  const priceMap = new Map<string, number>((products || []).map((product: any) => [product.id, Number(product[field]) || 0]))
+  const priceMap = new Map<string, number>((products || []).map((product: any) => [product.id, priceFor(product, table)]))
 
   const optionIds = items.flatMap((item: any) => item.option_id ? [item.option_id] : [])
   const { data: options } = optionIds.length
-    ? await supabase.from('product_options').select(`id, ${field}`).in('id', optionIds)
+    ? await supabase.from('product_options').select('id, wholesale_price, member_price, retail_price').in('id', optionIds)
     : { data: [] }
-  const optionPriceMap = new Map<string, number>((options || []).map((option: any) => [option.id, Number(option[field]) || 0]))
+  const optionPriceMap = new Map<string, number>((options || []).map((option: any) => [option.id, priceFor(option, table)]))
 
   const lineTotal = (item: any) => (item.option_id ? (optionPriceMap.get(item.option_id) || 0) : (priceMap.get(item.product_id) || 0)) * item.quantity
   const subtotal = items.reduce((sum: number, item: any) => sum + lineTotal(item), 0)
