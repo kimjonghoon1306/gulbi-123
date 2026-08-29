@@ -314,6 +314,10 @@ function mergeData(
   unusedImages: string[],
 ): LandingData {
   const pick = <T>(a: T | undefined, b: T): T => (a === undefined || a === null || (Array.isArray(a) && a.length === 0) ? b : a)
+  // 렌더러는 features/reviews/differences/faq/delivery 등에서 .slice/.map을 쓴다.
+  // AI가 이 필드를 '배열이 아닌 값(객체·문자열 등)'으로 주면 pick이 통과시켜 렌더가 터진다(간헐 500의 진짜 원인).
+  // → 배열 필드는 "비어있지 않은 배열일 때만" 채택하고, 아니면 fallback 배열을 쓴다.
+  const arr = <T>(a: any, b: T[]): T[] => (Array.isArray(a) && a.length > 0 ? a as T[] : b)
   return {
     brandName: pick(ai?.brandName, fb.brandName || ''),
     productName: ai?.productName || productName,
@@ -325,9 +329,9 @@ function mergeData(
     originStory: pick(ai?.originStory, fb.originStory!),
     originStats: normalizeOriginStats(ai?.originStats, fb.originStats as OriginStat[]),
     story: pick(ai?.story, fb.story!),
-    features: pick(ai?.features, fb.features!),
+    features: arr(ai?.features, fb.features!),
     keyNumber: pick(ai?.keyNumber, fb.keyNumber!),
-    differences: pick(ai?.differences, fb.differences!),
+    differences: arr(ai?.differences, fb.differences!),
     recipe: pick(ai?.recipe, fb.recipe!),
     storage: pick(ai?.storage, fb.storage!),
     ingredients: ai?.ingredients,
@@ -338,10 +342,10 @@ function mergeData(
     artist: ai?.artist,
     materials: ai?.materials,
     care: ai?.care,
-    reviews: pick(ai?.reviews, fb.reviews!),
-    info: pick(ai?.info, fb.info!),
-    faq: pick(ai?.faq, fb.faq!),
-    delivery: pick(ai?.delivery, fb.delivery!),
+    reviews: arr(ai?.reviews, fb.reviews!),
+    info: arr(ai?.info, fb.info!),
+    faq: arr(ai?.faq, fb.faq!),
+    delivery: arr(ai?.delivery, fb.delivery!),
     price: fb.price!,
     mainImageUrl: sectionImages?.hero || '',
     sectionImages,
@@ -794,11 +798,20 @@ unusedIndices: 어느 섹션에도 안 어울리는 이미지 인덱스들.
     const templateKey: TemplateKey = userChoice || aiChoice || VALID_TEMPLATES[Math.floor(Math.random() * VALID_TEMPLATES.length)]
     const presetKey: PresetKey = TEMPLATE_PRESET[templateKey] || 'gold'
 
-    const html = renderLanding(finalData, presetKey, templateKey)
+    // 렌더 단계를 따로 감싸, 여기서 터지면 catch-all이 아니라 원인을 정확히 남긴다.
+    let html: string
+    try {
+      html = renderLanding(finalData, presetKey, templateKey)
+    } catch (re: any) {
+      try { await logServerError(await createServerSupabase(), { area: 'ai-generate', message: '상세페이지 렌더 실패(renderLanding)', detail: `template=${templateKey} preset=${presetKey} :: ${String(re?.message || re)}\n${String(re?.stack || '').slice(0, 800)}`, path: '/api/generate-landing' }) } catch {}
+      return NextResponse.json({ error: '상세페이지를 그리는 중 문제가 생겼어요. 다시 시도해 주세요.' }, { status: 500 })
+    }
 
     return NextResponse.json({ html, data: finalData, templateKey, presetKey })
   } catch (e: any) {
     console.error('[generate-landing] unexpected error', e)
+    // ★ catch-all이 원인을 삼키지 않도록 실제 예외를 관리자 로그에 남긴다(테리 지시: 어디서 문제인지 로그로).
+    try { await logServerError(await createServerSupabase(), { area: 'ai-generate', message: '상세페이지 생성 예외(catch-all)', detail: `${String(e?.message || e)}\n${String(e?.stack || '').slice(0, 1000)}`, path: '/api/generate-landing' }) } catch {}
     return NextResponse.json({ error: '상세페이지 생성 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.' }, { status: 500 })
   }
 }
