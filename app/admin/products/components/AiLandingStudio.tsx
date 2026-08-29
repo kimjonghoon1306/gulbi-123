@@ -844,9 +844,11 @@ const CSS = `
 .st-stylecard{position:relative;display:flex;flex-direction:column;padding:0;border-radius:13px;border:2px solid var(--line);text-align:left;transition:.15s;overflow:hidden;background:var(--panel)}
 .st-stylecard:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
 .st-stylecard.on{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
-/* 미니 미리보기(실제 디자인 잔상) — 460px 실제폭을 카드폭으로 축소 */
-.st-cardprev{position:relative;width:100%;aspect-ratio:3/4;overflow:hidden}
-.st-cardframe{position:absolute;top:0;left:0;width:460px;height:613px;border:0;transform:scale(0.318);transform-origin:top left;pointer-events:none}
+/* 미니 미리보기(실제 디자인 잔상) — 460px 실제폭을 카드폭으로 축소.
+   ★카드 폭이 반응형이라 하드코딩 scale(0.318)은 오른쪽·아래 여백(검은 틈)이 남았다.
+   → 컨테이너 폭 단위(cqw)로 카드 폭에 정확히 맞춰 꽉 채운다. 460×613(=3:4)을 (카드폭/460)배 축소. */
+.st-cardprev{position:relative;width:100%;aspect-ratio:3/4;overflow:hidden;container-type:inline-size;background:var(--card2)}
+.st-cardframe{position:absolute;top:0;left:0;width:460px;height:613px;border:0;transform:scale(calc(100cqw / 460));transform-origin:top left;pointer-events:none}
 .st-cardswatch{position:absolute;inset:0}
 .st-cardname{display:flex;align-items:center;gap:7px;padding:11px 13px}
 .st-carddot{width:12px;height:12px;border-radius:50%;flex:none;box-shadow:0 0 0 1px var(--line)}

@@ -21,6 +21,11 @@ export type ShowcaseStyle = {
   mood: ShowcaseMood
   name: string          // 표시명 "프리미엄 딥"
   catLabel: string      // "수산물"
+  // ★레이아웃 골격 — 무드마다 이미지 배치/제목 위치가 실제로 다르다(색만 다른 게 아님)
+  //  cinematic: 풀블리드 시네마틱(제목 하단) · poster: 상단 컬러바 제목+2열 그리드
+  //  gallery: 여백+액자(제목 사진 위 흰바탕) · framed: 전통 테두리 액자
+  //  split: 사진 위·제목 검은 띠 아래 분할 · editorial: 좌우 교차 매거진
+  layoutKind: 'cinematic' | 'poster' | 'gallery' | 'framed' | 'split' | 'editorial'
   // 팔레트
   paper: string; ink: string; accent: string; accent2: string; muted: string; line: string
   heroGrad: string; heroJustify: 'center' | 'flex-end'; heroAlign: 'left' | 'center'
@@ -68,14 +73,14 @@ function buildStyle(category: ShowcaseCategory, mood: ShowcaseMood): ShowcaseSty
     brandColor: '#fff', badgeRadius: '40px', titleColor: '#fff', subColor: 'rgba(255,255,255,.86)',
   }
   switch (mood) {
-    case 'premium': return { ...base,
+    case 'premium': return { ...base, layoutKind: 'cinematic',
       paper: c.deep, ink: c.light, accent: c.accent, accent2: c.accent, muted: '#8ca0b8', line: 'rgba(150,170,190,.18)',
       heroGrad: `linear-gradient(180deg,rgba(0,0,0,.4),rgba(0,0,0,0) 35%,${c.deep} 96%)`,
       badgeColor: c.accent, badgeBg: 'rgba(255,255,255,.12)',
       impactBg: c.deep, impactFg: '#fff', impactSub: 'rgba(220,230,240,.55)',
       ptBg: c.deep, numBg: c.deep, numFg: '#fff', numFig: '#fff', footBg: c.deep, footFg: 'rgba(200,215,230,.45)',
     }
-    case 'market': return { ...base,
+    case 'market': return { ...base, layoutKind: 'poster',
       heroJustify: 'center', heroAlign: 'center', titleFont: `'Black Han Sans',sans-serif`, titleWeight: '400',
       titleSize: '52px', titleLh: '1.08', titleLs: '.01em', brandFont: `'Do Hyeon',sans-serif`, numFont: `'Black Han Sans',sans-serif`,
       paper: '#fff8ee', ink: '#2a1a10', accent: '#ff3b2f', accent2: '#e8410a', muted: '#7a5a44', line: 'rgba(200,80,20,.18)',
@@ -84,7 +89,7 @@ function buildStyle(category: ShowcaseCategory, mood: ShowcaseMood): ShowcaseSty
       impactBg: '#e8410a', impactFg: '#fff', impactSub: 'rgba(255,235,225,.85)',
       ptBg: '#fff8ee', numBg: '#ffd21e', numFg: '#2a1a10', numFig: '#e8410a', footBg: '#2a1a10', footFg: 'rgba(255,220,200,.5)',
     }
-    case 'clean': return { ...base,
+    case 'clean': return { ...base, layoutKind: 'gallery',
       titleWeight: '700', titleSize: '42px',
       paper: c.light, ink: c.deep, accent: c.accent, accent2: c.accent, muted: '#7a8894', line: 'rgba(40,60,80,.14)',
       heroGrad: `linear-gradient(180deg,rgba(20,30,40,.15),rgba(20,30,40,0) 45%,rgba(20,30,40,.72))`,
@@ -92,7 +97,7 @@ function buildStyle(category: ShowcaseCategory, mood: ShowcaseMood): ShowcaseSty
       impactBg: '#ffffff', impactFg: c.deep, impactSub: '#8a97a3',
       ptBg: '#ffffff', numBg: c.deep, numFg: '#fff', numFig: c.accent, footBg: c.deep, footFg: 'rgba(210,220,228,.5)',
     }
-    case 'traditional': return { ...base,
+    case 'traditional': return { ...base, layoutKind: 'framed',
       heroJustify: 'center', heroAlign: 'center', titleFont: `'Nanum Myeongjo',serif`, titleWeight: '800',
       titleSize: '42px', titleLh: '1.4', titleLs: '0', brandFont: `'Nanum Myeongjo',serif`, numFont: `'Nanum Myeongjo',serif`,
       eyebrowFont: `'Nanum Myeongjo',serif`, bodyFont: `'Nanum Myeongjo',serif`,
@@ -103,7 +108,7 @@ function buildStyle(category: ShowcaseCategory, mood: ShowcaseMood): ShowcaseSty
       ptBg: '#ede4d2', numBg: 'linear-gradient(160deg,#33260f,#1a130a)', numFg: '#f2ebdc', numFig: '#f2ebdc',
       footBg: '#1a130a', footFg: 'rgba(230,215,190,.45)',
     }
-    case 'modern': return { ...base,
+    case 'modern': return { ...base, layoutKind: 'split',
       titleFont: `'Playfair Display',serif`, titleWeight: '700', titleSize: '44px', titleLs: '-.01em',
       brandFont: `'Playfair Display',serif`, numFont: `'Playfair Display',serif`, eyebrowFont: `'Playfair Display',serif`,
       paper: '#101010', ink: '#e8e8e8', accent: c.accent, accent2: '#9a9a9a', muted: '#888', line: 'rgba(200,200,200,.14)',
@@ -112,7 +117,7 @@ function buildStyle(category: ShowcaseCategory, mood: ShowcaseMood): ShowcaseSty
       impactBg: '#181818', impactFg: '#fff', impactSub: 'rgba(220,220,220,.5)',
       ptBg: '#141414', numBg: '#000', numFg: '#fff', numFig: '#fff', footBg: '#000', footFg: 'rgba(200,200,200,.4)',
     }
-    case 'story': return { ...base,
+    case 'story': return { ...base, layoutKind: 'editorial',
       titleFont: `'Gowun Batang',serif`, titleWeight: '700', titleSize: '40px', titleLh: '1.35', titleLs: '-.01em',
       brandFont: `'Gowun Batang',serif`, numFont: `'Gowun Batang',serif`, eyebrowFont: `'Gowun Batang',serif`, bodyFont: `'Gowun Batang',serif`,
       paper: c.warmDeep, ink: '#f0e4d8', accent: c.warm, accent2: c.warm, muted: '#a08a78', line: 'rgba(200,150,110,.16)',
@@ -276,6 +281,71 @@ export function renderShowcase(d: LandingData, styleId: string, layout: Showcase
 .sc-info .row span:last-child{color:${s.ink};opacity:.85;line-height:1.6}
 .sc-foot{background:${s.footBg};color:${s.footFg};text-align:center;padding:28px 20px 40px;font-size:11px;border-top:1px solid rgba(255,255,255,.06)}
 .sc-foot b{font-family:${s.brandFont};color:${s.accent};letter-spacing:.25em;font-weight:800;font-size:13px;display:block;margin-bottom:7px}
+
+/* ═══ 레이아웃 골격: 무드마다 이미지 배치·제목 위치가 실제로 다르다 ═══ */
+/* poster(활기찬 시장): 상단 컬러바에 제목, 그 아래 사진, 본문은 2열 그리드 콜라주 */
+.lk-poster .phero{position:relative}
+.lk-poster .pbar{background:${s.accent};color:#fff;padding:22px 22px 20px;text-align:center}
+.lk-poster .pbar .brand{font-family:${s.brandFont};font-weight:800;font-size:12px;letter-spacing:.2em;opacity:.9}
+.lk-poster .pbar h1{font-family:${s.titleFont};font-weight:${s.titleWeight};font-size:44px;line-height:1.05;margin:8px 0 6px;letter-spacing:.01em}
+.lk-poster .pbar .sub{font-size:14px;opacity:.95;font-weight:700}
+.lk-poster .pshot{aspect-ratio:4/3;overflow:hidden;border-bottom:6px solid ${s.numBg}}
+.lk-poster .pshot img{width:100%;height:100%;object-fit:cover}
+.lk-poster .pgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:6px;background:${s.paper}}
+.lk-poster .pgrid .g{position:relative;aspect-ratio:1/1;overflow:hidden;border-radius:8px}
+.lk-poster .pgrid .g img{width:100%;height:100%;object-fit:cover}
+.lk-poster .pgrid .g .gcap{position:absolute;left:8px;bottom:8px;background:${s.accent};color:#fff;font-size:11px;font-weight:800;padding:4px 9px;border-radius:5px}
+.lk-poster .pgrid .g.wide{grid-column:1/-1;aspect-ratio:16/9}
+
+/* gallery(청정 미니멀): 넉넉한 여백, 제목은 흰 바탕 위(사진 위 아님), 사진은 액자처럼 여백+얇은 테두리 */
+.lk-gallery .ghead{background:${s.paper};text-align:center;padding:64px 30px 36px}
+.lk-gallery .ghead .eye{color:${s.accent};font-size:13px;letter-spacing:.24em;font-weight:800;margin-bottom:18px}
+.lk-gallery .ghead h1{font-family:${s.titleFont};font-weight:${s.titleWeight};font-size:38px;line-height:1.25;color:${s.ink};letter-spacing:-.01em}
+.lk-gallery .ghead .sub{color:${s.muted};font-size:15px;margin-top:16px;line-height:1.7;max-width:300px;margin-left:auto;margin-right:auto}
+.lk-gallery .gframe{padding:14px 22px 40px;background:${s.paper}}
+.lk-gallery .gframe .fr{border:1px solid ${s.line};padding:10px;background:#fff}
+.lk-gallery .gframe .fr img{width:100%;display:block}
+.lk-gallery .gframe .cap{text-align:center;color:${s.muted};font-size:13px;letter-spacing:.1em;margin-top:14px}
+
+/* framed(전통): 사진을 이중 테두리 액자에 넣고, 제목은 아래 도장(印)과 함께 */
+.lk-framed .fhero{background:${s.paper};padding:40px 26px 30px}
+.lk-framed .fhero .art{border:2px solid ${s.accent2};padding:8px;position:relative}
+.lk-framed .fhero .art::after{content:"";position:absolute;inset:3px;border:1px solid ${s.line};pointer-events:none}
+.lk-framed .fhero .art img{width:100%;display:block;filter:sepia(.12)}
+.lk-framed .fhero .seal{position:absolute;top:16px;right:16px;width:44px;height:44px;border:2px solid ${s.accent};color:${s.accent};display:flex;align-items:center;justify-content:center;font-family:${s.titleFont};font-weight:800;font-size:20px;background:rgba(255,255,255,.85);z-index:2}
+.lk-framed .fhero .cap{text-align:center;margin-top:24px}
+.lk-framed .fhero .cap .eye{color:${s.accent2};font-size:13px;letter-spacing:.3em;font-family:${s.eyebrowFont}}
+.lk-framed .fhero .cap h1{font-family:${s.titleFont};font-weight:${s.titleWeight};font-size:34px;line-height:1.4;color:${s.ink};margin-top:12px}
+.lk-framed .fbody .fr{margin:0 26px 24px;border:1px solid ${s.accent2};padding:7px;background:${s.paper}}
+.lk-framed .fbody .fr img{width:100%;display:block}
+
+/* split(모던 블랙): 사진 위 / 제목은 그 아래 검은 띠에 크게(오버레이 아님) */
+.lk-split .shero .top{aspect-ratio:1/1;overflow:hidden}
+.lk-split .shero .top img{width:100%;height:100%;object-fit:cover}
+.lk-split .shero .band{background:${s.paper};padding:40px 26px 44px;border-top:3px solid ${s.accent}}
+.lk-split .shero .band .eye{color:${s.accent};font-size:12px;letter-spacing:.3em;font-weight:700;margin-bottom:16px}
+.lk-split .shero .band h1{font-family:${s.titleFont};font-weight:${s.titleWeight};font-size:46px;line-height:1.08;color:${s.ink};letter-spacing:-.02em}
+.lk-split .shero .band .sub{color:${s.muted};font-size:15px;margin-top:18px;line-height:1.7}
+.lk-split .sbody .row{position:relative}
+.lk-split .sbody .row img{width:100%;display:block}
+.lk-split .sbody .lbl{background:${s.paper};color:${s.ink};padding:26px;display:flex;gap:16px;align-items:baseline;border-bottom:1px solid ${s.line}}
+.lk-split .sbody .lbl .n{font-family:${s.numFont};font-size:30px;color:${s.accent};flex:none}
+.lk-split .sbody .lbl h3{font-family:${s.titleFont};font-size:18px;font-weight:${s.titleWeight};margin-bottom:6px}
+.lk-split .sbody .lbl p{color:${s.muted};font-size:14.5px;line-height:1.7}
+
+/* editorial(감성 스토리): 매거진 표지(사진+겹친 제목 카드) + 좌우 교차 본문 */
+.lk-editorial .ehero{position:relative;padding-bottom:56px;background:${s.paper}}
+.lk-editorial .ehero img{width:100%;display:block;aspect-ratio:3/4;object-fit:cover}
+.lk-editorial .ehero .card{position:absolute;left:22px;right:40px;bottom:0;background:${s.paper};padding:26px 24px;border-top:3px solid ${s.accent}}
+.lk-editorial .ehero .card .eye{color:${s.accent};font-family:${s.eyebrowFont};font-size:13px;letter-spacing:.14em;margin-bottom:12px}
+.lk-editorial .ehero .card h1{font-family:${s.titleFont};font-weight:${s.titleWeight};font-size:34px;line-height:1.3;color:${s.ink}}
+.lk-editorial .erow{display:grid;grid-template-columns:1fr 1fr;gap:0;align-items:stretch}
+.lk-editorial .erow.rev{direction:rtl}.lk-editorial .erow.rev>*{direction:ltr}
+.lk-editorial .erow img{width:100%;height:100%;min-height:180px;object-fit:cover}
+.lk-editorial .erow .tx{padding:26px 22px;background:${s.paper};display:flex;flex-direction:column;justify-content:center}
+.lk-editorial .erow .tx .n{font-family:${s.numFont};color:${s.accent};font-size:24px;margin-bottom:8px}
+.lk-editorial .erow .tx h3{font-family:${s.titleFont};font-weight:${s.titleWeight};font-size:19px;margin-bottom:8px;color:${s.ink}}
+.lk-editorial .erow .tx p{color:${s.muted};font-size:14px;line-height:1.75}
 </style>`
 
   // 사진 섹션 헬퍼. big=이미지 집중형용 큰 캡션 오버레이
@@ -283,75 +353,102 @@ export function renderShowcase(d: LandingData, styleId: string, layout: Showcase
     ? `<section class="sc-shot${big ? ' big' : ''}"><img src="${url}" alt=""/>${cap ? `<div class="cap"><div class="t">${esc(cap)}</div></div>` : ''}</section>`
     : ''
   const storyParas = esc(d.story || '').split('\n').map(x => x.trim()).filter(Boolean).map(x => `<p>${x}</p>`).join('')
+  const capPool = [...feats.map(f => f.title), ...shotCaps, '한 번 보면 못 잊는 맛', '식탁의 주인공', '눈으로 먼저 반하는'].filter(Boolean)
+  const capAt = (i: number) => capPool[i % capPool.length] || d.productName || ''
+  const kind = s.layoutKind
 
-  // ── 본문 섹션: 레이아웃에 따라 다르게 ──
-  // balanced(혼합형): 스토리 본문 + 포인트 리스트(설명 포함) + 사진 사이사이
-  // visual(이미지 집중형): 큰 사진 연속 + 사진 위 짧은 카피(포인트 제목만), 긴 글 제거
-  let bodyHtml = ''
-  if (isVisual) {
-    // 이미지 집중형: 사진마다 후킹 카피(Gemini feature 제목 우선, 없으면 기본 후킹).
-    // 사진이 많아도 카피가 안 비게 순환 + 기본 후킹 풀로 채움.
-    const hooks = [
-      ...feats.map(f => f.title),
-      ...shotCaps,
-      '한 번 보면 못 잊는 맛', '식탁의 주인공', '눈으로 먼저 반하는', '오늘 저녁이 특별해져요',
-    ].filter(Boolean)
-    const capFor = (i: number) => hooks[i % hooks.length] || d.productName
-    // 사진 2장마다 임팩트 문구 1개 삽입(feats 소진). 큰 사진 연속으로 몰입감.
-    const parts: string[] = []
-    bodyImages.forEach((url, i) => {
-      parts.push(photo(url, capFor(i), true))
-      // 첫 사진 뒤 임팩트, 이후 3장마다
-      if ((i === 0 && feats[0]) || (i > 0 && i % 3 === 0 && feats[Math.floor(i / 3)])) {
-        const f = feats[i === 0 ? 0 : Math.floor(i / 3)]
-        if (f) parts.push(`<section class="sc-impact"><div class="k">POINT</div><h2><span ${ed('impact' + i)}>${esc(f.title)}</span></h2>${f.desc ? `<p class="tail" ${ed('impactd' + i)}>${esc(f.desc)}</p>` : ''}</section>`)
-      }
-    })
-    bodyHtml = `
-  ${parts.join('\n')}
-  ${kn ? `<section class="sc-num">
-    <div class="lead" ${ed('numlead')}>${esc(kn.label || '누적 판매')}</div>
-    <div class="fig"><span ${ed('numval')}>${esc(kn.value)}</span><span class="u" ${ed('numunit')}>${esc(kn.unit || '건')}</span></div>
-    <div class="st">★★★★★</div>
-  </section>` : ''}`
-  } else {
-    bodyHtml = `
-  ${storyParas ? `<section class="sc-story">
+  // ── 히어로: 레이아웃 골격마다 완전히 다른 구성 ──
+  const eyebrow = esc(d.subtitle || '정성으로 준비한')
+  const titleH = `<span ${ed('title1')}>${esc(t1)}</span>${t2 ? `<em ${ed('title2')}>${esc(t2)}</em>` : ''}`
+  const origin = esc(d.originLocation || '국내산')
+  let heroHtml = ''
+  if (kind === 'poster') {
+    heroHtml = `<section class="phero">
+      <div class="pbar"><div class="brand" ${ed('brand')}>${esc(brand)}</div><h1 ${ed('title1')}>${esc(title)}</h1><div class="sub" ${ed('heroline')}>${esc(heroLine || origin)}</div></div>
+      ${heroImg ? `<div class="pshot"><img src="${heroImg}" alt=""/></div>` : ''}
+    </section>`
+  } else if (kind === 'gallery') {
+    heroHtml = `<section class="ghead"><div class="eye" ${ed('eyebrow')}>${eyebrow}</div><h1 ${ed('title1')}>${esc(title)}</h1>${heroLine ? `<div class="sub" ${ed('heroline')}>${esc(heroLine)}</div>` : ''}</section>
+      ${heroImg ? `<div class="gframe"><div class="fr"><img src="${heroImg}" alt=""/></div></div>` : ''}`
+  } else if (kind === 'framed') {
+    heroHtml = `<section class="fhero">
+      ${heroImg ? `<div class="art"><div class="seal">品</div><img src="${heroImg}" alt=""/></div>` : ''}
+      <div class="cap"><div class="eye" ${ed('eyebrow')}>${eyebrow}</div><h1 ${ed('title1')}>${esc(title)}</h1></div>
+    </section>`
+  } else if (kind === 'split') {
+    heroHtml = `<section class="shero">
+      ${heroImg ? `<div class="top"><img src="${heroImg}" alt=""/></div>` : ''}
+      <div class="band"><div class="eye" ${ed('eyebrow')}>${eyebrow} · <span ${ed('brand')}>${esc(brand)}</span></div><h1>${titleH}</h1>${heroLine ? `<div class="sub" ${ed('heroline')}>${esc(heroLine)}</div>` : ''}</div>
+    </section>`
+  } else if (kind === 'editorial') {
+    heroHtml = `<section class="ehero">
+      ${heroImg ? `<img src="${heroImg}" alt=""/>` : ''}
+      <div class="card"><div class="eye" ${ed('eyebrow')}>${eyebrow}</div><h1>${titleH}</h1></div>
+    </section>`
+  } else { // cinematic
+    heroHtml = `<section class="sc-hero"><div class="sc-hbg"></div>
+      <div class="sc-htop"><div class="sc-brand" ${ed('brand')}>${esc(brand)}</div><span class="sc-badge" ${ed('badge')}>${origin}</span></div>
+      <div class="sc-hin">
+        <div class="sc-eyebrow" ${ed('eyebrow')}>${eyebrow}</div>
+        <h1 class="sc-title">${titleH}</h1>
+        ${heroLine ? `<p class="sc-sub" ${ed('heroline')}>${esc(heroLine)}</p>` : ''}
+      </div>
+    </section>`
+  }
+
+  // ── 이미지 갤러리: 레이아웃 골격마다 배치 방식이 다르다 ──
+  const galleryFor = (imgs: string[]): string => {
+    if (!imgs.length) return ''
+    if (kind === 'poster') {
+      return `<div class="pgrid">${imgs.map((u, i) => `<div class="g${i === 0 && imgs.length > 2 ? ' wide' : ''}"><img src="${u}" alt=""/><span class="gcap">${esc(capAt(i))}</span></div>`).join('')}</div>`
+    }
+    if (kind === 'gallery') {
+      return `<div class="gframe">${imgs.map((u, i) => `<div class="fr"><img src="${u}" alt=""/></div><div class="cap">${esc(capAt(i))}</div>`).join('')}</div>`
+    }
+    if (kind === 'framed') {
+      return `<div class="fbody">${imgs.map(u => `<div class="fr"><img src="${u}" alt=""/></div>`).join('')}</div>`
+    }
+    if (kind === 'split') {
+      return `<div class="sbody">${imgs.map((u, i) => {
+        const f = feats[i % Math.max(1, feats.length)]
+        return `<div class="row"><img src="${u}" alt=""/></div>${f ? `<div class="lbl"><div class="n">${String(i + 1).padStart(2, '0')}</div><div><h3>${esc(f.title)}</h3><p>${esc(f.desc)}</p></div></div>` : ''}`
+      }).join('')}</div>`
+    }
+    if (kind === 'editorial') {
+      return imgs.map((u, i) => {
+        const f = feats[i % Math.max(1, feats.length)]
+        return `<div class="erow${i % 2 ? ' rev' : ''}"><img src="${u}" alt=""/><div class="tx"><div class="n">${String(i + 1).padStart(2, '0')}</div><h3>${esc(f ? f.title : capAt(i))}</h3><p>${esc(f ? f.desc : '')}</p></div></div>`
+      }).join('')
+    }
+    // cinematic: 풀블리드 스택(비주얼이면 큰 사진)
+    return imgs.map((u, i) => photo(u, capAt(i), isVisual)).join('')
+  }
+
+  const storySec = storyParas && !isVisual ? `<section class="sc-story">
     <div class="k">STORY</div>
     <h2 ${ed('storytitle')}>${esc(d.productName || '')}의 이야기</h2>
     <div class="body" ${ed('storybody')}>${storyParas}</div>
-  </section>` : ''}
-  ${photo(bodyImages[0], d.productName)}
-  ${feats[0] ? `<section class="sc-impact">
-    <div class="k">WHY</div>
-    <h2><span ${ed('impact1')}>${esc(feats[0].title)}</span></h2>
-    <p class="tail" ${ed('impacttail')}>${esc(feats[0].desc)}</p>
-  </section>` : ''}
-  ${photo(bodyImages[1], shotCaps[1])}
-  ${feats.length ? `<section class="sc-points">
+  </section>` : ''
+  const pointsSec = feats.length && kind !== 'split' && kind !== 'editorial' ? `<section class="sc-points">
     <div class="sc-sh"><div class="en">POINT</div><div class="ko" ${ed('ptko')}>이 상품이 다른 이유</div></div>
     ${feats.map((f, i) => `<div class="sc-pt"><div class="no">${String(i + 1).padStart(2, '0')}</div><div><h3 ${ed('ptt' + i)}>${esc(f.title)}</h3><p ${ed('ptd' + i)}>${esc(f.desc)}</p></div></div>`).join('')}
-  </section>` : ''}
-  ${photo(bodyImages[2], shotCaps[2])}
-  ${kn ? `<section class="sc-num">
+  </section>` : ''
+  const numSec = kn ? `<section class="sc-num">
     <div class="lead" ${ed('numlead')}>${esc(kn.label || '누적 판매')}</div>
     <div class="fig"><span ${ed('numval')}>${esc(kn.value)}</span><span class="u" ${ed('numunit')}>${esc(kn.unit || '건')}</span></div>
     <div class="st">★★★★★</div>
-    <div class="desc" ${ed('numcap')}>${esc(kn.caption || '')}</div>
-  </section>` : ''}
-  ${bodyImages.slice(3).map((u, i) => photo(u, shotCaps[(i + 3) % shotCaps.length])).join('')}`
-  }
+    ${!isVisual ? `<div class="desc" ${ed('numcap')}>${esc(kn.caption || '')}</div>` : ''}
+  </section>` : ''
+
+  // 본문 조립: 골격별 갤러리 + 텍스트 섹션(스토리·포인트·숫자)
+  const gallery = galleryFor(bodyImages)
+  const bodyHtml = isVisual
+    ? `${gallery}${numSec}`
+    : `${storySec}${gallery}${pointsSec}${numSec}`
 
   return `${FONT_LINK}${css}
-<div data-showcase data-style="${s.id}" data-layout="${layout}">
-  <section class="sc-hero"><div class="sc-hbg"></div>
-    <div class="sc-htop"><div class="sc-brand" ${ed('brand')}>${esc(brand)}</div><span class="sc-badge" ${ed('badge')}>${esc(d.originLocation || '국내산')}</span></div>
-    <div class="sc-hin">
-      <div class="sc-eyebrow" ${ed('eyebrow')}>${esc(d.subtitle || '정성으로 준비한')}</div>
-      <h1 class="sc-title"><span ${ed('title1')}>${esc(t1)}</span>${t2 ? `<em ${ed('title2')}>${esc(t2)}</em>` : ''}</h1>
-      ${heroLine ? `<p class="sc-sub" ${ed('heroline')}>${esc(heroLine)}</p>` : ''}
-    </div>
-  </section>
+<div data-showcase data-style="${s.id}" data-layout="${layout}" data-kind="${kind}" class="lk-${kind}">
+  ${heroHtml}
   ${bodyHtml}
 
   ${reviews.slice(0, isVisual ? 2 : 3).length ? `<section class="sc-rev">
