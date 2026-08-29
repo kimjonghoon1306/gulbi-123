@@ -7,6 +7,10 @@ import {
   generateFluxBackground, isLowRes, type StockImage, type Orientation,
 } from '@/lib/image-sources'
 
+// 업스케일·배경제거·Flux는 Replicate 호출이라 시간이 걸림 → 타임아웃 여유.
+export const maxDuration = 120
+export const runtime = 'nodejs'
+
 // ─────────────────────────────────────────────────────────────
 // POST /api/landing-images
 // 새 AI 상세페이지 에디터 전용. action 으로 분기.

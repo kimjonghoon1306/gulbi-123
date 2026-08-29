@@ -232,7 +232,8 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
 
   // 🔍 화질 개선 — 이 사진(사용자 사진)을 업스케일. 상품은 그대로, 선명도만↑.
   const enhanceImage = async (img: HTMLImageElement) => {
-    if (!/^https?:/.test(img.src)) { setToolMsg('업스케일은 URL 이미지에만 가능해요. (사진을 먼저 저장/업로드)'); return }
+    // http(s)·data(base64) 모두 처리(Replicate는 data URI도 받음). blob:만 서버가 못 봐서 제외.
+    if (!/^(https?:|data:)/.test(img.src)) { setToolMsg('이 사진은 먼저 저장한 뒤 선명하게 할 수 있어요.'); return }
     setToolMsg('🔍 화질을 개선하는 중…')
     await withImgLoading(img, '🔍 선명하게…', async () => {
       const r = await fetch('/api/landing-images', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'enhance', imageUrl: img.src, upscale: true }) })
@@ -245,7 +246,7 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
 
   // ✂️ 배경 시네마틱 — 이 상품 사진의 배경을 제거해 상품만 살림(배경은 컨셉색이 비침).
   const cutoutImage = async (img: HTMLImageElement) => {
-    if (!/^https?:/.test(img.src)) { setToolMsg('배경 정리는 URL 이미지에만 가능해요.'); return }
+    if (!/^(https?:|data:)/.test(img.src)) { setToolMsg('이 사진은 먼저 저장한 뒤 배경을 정리할 수 있어요.'); return }
     setToolMsg('✂️ 배경을 정리하는 중…')
     await withImgLoading(img, '✂️ 배경 정리…', async () => {
       const r = await fetch('/api/landing-images', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'enhance', imageUrl: img.src, upscale: false, removeBg: true }) })
