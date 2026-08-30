@@ -34,6 +34,16 @@ export default function ShopRegisterPage() {
     '도매업': { icon: '🏭', title: '도매업 거래', desc: '대량 구매 및 도매 거래를 원해요', color: 'from-violet-500 to-purple-600', border: 'border-violet-500', bg: 'bg-violet-500/10' },
   }
 
+  // 카카오 간편가입 (Supabase OAuth) — 이메일·비번 입력 없이 바로. 최초 진입 시 일반회원으로 자동 생성.
+  const handleKakao = async () => {
+    setError('')
+    const { error: oErr } = await supabase.auth.signInWithOAuth({
+      provider: 'kakao',
+      options: { redirectTo: `${window.location.origin}/shop` },
+    })
+    if (oErr) setError('카카오 연결에 실패했어요. 잠시 후 다시 시도해주세요.')
+  }
+
   const handleRegister = async () => {
     if (!form.email || !form.password || !form.name || !form.contact) {
       return setError('필수 항목을 모두 입력해주세요.')
@@ -186,9 +196,19 @@ export default function ShopRegisterPage() {
           {/* 1단계: 회원 유형 선택 */}
           {step === 1 && (
             <div className="animate-fadeIn">
-              <div className="text-center mb-10">
+              <div className="text-center mb-8">
                 <h1 className="text-3xl font-black mb-2" style={{ color: D.text }}>회원가입</h1>
                 <p style={{ color: D.sub }}>어떤 목적으로 이용하실 건가요?</p>
+              </div>
+
+              {/* 카카오 간편가입 */}
+              <button onClick={handleKakao} style={{ width: '100%', height: '54px', border: 'none', borderRadius: '14px', background: '#FEE500', color: '#191600', fontSize: '15px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '18px', fontFamily: 'inherit' }}>
+                <span style={{ fontSize: '18px' }}>💬</span> 카카오로 3초 간편가입
+              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+                <div style={{ flex: 1, height: '1px', background: D.border }} />
+                <span style={{ fontSize: '12px', color: D.sub }}>또는 이메일로 가입</span>
+                <div style={{ flex: 1, height: '1px', background: D.border }} />
               </div>
 
               <div className="space-y-3 mb-8">

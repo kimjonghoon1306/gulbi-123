@@ -45,6 +45,19 @@ export default function ShopLoginPage() {
   const [findPwMsg, setFindPwMsg] = useState('')
   const [findPwLoading, setFindPwLoading] = useState(false)
 
+  // 카카오 로그인/회원가입 (Supabase OAuth) — 콜백 후 /shop 으로. shop_members는 최초 진입 시 자동 보강됨.
+  const handleKakao = async () => {
+    setError('')
+    const supabase = createClient()
+    let next = '/shop'
+    try { const raw = new URLSearchParams(window.location.search).get('next') || ''; if (raw && raw.startsWith('/shop')) next = raw } catch {}
+    const { error: oErr } = await supabase.auth.signInWithOAuth({
+      provider: 'kakao',
+      options: { redirectTo: `${window.location.origin}${next}` },
+    })
+    if (oErr) setError('카카오 로그인 연결에 실패했어요. 잠시 후 다시 시도해주세요.')
+  }
+
   const handleLogin = async () => {
     if (!email || !password) return setError('이메일과 비밀번호를 입력해주세요.')
     setLoading(true); setError('')
@@ -182,6 +195,18 @@ export default function ShopLoginPage() {
               <button onClick={handleLogin} disabled={loading} className="login-btn">
                 {loading ? '로그인 중...' : '로그인'}
               </button>
+
+              {/* 구분선 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '18px 0 14px' }}>
+                <div style={{ flex: 1, height: '1px', background: D.border }} />
+                <span style={{ fontSize: '12px', color: D.sub }}>또는</span>
+                <div style={{ flex: 1, height: '1px', background: D.border }} />
+              </div>
+              {/* 카카오 로그인 */}
+              <button onClick={handleKakao} style={{ width: '100%', height: '52px', border: 'none', borderRadius: '12px', background: '#FEE500', color: '#191600', fontSize: '15px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontFamily: 'inherit' }}>
+                <span style={{ fontSize: '18px' }}>💬</span> 카카오로 시작하기
+              </button>
+
               <div style={{ textAlign: 'center', marginTop: '18px' }}>
                 <Link href="/shop/register" style={{ fontSize: '13px', color: D.sub, textDecoration: 'none' }}>
                   아직 계정이 없어요? <span style={{ color: '#14532d', fontWeight: 700 }}>회원가입</span>
