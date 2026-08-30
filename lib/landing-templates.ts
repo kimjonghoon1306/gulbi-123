@@ -837,7 +837,11 @@ function renderGallery(d: LandingData, p: Preset): string {
   const imgs = (d.unusedImages || []).filter(Boolean)
   if (imgs.length === 0) return ''
   const { colors: C } = p
-  const cells = imgs.map(src => `<div class="gulbi-section-img" data-section-img="gallery" style="aspect-ratio:1/1;overflow:hidden;border-radius:12px;background:#f5f5f5;position:relative;"><img src="${src}" alt="${esc(d.productName)}" style="width:100%;height:100%;object-fit:cover;display:block;" /></div>`).join('')
+  const cells = imgs.map((src, i) => {
+    // ★빈칸 방지: 홀수 개일 때 마지막 사진은 전체폭으로(2열 그리드에 혼자 남는 칸 제거)
+    const full = imgs.length % 2 === 1 && i === imgs.length - 1
+    return `<div class="gulbi-section-img" data-section-img="gallery" style="${full ? 'grid-column:1/-1;aspect-ratio:16/9;' : 'aspect-ratio:1/1;'}overflow:hidden;border-radius:12px;background:#f5f5f5;position:relative;"><img src="${src}" alt="${esc(d.productName)}" style="width:100%;height:100%;object-fit:cover;display:block;" /></div>`
+  }).join('')
   return `
 <section data-section="gallery" style="padding:64px 28px;background:${C.paper};">
   <p style="text-align:center;font-size:12px;letter-spacing:0.2em;color:${C.primary};font-weight:700;margin:0 0 8px;">GALLERY</p>

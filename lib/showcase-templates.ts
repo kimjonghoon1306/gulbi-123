@@ -126,12 +126,14 @@ function buildStyle(category: ShowcaseCategory, mood: ShowcaseMood): ShowcaseSty
     case 'story': return { ...base, layoutKind: 'editorial', headFont: `'Gowun Batang',serif`,
       titleFont: `'Gowun Batang',serif`, titleWeight: '700', titleSize: '40px', titleLh: '1.35', titleLs: '-.01em',
       brandFont: `'Gowun Batang',serif`, numFont: `'Gowun Batang',serif`, eyebrowFont: `'Gowun Batang',serif`, bodyFont: `'Gowun Batang',serif`,
-      paper: c.warmDeep, ink: '#f0e4d8', accent: c.warm, accent2: c.warm, muted: '#a08a78', line: 'rgba(200,150,110,.16)',
-      heroGrad: `linear-gradient(180deg,rgba(20,12,8,.4),rgba(20,12,8,0) 35%,${c.warmDeep} 95%)`,
-      badgeColor: c.warm, badgeBg: 'rgba(255,255,255,.14)',
-      impactBg: '#241813', impactFg: '#f0e4d8', impactSub: 'rgba(230,210,190,.55)',
-      ptBg: c.warmDeep, numBg: `linear-gradient(160deg,#3a2418,${c.warmDeep})`, numFg: '#f0e4d8', numFig: c.warm,
-      footBg: c.warmDeep, footFg: 'rgba(230,210,190,.45)',
+      titleColor: '#2a2018', subColor: 'rgba(42,32,24,.7)', brandColor: '#2a2018',
+      // ★밝은 크림 매거진 톤 — premium(다크)과 확실히 분리. editorial 카드/본문/하단이 이 색을 따라감.
+      paper: '#f7f1e6', ink: '#2a2018', accent: c.warm, accent2: c.warmDeep, muted: '#8a7460', line: 'rgba(120,90,60,.18)',
+      heroGrad: `linear-gradient(180deg,rgba(20,12,8,.15),rgba(20,12,8,0) 45%,rgba(20,12,8,.35))`,
+      badgeColor: '#fff', badgeBg: c.warm,
+      impactBg: '#ffffff', impactFg: '#2a2018', impactSub: '#8a7460',
+      ptBg: '#f2ead9', numBg: '#efe6d4', numFg: '#2a2018', numFig: c.warm,
+      footBg: '#2a2018', footFg: 'rgba(240,225,205,.5)',
     }
     case 'farm': return { ...base, layoutKind: 'editorial', headFont: `'Gowun Batang',serif`,
       titleFont: `'Gowun Batang',serif`, titleWeight: '700', titleSize: '42px', titleLh: '1.35', titleLs: '-.02em',
@@ -309,6 +311,25 @@ export function renderShowcase(d: LandingData, styleId: string, layout: Showcase
 .sc-num .fig .u{font-size:28px;color:${s.accent}}
 .sc-num .st{color:${s.accent};letter-spacing:3px;font-size:16px;margin-top:12px}
 .sc-num .desc{font-size:16px;color:${s.numFg};opacity:.82;margin-top:14px;font-weight:400}
+/* ── 숫자 섹션: 골격별 개성 ── */
+.sc-num.nk-poster{background:${s.ptBg};padding:26px}
+.sc-num.nk-poster .banner{background:${s.accent};border-radius:16px;padding:34px 20px;box-shadow:0 12px 30px ${s.accent}44}
+.sc-num.nk-poster .lead,.sc-num.nk-poster .fig,.sc-num.nk-poster .fig .u,.sc-num.nk-poster .st,.sc-num.nk-poster .desc{color:#fff}
+.sc-num.nk-editorial{background:${s.paper};text-align:left;padding:56px 30px}
+.sc-num.nk-editorial .q{font-family:Georgia,serif;font-size:90px;line-height:.6;color:${s.accent};opacity:.35;margin-bottom:6px}
+.sc-num.nk-editorial .fig{font-size:82px;text-align:left}
+.sc-num.nk-editorial .lead{margin-top:14px;letter-spacing:.05em}
+.sc-num.nk-editorial .st{text-align:left}
+.sc-num.nk-gallery{background:${s.paper};padding:52px 24px}
+.sc-num.nk-gallery .ln{width:46px;height:2px;background:${s.accent};margin:0 auto 22px}
+.sc-num.nk-gallery .fig{font-size:44px;font-weight:700}
+.sc-num.nk-gallery .lead{color:${s.muted};font-weight:600}
+.sc-num.nk-framed{background:${s.numBg};padding:52px 24px}
+.sc-num.nk-framed .stamp{width:150px;height:150px;margin:0 auto 18px;border:3px double ${s.accent};border-radius:50%;display:flex;align-items:center;justify-content:center}
+.sc-num.nk-framed .stamp .fig{font-size:38px}
+.sc-num.nk-split{display:flex;align-items:center;justify-content:space-between;gap:16px;text-align:left;padding:44px 28px}
+.sc-num.nk-split .l{flex:1}.sc-num.nk-split .st{margin-top:8px}
+.sc-num.nk-split .r .fig{font-size:66px;text-align:right}
 .sc-rev{padding:56px 24px;background:${s.ptBg}}
 .sc-rc{background:${s.mood === 'clean' || s.mood === 'market' || s.mood === 'traditional' ? '#ffffff' : 'rgba(255,255,255,.08)'};border:1px solid ${s.line};border-radius:14px;padding:20px;margin-bottom:14px}
 .sc-rc .top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
@@ -336,6 +357,29 @@ export function renderShowcase(d: LandingData, styleId: string, layout: Showcase
 .sc-faq{background:${s.paper};padding:50px 24px;color:${s.ink}}
 .sc-faq h3{font-family:${s.headFont};font-size:24px;margin-bottom:18px}.sc-faq .q{padding:16px 0;border-top:1px solid ${s.line}}
 .sc-faq .q b{display:block;color:${s.accent2};font-size:15px;margin-bottom:7px}.sc-faq .q p{font-size:14px;line-height:1.7;opacity:.8}
+/* ── 리뷰 섹션: 골격별 개성 ── */
+.sc-rev .rvhead{font-family:${s.headFont};font-weight:800;font-size:20px;color:${s.accent2};margin-bottom:18px}
+.sc-rev.rk-poster{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sc-rev.rk-poster .sc-rc{margin-bottom:0;background:${s.accent}12;border-color:${s.accent}44}
+.sc-rev.rk-poster .sc-rc:last-child:nth-child(odd){grid-column:1/-1}
+.sc-rev.rk-gallery .sc-rc{background:transparent;border:none;border-top:1px solid ${s.line};border-radius:0;padding:20px 4px}
+.sc-rev.rk-gallery .sc-rc .av{display:none}
+.sc-rev.rk-framed .sc-rc{background:transparent;border:1px solid ${s.accent}55;border-radius:0;position:relative;padding:26px 22px 22px}
+.sc-rev.rk-framed .sc-rc::before{content:'“';position:absolute;top:2px;left:12px;font-family:Georgia,serif;font-size:46px;color:${s.accent};opacity:.5}
+.sc-rev.rk-framed .sc-rc .av{display:none}
+.sc-rev.rk-editorial .sc-rc{background:transparent;border:none;border-radius:0;border-left:3px solid ${s.accent};padding:6px 0 6px 20px;margin-bottom:22px}
+.sc-rev.rk-editorial .sc-rc .av{display:none}
+.sc-rev.rk-editorial .sc-rc p{font-family:${s.headFont};font-size:17px;font-style:italic}
+.sc-rev.rk-split .sc-rc{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.sc-rev.rk-split .sc-rc .top{flex-direction:column;align-items:center;gap:4px;margin-bottom:0}
+.sc-rev.rk-split .sc-rc .stars{margin-left:0}
+/* ── 정보 섹션: 골격별 개성 ── */
+.sc-info.ik-poster .row{background:#ffffffaa;border:1px solid ${s.line};border-top:1px solid ${s.line};border-radius:10px;margin-bottom:8px;padding:12px 14px}
+.sc-info.ik-gallery{padding-top:36px}
+.sc-info.ik-gallery .row{border-top:none;border-bottom:1px solid ${s.line};padding:12px 0}
+.sc-info.ik-framed .row{border-top:1px dashed ${s.accent}66}
+.sc-info.ik-editorial h4{border-bottom:2px solid ${s.accent};padding-bottom:8px;display:inline-block}
+.sc-info.ik-split .row{justify-content:space-between}
 .sc-foot{background:${s.footBg};color:${s.footFg};text-align:center;padding:28px 20px 40px;font-size:11px;border-top:1px solid rgba(255,255,255,.06)}
 .sc-foot b{font-family:${s.brandFont};color:${s.accent};letter-spacing:.25em;font-weight:800;font-size:13px;display:block;margin-bottom:7px}
 
@@ -457,7 +501,12 @@ export function renderShowcase(d: LandingData, styleId: string, layout: Showcase
   const galleryFor = (imgs: string[]): string => {
     if (!imgs.length) return ''
     if (kind === 'poster') {
-      return `<div class="pgrid">${imgs.map((u, i) => `<div class="g${i === 0 && imgs.length > 2 ? ' wide' : ''}"><img src="${u}" alt=""/><span class="gcap">${esc(capAt(i))}</span></div>`).join('')}</div>`
+      const n = imgs.length
+      // ★빈칸 방지: 1장=전체폭, 첫장 강조(3+장), 홀수로 마지막 혼자 남으면 전체폭
+      return `<div class="pgrid">${imgs.map((u, i) => {
+        const wide = n === 1 || (i === 0 && n > 2) || (i === n - 1 && n > 2 && (n - 1) % 2 === 1)
+        return `<div class="g${wide ? ' wide' : ''}"><img src="${u}" alt=""/><span class="gcap">${esc(capAt(i))}</span></div>`
+      }).join('')}</div>`
     }
     if (kind === 'gallery') {
       return `<div class="gframe">${imgs.map((u, i) => `<div class="fr"><img src="${u}" alt=""/></div><div class="cap">${esc(capAt(i))}</div>`).join('')}</div>`
@@ -490,12 +539,20 @@ export function renderShowcase(d: LandingData, styleId: string, layout: Showcase
     <div class="sc-sh"><div class="en">POINT</div><div class="ko" ${ed('ptko')}>이 상품이 다른 이유</div></div>
     ${feats.map((f, i) => `<div class="sc-pt"><div class="no">${String(i + 1).padStart(2, '0')}</div><div><h3 ${ed('ptt' + i)}>${esc(f.title)}</h3><p ${ed('ptd' + i)}>${esc(f.desc)}</p></div></div>`).join('')}
   </section>` : ''
-  const numSec = kn ? `<section class="sc-num">
-    <div class="lead" ${ed('numlead')}>${esc(kn.label || '누적 판매')}</div>
-    <div class="fig"><span ${ed('numval')}>${esc(kn.value)}</span><span class="u" ${ed('numunit')}>${esc(kn.unit || '건')}</span></div>
-    <div class="st">★★★★★</div>
-    ${!isVisual ? `<div class="desc" ${ed('numcap')}>${esc(kn.caption || '')}</div>` : ''}
-  </section>` : ''
+  // ── 숫자(신뢰) 섹션: 레이아웃 골격마다 완전히 다른 형태 ──
+  const numSec = (() => {
+    if (!kn) return ''
+    const lead = `<div class="lead" ${ed('numlead')}>${esc(kn.label || '누적 판매')}</div>`
+    const fig = `<div class="fig"><span ${ed('numval')}>${esc(kn.value)}</span><span class="u" ${ed('numunit')}>${esc(kn.unit || '건')}</span></div>`
+    const star = `<div class="st">★★★★★</div>`
+    const desc = !isVisual && kn.caption ? `<div class="desc" ${ed('numcap')}>${esc(kn.caption)}</div>` : ''
+    if (kind === 'poster') return `<section class="sc-num nk-poster"><div class="banner">${lead}${fig}${star}${desc}</div></section>`
+    if (kind === 'editorial') return `<section class="sc-num nk-editorial"><div class="q">“</div>${fig}${lead}${star}${desc}</section>`
+    if (kind === 'gallery') return `<section class="sc-num nk-gallery"><div class="ln"></div>${lead}${fig}${star}</section>`
+    if (kind === 'framed') return `<section class="sc-num nk-framed"><div class="stamp">${fig}</div>${lead}${star}${desc}</section>`
+    if (kind === 'split') return `<section class="sc-num nk-split"><div class="l">${lead}${star}${desc}</div><div class="r">${fig}</div></section>`
+    return `<section class="sc-num">${lead}${fig}${star}${desc}</section>` // cinematic 기본(중앙 대형)
+  })()
 
   const stats = (d.originStats || []).slice(0, 4)
   const compares = (d.differences || []).slice(0, 6)
@@ -520,11 +577,12 @@ export function renderShowcase(d: LandingData, styleId: string, layout: Showcase
   ${heroHtml}
   ${bodyHtml}
 
-  ${reviews.slice(0, isVisual || isFacts ? 2 : 3).length ? `<section class="sc-rev">
+  ${reviews.slice(0, isVisual || isFacts ? 2 : 3).length ? `<section class="sc-rev rk-${kind}">
+    ${(kind === 'editorial' || kind === 'framed') ? `<div class="rvhead">고객 후기</div>` : ''}
     ${reviews.slice(0, isVisual || isFacts ? 2 : 3).map((r, i) => `<div class="sc-rc"><div class="top"><div class="av">${esc((r.author || '고').slice(0, 1))}</div><div class="nm" ${ed('rvn' + i)}>${esc(r.author || '고객')}</div><div class="stars">★★★★★</div></div><p ${ed('rvt' + i)}>${esc(r.text)}</p></div>`).join('')}
   </section>` : ''}
 
-  ${infoRows.length ? `<section class="sc-info"><h4>상품 · 배송 안내</h4>
+  ${infoRows.length ? `<section class="sc-info ik-${kind}"><h4>상품 · 배송 안내</h4>
     ${infoRows.map((r, i) => `<div class="row"><span ${ed('infk' + i)}>${esc(r.key)}</span><span ${ed('infv' + i)}>${esc(r.value)}</span></div>`).join('')}
   </section>` : ''}
   ${faqSec}
