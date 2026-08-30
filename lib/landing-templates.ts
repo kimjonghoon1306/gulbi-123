@@ -957,7 +957,7 @@ function renderLandingCore(data: LandingData, presetKey: PresetKey = 'gold', tem
   const hasGoodsSections = !!(data.usage || data.specs || data.warranty)
   const hasCraftSections = !!(data.artist || data.materials || data.care)
   const hasHealthSections = !!(data.ingredients || data.dosage)
-  const sections = preset.sections
+  const orderedKeys = preset.sections
     .flatMap(key => {
       if (key === 'recipe' && hasGoodsSections) return ['usage', 'specs', 'warranty']
       if (key === 'recipe' && hasHealthSections) return ['ingredients', 'dosage', data.recipe ? 'recipe' : '']
@@ -967,11 +967,31 @@ function renderLandingCore(data: LandingData, presetKey: PresetKey = 'gold', tem
       return [key]
     })
     .filter(Boolean)
-    .map(key => {
-      const fn = SECTION_RENDERERS[key]
-      return fn ? fn(data, preset) : ''
-    })
-    .join('')
+
+  // ★밸런스: 갤러리 사진이 하단에 몰리지 않게, 글 위주 섹션이 연속되면 사이에 사진을 한 장씩 끼워 리듬을 만든다.
+  const galleryImgs = (data.unusedImages || []).filter(Boolean)
+  const interImgs = galleryImgs.slice(0)   // 사이에 분산할 사진 풀
+  const textHeavyKeys = new Set(['story', 'features', 'keynum', 'compare', 'recipe', 'ingredients', 'dosage', 'usage', 'specs', 'warranty', 'materials', 'care', 'faq'])
+  const interPhoto = (src: string) => `<section data-section="inter-photo" style="padding:0;background:${C.paper};"><div class="gulbi-section-img" data-section-img="gallery" style="width:100%;aspect-ratio:16/10;overflow:hidden;position:relative;"><img src="${src}" alt="${esc(data.productName)}" style="width:100%;height:100%;object-fit:cover;display:block;" /></div></section>`
+
+  const parts: string[] = []
+  let textRun = 0
+  orderedKeys.forEach(key => {
+    if (key === 'gallery') {
+      if (interImgs.length) { const fn = SECTION_RENDERERS['gallery']; if (fn) parts.push(fn({ ...data, unusedImages: interImgs } as LandingData, preset)) }
+      return
+    }
+    const fn = SECTION_RENDERERS[key]
+    if (fn) parts.push(fn(data, preset))
+    if (textHeavyKeys.has(key)) {
+      textRun++
+      // 글 섹션 2개 연속 뒤 + 뿌릴 사진이 2장 넘게 남았을 때만 한 장 삽입(gallery용 최소 1장 남김)
+      if (textRun >= 2 && interImgs.length > 1) { parts.push(interPhoto(interImgs.shift()!)); textRun = 0 }
+    } else {
+      textRun = 0
+    }
+  })
+  const sections = parts.join('')
 
   return `${fontImports}
 <div data-landing data-preset="${presetKey}" style="font-family:${F.sans};color:${C.ink};background:${C.paper};line-height:1.6;-webkit-font-smoothing:antialiased;word-break:keep-all;-webkit-text-size-adjust:100%;">
