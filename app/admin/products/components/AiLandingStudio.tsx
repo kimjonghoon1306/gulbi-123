@@ -550,10 +550,14 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
                   {panelTab === 'concept' && (() => {
                     const cat = inferCategory({ productGroup: s.productGroup, freshType: s.freshType, productName: s.aiMeta.name || s.selectedProduct?.name })
                     const showcaseList = SHOWCASE_STYLES.filter(x => x.category === cat)
-                    const cards = [
-                      ...showcaseList.map(st => ({ id: st.id, name: st.name, paper: st.paper, ink: st.ink, accent: st.accent, legacy: false })),
+                    const isNewTemplate = (id: string) => ['farm', 'homeshopping', 'gift', 'shortform'].includes(id.split('.')[1] || '')
+                    const existingCards = [
+                      ...showcaseList.filter(st => !isNewTemplate(st.id)).map(st => ({ id: st.id, name: st.name, paper: st.paper, ink: st.ink, accent: st.accent, legacy: false })),
                       ...LEGACY_STYLES.map(l => ({ id: 'legacy.' + l.tpl, name: l.name, paper: l.paper, ink: l.ink, accent: l.accent, legacy: true })),
                     ]
+                    const newCards = showcaseList.filter(st => isNewTemplate(st.id)).map(st => ({
+                      id: st.id, name: st.name, paper: st.paper, ink: st.ink, accent: st.accent, legacy: false,
+                    }))
                     // 각 카드용 미니 미리보기 HTML(실제 렌더를 축소). 생성 데이터 있을 때만.
                     const miniHtml = (id: string, legacy: boolean) => {
                       if (!s.aiLandingData) return ''
@@ -569,10 +573,7 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
                         return renderShowcase(s.aiLandingData, id, layoutMode)
                       } catch { return '' }
                     }
-                    return (
-                      <>
-                        <div className="st-lab">✨ 컨셉 선택 <span style={{ color: 'var(--muted2)', fontWeight: 700 }}>· {cards.length}가지</span></div>
-                        <p className="st-tiny" style={{ marginTop: 0, marginBottom: 14 }}>각 컨셉의 실제 디자인이 미리 보여요. 클릭하면 큰 미리보기가 바뀝니다.</p>
+                    const renderCards = (cards: typeof existingCards, isNew = false) => (
                         <div className="st-stylegrid">
                           {cards.map(st => {
                             const html = miniHtml(st.id, st.legacy)
@@ -589,11 +590,25 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
                                 <div className="st-cardname">
                                   <span className="st-carddot" style={{ background: st.accent }} />
                                   <span className="st-stylenm">{st.name}</span>
+                                  <span className="st-previewlabel">미리보기</span>
                                 </div>
+                                {isNew && <span className="st-newbadge">NEW</span>}
                               </button>
                             )
                           })}
                         </div>
+                    )
+                    return (
+                      <>
+                        <div className="st-newsection">
+                          <div className="st-newhead"><strong>새로 추가된 템플릿</strong><span>기존 템플릿과 별도로 만든 신규 4종</span></div>
+                          {renderCards(newCards, true)}
+                        </div>
+                        <div className="st-existinghead">
+                          <div className="st-lab">기존 템플릿 <span style={{ color: 'var(--muted2)', fontWeight: 700 }}>· 기존 디자인 그대로</span></div>
+                          <p className="st-tiny">기존 템플릿은 수정하지 않았습니다.</p>
+                        </div>
+                        {renderCards(existingCards)}
                       </>
                     )
                   })()}
@@ -883,6 +898,11 @@ const CSS = `
 .st-stylecard{position:relative;display:flex;flex-direction:column;padding:0;border-radius:13px;border:2px solid var(--line);text-align:left;transition:.15s;overflow:hidden;background:var(--panel)}
 .st-stylecard:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
 .st-stylecard.on{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.st-newsection{padding:15px;border:2px solid var(--accent);border-radius:16px;background:var(--accent-soft);margin-bottom:24px}
+.st-newhead{display:flex;flex-direction:column;gap:3px;margin-bottom:12px}.st-newhead strong{font-size:17px;color:var(--ink)}.st-newhead span{font-size:12px;color:var(--muted)}
+.st-existinghead{padding-top:2px;margin-bottom:12px}.st-existinghead .st-tiny{margin:2px 0 0}
+.st-newbadge{position:absolute;top:7px;left:7px;padding:4px 7px;border-radius:999px;background:#ff3b30;color:#fff;font-size:10px;font-weight:900;letter-spacing:.08em;box-shadow:0 2px 8px rgba(0,0,0,.22)}
+.st-previewlabel{margin-left:auto;padding:4px 7px;border-radius:7px;background:var(--accent-soft);color:var(--accent);font-size:10px;font-weight:900;white-space:nowrap}
 /* 미니 미리보기(실제 디자인 잔상) — 460px 실제폭 페이지를 카드폭에 딱 맞게 축소.
    ★scale()은 순수 숫자만 받아 CSS cqw/calc는 무효였다(그래서 축소 안 돼 제목이 잘림).
    → transform/height는 JS fitCardFrame이 카드 실측 폭으로 설정한다. 여기선 초기값만. */
