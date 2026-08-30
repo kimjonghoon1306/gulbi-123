@@ -168,11 +168,12 @@ const FONT_LINK = `<link href="https://fonts.googleapis.com/css2?family=Black+Ha
 const ed = (key: string) => `contenteditable="true" data-key="${key}" spellcheck="false"`
 const esc = (s: any) => String(s ?? '').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
-export type ShowcaseLayout = 'balanced' | 'visual'
+export type ShowcaseLayout = 'balanced' | 'visual' | 'facts'
 
 export function renderShowcase(d: LandingData, styleId: string, layout: ShowcaseLayout = 'balanced'): string {
   const s = getShowcaseStyle(styleId)
   const isVisual = layout === 'visual'
+  const isFacts = layout === 'facts'
   // ★ 사용자가 올린 사진을 하나도 버리지 않는다. 모든 이미지를 모아 중복 제거.
   const si = d.sectionImages || {}
   const allImages = Array.from(new Set([
@@ -283,6 +284,20 @@ export function renderShowcase(d: LandingData, styleId: string, layout: Showcase
 .sc-info .row{display:flex;gap:14px;padding:14px 0;border-top:1px solid ${s.line};font-size:15.5px}
 .sc-info .row span:first-child{color:${s.accent2};flex:none;width:84px;font-weight:800}
 .sc-info .row span:last-child{color:${s.ink};opacity:.85;line-height:1.6}
+.sc-facts{background:${s.ptBg};color:${s.ink};padding:58px 24px}
+.sc-facts .ey{font-size:12px;letter-spacing:.28em;color:${s.accent2};font-weight:900;margin-bottom:10px}
+.sc-facts h2{font-family:${s.headFont};font-size:30px;line-height:1.3;margin-bottom:28px;color:${s.ink}}
+.sc-statgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:28px}
+.sc-stat{border:1px solid ${s.line};background:${s.paper};padding:18px 14px;min-height:118px}
+.sc-stat b{display:block;font-family:${s.numFont};font-size:30px;line-height:1;color:${s.accent2};margin-bottom:9px}
+.sc-stat strong{display:block;font-size:13px;color:${s.ink};margin-bottom:5px}.sc-stat p{font-size:12px;line-height:1.55;opacity:.7}
+.sc-compare{border-top:2px solid ${s.accent2}}
+.sc-crow{display:grid;grid-template-columns:72px 1fr 1fr;border-bottom:1px solid ${s.line};font-size:12.5px}
+.sc-crow span{padding:12px 8px;line-height:1.45}.sc-crow span:first-child{font-weight:900;color:${s.accent2}}
+.sc-crow .ours{font-weight:800;background:${s.accent}18;color:${s.ink}}
+.sc-faq{background:${s.paper};padding:50px 24px;color:${s.ink}}
+.sc-faq h3{font-family:${s.headFont};font-size:24px;margin-bottom:18px}.sc-faq .q{padding:16px 0;border-top:1px solid ${s.line}}
+.sc-faq .q b{display:block;color:${s.accent2};font-size:15px;margin-bottom:7px}.sc-faq .q p{font-size:14px;line-height:1.7;opacity:.8}
 .sc-foot{background:${s.footBg};color:${s.footFg};text-align:center;padding:28px 20px 40px;font-size:11px;border-top:1px solid rgba(255,255,255,.06)}
 .sc-foot b{font-family:${s.brandFont};color:${s.accent};letter-spacing:.25em;font-weight:800;font-size:13px;display:block;margin-bottom:7px}
 
@@ -444,24 +459,37 @@ export function renderShowcase(d: LandingData, styleId: string, layout: Showcase
     ${!isVisual ? `<div class="desc" ${ed('numcap')}>${esc(kn.caption || '')}</div>` : ''}
   </section>` : ''
 
+  const stats = (d.originStats || []).slice(0, 4)
+  const compares = (d.differences || []).slice(0, 6)
+  const factsSec = isFacts ? `<section class="sc-facts">
+    <div class="ey">FACT CHECK</div><h2 ${ed('facttitle')}>숫자와 기준으로 확인하세요</h2>
+    ${stats.length ? `<div class="sc-statgrid">${stats.map((x,i)=>`<div class="sc-stat"><b ${ed('statv'+i)}>${esc(x.value)}${esc(x.unit)}</b><strong ${ed('statl'+i)}>${esc(x.label)}</strong><p ${ed('statd'+i)}>${esc(x.desc)}</p></div>`).join('')}</div>` : ''}
+    ${compares.length ? `<div class="sc-compare"><div class="sc-crow"><span>비교</span><span>일반 상품</span><span class="ours">이 상품</span></div>${compares.map((x,i)=>`<div class="sc-crow"><span ${ed('diffl'+i)}>${esc(x.label)}</span><span ${ed('difft'+i)}>${esc(x.theirs)}</span><span class="ours" ${ed('diffo'+i)}>${esc(x.ours)}</span></div>`).join('')}</div>` : ''}
+  </section>` : ''
+  const faqSec = isFacts && (d.faq || []).length ? `<section class="sc-faq"><h3>구매 전 꼭 확인하세요</h3>${d.faq.slice(0,5).map((x,i)=>`<div class="q"><b ${ed('faqq'+i)}>Q. ${esc(x.q)}</b><p ${ed('faqa'+i)}>${esc(x.a)}</p></div>`).join('')}</section>` : ''
+
   // 본문 조립: 골격별 갤러리 + 텍스트 섹션(스토리·포인트·숫자)
   const gallery = galleryFor(bodyImages)
   const bodyHtml = isVisual
     ? `${gallery}${numSec}`
-    : `${storySec}${gallery}${pointsSec}${numSec}`
+    : isFacts
+      ? `${pointsSec}${numSec}${factsSec}${bodyImages[0] ? photo(bodyImages[0], capAt(0)) : ''}`
+      : `${storySec}${gallery}${pointsSec}${numSec}`
 
-  return `${FONT_LINK}${css}
+  return `${FONT_LINK}
 <div data-showcase data-style="${s.id}" data-layout="${layout}" data-kind="${kind}" class="lk-${kind}">
+  ${css}
   ${heroHtml}
   ${bodyHtml}
 
-  ${reviews.slice(0, isVisual ? 2 : 3).length ? `<section class="sc-rev">
-    ${reviews.slice(0, isVisual ? 2 : 3).map((r, i) => `<div class="sc-rc"><div class="top"><div class="av">${esc((r.author || '고').slice(0, 1))}</div><div class="nm" ${ed('rvn' + i)}>${esc(r.author || '고객')}</div><div class="stars">★★★★★</div></div><p ${ed('rvt' + i)}>${esc(r.text)}</p></div>`).join('')}
+  ${reviews.slice(0, isVisual || isFacts ? 2 : 3).length ? `<section class="sc-rev">
+    ${reviews.slice(0, isVisual || isFacts ? 2 : 3).map((r, i) => `<div class="sc-rc"><div class="top"><div class="av">${esc((r.author || '고').slice(0, 1))}</div><div class="nm" ${ed('rvn' + i)}>${esc(r.author || '고객')}</div><div class="stars">★★★★★</div></div><p ${ed('rvt' + i)}>${esc(r.text)}</p></div>`).join('')}
   </section>` : ''}
 
   ${infoRows.length ? `<section class="sc-info"><h4>상품 · 배송 안내</h4>
     ${infoRows.map((r, i) => `<div class="row"><span ${ed('infk' + i)}>${esc(r.key)}</span><span ${ed('infv' + i)}>${esc(r.value)}</span></div>`).join('')}
   </section>` : ''}
+  ${faqSec}
 
   <div class="sc-foot"><b ${ed('footbrand')}>${esc(brand)}</b><span ${ed('foottag')}>신선한 ${esc(s.catLabel)}을 그대로</span></div>
 </div>`

@@ -88,7 +88,7 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
   const [autoBgLoading, setAutoBgLoading] = useState(false)
   const [styleId, setStyleId] = useState<string>('')   // 선택된 쇼케이스 스타일
   const [dragOver, setDragOver] = useState(false)      // 사진 드래그앤드롭 하이라이트
-  const [layoutMode, setLayoutMode] = useState<ShowcaseLayout>('balanced') // 혼합형/이미지집중형
+  const [layoutMode, setLayoutMode] = useState<ShowcaseLayout>('balanced') // 혼합형/이미지집중형/글팩트형
   const [fontCss, setFontCss] = useState('')
   const [headingWeight, setHeadingWeight] = useState(800)
   const [stockQuery, setStockQuery] = useState('')
@@ -119,9 +119,9 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
         const cat = inferCategory({ productGroup: s.productGroup, freshType: s.freshType, productName: s.aiMeta.name || s.selectedProduct?.name })
         // 이미지 집중형: 옛 템플릿은 글-이미지 반복 구조라 진짜 이미지집중이 안 됨.
         // → 옛 템플릿 무드를 쇼케이스로 매핑해 renderShowcase(visual)로 렌더(진짜 이미지 위주).
-        if (layoutMode === 'visual') {
+        if (layoutMode !== 'balanced') {
           const mood = LEGACY_TO_MOOD[tpl] || 'premium'
-          el.innerHTML = renderShowcase(s.aiLandingData, `${cat}.${mood}`, 'visual')
+          el.innerHTML = renderShowcase(s.aiLandingData, `${cat}.${mood}`, layoutMode)
         } else {
           el.innerHTML = renderLanding(s.aiLandingData, CAT_PRESET[cat] || 'gold', tpl, 'balanced')
         }
@@ -520,6 +520,11 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
                       <span className="st-laynm">이미지 집중형</span>
                       <span className="st-laydesc">큰 사진 위주. 비주얼로 파는 상품에.</span>
                     </button>
+                    <button className={'st-layoutcard' + (layoutMode === 'facts' ? ' on' : '')} onClick={() => setLayoutMode('facts')}>
+                      <span className="st-layicon">📊✅</span>
+                      <span className="st-laynm">글 · 팩트 집중형</span>
+                      <span className="st-laydesc">수치·비교·상품정보 우선. 설득이 중요한 상품에.</span>
+                    </button>
                   </div>
 
                   {s.aiError && <div className="st-err">{s.aiError}</div>}
@@ -555,7 +560,11 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
                       try {
                         if (legacy) {
                           const tpl = id.slice(7) as TemplateKey
-                          return renderLanding(s.aiLandingData, CAT_PRESET[cat] || 'gold', tpl, layoutMode)
+                          if (layoutMode !== 'balanced') {
+                            const mood = LEGACY_TO_MOOD[tpl] || 'premium'
+                            return renderShowcase(s.aiLandingData, `${cat}.${mood}`, layoutMode)
+                          }
+                          return renderLanding(s.aiLandingData, CAT_PRESET[cat] || 'gold', tpl, 'balanced')
                         }
                         return renderShowcase(s.aiLandingData, id, layoutMode)
                       } catch { return '' }

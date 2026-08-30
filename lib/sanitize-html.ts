@@ -9,7 +9,7 @@ const DROP_WITH_CONTENT = new Set([
   'style', 'script', 'head', 'title', 'meta', 'link', 'noscript', 'template', 'pre', 'code',
 ])
 
-const GLOBAL_ATTRS = new Set(['class', 'id', 'style', 'title', 'aria-label', 'role', 'data-landing', 'data-template', 'data-base-price'])
+const GLOBAL_ATTRS = new Set(['class', 'id', 'style', 'title', 'aria-label', 'role', 'data-landing', 'data-template', 'data-base-price', 'data-showcase', 'data-style', 'data-layout', 'data-kind'])
 const TAG_ATTRS: Record<string, Set<string>> = {
   a: new Set(['href', 'target', 'rel']),
   img: new Set(['src', 'alt', 'width', 'height', 'loading', 'decoding']),
@@ -29,6 +29,11 @@ function isSafeUrl(value: string, tag: string) {
 
 function isSafeStyle(value: string) {
   return !/(expression|javascript:|vbscript:|data:text\/html|@import|behavior\s*:)/i.test(value)
+}
+
+function isSafeShowcaseCss(value: string) {
+  return value.length <= 80_000
+    && !/(expression|javascript:|vbscript:|data:text\/html|@import|behavior\s*:|<\/style)/i.test(value)
 }
 
 function unwrapCodeFences(html: string) {
@@ -72,6 +77,13 @@ export function sanitizeHtml(html: string) {
 
       const el = child as HTMLElement
       const tag = el.tagName.toLowerCase()
+      // AI STUDIO가 생성한 쇼케이스 루트 안의 자체 CSS만 제한적으로 보존한다.
+      // 일반 상품 HTML의 임의 style 태그는 아래 DROP_WITH_CONTENT 규칙으로 계속 차단한다.
+      if (tag === 'style') {
+        const inShowcase = !!el.parentElement?.closest('[data-showcase]')
+        if (!inShowcase || !isSafeShowcaseCss(el.textContent || '')) el.remove()
+        continue
+      }
       if (DROP_WITH_CONTENT.has(tag)) {
         el.remove()
         continue
