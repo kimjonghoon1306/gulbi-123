@@ -3,7 +3,7 @@
 //
 // 목적: "생성하면 카테고리에 맞는, 완전 다른 느낌의 이쁜 상세페이지"가 나오게.
 //  · 레이아웃은 1개(히어로·임팩트·포인트·숫자·리뷰) — 데모로 검증된 구조
-//  · 5카테고리 × 6무드 = 30스타일. 색감·폰트·무드만 다름 → 같은 상품도 30가지 느낌
+//  · 5카테고리 × 10무드 = 50스타일. 신규 4종은 판매 목적까지 명확히 구분
 //  · 배경은 상품 사진(mainImageUrl)을 풀블리드로 → 배경 조달 없이도 이쁨
 //
 // 기존 landing-templates.ts(9템플릿)는 건드리지 않음(백업). 이건 병렬 신규 시스템.
@@ -13,7 +13,7 @@
 import type { LandingData } from './landing-templates'
 
 export type ShowcaseCategory = 'seafood' | 'health' | 'produce' | 'meat' | 'processed'
-export type ShowcaseMood = 'premium' | 'market' | 'clean' | 'traditional' | 'modern' | 'story'
+export type ShowcaseMood = 'premium' | 'market' | 'clean' | 'traditional' | 'modern' | 'story' | 'farm' | 'homeshopping' | 'gift' | 'shortform'
 
 export type ShowcaseStyle = {
   id: string            // "seafood.premium"
@@ -55,6 +55,8 @@ const CAT: Record<ShowcaseCategory, { label: string; accent: string; deep: strin
 const MOOD_NAME: Record<ShowcaseMood, string> = {
   premium: '프리미엄 딥', market: '활기찬 시장', clean: '청정 미니멀',
   traditional: '전통', modern: '모던 블랙', story: '감성 스토리',
+  farm: '🌿 산지직송 리얼', homeshopping: '📣 라이브 특가',
+  gift: '🎁 선물 패키지', shortform: '🎬 숏폼 임팩트',
 }
 
 // 카테고리 메타(갤러리 그룹 헤더용) — 이모지·색으로 크게 구분
@@ -131,12 +133,48 @@ function buildStyle(category: ShowcaseCategory, mood: ShowcaseMood): ShowcaseSty
       ptBg: c.warmDeep, numBg: `linear-gradient(160deg,#3a2418,${c.warmDeep})`, numFg: '#f0e4d8', numFig: c.warm,
       footBg: c.warmDeep, footFg: 'rgba(230,210,190,.45)',
     }
+    case 'farm': return { ...base, layoutKind: 'editorial', headFont: `'Gowun Batang',serif`,
+      titleFont: `'Gowun Batang',serif`, titleWeight: '700', titleSize: '42px', titleLh: '1.35', titleLs: '-.02em',
+      brandFont: `'Pretendard',sans-serif`, numFont: `'Pretendard',sans-serif`, eyebrowFont: `'Pretendard',sans-serif`,
+      paper: '#f5f0df', ink: '#233326', accent: '#3f7a49', accent2: '#2f6539', muted: '#647364', line: 'rgba(47,101,57,.18)',
+      heroGrad: 'linear-gradient(180deg,rgba(20,45,25,.08),rgba(20,45,25,0) 40%,rgba(20,45,25,.72))',
+      badgeColor: '#fff', badgeBg: '#3f7a49', badgeRadius: '999px',
+      impactBg: '#2f6539', impactFg: '#fffdf4', impactSub: 'rgba(255,255,245,.72)',
+      ptBg: '#fffdf4', numBg: '#dfe8cf', numFg: '#233326', numFig: '#2f6539', footBg: '#233326', footFg: 'rgba(245,240,223,.65)',
+    }
+    case 'homeshopping': return { ...base, layoutKind: 'poster',
+      titleFont: `'Black Han Sans',sans-serif`, titleWeight: '400', titleSize: '54px', titleLh: '1.03', titleLs: '-.01em',
+      headFont: `'Pretendard',sans-serif`, brandFont: `'Black Han Sans',sans-serif`, numFont: `'Black Han Sans',sans-serif`,
+      paper: '#fff4e8', ink: '#28130f', accent: '#ff2e20', accent2: '#e91d12', muted: '#7c5548', line: 'rgba(233,29,18,.2)',
+      heroGrad: 'linear-gradient(180deg,rgba(35,8,4,.22),rgba(35,8,4,.52))',
+      badgeColor: '#fff', badgeBg: '#ff2e20', badgeRadius: '4px',
+      impactBg: '#ff2e20', impactFg: '#fff', impactSub: 'rgba(255,255,255,.84)',
+      ptBg: '#fff9f3', numBg: '#ffe100', numFg: '#28130f', numFig: '#e91d12', footBg: '#28130f', footFg: 'rgba(255,244,232,.62)',
+    }
+    case 'gift': return { ...base, layoutKind: 'framed', headFont: `'Nanum Myeongjo',serif`,
+      titleFont: `'Nanum Myeongjo',serif`, titleWeight: '800', titleSize: '40px', titleLh: '1.42', titleLs: '.01em',
+      brandFont: `'Playfair Display',serif`, numFont: `'Playfair Display',serif`, eyebrowFont: `'Playfair Display',serif`, bodyFont: `'Nanum Myeongjo',serif`,
+      paper: '#12322c', ink: '#fff7df', accent: '#d8ba73', accent2: '#c6a45a', muted: '#b8c7bd', line: 'rgba(216,186,115,.28)',
+      heroGrad: 'linear-gradient(180deg,rgba(7,30,25,.15),rgba(7,30,25,.8))',
+      badgeColor: '#12322c', badgeBg: '#d8ba73', badgeRadius: '2px',
+      impactBg: '#0b2520', impactFg: '#fff7df', impactSub: 'rgba(255,247,223,.7)',
+      ptBg: '#173b34', numBg: 'linear-gradient(160deg,#173b34,#0b2520)', numFg: '#fff7df', numFig: '#d8ba73', footBg: '#081d19', footFg: 'rgba(255,247,223,.55)',
+    }
+    case 'shortform': return { ...base, layoutKind: 'cinematic',
+      heroJustify: 'center', heroAlign: 'center', titleFont: `'Black Han Sans',sans-serif`, titleWeight: '400',
+      titleSize: '58px', titleLh: '1.02', titleLs: '-.02em', headFont: `'Pretendard',sans-serif`, brandFont: `'Pretendard',sans-serif`, numFont: `'Black Han Sans',sans-serif`,
+      paper: '#17131f', ink: '#fff', accent: '#c8ff35', accent2: '#9fe000', muted: '#b9afc8', line: 'rgba(200,255,53,.2)',
+      heroGrad: 'linear-gradient(180deg,rgba(23,19,31,.18),rgba(23,19,31,.18) 45%,#17131f 98%)',
+      badgeColor: '#17131f', badgeBg: '#c8ff35', badgeRadius: '999px',
+      impactBg: '#c8ff35', impactFg: '#17131f', impactSub: 'rgba(23,19,31,.72)',
+      ptBg: '#211a2c', numBg: '#0c0910', numFg: '#fff', numFig: '#c8ff35', footBg: '#0c0910', footFg: 'rgba(255,255,255,.5)',
+    }
   }
 }
 
 export const SHOWCASE_STYLES: ShowcaseStyle[] =
   (Object.keys(CAT) as ShowcaseCategory[]).flatMap(cat =>
-    (['premium', 'market', 'clean', 'traditional', 'modern', 'story'] as ShowcaseMood[]).map(m => buildStyle(cat, m))
+    (['premium', 'market', 'clean', 'traditional', 'modern', 'story', 'farm', 'homeshopping', 'gift', 'shortform'] as ShowcaseMood[]).map(m => buildStyle(cat, m))
   )
 
 export function getShowcaseStyle(id: string): ShowcaseStyle {
@@ -155,7 +193,7 @@ export function inferCategory(opts: { productGroup?: string; freshType?: string;
   return 'seafood'
 }
 
-// 카테고리 기준 추천 스타일(그 카테고리 6개를 상단에)
+// 카테고리 기준 추천 스타일(그 카테고리 10개를 상단에)
 export function recommendStyles(category: ShowcaseCategory): ShowcaseStyle[] {
   const own = SHOWCASE_STYLES.filter(s => s.category === category)
   const rest = SHOWCASE_STYLES.filter(s => s.category !== category)
