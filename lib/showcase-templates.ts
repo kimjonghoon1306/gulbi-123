@@ -80,7 +80,7 @@ function buildStyle(category: ShowcaseCategory, mood: ShowcaseMood): ShowcaseSty
   }
   switch (mood) {
     case 'premium': return { ...base, layoutKind: 'cinematic',
-      paper: c.deep, ink: c.light, accent: c.accent, accent2: c.accent, muted: '#8ca0b8', line: 'rgba(150,170,190,.18)',
+      paper: c.deep, ink: c.light, accent: c.accent, accent2: c.accent, muted: '#b6c6d6', line: 'rgba(150,170,190,.18)',
       heroGrad: `linear-gradient(180deg,rgba(0,0,0,.4),rgba(0,0,0,0) 35%,${c.deep} 96%)`,
       badgeColor: c.accent, badgeBg: 'rgba(255,255,255,.12)',
       impactBg: c.deep, impactFg: '#fff', impactSub: 'rgba(220,230,240,.55)',
@@ -117,7 +117,7 @@ function buildStyle(category: ShowcaseCategory, mood: ShowcaseMood): ShowcaseSty
     case 'modern': return { ...base, layoutKind: 'split', headFont: `'Playfair Display',serif`,
       titleFont: `'Playfair Display',serif`, titleWeight: '700', titleSize: '44px', titleLs: '-.01em',
       brandFont: `'Playfair Display',serif`, numFont: `'Playfair Display',serif`, eyebrowFont: `'Playfair Display',serif`,
-      paper: '#101010', ink: '#e8e8e8', accent: c.accent, accent2: '#9a9a9a', muted: '#888', line: 'rgba(200,200,200,.14)',
+      paper: '#101010', ink: '#f0f0f0', accent: c.accent, accent2: '#c0c0c0', muted: '#b0b0b0', line: 'rgba(200,200,200,.14)',
       heroGrad: 'linear-gradient(180deg,rgba(16,16,16,.4),rgba(16,16,16,0) 35%,rgba(16,16,16,.96))',
       badgeColor: '#101010', badgeBg: '#e8e8e8', badgeRadius: '2px',
       impactBg: '#181818', impactFg: '#fff', impactSub: 'rgba(220,220,220,.5)',
@@ -260,7 +260,7 @@ export function renderShowcase(d: LandingData, styleId: string, layout: Showcase
 .sc-story{background:${s.ptBg};color:${s.ink};padding:60px 28px}
 .sc-story .k{font-size:12px;letter-spacing:.35em;color:${s.accent2};font-weight:800;margin-bottom:14px}
 .sc-story h2{font-family:${s.headFont};font-weight:800;font-size:28px;line-height:1.35;margin-bottom:28px;color:${s.ink}}
-.sc-story .body p{font-size:17px;line-height:1.95;color:${s.ink};opacity:.82;margin:0 0 18px}
+.sc-story .body p{font-size:17px;line-height:1.95;color:${s.ink};opacity:.92;margin:0 0 18px}
 .sc-photo{position:relative;width:100%;background:${s.ptBg}}
 .sc-photo img{width:100%;display:block}
 .sc-impact{background:${s.impactBg};color:${s.impactFg};padding:70px 30px;text-align:center}
@@ -304,7 +304,7 @@ export function renderShowcase(d: LandingData, styleId: string, layout: Showcase
 .sc-pt:last-child{border-bottom:1px solid ${s.line}}
 .sc-pt .no{font-family:${s.numFont};font-size:34px;color:${s.accent2};line-height:1;flex:none;width:50px;font-weight:800}
 .sc-pt h3{font-family:${s.headFont};font-weight:800;font-size:19px;margin-bottom:7px;color:${s.ink}}
-.sc-pt p{font-size:16px;color:${s.ink};opacity:.78;line-height:1.75}
+.sc-pt p{font-size:16px;color:${s.ink};opacity:.9;line-height:1.75}
 .sc-num{background:${s.numBg};color:${s.numFg};text-align:center;padding:66px 24px}
 .sc-num .lead{font-size:14px;letter-spacing:.2em;color:${s.accent};font-weight:800;margin-bottom:14px}
 .sc-num .fig{font-family:${s.numFont};font-size:68px;line-height:1;color:${s.numFig};font-weight:800}

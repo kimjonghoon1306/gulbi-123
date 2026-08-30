@@ -390,8 +390,18 @@ export default function AiLandingStudio({ show, onClose, products, onDone, initi
           <h2>📦 {initialProduct?.name}</h2>
           <p>이 상품의 상세페이지를 어떻게 할까요?</p>
           <div className="st-choice-cards">
-            <button onClick={s.startEditExisting}><b>기존 수정</b><span>지금 상세페이지를 불러와 글자만 고쳐요</span></button>
-            <button onClick={s.startMakeNew}><b>새로 만들기</b><span>사진으로 처음부터 새로 제작해요</span></button>
+            <button className="scc-edit" onClick={s.startEditExisting}>
+              <span className="scc-ico">✏️</span>
+              <b>기존 수정</b>
+              <span className="scc-desc">지금 상세페이지를 불러와 글자만 고쳐요</span>
+              <span className="scc-go">바로 수정하기 →</span>
+            </button>
+            <button className="scc-new" onClick={s.startMakeNew}>
+              <span className="scc-ico">✨</span>
+              <b>새로 만들기</b>
+              <span className="scc-desc">사진으로 처음부터 새로 제작해요</span>
+              <span className="scc-go">새로 만들기 →</span>
+            </button>
           </div>
         </div>
       ) : s.aiTab === 'ai' ? (
@@ -846,11 +856,25 @@ const CSS = `
 .st-choice{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px}
 .st-choice h2{font-size:24px;font-weight:800}
 .st-choice p{color:var(--muted);margin:10px 0 28px}
-.st-choice-cards{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
-.st-choice-cards button{width:230px;padding:26px;border-radius:16px;border:1.5px solid var(--line);background:var(--panel);text-align:left;transition:.15s}
-.st-choice-cards button:hover{border-color:var(--accent);box-shadow:var(--shadow)}
-.st-choice-cards b{display:block;font-size:17px;font-weight:800;margin-bottom:8px}
-.st-choice-cards span{font-size:12.5px;color:var(--muted);line-height:1.6}
+.st-choice-cards{display:flex;gap:20px;flex-wrap:wrap;justify-content:center}
+.st-choice-cards button{position:relative;width:290px;padding:34px 26px 28px;border-radius:22px;border:2px solid var(--line);text-align:center;cursor:pointer;overflow:hidden;display:flex;flex-direction:column;align-items:center;gap:2px;transition:transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s,border-color .2s;animation:sccIn .5s ease both}
+.st-choice-cards button:nth-child(2){animation-delay:.09s}
+.st-choice-cards .scc-edit{background:linear-gradient(165deg,rgba(22,163,74,.12),var(--panel) 60%)}
+.st-choice-cards .scc-new{background:linear-gradient(165deg,rgba(139,92,246,.12),var(--panel) 60%)}
+.st-choice-cards button:hover{transform:translateY(-6px) scale(1.02);box-shadow:0 20px 44px rgba(0,0,0,.16)}
+.st-choice-cards .scc-edit:hover{border-color:#16a34a}
+.st-choice-cards .scc-new:hover{border-color:#8b5cf6}
+.st-choice-cards button:active{transform:translateY(-2px) scale(.99)}
+.st-choice-cards .scc-ico{width:66px;height:66px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:14px;animation:sccFloat 3s ease-in-out infinite}
+.st-choice-cards .scc-edit .scc-ico{background:linear-gradient(135deg,#16a34a,#15803d);box-shadow:0 10px 22px rgba(22,163,74,.4)}
+.st-choice-cards .scc-new .scc-ico{background:linear-gradient(135deg,#8b5cf6,#7c3aed);box-shadow:0 10px 22px rgba(139,92,246,.4)}
+.st-choice-cards b{display:block;font-size:21px;font-weight:900;margin-bottom:7px}
+.st-choice-cards .scc-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:16px}
+.st-choice-cards .scc-go{font-size:13.5px;font-weight:800;padding:9px 20px;border-radius:99px;color:#fff}
+.st-choice-cards .scc-edit .scc-go{background:linear-gradient(135deg,#16a34a,#15803d)}
+.st-choice-cards .scc-new .scc-go{background:linear-gradient(135deg,#8b5cf6,#7c3aed)}
+@keyframes sccIn{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@keyframes sccFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 .st-simple{flex:1;overflow-y:auto;padding:28px}
 .st-simple-inner{max-width:520px;margin:0 auto}
 .st-simple-inner.wide{max-width:820px}
