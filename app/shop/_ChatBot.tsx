@@ -265,7 +265,7 @@ export function ChatBot() {
           aria-label="온봇 팜이 열기"
           className="chatbot-fab onbot-hero-wrap"
           style={{
-            position: 'fixed', right: '14px', bottom: 'calc(108px + env(safe-area-inset-bottom))',
+            position: 'fixed', right: '14px', bottom: 'calc(140px + env(safe-area-inset-bottom))',
             zIndex: 9998, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0,
             background: 'transparent', border: 'none', boxShadow: 'none', cursor: 'pointer', padding: 0,
             touchAction: 'manipulation', userSelect: 'none', WebkitUserSelect: 'none',
@@ -375,7 +375,7 @@ export function ChatBot() {
          */
         .onbot-blink { opacity: 1; }
         @media (min-width: 640px) {
-          .chatbot-fab { bottom: 24px !important; }
+          .chatbot-fab { bottom: calc(140px + env(safe-area-inset-bottom)) !important; }
           .chatbot-panel { bottom: 24px !important; }
         }
       `}</style>
