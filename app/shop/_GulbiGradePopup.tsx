@@ -57,6 +57,51 @@ const GRADES: {
   },
 ]
 
+// 등급표를 다시 열 수 있는 진입 버튼.
+//  variant 'fab'   = 메인 쇼핑몰 우측하단 작은 플로팅 알약(항상 노출, 첫 등장 시 슬라이드인)
+//  variant 'inline'= 상세페이지 '굴비 원물등급 다시보기' 버튼
+export function GulbiGradeButton({ variant, onClick }: { variant: 'fab' | 'inline'; onClick: () => void }) {
+  const [shown, setShown] = useState(false)
+  useEffect(() => { const t = setTimeout(() => setShown(true), 400); return () => clearTimeout(t) }, [])
+
+  if (variant === 'inline') {
+    return (
+      <button
+        onClick={onClick}
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+          width: '100%', padding: '13px 16px', margin: '10px 0',
+          background: '#eaf4ec', border: '1.5px solid #14532d', borderRadius: '12px',
+          color: '#14532d', fontSize: '15px', fontWeight: 800, cursor: 'pointer',
+        }}
+      >
+        🐟 굴비 원물등급 1·2·3 다시보기
+        <span style={{ fontSize: '17px' }}>›</span>
+      </button>
+    )
+  }
+
+  return (
+    <button
+      onClick={onClick}
+      aria-label="굴비 원물등급표 보기"
+      style={{
+        position: 'fixed', right: '14px', bottom: '84px', zIndex: 998,
+        display: 'flex', alignItems: 'center', gap: '8px',
+        padding: '11px 16px 11px 12px', borderRadius: '999px', border: 'none', cursor: 'pointer',
+        background: 'linear-gradient(135deg,#0b2818,#1f7a3a)', color: '#fff',
+        fontSize: '14px', fontWeight: 800, letterSpacing: '-0.3px',
+        boxShadow: '0 8px 22px rgba(11,40,24,0.4)',
+        transform: shown ? 'translateX(0)' : 'translateX(140%)',
+        opacity: shown ? 1 : 0, transition: 'all 0.5s cubic-bezier(0.34,1.4,0.64,1)',
+      }}
+    >
+      <span style={{ fontSize: '18px' }}>🐟</span>
+      굴비 원물등급표
+    </button>
+  )
+}
+
 export function GulbiGradePopup({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [mounted, setMounted] = useState(false)
   const [dontShow, setDontShow] = useState(false)

@@ -9,7 +9,7 @@ import { QuestionSection } from '../../_QuestionSection'
 import { SellerNotice } from '../../_SellerNotice'
 import { OrderModal } from '../../_OrderModal'
 import { priceFor, weightLabel } from '../../_shopConstants'
-import { GulbiGradePopup, gulbiPopupSuppressed, isGulbiProduct } from '../../_GulbiGradePopup'
+import { GulbiGradePopup, GulbiGradeButton, gulbiPopupSuppressed, isGulbiProduct } from '../../_GulbiGradePopup'
 import { LANDING_ANIM_CSS } from '@/lib/landing-templates'
 import { addressToText } from '../../_AddressBookPicker'
 import { openPostcode } from '@/lib/postcode'
@@ -576,6 +576,11 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
             <h1 style={{fontSize:'26px',fontWeight:900,letterSpacing:'-0.8px',lineHeight:1.25,marginBottom:'10px',color:D.text}}>{product.name}</h1>
             {product.origin && (
               <p style={{fontSize:'13px',color:D.sub,fontWeight:600,margin:'-2px 0 12px'}}>원산지&nbsp; <strong style={{color:D.text}}>{product.origin}</strong></p>
+            )}
+
+            {/* 굴비 상품이면 원물등급표 다시보기 버튼(자동 팝업을 닫아도 언제든 열람) */}
+            {isGulbiProduct(product.name) && (
+              <GulbiGradeButton variant="inline" onClick={() => setGulbiPopup(true)} />
             )}
 
             {/* 평균 별점 요약 */}
