@@ -10,6 +10,7 @@ import { PromoSection } from './_PromoSection'
 import { MobileNav } from './_MobileNav'
 import { HeroSection } from './_HeroSection'
 import { ShopHeader } from './_ShopHeader'
+import { GulbiGradePopup, gulbiPopupSuppressed } from './_GulbiGradePopup'
 
 type ShopClientProps = {
   initialProducts: Product[]
@@ -47,6 +48,7 @@ export default function ShopClient({ initialProducts, initialCategories, initial
   const [promoOpen, setPromoOpen] = useState(false)  // 이용방법 섹션 접기(기본 접힘)
   const [catMenuOpen, setCatMenuOpen] = useState(false)  // 전체 카테고리(햄버거) 열림
   const popupTimer = useRef<any>(null)
+  const [gulbiPopup, setGulbiPopup] = useState(false)  // 굴비 원물등급 안내 팝업
   const supabase = createClient()
 
   // 최근 검색어 (localStorage)
@@ -142,6 +144,18 @@ export default function ShopClient({ initialProducts, initialCategories, initial
     window.dispatchEvent(new Event('shop-theme-change'))
   }, [dark])
 
+  // 🐟 굴비 원물등급 안내: 로그인 회원이 쇼핑몰 진입 시 자동 노출(세션당 1회, 일주일 보지않기 존중)
+  useEffect(() => {
+    if (!user) return
+    if (gulbiPopupSuppressed()) return
+    try {
+      if (sessionStorage.getItem('gulbi_popup_home_shown')) return
+      sessionStorage.setItem('gulbi_popup_home_shown', '1')
+    } catch {}
+    const t = setTimeout(() => setGulbiPopup(true), 600)
+    return () => clearTimeout(t)
+  }, [user])
+
   // 프로모 자동 슬라이드
   useEffect(() => {
     gulbiTimer.current = setInterval(() => {
@@ -230,6 +244,9 @@ export default function ShopClient({ initialProducts, initialCategories, initial
 
   return (
     <div style={{ background: bg, color: text, minHeight: '100vh', fontFamily: "'Pretendard','Apple SD Gothic Neo',sans-serif", overflowX: 'hidden' }}>
+
+      {/* ── 굴비 원물등급 안내 팝업 ── */}
+      <GulbiGradePopup open={gulbiPopup} onClose={() => setGulbiPopup(false)} />
 
       {/* ── 구매 팝업 ── */}
       <div style={{

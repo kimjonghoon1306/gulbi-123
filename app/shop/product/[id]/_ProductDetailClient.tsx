@@ -9,6 +9,7 @@ import { QuestionSection } from '../../_QuestionSection'
 import { SellerNotice } from '../../_SellerNotice'
 import { OrderModal } from '../../_OrderModal'
 import { priceFor, weightLabel } from '../../_shopConstants'
+import { GulbiGradePopup, gulbiPopupSuppressed, isGulbiProduct } from '../../_GulbiGradePopup'
 import { LANDING_ANIM_CSS } from '@/lib/landing-templates'
 import { addressToText } from '../../_AddressBookPicker'
 import { openPostcode } from '@/lib/postcode'
@@ -73,6 +74,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
   const [isAdmin, setIsAdmin] = useState(false)
   const [showOrderForm, setShowOrderForm] = useState(false)
   const [subNotice, setSubNotice] = useState(false)  // 정기배송 준비중 안내
+  const [gulbiPopup, setGulbiPopup] = useState(false)  // 굴비 원물등급 안내 팝업
   const [orderForm, setOrderForm] = useState({ address: '', recipient: '', phone: '', note: '', payment_method: '가상계좌', evidence: '현금영수증', evidenceContact: '' })
   const [orderLoading, setOrderLoading] = useState(false)
   const [orderDone, setOrderDone] = useState(false)
@@ -378,6 +380,18 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
+  // 🐟 굴비 원물등급 안내: 굴비/참조기 상품 상세 진입 시 한 번 더 노출(세션당 1회, 일주일 보지않기 존중)
+  useEffect(() => {
+    if (!product || !isGulbiProduct(product.name)) return
+    if (gulbiPopupSuppressed()) return
+    try {
+      if (sessionStorage.getItem('gulbi_popup_detail_shown')) return
+      sessionStorage.setItem('gulbi_popup_detail_shown', '1')
+    } catch {}
+    const t = setTimeout(() => setGulbiPopup(true), 700)
+    return () => clearTimeout(t)
+  }, [product])
+
   const getPrice = () => {
     if (!product) return 0
     return priceFor(selectedOption || product, memberType)
@@ -474,6 +488,9 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
 
   return (
     <div style={{background:D.bg,color:D.text,minHeight:'100vh',fontFamily:"'Pretendard','Apple SD Gothic Neo',sans-serif"}}>
+
+      {/* 굴비 원물등급 안내 팝업 */}
+      <GulbiGradePopup open={gulbiPopup} onClose={() => setGulbiPopup(false)} />
 
       {/* 소셜 팝업 */}
       {popup.show && (
